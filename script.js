@@ -79,16 +79,21 @@ function getPieceAt(row, col) {
 }
 
 // Hàm xếp ngẫu nhiên các quân
+// Hàm xếp ngẫu nhiên các quân
 function randomizePieces() {
   const availableBlackPositions = [];
   const availableWhitePositions = [];
 
   for (let row = 0; row < boardSize; row++) {
     for (let col = 0; col < 3; col++) {
-      availableBlackPositions.push([row, col]);
+      if (!isObstacle(row, col)) {
+        availableBlackPositions.push([row, col]);
+      }
     }
     for (let col = 4; col < boardSize; col++) {
-      availableWhitePositions.push([row, col]);
+      if (!isObstacle(row, col)) {
+        availableWhitePositions.push([row, col]);
+      }
     }
   }
 
@@ -118,6 +123,7 @@ function randomizePieces() {
 
   drawPieces();
 }
+
 
 // Hàm vẽ các quân cờ
 function drawPieces() {
@@ -279,15 +285,19 @@ boardElement.addEventListener("touchmove", e => {
   if (!selectedPiece || !pieces[selectedPiece]) return;
 
   const touch = e.touches[0];
-  const row = Math.floor(touch.clientY / 40);
-  const col = Math.floor(touch.clientX / 40);
+  const cellSize = 40;  // Kích thước mỗi ô, giả sử mỗi ô là 40px
 
-  if (isValidPlacement(row, col, turn)) {
+  const row = Math.floor((touch.clientY - boardElement.offsetTop) / cellSize);
+  const col = Math.floor((touch.clientX - boardElement.offsetLeft) / cellSize);
+
+  // Kiểm tra nếu vị trí mới hợp lệ và không có quân cờ nào
+  if (row >= 0 && row < boardSize && col >= 0 && col < boardSize && isValidPlacement(row, col, turn)) {
     pieces[selectedPiece] = [row, col];
     drawPieces();
     highlightSelectedCell();
   }
 });
+
 
 // Khởi tạo trò chơi
 createBoard();
