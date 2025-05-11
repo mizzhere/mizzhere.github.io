@@ -16,10 +16,56 @@
         <div id="settings-screen">
             <h2>Chào mừng!</h2>
             <p>Thử thách trí tuệ của bạn.</p>
+            
+            <div class="settings-options">
+                <div class="setting-item">
+                    <label for="memo-time-select">Thời gian ghi nhớ ban đầu:</label>
+                    <select id="memo-time-select" class="setting-select">
+                        <option value="60">60 giây</option>
+                        <option value="55">55 giây</option>
+                        <option value="50">50 giây</option>
+                        <option value="45">45 giây</option>
+                        <option value="40">40 giây</option>
+                        <option value="35">35 giây</option>
+                        <option value="30">30 giây</option>
+                        <option value="25">25 giây</option>
+                        <option value="20">20 giây</option>
+                        <option value="15">15 giây</option>
+                        <option value="10" selected>10 giây (Mặc định)</option> <!-- THÊM selected VÀO ĐÂY -->
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="result-time-select">Thời gian hiển thị kết quả/tổng:</label>
+                    <select id="result-time-select" class="setting-select">
+                        <option value="3">3 giây</option>
+                        <option value="5" selected>5 giây (Mặc định)</option> <!-- THÊM selected VÀO ĐÂY -->
+                        <option value="10">10 giây</option>
+                        <option value="15">15 giây</option>
+                        <option value="20">20 giây</option>
+                        <option value="30">30 giây</option>
+                    </select>
+                </div>
+            </div>
             <button id="start-game-btn" class="button-primary">
                 <span class="material-symbols-outlined">play_circle</span>
                 Bắt Đầu
             </button>
+            <div id="history-controls">
+                <button id="view-history-btn" class="button-secondary">
+                    <span class="material-symbols-outlined">history</span>
+                    Lịch Sử Chơi
+                </button>
+            </div>
+            <div id="history-popup" class="popup hidden">
+                <div class="popup-content">
+                    <span class="close-popup-btn" id="close-history-popup-btn">×</span>
+                    <h2>Lịch Sử Chơi</h2>
+                    <div id="history-list-container">
+                        <p>Chưa có lịch sử nào.</p>
+                    </div>
+                    <button id="clear-history-btn" class="button-danger">Xóa Lịch Sử</button>
+                </div>
+            </div>
         </div>
 
         <div id="game-screen" class="hidden">
