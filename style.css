@@ -1,4 +1,4 @@
-/* style.css - PHIÊN BẢN NO-SCROLL & VISUAL TIMER */
+/* style.css */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
@@ -13,7 +13,7 @@
     --outline-color: #CBD5E1;
     --error-color: #B3261E;
     --success-color: #1A5E20;
-    --warning-color: #FBC02D; /* For timer warning */
+    --warning-color: #FBC02D;
 
     --font-family-main: 'Roboto', sans-serif;
     --border-radius-small: 8px;
@@ -21,17 +21,12 @@
     --border-radius-large: 16px;
     --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
     --elevation-2: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
-}
 
-
-
-:root {
-    --primary-color: #0B57D0;
-    --primary-container-color: #D3E3FD;
-    --on-primary-container-color: #001B3D;
-    /* ... (các biến màu khác giữ nguyên) ... */
-    --number-area-background: #f8f9fa; /* Màu nền cho vùng số cố định */
+    /* Thêm biến cho vùng số cố định */
+    --number-area-background: #f8f9fa;
     --number-area-border: #dee2e6;
+    --fixed-number-font-size-default: 40px; /* Kích thước số mặc định (cho mobile/tablet nhỏ) */
+    --fixed-number-font-size-desktop: 52px; /* KÍCH THƯỚC SỐ LỚN HƠN CHO DESKTOP */
 }
 
 html, body {
@@ -43,6 +38,8 @@ html, body {
     background-color: #f0f2f5;
     color: var(--on-surface-color);
     box-sizing: border-box;
+    -webkit-text-size-adjust: 100%; /* Ngăn tự động thay đổi kích thước font trên iOS */
+    -ms-text-size-adjust: 100%; /* Ngăn tự động thay đổi kích thước font trên Windows Phone */
 }
 *, *:before, *:after {
     box-sizing: inherit;
@@ -52,17 +49,17 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px;
+    padding: 8px; /* GIẢM PADDING BODY CHO MOBILE */
 }
 
 #game-container {
     background-color: var(--surface-color);
-    padding: 20px;
-    border-radius: var(--border-radius-large);
+    padding: 10px; /* GIẢM PADDING CHO MOBILE */
+    border-radius: var(--border-radius-medium); /* Giảm nhẹ radius nếu cần */
     box-shadow: var(--elevation-2);
     width: 100%;
-    max-width: 780px; /* Giữ nguyên max-width */
-    height: calc(100vh - 32px);
+    max-width: 780px;
+    height: calc(100vh - 16px); /* Điều chỉnh theo padding body */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -70,14 +67,14 @@ body {
 }
 
 header {
-    padding: 10px 0;
+    padding: 8px 0; /* GIẢM PADDING */
     border-bottom: 1px solid var(--outline-color);
-    margin-bottom: 10px; /* Giảm một chút nếu cần thêm không gian */
-    flex-shrink: 0; /* Header không co lại */
+    margin-bottom: 8px; /* GIẢM MARGIN */
+    flex-shrink: 0;
 }
 header h1 {
     font-weight: 500;
-    font-size: 22px;
+    font-size: 20px; /* GIẢM FONT */
     margin: 0;
 }
 
@@ -89,7 +86,7 @@ header h1 {
 #game-screen {
     flex-grow: 1;
     display: flex;
-    flex-direction: column; /* game-info, fixed-number-display-area, phase-content-area theo chiều dọc */
+    flex-direction: column;
     overflow: hidden;
     width: 100%;
 }
@@ -97,104 +94,112 @@ header h1 {
 #game-info {
     background-color: var(--primary-container-color);
     color: var(--on-primary-container-color);
-    padding: 10px 12px;
+    padding: 8px 10px; /* GIẢM PADDING */
     border-radius: var(--border-radius-medium);
-    margin-bottom: 10px; /* Điều chỉnh khoảng cách với vùng số */
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 500;
-    font-size: 14px;
-    flex-shrink: 0; /* Không cho co lại */
+    font-size: 13px; /* GIẢM FONT */
+    flex-shrink: 0;
+    gap: 5px; /* Thêm gap nhỏ giữa các item */
 }
-.info-item { padding: 2px 6px; }
+.info-item { padding: 2px 4px; /* Giảm padding item */ }
 .player-score-display { color: var(--success-color); font-weight: 700; }
 .opponent-score-display { color: var(--error-color); font-weight: 700; }
 #ingame-restart-btn {
-    padding: 6px 10px; font-size: 13px; background-color: #E57373; color: white;
+    padding: 5px 8px; /* GIẢM PADDING */
+    font-size: 12px; /* GIẢM FONT */
+    background-color: #E57373; color: white;
+    margin-left: auto; /* Đẩy nút sang phải */
 }
 #ingame-restart-btn:hover { background-color: #EF5350; }
 
 
 /* --- FIXED NUMBER DISPLAY AREA --- */
 #fixed-number-display-area {
-    padding: 15px 10px; /* Tăng padding để nổi bật hơn */
+    padding: 10px 8px; /* GIẢM PADDING */
     background-color: var(--number-area-background);
     border: 1px solid var(--number-area-border);
     border-radius: var(--border-radius-medium);
-    margin-bottom: 15px; /* Khoảng cách với phase-content-area */
-    flex-shrink: 0; /* Không cho co lại, giữ kích thước cố định */
+    margin-bottom: 10px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-#live-number-context-label {
-    font-size: 15px;
+#number-context-label { /* Sửa ID cho đúng với JS */
+    font-size: 14px; /* GIẢM FONT */
     color: var(--on-surface-variant-color);
-    margin-bottom: 10px; /* Tăng khoảng cách với lưới số */
-    font-weight: 500; /* Làm đậm hơn một chút */
+    margin-bottom: 6px; /* GIẢM MARGIN */
+    font-weight: 500;
 }
-/* .number-grid styles đã có, đảm bảo nó hoạt động tốt trong #fixed-number-display-area */
 #fixed-number-display-area .number-grid {
-    margin-top: 0; /* Bỏ margin-top nếu có */
-    margin-bottom: 5px; /* Giảm margin bottom */
-}
-#fixed-number-display-area .column-value {
-    font-size: 40px; /* TĂNG KÍCH THƯỚC SỐ CHO DỄ NHÌN */
-    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0; /* Bỏ margin bottom */
+    gap: 8px; /* Giảm gap giữa các cột số */
+    max-width: 320px; /* Giảm max-width cho mobile */
 }
 #fixed-number-display-area .column {
-     padding: 12px 10px; /* Tăng padding cho cột số */
+     padding: 8px 6px; /* GIẢM PADDING CỘT */
+     max-width: 80px; /* Giảm max-width cột */
+}
+#fixed-number-display-area .column-header {
+    font-size: 12px; /* Giảm font header cột */
+}
+#fixed-number-display-area .column-value {
+    font-size: var(--fixed-number-font-size-default); /* KÍCH THƯỚC SỐ MẶC ĐỊNH */
+    font-weight: 700;
+    line-height: 1.1; /* Đảm bảo số không bị cắt */
 }
 
 
 /* --- PHASE CONTENT AREA --- */
 #phase-content-area {
-    flex-grow: 1; /* Khu vực này sẽ lấp đầy không gian còn lại */
-    display: flex; /* Để phase-container bên trong có thể fill */
+    flex-grow: 1;
+    display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Cho phép cuộn nếu nội dung phase quá dài, nhưng nên tránh */
-    position: relative; /* Cho game-over-screen có thể chồng lên */
+    overflow-y: auto;
+    /* position: relative; Không cần thiết nếu gameOverScreen được quản lý bởi JS showPhase */
     width: 100%;
 }
 
-.phase-container { /* Áp dụng cho memorization, question, result */
+.phase-container {
     width: 100%;
-    /* flex-grow: 1; không cần thiết nữa vì phase-content-area đã grow */
     display: flex;
     flex-direction: column;
-    /* justify-content: center; /* Có thể không cần center toàn bộ phase nữa */
     align-items: center;
-    padding: 10px 0 0 0; /* Giảm padding top, bỏ bottom */
+    padding: 5px 0 0 0; /* GIẢM PADDING */
+    /* flex-grow: 1; Đặt cho main-content-wrapper để nội dung bên trong giãn nở */
 }
-.phase-container h2 { /* Tiêu đề của mỗi phase */
+.phase-container h2 {
     font-weight: 500;
-    font-size: 18px; /* Giảm nhẹ để tiết kiệm không gian dọc */
+    font-size: 16px; /* GIẢM FONT */
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* GIẢM MARGIN */
     flex-shrink: 0;
 }
 
-/* Wrapper cho nội dung chính bên trong mỗi phase (timer, question, buttons) */
 .main-content-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around; /* Hoặc space-evenly để phân bổ không gian */
+    justify-content: space-around;
     width: 100%;
-    flex-grow: 1; /* Cho phép wrapper này mở rộng trong phase-container */
-    padding: 0 10px 10px 10px; /* Padding cho nội dung */
+    flex-grow: 1; /* Cho wrapper này giãn nở */
+    padding: 0 8px 8px 8px; /* GIẢM PADDING */
 }
 
 
-/* --- NUMBER GRIDS & COLUMNS (Chung) --- */
+/* --- NUMBER GRIDS & COLUMNS (Chung, vd: cumulative-sums) --- */
 .number-grid {
     display: flex;
     justify-content: space-around;
-    gap: 12px;
+    gap: 10px; /* GIẢM GAP */
     width: 100%;
-    max-width: 400px; /* Giảm nhẹ max-width để phù hợp hơn */
-    margin: 10px 0;
+    max-width: 360px; /* GIẢM MAX-WIDTH */
+    margin: 8px 0; /* GIẢM MARGIN */
     flex-shrink: 0;
 }
 .column {
@@ -203,61 +208,71 @@ header h1 {
     align-items: center;
     flex-basis: 0;
     flex-grow: 1;
-    max-width: 100px; /* Giảm nhẹ max-width */
-    padding: 10px 8px;
+    max-width: 90px; /* GIẢM MAX-WIDTH */
+    padding: 8px 6px; /* GIẢM PADDING */
     border-radius: var(--border-radius-medium);
     box-shadow: var(--elevation-1);
     text-align: center;
 }
 .column-header {
-    font-size: 14px; font-weight: 500; color: var(--on-surface-variant-color);
-    margin-bottom: 4px; text-transform: uppercase;
+    font-size: 12px; /* GIẢM FONT */
+    font-weight: 500; color: var(--on-surface-variant-color);
+    margin-bottom: 3px; /* GIẢM MARGIN */
+    text-transform: uppercase;
 }
 .column-value {
-    font-size: 32px; /* Kích thước mặc định, sẽ bị ghi đè bởi #fixed-number-display-area */
+    font-size: 28px; /* GIẢM FONT CHO CÁC LƯỚI SỐ PHỤ */
     font-weight: 700; color: var(--on-surface-color);
     line-height: 1;
 }
 
-/* Màu sắc cho các loại number-grid */
 .current-numbers .column { background-color: #FFFDE7; border: 1px solid #FFF59D; }
 .current-numbers .column-value { color: #F9A825; }
 
 .cumulative-sums-display .column { background-color: #E8F5E9; border: 1px solid #C8E6C9;}
 .cumulative-sums-display .column-value { color: #2E7D32; }
-/* Xóa .initial-numbers vì không còn dùng style riêng */
 
 
 /* --- QUESTION & ANSWERS --- */
-.info-label { /* Nhãn chung, như "Tổng lũy kế hiện tại:" */
-    font-size: 15px; color: var(--on-surface-variant-color);
-    margin-bottom: 8px; font-weight: 400;
+.info-label {
+    font-size: 13px; /* GIẢM FONT */
+    color: var(--on-surface-variant-color);
+    margin-bottom: 6px; /* GIẢM MARGIN */
+    font-weight: 400;
     flex-shrink: 0;
 }
 .question-emphasis {
-    font-size: 17px; /* Điều chỉnh nếu cần */
+    font-size: 15px; /* GIẢM FONT */
     color: var(--on-surface-color); font-weight: 400;
-    margin: 10px auto;
-    padding: 10px 15px;
+    margin: 8px auto; /* GIẢM MARGIN */
+    padding: 8px 12px; /* GIẢM PADDING */
     background-color: #f7f7f7;
     border-radius: var(--border-radius-medium);
-    border-left: 4px solid var(--primary-color);
+    border-left: 3px solid var(--primary-color); /* Giảm độ dày border */
     max-width: 95%;
-    line-height: 1.4;
+    line-height: 1.3;
     flex-shrink: 0;
 }
 .answer-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Giảm minmax */
-    gap: 8px; /* Giảm gap */
-    margin: 12px 0; /* Giảm margin */
+    /* grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));  */
+    /* Chuyển sang 2 cột cố định cho mobile portrait để dễ bấm hơn */
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0; /* GIẢM MARGIN */
     width: 100%;
-    max-width: 550px; /* Giới hạn độ rộng */
+    max-width: 480px; /* GIẢM MAX-WIDTH */
     flex-shrink: 0;
 }
+/* Nút "Không có" sẽ chiếm cả hàng nếu cần */
+.answer-btn[data-answer="Không có"] {
+    grid-column: span 2; /* Cho nút "Không có" chiếm 2 cột */
+}
+
 .answer-btn {
-    padding: 10px 12px; /* Điều chỉnh padding */
-    font-size: 14px; /* Điều chỉnh font */
+    padding: 12px 10px; /* TĂNG PADDING CHO DỄ BẤM TRÊN MOBILE */
+    font-size: 14px;
+    min-height: 48px; /* Đảm bảo chiều cao tối thiểu dễ bấm */
 }
 .answer-btn-neutral, .answer-btn[data-answer="Không có"] { background-color: var(--secondary-color); color: white; }
 .answer-btn-neutral:hover, .answer-btn[data-answer="Không có"]:hover { background-color: #4A4C4F; }
@@ -266,39 +281,40 @@ header h1 {
 
 /* --- TIMERS (VISUAL) & RESULT --- */
 .timer-display {
-    margin-top: 10px; /* Giảm margin top */
-    margin-bottom: 8px; /* Giảm margin bottom */
+    margin-top: 8px;
+    margin-bottom: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* Giảm gap */
+    gap: 4px;
     width: 100%;
     flex-shrink: 0;
 }
 .timer-text {
-    font-size: 13px; color: var(--on-surface-variant-color);
+    font-size: 12px; /* GIẢM FONT */
+    color: var(--on-surface-variant-color);
     font-style: italic; margin: 0;
 }
 .progress-bar-container {
-    width: 60%; max-width: 220px; height: 8px; /* Giảm kích thước progress bar */
+    width: 50%; max-width: 180px; height: 6px; /* GIẢM KÍCH THƯỚC */
     background-color: var(--surface-container-highest);
-    border-radius: 4px; overflow: hidden;
+    border-radius: 3px; overflow: hidden;
     border: 1px solid var(--outline-color);
 }
 .progress-bar {
     height: 100%; width: 100%;
     background-color: var(--success-color);
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.2s linear, background-color 0.3s ease;
 }
 .progress-bar.warning { background-color: var(--warning-color); }
 .progress-bar.danger { background-color: var(--error-color); }
 
 
-#result-message { /* Trong result-phase */
-    font-size: 18px; /* Giảm nhẹ */
+#result-message {
+    font-size: 16px; /* GIẢM FONT */
     font-weight: 500;
-    margin-bottom: 10px; padding: 8px;
+    margin-bottom: 8px; padding: 6px;
     flex-shrink: 0;
 }
 #result-message.correct { color: var(--success-color); }
@@ -307,69 +323,64 @@ header h1 {
 
 /* --- GAME OVER SCREEN --- */
 #game-over-screen {
-    /* Sẽ được JS làm hiển thị và nó nằm trong #game-screen,
-       nhưng ngoài #phase-content-area.
-       Nó cần che phủ #phase-content-area.
-       Ta sẽ dùng position: absolute và z-index nếu cần,
-       hoặc đơn giản là JS chỉ hiển thị #game-over-screen và ẩn #phase-content-area.
-       Hiện tại JS đã làm vậy (showScreen chỉ hiện 1 phase chính).
-       Nếu muốn nó chồng lên, #game-screen cần position: relative.
-       Còn nếu nó là một phase riêng biệt thì không cần.
-       Giữ nguyên logic hiện tại của showScreen là tốt nhất.
-    */
-    position: absolute; /* Để nó có thể chồng lên phase-content-area */
-    top: 0; left: 0; right: 0; bottom: 0; /* Chiếm toàn bộ #phase-content-area */
-    background-color: var(--surface-color); /* Để che hoàn toàn nội dung bên dưới */
-    z-index: 10; /* Để đảm bảo nó ở trên */
-    /* Các style khác của phase-container đã áp dụng */
-    justify-content: center; /* Căn giữa nội dung game over */
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--surface-color);
+    z-index: 10;
+    display: flex; /* Đã có từ .phase-container */
+    flex-direction: column; /* Đã có từ .phase-container */
+    align-items: center; /* Đã có từ .phase-container */
+    justify-content: center; /* Thêm để căn giữa nội dung */
+    padding: 15px; /* Padding cho nội dung bên trong */
 }
-#game-over-screen h2 { font-size: 22px; }
-.final-scores { margin: 15px 0; font-size: 16px; }
-.final-scores p { margin: 4px 0; }
-.final-scores strong { font-size: 18px; padding-left: 4px; color: var(--primary-color); }
-#restart-game-btn { padding: 12px 25px; font-size: 17px; }
+#game-over-screen h2 { font-size: 20px; /* GIẢM FONT */ }
+.final-scores { margin: 12px 0; font-size: 15px; /* GIẢM FONT */ }
+.final-scores p { margin: 3px 0; }
+.final-scores strong { font-size: 16px; padding-left: 4px; color: var(--primary-color); }
+#restart-game-btn { padding: 10px 20px; font-size: 16px; /* Điều chỉnh nút */ }
 
 
 /* --- RULES DISPLAY --- */
 #rules-display {
-    margin-top: auto; /* Đẩy rules xuống dưới cùng của #game-container */
+    margin-top: auto;
     text-align: left;
     border-top: 1px solid var(--outline-color);
-    padding-top: 10px;
+    padding-top: 8px; /* GIẢM PADDING */
     flex-shrink: 0;
 }
 #rules-display button#toggle-rules-btn {
-    font-weight: 400; padding: 8px 15px; font-size: 14px;
+    font-weight: 400; padding: 7px 12px; font-size: 13px; /* GIẢM FONT/PADDING */
+    width: 100%; /* Cho nút chiếm hết chiều rộng trên mobile */
+    margin-bottom: 5px; /* Khoảng cách với content rules */
 }
 #rules-content {
     background-color: #f9f9fa;
-    padding: 15px;
+    padding: 10px; /* GIẢM PADDING */
     border-radius: var(--border-radius-medium);
-    max-height: 80px; /* GIỚI HẠN CHIỀU CAO RULES KHI HIỂN THỊ, giảm bớt */
+    max-height: 60px; /* GIẢM MAX-HEIGHT CHO MOBILE */
     overflow-y: auto;
     border: 1px solid var(--outline-color);
-    margin-top: 8px;
+    margin-top: 5px; /* GIẢM MARGIN */
 }
 #rules-content pre {
     margin: 0; font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 11px; /* Nhỏ hơn nữa */
+    font-size: 10px; /* GIẢM FONT CHO PRE */
     color: var(--on-surface-variant-color);
-    line-height: 1.4; white-space: pre-wrap;
+    line-height: 1.3; white-space: pre-wrap;
 }
 
 
 /* --- BASE BUTTON STYLES --- */
 button {
-    border: none; padding: 10px 20px; border-radius: var(--border-radius-medium);
-    cursor: pointer; font-size: 16px; font-weight: 500; margin: 6px 4px;
+    border: none; padding: 9px 18px; border-radius: var(--border-radius-medium);
+    cursor: pointer; font-size: 15px; font-weight: 500; margin: 5px 3px; /* GIẢM MARGIN */
     transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-out;
     text-transform: none; letter-spacing: 0.5px; display: inline-flex;
-    align-items: center; justify-content: center; gap: 8px;
+    align-items: center; justify-content: center; gap: 6px;
+    -webkit-tap-highlight-color: transparent; /* Bỏ highlight khi tap trên mobile */
 }
 button:active { transform: translateY(1px); }
 
-/* --- BUTTON VARIANTS --- */
 .button-primary { background-color: var(--primary-color); color: white; }
 .button-primary:hover { background-color: #0A4CB0; box-shadow: var(--elevation-1); }
 .button-secondary { background-color: var(--surface-container-highest); color: var(--on-surface-variant-color); border: 1px solid var(--outline-color); }
@@ -382,19 +393,266 @@ button:active { transform: translateY(1px); }
     justify-content: center;
     align-items: center;
     height: 100%;
+    padding: 15px; /* Padding cho settings screen */
 }
-#settings-screen h2 { font-size: 24px; margin-bottom: 12px;}
-#settings-screen p { font-size: 16px; margin-bottom: 20px;}
-#settings-screen button#start-game-btn { padding: 14px 30px; font-size: 18px; }
+#settings-screen h2 { font-size: 22px; margin-bottom: 10px;}
+#settings-screen p { font-size: 15px; margin-bottom: 18px;}
+#settings-screen button#start-game-btn { padding: 12px 25px; font-size: 17px; }
 
-/* Proceed to questions button */
 #proceed-to-questions-btn {
-    margin-top: 15px; background-color: var(--success-color); color: white;
+    margin-top: 12px; background-color: var(--success-color); color: white;
     flex-shrink: 0;
+    padding: 10px 20px; /* Điều chỉnh padding nút */
+    font-size: 15px; /* Điều chỉnh font nút */
 }
 #proceed-to-questions-btn:hover { background-color: #104A17; }
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-  font-size: 1.2em;
+  font-size: 1.1em; /* Giảm nhẹ icon nếu cần */
+}
+
+/* --- MEDIA QUERIES --- */
+
+/* Cho màn hình DESKTOP (lớn hơn mobile/tablet nhỏ) */
+@media (min-width: 769px) {
+    body {
+        padding: 16px; /* Khôi phục padding body cho desktop */
+    }
+    #game-container {
+        padding: 20px; /* Khôi phục padding game-container */
+        max-width: 780px; /* Đảm bảo max-width vẫn áp dụng */
+        height: calc(100vh - 32px);
+    }
+    header {
+        padding: 10px 0;
+        margin-bottom: 10px;
+    }
+    header h1 {
+        font-size: 22px;
+    }
+    #game-info {
+        padding: 10px 12px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    .info-item { padding: 2px 6px; }
+    #ingame-restart-btn {
+        padding: 6px 10px; font-size: 13px;
+    }
+
+    #fixed-number-display-area {
+        padding: 15px 10px;
+        margin-bottom: 15px;
+    }
+    #number-context-label {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+    #fixed-number-display-area .number-grid {
+        max-width: 400px; /* Max-width lớn hơn cho desktop */
+        gap: 12px;
+    }
+     #fixed-number-display-area .column {
+        padding: 12px 10px;
+        max-width: 100px;
+    }
+    #fixed-number-display-area .column-header {
+        font-size: 14px;
+    }
+    #fixed-number-display-area .column-value {
+        font-size: var(--fixed-number-font-size-desktop); /* SỐ TO HƠN CHO DESKTOP */
+    }
+
+    .phase-container {
+        padding: 10px 0 0 0;
+    }
+    .phase-container h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    .main-content-wrapper {
+        padding: 0 10px 10px 10px;
+    }
+
+    .number-grid { /* Cho cumulative sums */
+        gap: 12px;
+        max-width: 400px;
+        margin: 10px 0;
+    }
+    .column {
+        max-width: 100px;
+        padding: 10px 8px;
+    }
+    .column-header {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+    .column-value { /* Cho cumulative sums */
+        font-size: 32px;
+    }
+
+    .info-label {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    .question-emphasis {
+        font-size: 17px;
+        margin: 10px auto;
+        padding: 10px 15px;
+        border-left-width: 4px;
+    }
+    .answer-options {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Khôi phục auto-fit */
+        gap: 10px;
+        margin: 12px 0;
+        max-width: 550px;
+    }
+     .answer-btn[data-answer="Không có"] {
+        grid-column: auto; /* Reset grid-column cho desktop */
+    }
+    .answer-btn {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .timer-text {
+        font-size: 13px;
+    }
+    .progress-bar-container {
+        width: 60%; max-width: 220px; height: 8px;
+    }
+
+    #result-message {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    #game-over-screen h2 { font-size: 22px; }
+    .final-scores { margin: 15px 0; font-size: 16px; }
+    .final-scores strong { font-size: 18px; }
+    #restart-game-btn { padding: 12px 25px; font-size: 17px; }
+
+    #rules-display {
+        padding-top: 10px;
+    }
+    #rules-display button#toggle-rules-btn {
+        padding: 8px 15px; font-size: 14px;
+        width: auto; /* Reset width */
+        margin-bottom: 0;
+    }
+    #rules-content {
+        padding: 15px;
+        max-height: 80px;
+        margin-top: 8px;
+    }
+    #rules-content pre {
+        font-size: 11px;
+    }
+
+    button {
+        padding: 10px 20px; font-size: 16px; margin: 6px 4px;
+    }
+    #settings-screen h2 { font-size: 24px; margin-bottom: 12px;}
+    #settings-screen p { font-size: 16px; margin-bottom: 20px;}
+    #settings-screen button#start-game-btn { padding: 14px 30px; font-size: 18px; }
+
+    #proceed-to-questions-btn {
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-size: 15px;
+    }
+     .material-symbols-outlined {
+      font-size: 1.2em;
+    }
+}
+
+/* Tối ưu cho màn hình điện thoại dọc (portrait) rất nhỏ */
+@media (max-width: 380px) and (orientation: portrait) {
+    body {
+        padding: 5px; /* Giảm nữa padding body */
+    }
+    #game-container {
+        padding: 5px; /* Giảm nữa padding container */
+        height: calc(100vh - 10px);
+    }
+    header h1 {
+        font-size: 16px; /* Giảm mạnh font tiêu đề */
+    }
+    #game-info {
+        font-size: 11px; /* Giảm font game info */
+        padding: 6px 8px;
+        margin-bottom: 6px;
+    }
+    .info-item { padding: 1px 3px; }
+    #ingame-restart-btn {
+        padding: 4px 6px; font-size: 10px;
+    }
+    #fixed-number-display-area {
+        padding: 8px 5px;
+        margin-bottom: 8px;
+    }
+    #number-context-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    #fixed-number-display-area .number-grid {
+        gap: 5px;
+        max-width: 100%; /* Cho phép chiếm full width nếu cần */
+    }
+    #fixed-number-display-area .column {
+        padding: 6px 4px;
+        max-width: 70px;
+    }
+    #fixed-number-display-area .column-header {
+        font-size: 10px;
+    }
+    #fixed-number-display-area .column-value {
+        font-size: 32px; /* Giảm kích thước số cho màn hình rất nhỏ */
+    }
+
+    .phase-container h2 {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    .main-content-wrapper {
+        padding: 0 5px 5px 5px;
+    }
+    .question-emphasis {
+        font-size: 13px;
+        padding: 6px 10px;
+        margin: 6px auto;
+    }
+    .answer-options {
+        gap: 6px;
+        margin: 8px 0;
+    }
+    .answer-btn {
+        padding: 10px 8px; /* Giữ padding dọc để dễ bấm */
+        font-size: 12px;
+        min-height: 44px;
+    }
+    button { /* Nút chung */
+        padding: 8px 15px;
+        font-size: 13px;
+        margin: 4px 2px;
+    }
+    #settings-screen button#start-game-btn,
+    #restart-game-btn,
+    #proceed-to-questions-btn {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+    #rules-display button#toggle-rules-btn {
+        padding: 6px 10px; font-size: 12px;
+    }
+    #rules-content {
+        max-height: 50px;
+    }
+    #rules-content pre {
+        font-size: 9px;
+    }
+     .material-symbols-outlined {
+      font-size: 1em; /* Giảm icon */
+    }
 }
