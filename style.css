@@ -1,0 +1,400 @@
+/* style.css - PHIÊN BẢN NO-SCROLL & VISUAL TIMER */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    --primary-color: #0B57D0;
+    --primary-container-color: #D3E3FD;
+    --on-primary-container-color: #001B3D;
+    --secondary-color: #5C5F62;
+    --surface-color: #FEFBFF;
+    --surface-container-highest: #E3E3E3;
+    --on-surface-color: #1A1C1E;
+    --on-surface-variant-color: #42474E;
+    --outline-color: #CBD5E1;
+    --error-color: #B3261E;
+    --success-color: #1A5E20;
+    --warning-color: #FBC02D; /* For timer warning */
+
+    --font-family-main: 'Roboto', sans-serif;
+    --border-radius-small: 8px;
+    --border-radius-medium: 12px;
+    --border-radius-large: 16px;
+    --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    --elevation-2: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+
+
+:root {
+    --primary-color: #0B57D0;
+    --primary-container-color: #D3E3FD;
+    --on-primary-container-color: #001B3D;
+    /* ... (các biến màu khác giữ nguyên) ... */
+    --number-area-background: #f8f9fa; /* Màu nền cho vùng số cố định */
+    --number-area-border: #dee2e6;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: var(--font-family-main);
+    background-color: #f0f2f5;
+    color: var(--on-surface-color);
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+#game-container {
+    background-color: var(--surface-color);
+    padding: 20px;
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--elevation-2);
+    width: 100%;
+    max-width: 780px; /* Giữ nguyên max-width */
+    height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    text-align: center;
+}
+
+header {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--outline-color);
+    margin-bottom: 10px; /* Giảm một chút nếu cần thêm không gian */
+    flex-shrink: 0; /* Header không co lại */
+}
+header h1 {
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- GAME SCREEN & STRUCTURE --- */
+#game-screen {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* game-info, fixed-number-display-area, phase-content-area theo chiều dọc */
+    overflow: hidden;
+    width: 100%;
+}
+
+#game-info {
+    background-color: var(--primary-container-color);
+    color: var(--on-primary-container-color);
+    padding: 10px 12px;
+    border-radius: var(--border-radius-medium);
+    margin-bottom: 10px; /* Điều chỉnh khoảng cách với vùng số */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    font-size: 14px;
+    flex-shrink: 0; /* Không cho co lại */
+}
+.info-item { padding: 2px 6px; }
+.player-score-display { color: var(--success-color); font-weight: 700; }
+.opponent-score-display { color: var(--error-color); font-weight: 700; }
+#ingame-restart-btn {
+    padding: 6px 10px; font-size: 13px; background-color: #E57373; color: white;
+}
+#ingame-restart-btn:hover { background-color: #EF5350; }
+
+
+/* --- FIXED NUMBER DISPLAY AREA --- */
+#fixed-number-display-area {
+    padding: 15px 10px; /* Tăng padding để nổi bật hơn */
+    background-color: var(--number-area-background);
+    border: 1px solid var(--number-area-border);
+    border-radius: var(--border-radius-medium);
+    margin-bottom: 15px; /* Khoảng cách với phase-content-area */
+    flex-shrink: 0; /* Không cho co lại, giữ kích thước cố định */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#live-number-context-label {
+    font-size: 15px;
+    color: var(--on-surface-variant-color);
+    margin-bottom: 10px; /* Tăng khoảng cách với lưới số */
+    font-weight: 500; /* Làm đậm hơn một chút */
+}
+/* .number-grid styles đã có, đảm bảo nó hoạt động tốt trong #fixed-number-display-area */
+#fixed-number-display-area .number-grid {
+    margin-top: 0; /* Bỏ margin-top nếu có */
+    margin-bottom: 5px; /* Giảm margin bottom */
+}
+#fixed-number-display-area .column-value {
+    font-size: 40px; /* TĂNG KÍCH THƯỚC SỐ CHO DỄ NHÌN */
+    font-weight: 700;
+}
+#fixed-number-display-area .column {
+     padding: 12px 10px; /* Tăng padding cho cột số */
+}
+
+
+/* --- PHASE CONTENT AREA --- */
+#phase-content-area {
+    flex-grow: 1; /* Khu vực này sẽ lấp đầy không gian còn lại */
+    display: flex; /* Để phase-container bên trong có thể fill */
+    flex-direction: column;
+    overflow-y: auto; /* Cho phép cuộn nếu nội dung phase quá dài, nhưng nên tránh */
+    position: relative; /* Cho game-over-screen có thể chồng lên */
+    width: 100%;
+}
+
+.phase-container { /* Áp dụng cho memorization, question, result */
+    width: 100%;
+    /* flex-grow: 1; không cần thiết nữa vì phase-content-area đã grow */
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; /* Có thể không cần center toàn bộ phase nữa */
+    align-items: center;
+    padding: 10px 0 0 0; /* Giảm padding top, bỏ bottom */
+}
+.phase-container h2 { /* Tiêu đề của mỗi phase */
+    font-weight: 500;
+    font-size: 18px; /* Giảm nhẹ để tiết kiệm không gian dọc */
+    margin-top: 0;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+/* Wrapper cho nội dung chính bên trong mỗi phase (timer, question, buttons) */
+.main-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around; /* Hoặc space-evenly để phân bổ không gian */
+    width: 100%;
+    flex-grow: 1; /* Cho phép wrapper này mở rộng trong phase-container */
+    padding: 0 10px 10px 10px; /* Padding cho nội dung */
+}
+
+
+/* --- NUMBER GRIDS & COLUMNS (Chung) --- */
+.number-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px; /* Giảm nhẹ max-width để phù hợp hơn */
+    margin: 10px 0;
+    flex-shrink: 0;
+}
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100px; /* Giảm nhẹ max-width */
+    padding: 10px 8px;
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--elevation-1);
+    text-align: center;
+}
+.column-header {
+    font-size: 14px; font-weight: 500; color: var(--on-surface-variant-color);
+    margin-bottom: 4px; text-transform: uppercase;
+}
+.column-value {
+    font-size: 32px; /* Kích thước mặc định, sẽ bị ghi đè bởi #fixed-number-display-area */
+    font-weight: 700; color: var(--on-surface-color);
+    line-height: 1;
+}
+
+/* Màu sắc cho các loại number-grid */
+.current-numbers .column { background-color: #FFFDE7; border: 1px solid #FFF59D; }
+.current-numbers .column-value { color: #F9A825; }
+
+.cumulative-sums-display .column { background-color: #E8F5E9; border: 1px solid #C8E6C9;}
+.cumulative-sums-display .column-value { color: #2E7D32; }
+/* Xóa .initial-numbers vì không còn dùng style riêng */
+
+
+/* --- QUESTION & ANSWERS --- */
+.info-label { /* Nhãn chung, như "Tổng lũy kế hiện tại:" */
+    font-size: 15px; color: var(--on-surface-variant-color);
+    margin-bottom: 8px; font-weight: 400;
+    flex-shrink: 0;
+}
+.question-emphasis {
+    font-size: 17px; /* Điều chỉnh nếu cần */
+    color: var(--on-surface-color); font-weight: 400;
+    margin: 10px auto;
+    padding: 10px 15px;
+    background-color: #f7f7f7;
+    border-radius: var(--border-radius-medium);
+    border-left: 4px solid var(--primary-color);
+    max-width: 95%;
+    line-height: 1.4;
+    flex-shrink: 0;
+}
+.answer-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Giảm minmax */
+    gap: 8px; /* Giảm gap */
+    margin: 12px 0; /* Giảm margin */
+    width: 100%;
+    max-width: 550px; /* Giới hạn độ rộng */
+    flex-shrink: 0;
+}
+.answer-btn {
+    padding: 10px 12px; /* Điều chỉnh padding */
+    font-size: 14px; /* Điều chỉnh font */
+}
+.answer-btn-neutral, .answer-btn[data-answer="Không có"] { background-color: var(--secondary-color); color: white; }
+.answer-btn-neutral:hover, .answer-btn[data-answer="Không có"]:hover { background-color: #4A4C4F; }
+.answer-btn.disabled { background-color: var(--surface-container-highest); color: var(--on-surface-variant-color); cursor: not-allowed; box-shadow: none; border: 1px solid var(--outline-color); }
+
+
+/* --- TIMERS (VISUAL) & RESULT --- */
+.timer-display {
+    margin-top: 10px; /* Giảm margin top */
+    margin-bottom: 8px; /* Giảm margin bottom */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* Giảm gap */
+    width: 100%;
+    flex-shrink: 0;
+}
+.timer-text {
+    font-size: 13px; color: var(--on-surface-variant-color);
+    font-style: italic; margin: 0;
+}
+.progress-bar-container {
+    width: 60%; max-width: 220px; height: 8px; /* Giảm kích thước progress bar */
+    background-color: var(--surface-container-highest);
+    border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--outline-color);
+}
+.progress-bar {
+    height: 100%; width: 100%;
+    background-color: var(--success-color);
+    border-radius: 4px;
+    transition: width 0.2s linear, background-color 0.3s ease;
+}
+.progress-bar.warning { background-color: var(--warning-color); }
+.progress-bar.danger { background-color: var(--error-color); }
+
+
+#result-message { /* Trong result-phase */
+    font-size: 18px; /* Giảm nhẹ */
+    font-weight: 500;
+    margin-bottom: 10px; padding: 8px;
+    flex-shrink: 0;
+}
+#result-message.correct { color: var(--success-color); }
+#result-message.incorrect { color: var(--error-color); }
+
+
+/* --- GAME OVER SCREEN --- */
+#game-over-screen {
+    /* Sẽ được JS làm hiển thị và nó nằm trong #game-screen,
+       nhưng ngoài #phase-content-area.
+       Nó cần che phủ #phase-content-area.
+       Ta sẽ dùng position: absolute và z-index nếu cần,
+       hoặc đơn giản là JS chỉ hiển thị #game-over-screen và ẩn #phase-content-area.
+       Hiện tại JS đã làm vậy (showScreen chỉ hiện 1 phase chính).
+       Nếu muốn nó chồng lên, #game-screen cần position: relative.
+       Còn nếu nó là một phase riêng biệt thì không cần.
+       Giữ nguyên logic hiện tại của showScreen là tốt nhất.
+    */
+    position: absolute; /* Để nó có thể chồng lên phase-content-area */
+    top: 0; left: 0; right: 0; bottom: 0; /* Chiếm toàn bộ #phase-content-area */
+    background-color: var(--surface-color); /* Để che hoàn toàn nội dung bên dưới */
+    z-index: 10; /* Để đảm bảo nó ở trên */
+    /* Các style khác của phase-container đã áp dụng */
+    justify-content: center; /* Căn giữa nội dung game over */
+}
+#game-over-screen h2 { font-size: 22px; }
+.final-scores { margin: 15px 0; font-size: 16px; }
+.final-scores p { margin: 4px 0; }
+.final-scores strong { font-size: 18px; padding-left: 4px; color: var(--primary-color); }
+#restart-game-btn { padding: 12px 25px; font-size: 17px; }
+
+
+/* --- RULES DISPLAY --- */
+#rules-display {
+    margin-top: auto; /* Đẩy rules xuống dưới cùng của #game-container */
+    text-align: left;
+    border-top: 1px solid var(--outline-color);
+    padding-top: 10px;
+    flex-shrink: 0;
+}
+#rules-display button#toggle-rules-btn {
+    font-weight: 400; padding: 8px 15px; font-size: 14px;
+}
+#rules-content {
+    background-color: #f9f9fa;
+    padding: 15px;
+    border-radius: var(--border-radius-medium);
+    max-height: 80px; /* GIỚI HẠN CHIỀU CAO RULES KHI HIỂN THỊ, giảm bớt */
+    overflow-y: auto;
+    border: 1px solid var(--outline-color);
+    margin-top: 8px;
+}
+#rules-content pre {
+    margin: 0; font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px; /* Nhỏ hơn nữa */
+    color: var(--on-surface-variant-color);
+    line-height: 1.4; white-space: pre-wrap;
+}
+
+
+/* --- BASE BUTTON STYLES --- */
+button {
+    border: none; padding: 10px 20px; border-radius: var(--border-radius-medium);
+    cursor: pointer; font-size: 16px; font-weight: 500; margin: 6px 4px;
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-out;
+    text-transform: none; letter-spacing: 0.5px; display: inline-flex;
+    align-items: center; justify-content: center; gap: 8px;
+}
+button:active { transform: translateY(1px); }
+
+/* --- BUTTON VARIANTS --- */
+.button-primary { background-color: var(--primary-color); color: white; }
+.button-primary:hover { background-color: #0A4CB0; box-shadow: var(--elevation-1); }
+.button-secondary { background-color: var(--surface-container-highest); color: var(--on-surface-variant-color); border: 1px solid var(--outline-color); }
+.button-secondary:hover { background-color: #D8DADC; box-shadow: var(--elevation-1); }
+
+/* Settings screen button */
+#settings-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+#settings-screen h2 { font-size: 24px; margin-bottom: 12px;}
+#settings-screen p { font-size: 16px; margin-bottom: 20px;}
+#settings-screen button#start-game-btn { padding: 14px 30px; font-size: 18px; }
+
+/* Proceed to questions button */
+#proceed-to-questions-btn {
+    margin-top: 15px; background-color: var(--success-color); color: white;
+    flex-shrink: 0;
+}
+#proceed-to-questions-btn:hover { background-color: #104A17; }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 1.2em;
+}

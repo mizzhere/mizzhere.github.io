@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>The Genius - Tử Chiến 1 Trong 3 (Tự Luyện)</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>The Genius – Tử Chiến: 1 Trong 3</h1>
+        </header>
+
+        <div id="settings-screen">
+            <h2>Chào mừng!</h2>
+            <p>Thử thách trí tuệ của bạn.</p>
+            <button id="start-game-btn" class="button-primary">
+                <span class="material-symbols-outlined">play_circle</span>
+                Bắt Đầu
+            </button>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <div id="game-info">
+                <div class="info-item">Vòng: <span id="current-round">1</span>/5</div>
+                <div class="info-item">Câu: <span id="current-question-in-round">0</span>/<span id="total-questions-in-round">0</span></div>
+                <div class="info-item player-score-display">Bạn: <span id="player-score">0</span></div>
+                <div class="info-item opponent-score-display">"Đối Thủ": <span id="opponent-score">0</span></div>
+                <button id="ingame-restart-btn" title="Chơi Lại">
+                    <span class="material-symbols-outlined">replay</span>
+                </button>
+            </div>
+
+            <!-- VÙNG HIỂN THỊ SỐ CỐ ĐỊNH -->
+            <div id="fixed-number-display-area">
+                <p class="info-label" id="live-number-context-label">Số ban đầu (Ghi nhớ):</p> <!-- Sẽ thay đổi text -->
+                <div class="number-grid current-numbers">
+                    <div class="column"><div class="column-header">A</div><div class="column-value" id="live-a">?</div></div>
+                    <div class="column"><div class="column-header">B</div><div class="column-value" id="live-b">?</div></div>
+                    <div class="column"><div class="column-header">C</div><div class="column-value" id="live-c">?</div></div>
+                </div>
+            </div>
+            <!-- KẾT THÚC VÙNG HIỂN THỊ SỐ CỐ ĐỊNH -->
+
+            <!-- KHU VỰC NỘI DUNG PHASE THAY ĐỔI -->
+            <div id="phase-content-area">
+                <div id="memorization-phase" class="phase-container hidden">
+                    <h2>GHI NHỚ (Vòng <span id="memorization-round-number"></span>)</h2>
+                    <!-- Nội dung của memorization phase sẽ ở đây, TRỪ vùng số đã dời lên trên -->
+                    <div class="main-content-wrapper">
+                        <div id="memorization-timer" class="timer-display">
+                            <p class="timer-text">Ghi nhớ trong: <span id="memo-countdown">10</span>s</p>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="memo-progress-bar"></div>
+                            </div>
+                        </div>
+                        <button id="proceed-to-questions-btn" class="button-primary hidden">
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                            Bắt Đầu Câu Hỏi
+                        </button>
+                    </div>
+                </div>
+
+                <div id="question-phase" class="phase-container hidden">
+                    <h2>VÒNG <span id="question-round-number"></span> - CÂU HỎI <span id="question-number-in-round-display"></span></h2>
+                    <!-- Nội dung của question phase sẽ ở đây, TRỪ vùng số đã dời lên trên -->
+                    <div class="main-content-wrapper">
+                        <p id="question-text" class="question-emphasis">Câu hỏi...</p>
+                        <div id="answer-buttons" class="answer-options">
+                            <button class="answer-btn" data-answer="A">Cột A</button>
+                            <button class="answer-btn" data-answer="B">Cột B</button>
+                            <button class="answer-btn" data-answer="C">Cột C</button>
+                            <button class="answer-btn answer-btn-neutral" data-answer="Không có">Không có</button>
+                        </div>
+                        <div id="answer-timer" class="timer-display hidden">
+                            <p class="timer-text">Trả lời trong: <span id="ans-countdown">3</span>s</p>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="ans-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="result-phase" class="phase-container hidden">
+                    <h2 id="result-message"></h2>
+                    <p class="info-label">Tổng lũy kế hiện tại (sau câu này):</p>
+                    <!-- Hiển thị tổng lũy kế có thể giữ lại ở đây hoặc di chuyển vào fixed-number-display-area -->
+                    <!-- Tạm thời để đây để xem xét, nhưng lý tưởng là vùng số cố định sẽ cập nhật. -->
+                    <div class="number-grid cumulative-sums-display">
+                        <div class="column"><div class="column-header">A</div><div class="column-value" id="cumulative-a-display"></div></div>
+                        <div class="column"><div class="column-header">B</div><div class="column-value" id="cumulative-b-display"></div></div>
+                        <div class="column"><div class="column-header">C</div><div class="column-value" id="cumulative-c-display"></div></div>
+                    </div>
+                    <div id="next-action-timer" class="timer-display">
+                        <p class="timer-text">Tiếp theo sau: <span id="next-action-countdown">5</span>s</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="next-action-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- KẾT THÚC KHU VỰC NỘI DUNG PHASE THAY ĐỔI -->
+
+            <div id="game-over-screen" class="phase-container hidden"> <!-- Sẽ hiển thị chồng lên phase-content-area -->
+                <h2 id="final-result-message"></h2>
+                <div class="final-scores">
+                    <p>Điểm của bạn: <strong id="final-player-score"></strong></p>
+                    <p>"Đối Thủ": <strong id="final-opponent-score"></strong></p>
+                </div>
+                <button id="restart-game-btn" class="button-primary">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Chơi Lại
+                </button>
+            </div>
+        </div>
+
+        <div id="rules-display">
+            <button id="toggle-rules-btn" class="button-secondary">
+                Hiện/Ẩn Luật Chơi
+            </button>
+            <div id="rules-content" class="hidden">
+                <pre>
+
+LUẬT CHƠI: THE GENIUS – TRẬN TỬ CHIẾN: 1 TRONG 3
+I. MỤC TIÊU TRÒ CHƠI
+Hai người chơi sẽ đối đầu trực tiếp trong 5 vòng đấu. Người chơi giành được tổng điểm cao hơn sau 5 vòng sẽ chiến thắng. Trong trường hợp một người chơi dẫn trước với cách biệt điểm số mà đối thủ không thể san bằng trong các câu hỏi còn lại, người đó sẽ thắng ngay lập tức ("Thắng An Toàn"). Người chiến thắng sẽ tiếp tục hành trình, người thua cuộc sẽ bị loại.
+II. CẤU TRÚC TRÒ CHƠI
+Trò chơi bao gồm 5 vòng đấu. Số lượng câu hỏi trong mỗi vòng như sau:
+* Vòng 1: 3 câu hỏi
+* Vòng 2: 4 câu hỏi
+* Vòng 3: 5 câu hỏi
+* Vòng 4: 6 câu hỏi
+* Vòng 5: 7 câu hỏi
+III. DIỄN BIẾN MỘT VÒNG ĐẤU
+1. Khởi Động Vòng (Đề Bài Ban Đầu):
+a. Trên màn hình sẽ hiển thị 3 số tự nhiên (từ 1 đến 9) tương ứng dưới 3 cột được định danh là A, B, và C.
+Ví dụ:
+A | B | C
+--|---|--
+2 | 3 | 5
+b. Người chơi có 1 phút để ghi nhớ 3 số này. Đây là các giá trị khởi điểm cho tổng của mỗi cột trong vòng đấu hiện tại.
+c. Sau 1 phút, các số này sẽ biến mất khỏi màn hình.
+2. Lượt Câu Hỏi: Mỗi vòng đấu bao gồm nhiều lượt câu hỏi. Mỗi lượt diễn ra như sau:
+a. Hiển Thị Số Mới & Câu Hỏi:
+i. Màn hình sẽ hiển thị một bộ 3 số tự nhiên MỚI (từ 1 đến 9) dưới 3 cột A, B, C.
+ii. Đồng thời, một câu hỏi sẽ được đưa ra.
+Ví dụ (tiếp nối Đề Bài Ban Đầu ở trên, đây là Lượt 1 của Vòng 1):
+Màn hình hiện:
+A | B | C
+--|---|--
+7 | 1 | 8
+Câu hỏi 1: Cột nào có tổng lớn nhất?
+b. Tính Toán:
+Người chơi phải tính nhẩm TỔNG của số MỚI vừa xuất hiện cộng với TỔNG LŨY KẾ TRƯỚC ĐÓ của từng cột (A, B, C) trong vòng đấu hiện tại.
+Ví dụ (Lượt 1):
+* Cột A: 2 (từ Đề Bài Ban Đầu) + 7 (số mới) = 9
+* Cột B: 3 (từ Đề Bài Ban đầu) + 1 (số mới) = 4
+* Cột C: 5 (từ Đề Bài Ban đầu) + 8 (số mới) = 13
+c. Giành Quyền Trả Lời:
+Người chơi tính toán xong và tự tin với đáp án của mình sẽ bấm chuông để giành quyền trả lời. Người bấm chuông nhanh hơn sẽ được quyền.
+d. Trả Lời:
+i. Người giành được quyền trả lời phải nói to, rõ ràng đáp án của mình trong vòng 3 giây kể từ khi được quyền.
+ii. Đáp án hợp lệ là tên CỘT (A, B, hoặc C) thỏa mãn yêu cầu của câu hỏi, HOẶC cụm từ "Không có" nếu người chơi cho rằng không có cột nào thỏa mãn.
+iii. Sau khi nói ra, đáp án không được thay đổi.
+Ví dụ (Lượt 1): Dựa trên tổng A=9, B=4, C=13. Câu hỏi "Cột nào có tổng lớn nhất?". Đáp án đúng là "Cột C".
+e. Chấm Điểm & Hiển Thị Đáp Án:
+i. Trả lời Đúng: Người chơi đó được cộng 1 điểm.
+ii. Trả lời Sai (bao gồm chọn sai cột, chọn "Không có" khi có cột thỏa mãn, hoặc không trả lời trong 3 giây sau khi bấm chuông): Đối thủ được cộng 1 điểm.
+iii. Màn hình sẽ hiển thị TỔNG SỐ LŨY KẾ HIỆN TẠI của mỗi cột trong 5 giây để cả hai người chơi xác nhận.
+Ví dụ (sau Lượt 1, nếu người chơi trả lời đúng "Cột C"):
+Màn hình hiển thị:
+A | B | C
+--|---|--
+9 | 4 | 13
+f. Lượt Câu Hỏi Tiếp Theo:
+Sau 5 giây, màn hình đáp án tắt. Nếu vẫn còn câu hỏi trong vòng, lượt câu hỏi tiếp theo bắt đầu (quay lại bước III.2.a). Các tổng số vừa được xác nhận sẽ là cơ sở để tính toán cho lượt tiếp theo.
+3. Kết Thúc Vòng Đấu:
+Khi tất cả các câu hỏi trong một vòng đã được hoàn thành, vòng đấu đó kết thúc. Bắt đầu vòng đấu mới (nếu có) với một Đề Bài Ban Đầu mới (quay lại bước III.1).
+IV. CÁC LOẠI CÂU HỎI
+Các câu hỏi sẽ thuộc một trong những loại sau, áp dụng cho TỔNG LŨY KẾ của các cột tại thời điểm câu hỏi được đưa ra:
+   1. So Sánh Cực Trị:
+   * "Cột nào có tổng lớn nhất?"
+   * "Cột nào có tổng nhỏ nhất?"
+   2. Xác Định Vị Trí Tương Đối (Ở Giữa):
+   * "Cột nào có tổng không phải lớn nhất cũng không phải nhỏ nhất?"
+   1. Lưu ý: Một cột thỏa mãn câu hỏi này khi nó không thuộc nhóm các cột có tổng lớn nhất và cũng không thuộc nhóm các cột có tổng nhỏ nhất. Nếu không có cột nào duy nhất thỏa mãn điều kiện này (ví dụ: cả 3 cột bằng nhau, hoặc 2 cột là lớn nhất và 1 cột là nhỏ nhất, hoặc ngược lại), đáp án sẽ là "Không có".
+   3. Tính Chẵn/Lẻ:
+   * "Cột nào có tổng là số chẵn?"
+   * "Cột nào có tổng là số lẻ?"
+   4. So Sánh Với Giá Trị Cụ Thể:
+   * "Cột nào có tổng nhỏ hơn [X]?" (với X là một số cụ thể)
+   * "Cột nào có tổng lớn hơn [X]?" (với X là một số cụ thể)
+V. QUY ĐỊNH QUAN TRỌNG
+   1. Tính Duy Nhất Của Đáp Án: Mỗi câu hỏi sẽ được thiết kế để chỉ có DUY NHẤT một cột (A, B, hoặc C) thỏa mãn, HOẶC không có cột nào thỏa mãn. Sẽ không có trường hợp nhiều hơn một cột cùng thỏa mãn một câu hỏi.
+   2. Đáp Án "Không Có": Người chơi được thông báo trước rằng có thể xảy ra trường hợp không có cột nào thỏa mãn câu hỏi. Trong trường hợp này, đáp án đúng là "Không có".
+   3. Quyết Định Của Trọng Tài/Ban Tổ Chức: Trong mọi trường hợp phát sinh không được quy định rõ trong luật, quyết định của Trọng tài/Ban Tổ Chức là quyết định cuối cùng.
+VI. XÁC ĐỊNH NGƯỜI CHIẾN THẮNG
+   1. Kết Thúc 5 Vòng: Người chơi có tổng điểm cao hơn sau khi hoàn thành 5 vòng đấu sẽ là người chiến thắng.
+   2. Thắng An Toàn: Nếu tại bất kỳ thời điểm nào, một người chơi dẫn trước đối thủ với số điểm lớn hơn tổng số điểm tối đa mà đối thủ có thể giành được trong tất cả các câu hỏi còn lại của trò chơi, người chơi đó sẽ được tuyên bố thắng ngay lập tức.
+                </pre>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

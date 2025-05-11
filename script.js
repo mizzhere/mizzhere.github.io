@@ -1,307 +1,596 @@
-const boardSize = 7;
-const escapeCell = [3, 3];
-let pieces = {
-  D1: null, D2: null, D3: null, D4: null, D5: null, D6: null,
-  W1: null, W2: null, W3: null, W4: null, W5: null, W6: null
-};
-let blackEscaped = 0, whiteEscaped = 0;
-let selectedPiece = null;
-let turn = "D"; // Lượt chơi: "D" = Đen, "W" = Trắng
+document.addEventListener("DOMContentLoaded", () => {
+    const settingsScreen = document.getElementById("settings-screen");
+    const gameScreen = document.getElementById("game-screen");
+    const startGameBtn = document.getElementById("start-game-btn");
+    const restartGameBtn = document.getElementById("restart-game-btn");
+    const ingameRestartBtn = document.getElementById("ingame-restart-btn");
 
-const boardElement = document.getElementById("board");
-const statusElement = document.getElementById("status");
-const scoreElement = document.getElementById("score");
+    const currentRoundDisplay = document.getElementById("current-round");
+    const currentQuestionInRoundDisplay = document.getElementById(
+        "current-question-in-round"
+    );
+    const totalQuestionsInRoundDisplay = document.getElementById(
+        "total-questions-in-round"
+    );
+    const playerScoreDisplay = document.getElementById("player-score");
+    const opponentScoreDisplay = document.getElementById("opponent-score");
 
-// Thêm chướng ngại vật vào bàn cờ
-const obstacles = [
-  [3, 0], // Chướng ngại vật tại (3, 0)
-  [3, 6]  // Chướng ngại vật tại (3, 6)
-];
+    // --- VÙNG HIỂN THỊ SỐ CỐ ĐỊNH ---
+    const fixedNumberDisplayArea = document.getElementById("fixed-number-display-area");
+    const numberContextLabel = document.getElementById("number-context-label"); // SỬA TÊN BIẾN
+    const liveADisplay = document.getElementById("live-a");
+    const liveBDisplay = document.getElementById("live-b");
+    const liveCDisplay = document.getElementById("live-c");
+    // --------------------------------
 
-// Hàm kiểm tra xem ô có phải là chướng ngại vật không
-function isObstacle(row, col) {
-  return obstacles.some(([r, c]) => r === row && c === col);
-}
+    // --- KHU VỰC NỘI DUNG PHASE THAY ĐỔI ---
+    const phaseContentArea = document.getElementById("phase-content-area");
+    const memorizationPhaseDiv = document.getElementById("memorization-phase");
+    const questionPhaseDiv = document.getElementById("question-phase");
+    const resultPhaseDiv = document.getElementById("result-phase");
+    const gameOverScreen = document.getElementById("game-over-screen");
+    // ------------------------------------
 
-// Hàm vẽ chướng ngại vật trên bàn cờ
-function drawObstacles() {
-  obstacles.forEach(([row, col]) => {
-    const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
-    cell.classList.add("obstacle");
-  });
-}
+    const memorizationRoundNumber = document.getElementById(
+        "memorization-round-number"
+    );
+    const memoCountdownDisplay = document.getElementById("memo-countdown");
+    const proceedToQuestionsBtn = document.getElementById(
+        "proceed-to-questions-btn"
+    );
 
-// Hàm tạo bàn cờ
-function createBoard() {
-  boardElement.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
-  boardElement.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
+    const questionRoundNumber = document.getElementById("question-round-number");
+    const questionNumberInRoundDisplay = document.getElementById(
+        "question-number-in-round-display"
+    );
+    const questionTextDisplay = document.getElementById("question-text");
+    const answerBtns = document.querySelectorAll(".answer-btn");
+    const answerTimerDisplay = document.getElementById("answer-timer");
+    const ansCountdownDisplay = document.getElementById("ans-countdown");
 
-  for (let row = 0; row < boardSize; row++) {
-    for (let col = 0; col < boardSize; col++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.row = row;
-      cell.dataset.col = col;
-      boardElement.appendChild(cell);
+    const resultMessageDisplay = document.getElementById("result-message");
+    const cumulativeADisplay = document.getElementById("cumulative-a-display");
+    const cumulativeBDisplay = document.getElementById("cumulative-b-display");
+    const cumulativeCDisplay = document.getElementById("cumulative-c-display");
+    const nextActionCountdownDisplay = document.getElementById(
+        "next-action-countdown"
+    );
+
+    const memoProgressBar = document.getElementById('memo-progress-bar');
+    const ansProgressBar = document.getElementById('ans-progress-bar');
+    const nextActionProgressBar = document.getElementById('next-action-progress-bar');
+
+    const finalResultMessageDisplay = document.getElementById(
+        "final-result-message"
+    );
+    const finalPlayerScoreDisplay = document.getElementById("final-player-score");
+    const finalOpponentScoreDisplay = document.getElementById(
+        "final-opponent-score"
+    );
+
+    const toggleRulesBtn = document.getElementById("toggle-rules-btn");
+    const rulesContent = document.getElementById("rules-content");
+
+    const QUESTIONS_PER_ROUND = [0, 3, 4, 5, 6, 7];
+    const TOTAL_ROUNDS = 5;
+    const MEMORIZATION_TIME = 10;
+    const ANSWER_TIME_LIMIT = 3;
+    const RESULT_DISPLAY_TIME = 3;
+
+    let currentRound;
+    let currentQuestionInRound;
+    let playerScore;
+    let opponentScore;
+    let totalQuestionsAnsweredOverall;
+    let totalGameQuestions;
+
+    let initialNumbers = { A: 0, B: 0, C: 0 };
+    let cumulativeSums = { A: 0, B: 0, C: 0 };
+    let newNumbersForQuestion = { A: 0, B: 0, C: 0 }; // Đổi tên biến này cho rõ ràng
+    let questionData;
+
+    let memoTimerInterval;
+    let answerTimerInterval;
+    let nextActionTimerInterval; // SỬA TÊN BIẾN
+
+    function updateProgressBar(barElement, currentTime, totalTime) {
+        if (!barElement) return;
+        const percentage = Math.max(0, (currentTime / totalTime) * 100);
+        barElement.style.width = percentage + '%';
+        barElement.classList.remove('success', 'warning', 'danger');
+        barElement.style.backgroundColor = '';
+        if (currentTime <= 0) {
+            barElement.style.width = '0%';
+        } else if (percentage <= 30) {
+            barElement.classList.add('danger');
+        } else if (percentage <= 60) {
+            barElement.classList.add('warning');
+        } else {
+            barElement.style.backgroundColor = 'var(--success-color)';
+        }
     }
-  }
 
-  drawObstacles(); // Vẽ chướng ngại vật sau khi tạo bàn cờ
-}
-
-// Hàm kiểm tra điều kiện không có quá 2 quân trong cùng 1 hàng hoặc 1 cột
-function isValidPlacement(row, col, color) {
-  let countRow = 0, countCol = 0;
-
-  // Kiểm tra hàng
-  for (let i = 0; i < boardSize; i++) {
-    const piece = getPieceAt(row, i);
-    if (piece && piece.startsWith(color)) countRow++;
-  }
-
-  // Kiểm tra cột
-  for (let i = 0; i < boardSize; i++) {
-    const piece = getPieceAt(i, col);
-    if (piece && piece.startsWith(color)) countCol++;
-  }
-
-  return countRow < 2 && countCol < 2;
-}
-
-// Hàm lấy quân tại vị trí (row, col)
-function getPieceAt(row, col) {
-  for (const [piece, position] of Object.entries(pieces)) {
-    if (position && position[0] === row && position[1] === col) {
-      return piece;
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-  }
-  return null;
-}
 
-// Hàm xếp ngẫu nhiên các quân
-// Hàm xếp ngẫu nhiên các quân
-function randomizePieces() {
-  const availableBlackPositions = [];
-  const availableWhitePositions = [];
-
-  for (let row = 0; row < boardSize; row++) {
-    for (let col = 0; col < 3; col++) {
-      if (!isObstacle(row, col)) {
-        availableBlackPositions.push([row, col]);
-      }
+    function calculateTotalGameQuestions() {
+        totalGameQuestions = 0;
+        for (let i = 1; i <= TOTAL_ROUNDS; i++) {
+            totalGameQuestions += QUESTIONS_PER_ROUND[i];
+        }
     }
-    for (let col = 4; col < boardSize; col++) {
-      if (!isObstacle(row, col)) {
-        availableWhitePositions.push([row, col]);
-      }
+
+    function updateScoreDisplay() {
+        playerScoreDisplay.textContent = playerScore;
+        opponentScoreDisplay.textContent = opponentScore;
     }
-  }
 
-  let blackCount = 0;
-  while (blackCount < 6) {
-    const randomIndex = Math.floor(Math.random() * availableBlackPositions.length);
-    const [row, col] = availableBlackPositions.splice(randomIndex, 1)[0];
-    if (isValidPlacement(row, col, 'D')) {
-      pieces[`D${blackCount + 1}`] = [row, col];
-      blackCount++;
-    } else {
-      availableBlackPositions.push([row, col]);
+    function updateGameInfoDisplay() {
+        currentRoundDisplay.textContent = currentRound;
+        currentQuestionInRoundDisplay.textContent = currentQuestionInRound;
+        totalQuestionsInRoundDisplay.textContent =
+            QUESTIONS_PER_ROUND[currentRound] || 0;
+        memorizationRoundNumber.textContent = currentRound; // Cập nhật luôn cho H2
+        questionRoundNumber.textContent = currentRound;
+        questionNumberInRoundDisplay.textContent = currentQuestionInRound;
     }
-  }
 
-  let whiteCount = 0;
-  while (whiteCount < 6) {
-    const randomIndex = Math.floor(Math.random() * availableWhitePositions.length);
-    const [row, col] = availableWhitePositions.splice(randomIndex, 1)[0];
-    if (isValidPlacement(row, col, 'W')) {
-      pieces[`W${whiteCount + 1}`] = [row, col];
-      whiteCount++;
-    } else {
-      availableWhitePositions.push([row, col]);
+    // Hàm quản lý hiển thị các phase chính (bao gồm cả gameOverScreen)
+    function showPhase(phaseToShow) {
+        [memorizationPhaseDiv, questionPhaseDiv, resultPhaseDiv, gameOverScreen].forEach(p => {
+            if (p) p.classList.add("hidden");
+        });
+
+        if (phaseToShow) {
+            phaseToShow.classList.remove("hidden");
+        }
     }
-  }
 
-  drawPieces();
-}
+    function showScreen(screenToShow) {
+        [settingsScreen, gameScreen].forEach(s => {
+            if (s) s.classList.add("hidden");
+        });
 
+        if (screenToShow) {
+            screenToShow.classList.remove("hidden");
+        }
 
-// Hàm vẽ các quân cờ
-function drawPieces() {
-  boardElement.querySelectorAll(".piece").forEach(piece => piece.remove());
-
-  for (const [piece, [row, col]] of Object.entries(pieces)) {
-    if (row !== null && col !== null) {
-      const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
-      const pieceElement = document.createElement("div");
-      pieceElement.classList.add("piece", piece.startsWith("D") ? "black" : "white");
-      pieceElement.textContent = piece;
-      pieceElement.dataset.piece = piece;
-      cell.appendChild(pieceElement);
+        if (screenToShow === gameScreen) {
+            if (fixedNumberDisplayArea) fixedNumberDisplayArea.classList.remove("hidden");
+            showPhase(null); // Ẩn tất cả các phase con khi bắt đầu game screen
+        } else if (screenToShow === settingsScreen) {
+            if (fixedNumberDisplayArea) fixedNumberDisplayArea.classList.add("hidden");
+        }
     }
-  }
-}
 
-// Tô sáng các ô của đội đang đến lượt
-function highlightTurn() {
-  document.querySelectorAll(".cell").forEach(cell => {
-    cell.classList.remove("highlight");
+    function initGame() {
+        currentRound = 0;
+        playerScore = 0;
+        opponentScore = 0;
+        totalQuestionsAnsweredOverall = 0;
+        calculateTotalGameQuestions();
+        updateScoreDisplay();
 
-    const row = parseInt(cell.dataset.row, 10);
-    const col = parseInt(cell.dataset.col, 10);
+        if (memoProgressBar) updateProgressBar(memoProgressBar, MEMORIZATION_TIME, MEMORIZATION_TIME);
+        if (ansProgressBar) updateProgressBar(ansProgressBar, ANSWER_TIME_LIMIT, ANSWER_TIME_LIMIT);
+        if (nextActionProgressBar) updateProgressBar(nextActionProgressBar, RESULT_DISPLAY_TIME, RESULT_DISPLAY_TIME);
 
-    Object.entries(pieces).forEach(([piece, [r, c]]) => {
-      if (r === row && c === col && piece.startsWith(turn)) {
-        cell.classList.add("highlight");
-      }
+        clearInterval(memoTimerInterval);
+        clearInterval(answerTimerInterval);
+        clearInterval(nextActionTimerInterval); // SỬA TÊN
+
+        if (fixedNumberDisplayArea) fixedNumberDisplayArea.classList.remove('hidden');
+
+        if (liveADisplay) liveADisplay.textContent = '?';
+        if (liveBDisplay) liveBDisplay.textContent = '?';
+        if (liveCDisplay) liveCDisplay.textContent = '?';
+        if (numberContextLabel) numberContextLabel.textContent = "Đang tải vòng mới...";
+
+        startNextRound();
+    }
+
+    function startNextRound() {
+        currentRound++;
+        if (currentRound > TOTAL_ROUNDS) {
+            endGame(false);
+            return;
+        }
+        currentQuestionInRound = 0;
+        updateGameInfoDisplay();
+        startMemorizationPhase();
+    }
+
+    function startMemorizationPhase() {
+        showPhase(memorizationPhaseDiv); // SỬA: Dùng showPhase
+        if (proceedToQuestionsBtn) proceedToQuestionsBtn.classList.add("hidden");
+
+        if (numberContextLabel) numberContextLabel.textContent = "Số ban đầu (Ghi nhớ):";
+
+        initialNumbers = {
+            A: getRandomInt(1, 9),
+            B: getRandomInt(1, 9),
+            C: getRandomInt(1, 9),
+        };
+        cumulativeSums = { ...initialNumbers };
+
+        if (liveADisplay) liveADisplay.textContent = initialNumbers.A;
+        if (liveBDisplay) liveBDisplay.textContent = initialNumbers.B;
+        if (liveCDisplay) liveCDisplay.textContent = initialNumbers.C;
+
+        const totalMemoTime = MEMORIZATION_TIME;
+        let timeLeft = totalMemoTime;
+        if (memoCountdownDisplay) memoCountdownDisplay.textContent = timeLeft;
+        updateProgressBar(memoProgressBar, timeLeft, totalMemoTime);
+
+        clearInterval(memoTimerInterval);
+        memoTimerInterval = setInterval(() => {
+            timeLeft--;
+            if (memoCountdownDisplay) memoCountdownDisplay.textContent = timeLeft;
+            updateProgressBar(memoProgressBar, timeLeft, totalMemoTime);
+
+            if (timeLeft <= 0) {
+                clearInterval(memoTimerInterval);
+                // if (proceedToQuestionsBtn) proceedToQuestionsBtn.classList.remove("hidden"); // Bỏ nếu tự động chuyển
+                proceedToQuestions();
+            }
+        }, 1000);
+    }
+
+    function proceedToQuestions() {
+        if (numberContextLabel) numberContextLabel.textContent = "Số mới cho câu hỏi:";
+        startNextQuestion(); // SỬA: Xóa 1 lần gọi
+    }
+
+    function generateQuestion() {
+        newNumbersForQuestion = { // Sử dụng biến này nhất quán
+            A: getRandomInt(1, 9),
+            B: getRandomInt(1, 9),
+            C: getRandomInt(1, 9),
+        };
+
+        if (liveADisplay) liveADisplay.textContent = newNumbersForQuestion.A;
+        if (liveBDisplay) liveBDisplay.textContent = newNumbersForQuestion.B;
+        if (liveCDisplay) liveCDisplay.textContent = newNumbersForQuestion.C;
+
+        const tempSums = {
+            A: cumulativeSums.A + newNumbersForQuestion.A,
+            B: cumulativeSums.B + newNumbersForQuestion.B,
+            C: cumulativeSums.C + newNumbersForQuestion.C,
+        };
+
+        // ... (Logic tạo câu hỏi giữ nguyên từ phiên bản trước của bạn, đã được cải thiện)
+        const questionTypes = [
+            "max", "min", "middle", "even", "odd", "lessThanX", "greaterThanX",
+        ];
+        let availableTypes = [...questionTypes];
+        const distinctSumCount = new Set(Object.values(tempSums)).size;
+
+        if (distinctSumCount < 3) {
+            availableTypes = availableTypes.filter(t => t !== "middle");
+        }
+        
+        const type = availableTypes.length > 0 ? availableTypes[getRandomInt(0, availableTypes.length - 1)] : "max";
+        let question = "";
+        let correctAnswer = "Không có";
+
+        const sortedValues = Object.entries(tempSums).sort(([, a], [, b]) => a - b);
+
+        switch (type) {
+            case "max":
+                question = "Cột nào có tổng lớn nhất?";
+                const maxVal = Math.max(tempSums.A, tempSums.B, tempSums.C);
+                const maxCols = Object.keys(tempSums).filter(col => tempSums[col] === maxVal);
+                if (maxCols.length === 1) correctAnswer = maxCols[0];
+                break;
+            case "min":
+                question = "Cột nào có tổng nhỏ nhất?";
+                const minVal = Math.min(tempSums.A, tempSums.B, tempSums.C);
+                const minCols = Object.keys(tempSums).filter(col => tempSums[col] === minVal);
+                if (minCols.length === 1) correctAnswer = minCols[0];
+                break;
+            case "middle":
+                question = "Cột nào có tổng không phải lớn nhất cũng không phải nhỏ nhất?";
+                if (distinctSumCount === 3 && sortedValues[0][1] < sortedValues[1][1] && sortedValues[1][1] < sortedValues[2][1]) {
+                     correctAnswer = sortedValues[1][0];
+                }
+                break;
+                case "even":
+                    question = "Cột nào có tổng là số chẵn?";
+                    const evenCols = Object.keys(tempSums).filter(col => tempSums[col] % 2 === 0);
+                    if (evenCols.length === 1) {
+                        correctAnswer = evenCols[0];
+                    } else if (evenCols.length === 0) { // Tức là cả 3 cột đều lẻ
+                        correctAnswer = "Không có";
+                    }
+                    // Nếu evenCols.length là 2 hoặc 3, câu hỏi này không hợp lệ theo luật
+                    // Trong trường hợp này, generateQuestion sẽ cần thử lại một loại câu hỏi khác
+                    // hoặc đảm bảo tempSums được tạo ra sao cho không rơi vào TH này nếu type là "even"
+                    break;
+    
+                case "odd":
+                    question = "Cột nào có tổng là số lẻ?";
+                    const oddCols = Object.keys(tempSums).filter(col => tempSums[col] % 2 !== 0);
+                    if (oddCols.length === 1) {
+                        correctAnswer = oddCols[0];
+                    } else if (oddCols.length === 0) { // Tức là cả 3 cột đều chẵn
+                        correctAnswer = "Không có";
+                    }
+                    // Nếu oddCols.length là 2 hoặc 3, câu hỏi này không hợp lệ theo luật
+                    break;
+    
+            case "lessThanX":
+            case "greaterThanX":
+                {
+                    let xValue;
+                    const tempSumValues = Object.values(tempSums);
+                    const distinctSortedSums = [...new Set(tempSumValues)].sort((a, b) => a - b);
+                    let potentialCorrectAnswer = "Không có";
+                    let questionGenerated = false;
+                    const strategies = [];
+
+                    if (distinctSortedSums.length >= 2) {
+                        for (let i = 0; i < distinctSortedSums.length - 1; i++) {
+                            const s1 = distinctSortedSums[i];
+                            const s2 = distinctSortedSums[i + 1];
+                            if (s2 - s1 > 1) {
+                                strategies.push(() => {
+                                    const xCand = s1 + getRandomInt(1, s2 - s1 - 1);
+                                    let actualSatisfyingColumns;
+                                    if (type === "lessThanX") {
+                                        actualSatisfyingColumns = Object.keys(tempSums).filter(col => tempSums[col] < xCand);
+                                    } else {
+                                        actualSatisfyingColumns = Object.keys(tempSums).filter(col => tempSums[col] > xCand);
+                                    }
+                                    if (actualSatisfyingColumns.length === 1) {
+                                        xValue = xCand;
+                                        potentialCorrectAnswer = actualSatisfyingColumns[0];
+                                        return true;
+                                    }
+                                    return false;
+                                });
+                            }
+                        }
+                    }
+
+                    if (distinctSortedSums.length > 1) {
+                        strategies.push(() => {
+                            const targetX = distinctSortedSums[1];
+                            const colsLessThanTarget = Object.keys(tempSums).filter(col => tempSums[col] < targetX);
+                            if (colsLessThanTarget.length === 1 && type === "lessThanX") {
+                                xValue = targetX;
+                                potentialCorrectAnswer = colsLessThanTarget[0];
+                                return true;
+                            }
+                            return false;
+                        });
+                        strategies.push(() => {
+                            const targetX = distinctSortedSums[distinctSortedSums.length - 2];
+                            const colsGreaterThanTarget = Object.keys(tempSums).filter(col => tempSums[col] > targetX);
+                            if (colsGreaterThanTarget.length === 1 && type === "greaterThanX") {
+                                xValue = targetX;
+                                potentialCorrectAnswer = colsGreaterThanTarget[0];
+                                return true;
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    if (distinctSortedSums.length > 0) {
+                        strategies.push(() => { 
+                            if (type === "lessThanX") xValue = distinctSortedSums[0]; 
+                            else xValue = distinctSortedSums[distinctSortedSums.length -1]; 
+                            potentialCorrectAnswer = "Không có";
+                            return true;
+                        });
+                         strategies.push(() => { 
+                            if (type === "lessThanX") xValue = Math.min(...tempSumValues) - getRandomInt(1,3);
+                            else xValue = Math.max(...tempSumValues) + getRandomInt(1,3);
+                            if (xValue < 1 && type === "lessThanX") xValue = 1; 
+                            potentialCorrectAnswer = "Không có";
+                            return true;
+                        });
+                    }
+
+                    if (strategies.length > 0) {
+                        for (let i = strategies.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [strategies[i], strategies[j]] = [strategies[j], strategies[i]];
+                        }
+                        for (const strategy of strategies) {
+                            if (strategy()) {
+                                questionGenerated = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!questionGenerated) { 
+                        if (distinctSortedSums.length > 0) {
+                            xValue = (type === "lessThanX") ? Math.min(...tempSumValues) - 1 : Math.max(...tempSumValues) + 1;
+                            if (xValue < 1 && type === "lessThanX") xValue = Math.min(...tempSumValues);
+                        } else { 
+                             xValue = tempSumValues.length > 0 ? tempSumValues[0] + (type === "lessThanX" ? 1 : -1) : getRandomInt(5,15); // Adjusted fallback
+                        }
+                        potentialCorrectAnswer = "Không có";
+                    }
+                    question = `Cột nào có tổng ${type === "lessThanX" ? "nhỏ hơn" : "lớn hơn"} ${xValue}?`;
+                    correctAnswer = potentialCorrectAnswer;
+                }
+                break;
+            default: 
+                question = "Cột nào có tổng lớn nhất?";
+                const maxVal_fallback = Math.max(tempSums.A, tempSums.B, tempSums.C);
+                const maxCols_fallback = Object.keys(tempSums).filter(col => tempSums[col] === maxVal_fallback);
+                if (maxCols_fallback.length === 1) correctAnswer = maxCols_fallback[0];
+                else correctAnswer = "Không có";
+                break;
+        }
+        return { text: question, answer: correctAnswer, sumsForThisQuestion: tempSums };
+    }
+
+    function startNextQuestion() {
+        if (checkSafeWin()) return; // Gọi trước khi tăng totalQuestionsAnsweredOverall
+
+        currentQuestionInRound++;
+        totalQuestionsAnsweredOverall++;
+        updateGameInfoDisplay();
+
+        if (currentQuestionInRound > QUESTIONS_PER_ROUND[currentRound]) {
+            if (numberContextLabel) numberContextLabel.textContent = "Đang chuyển vòng...";
+            if (liveADisplay) liveADisplay.textContent = "?";
+            if (liveBDisplay) liveBDisplay.textContent = "?";
+            if (liveCDisplay) liveCDisplay.textContent = "?";
+            startNextRound();
+            return;
+        }
+
+        showPhase(questionPhaseDiv); // SỬA: Dùng showPhase
+        if (numberContextLabel) numberContextLabel.textContent = "Số mới cho câu hỏi:";
+        answerBtns.forEach((btn) => btn.classList.remove("disabled"));
+
+        questionData = generateQuestion();
+        if (questionTextDisplay) questionTextDisplay.textContent = questionData.text;
+        // currentCorrectAnswer đã được gán trong questionData.answer từ generateQuestion()
+
+        const USE_ANSWER_TIMER = false;
+        if (USE_ANSWER_TIMER) {
+            // ... (logic timer)
+        } else {
+            if (answerTimerDisplay) answerTimerDisplay.classList.add('hidden');
+        }
+    }
+
+    function handleAnswer(playerAnswer) {
+        clearInterval(answerTimerInterval);
+        answerBtns.forEach((btn) => btn.classList.add("disabled"));
+
+        cumulativeSums = { ...questionData.sumsForThisQuestion };
+
+        let resultText = "";
+        let resultClass = "";
+
+        if (playerAnswer === null) {
+            opponentScore++;
+            resultText = "Hết giờ! Đối thủ +1 điểm.";
+            resultClass = "incorrect";
+        } else if (playerAnswer === questionData.answer) { // So sánh với questionData.answer
+            playerScore++;
+            resultText = "Chính xác! +1 điểm.";
+            resultClass = "correct";
+        } else {
+            opponentScore++;
+            resultText = `Sai rồi! Đáp án đúng: ${questionData.answer}. Đối thủ +1 điểm.`; // Lấy từ questionData.answer
+            resultClass = "incorrect";
+        }
+        if (resultMessageDisplay) {
+            resultMessageDisplay.textContent = resultText;
+            resultMessageDisplay.className = ""; // Xóa class cũ
+            resultMessageDisplay.classList.add(resultClass);
+        }
+
+        updateScoreDisplay();
+        displayResultsAndProceed();
+    }
+
+    function displayResultsAndProceed() {
+        showPhase(resultPhaseDiv); // SỬA: Dùng showPhase
+
+        if (liveADisplay) liveADisplay.textContent = "?";
+        if (liveBDisplay) liveBDisplay.textContent = "?";
+        if (liveCDisplay) liveCDisplay.textContent = "?";
+        if (numberContextLabel) numberContextLabel.textContent = "Kết quả & Tổng Lũy Kế:";
+
+        if (cumulativeADisplay) cumulativeADisplay.textContent = cumulativeSums.A;
+        if (cumulativeBDisplay) cumulativeBDisplay.textContent = cumulativeSums.B;
+        if (cumulativeCDisplay) cumulativeCDisplay.textContent = cumulativeSums.C;
+
+        const totalResultTime = RESULT_DISPLAY_TIME;
+        let timeLeft = totalResultTime;
+        if (nextActionCountdownDisplay) nextActionCountdownDisplay.textContent = timeLeft;
+        updateProgressBar(nextActionProgressBar, timeLeft, totalResultTime);
+
+        clearInterval(nextActionTimerInterval); // SỬA TÊN
+        nextActionTimerInterval = setInterval(() => { // SỬA TÊN
+            timeLeft--;
+            if (nextActionCountdownDisplay) nextActionCountdownDisplay.textContent = timeLeft;
+            updateProgressBar(nextActionProgressBar, timeLeft, totalResultTime);
+            if (timeLeft <= 0) {
+                clearInterval(nextActionTimerInterval); // SỬA TÊN
+                startNextQuestion();
+            }
+        }, 1000);
+    }
+
+    function checkSafeWin() {
+        const questionsRemainingInGame = totalGameQuestions - totalQuestionsAnsweredOverall;
+        if (playerScore > opponentScore + questionsRemainingInGame && questionsRemainingInGame >= 0) {
+            endGame(true, "Bạn đã Thắng An Toàn!");
+            return true;
+        }
+        if (opponentScore > playerScore + questionsRemainingInGame && questionsRemainingInGame >= 0) {
+            endGame(true, "\"Đối Thủ\" đã Thắng An Toàn!");
+            return true;
+        }
+        return false;
+    }
+
+    function endGame(isSafeWin, message = "") {
+        clearInterval(memoTimerInterval);
+        clearInterval(answerTimerInterval);
+        clearInterval(nextActionTimerInterval); // SỬA TÊN
+
+        showPhase(gameOverScreen); // SỬA: Dùng showPhase để hiển thị gameOverScreen
+        if (fixedNumberDisplayArea) fixedNumberDisplayArea.classList.add("hidden");
+
+        if (finalPlayerScoreDisplay) finalPlayerScoreDisplay.textContent = playerScore;
+        if (finalOpponentScoreDisplay) finalOpponentScoreDisplay.textContent = opponentScore;
+
+        if (isSafeWin) {
+            if (finalResultMessageDisplay) finalResultMessageDisplay.textContent = message;
+        } else {
+            if (playerScore > opponentScore) {
+                if (finalResultMessageDisplay) finalResultMessageDisplay.textContent = "CHÚC MỪNG BẠN ĐÃ CHIẾN THẮNG!";
+            } else if (opponentScore > playerScore) {
+                if (finalResultMessageDisplay) finalResultMessageDisplay.textContent = "Rất tiếc, bạn đã thua cuộc.";
+            } else {
+                if (finalResultMessageDisplay) finalResultMessageDisplay.textContent = "Kết quả HÒA!";
+            }
+        }
+    }
+
+    if (startGameBtn) startGameBtn.addEventListener("click", () => {
+        showScreen(gameScreen);
+        initGame();
     });
-  });
-}
 
-// Cập nhật ô thoát hiểm với màu sắc rõ ràng hơn
-function updateEscapeCell() {
-  const escapeCellElement = document.querySelector(`.cell[data-row='${escapeCell[0]}'][data-col='${escapeCell[1]}']`);
-  escapeCellElement.classList.add("escape");
-}
+    if (restartGameBtn) restartGameBtn.addEventListener("click", () => {
+        showScreen(gameScreen);
+        initGame();
+    });
 
-// Đánh dấu ô được chọn
-function highlightSelectedCell() {
-  document.querySelectorAll(".cell").forEach(cell => cell.classList.remove("selected"));
-  if (selectedPiece && pieces[selectedPiece]) {
-    const [row, col] = pieces[selectedPiece];
-    const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
-    cell.classList.add("selected");
-  }
-}
+    if (ingameRestartBtn) ingameRestartBtn.addEventListener("click", () => {
+        initGame();
+    });
 
-// Cập nhật điểm số
-function updateScore() {
-  //scoreElement.textContent = `Black escaped: ${blackEscaped} | White escaped: ${whiteEscaped}`;
-}
+    answerBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (!btn.classList.contains("disabled")) {
+                handleAnswer(btn.dataset.answer);
+            }
+        });
+    });
 
-// Kiểm tra thắng
-function checkVictory() {
-  if (blackEscaped >= 2) {
-    statusElement.textContent = "Black team wins!";
-    document.removeEventListener("keydown", handleMove);
-  } else if (whiteEscaped >= 2) {
-    statusElement.textContent = "White team wins!";
-    document.removeEventListener("keydown", handleMove);
-  }
-}
-
-// Di chuyển quân cờ
-function movePiece(direction) {
-  if (!selectedPiece || !pieces[selectedPiece]) return;
-  let [row, col] = pieces[selectedPiece];
-  let [dx, dy] = [0, 0];
-
-  if (direction === "ArrowUp") dx = -1;
-  else if (direction === "ArrowDown") dx = 1;
-  else if (direction === "ArrowLeft") dy = -1;
-  else if (direction === "ArrowRight") dy = 1;
-
-  // Di chuyển đến tận cùng
-  while (true) {
-    const newRow = row + dx;
-    const newCol = col + dy;
-
-    // Kiểm tra nếu ra ngoài bàn cờ
-    if (newRow < 0 || newRow >= boardSize || newCol < 0 || newCol >= boardSize) break;
-
-    // Kiểm tra nếu gặp quân khác
-    const pieceAtNewPosition = getPieceAt(newRow, newCol);
-    if (pieceAtNewPosition) break;
-
-    // Kiểm tra nếu gặp chướng ngại vật
-    if (isObstacle(newRow, newCol)) break;
-
-    // Cập nhật vị trí
-    row = newRow;
-    col = newCol;
-  }
-
-  // Kiểm tra nếu vị trí mới hợp lệ và không có quân cờ nào
-  if (row !== pieces[selectedPiece][0] || col !== pieces[selectedPiece][1]) {
-    pieces[selectedPiece] = [row, col];
-
-    // Kiểm tra ô thoát hiểm
-    if (row === escapeCell[0] && col === escapeCell[1]) {
-      statusElement.textContent = `${selectedPiece} has escaped!`;
-      if (selectedPiece.startsWith("D")) blackEscaped++;
-      else whiteEscaped++;
-      delete pieces[selectedPiece];
+    if (proceedToQuestionsBtn) {
+        proceedToQuestionsBtn.addEventListener("click", () => {
+            clearInterval(memoTimerInterval);
+            proceedToQuestions();
+        });
     }
 
-    // Cập nhật trạng thái và lượt chơi
-    selectedPiece = null;
-    turn = turn === "D" ? "W" : "D";
-    statusElement.textContent = `${turn === "D" ? "Black" : "White"}'s turn. Select a piece to move.`;
-    drawPieces();
-    highlightTurn();
-    updateScore();
-    checkVictory();
-  }
-}
+    if (toggleRulesBtn) toggleRulesBtn.addEventListener("click", () => {
+        if (rulesContent) rulesContent.classList.toggle("hidden");
+    });
 
-// Sự kiện click chọn quân cờ trên máy tính
-boardElement.addEventListener("click", e => {
-  if (e.target.classList.contains("piece")) {
-    const piece = e.target.dataset.piece;
-    if (piece.startsWith(turn)) {
-      selectedPiece = piece;
-      statusElement.textContent = `Selected ${selectedPiece}. Use arrow keys to move.`;
-      highlightSelectedCell();
-    } else {
-      statusElement.textContent = `It's ${turn === "D" ? "Black" : "White"}'s turn!`;
-    }
-  }
+    showScreen(settingsScreen);
 });
-
-// Sự kiện di chuyển quân cờ bằng phím mũi tên trên máy tính
-function handleMove(e) {
-  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-    movePiece(e.key);
-    highlightSelectedCell();
-  }
-}
-document.addEventListener("keydown", handleMove);
-
-// Sự kiện chạm trên điện thoại
-boardElement.addEventListener("touchstart", e => {
-  if (e.target.classList.contains("piece")) {
-    const piece = e.target.dataset.piece;
-    if (piece.startsWith(turn)) {
-      selectedPiece = piece;
-      statusElement.textContent = `Selected ${selectedPiece}. Use your finger to move.`;
-      highlightSelectedCell();
-    } else {
-      statusElement.textContent = `It's ${turn === "D" ? "Black" : "White"}'s turn!`;
-    }
-  }
-});
-
-boardElement.addEventListener("touchmove", e => {
-  e.preventDefault();
-  if (!selectedPiece || !pieces[selectedPiece]) return;
-
-  const touch = e.touches[0];
-  const cellSize = 40;  // Kích thước mỗi ô, giả sử mỗi ô là 40px
-
-  const row = Math.floor((touch.clientY - boardElement.offsetTop) / cellSize);
-  const col = Math.floor((touch.clientX - boardElement.offsetLeft) / cellSize);
-
-  // Kiểm tra nếu vị trí mới hợp lệ và không có quân cờ nào
-  if (row >= 0 && row < boardSize && col >= 0 && col < boardSize && isValidPlacement(row, col, turn)) {
-    pieces[selectedPiece] = [row, col];
-    drawPieces();
-    highlightSelectedCell();
-  }
-});
-
-
-// Khởi tạo trò chơi
-createBoard();
-randomizePieces();
-highlightTurn();
-updateEscapeCell();
-updateScore();
