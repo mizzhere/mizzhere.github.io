@@ -90,6 +90,22 @@
                 </div>
             </div>
 
+            <!-- START: HIỂN THỊ ĐIỂM RANK ƯỚC TÍNH -->
+            <div id="estimated-rank-score-display" class="estimated-score-container">
+                <p class="estimated-score-label">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    Hệ số điểm ước tính (Thắng tuyệt đối):
+                </p>
+                <p class="estimated-score-value">
+                    <span id="base-score-estimation">100</span> x 
+                    <span id="total-multiplier-estimation">1.00</span> = 
+                    <strong id="final-rank-estimation">100</strong>
+                </p>
+                <p class="estimated-score-note">(Giả định bạn thắng tất cả các câu hỏi và đối thủ 0 điểm)</p>
+            </div>
+            <!-- END: HIỂN THỊ ĐIỂM RANK ƯỚC TÍNH -->
+
+
             <button id="start-game-btn" class="button-primary">
                 <span class="material-symbols-outlined">play_circle</span>
                 Bắt Đầu Chơi
@@ -106,7 +122,6 @@
 
         <!-- START: MÀN HÌNH CHƠI GAME (GAME SCREEN) -->
         <div id="game-screen" class="hidden">
-            <!-- START: GAME INFO - CẢI TIẾN BỐ CỤC -->
             <div id="game-info">
                 <!-- Khối 1: Thông tin Vòng và Câu -->
                 <div class="info-block round-info">
@@ -126,20 +141,18 @@
                         <span class="player-label">BẠN</span>
                         <span class="score-value" id="player-score">0</span>
                     </div>
-                    <div class="score-separator-prominent">:</div> <!-- Dấu : nổi bật hơn -->
+                    <div class="score-separator-prominent">:</div>
                     <div class="opponent-score-area">
                         <span class="opponent-label">ĐỐI THỦ</span>
                         <span class="score-value" id="opponent-score">0</span>
                     </div>
                 </div>
                 
-                <!-- Khối 3 (Tùy chọn): Thông tin về chiến thắng/khoảng cách -->
                 <div class="info-block win-info" id="win-condition-info">
                     <span class="material-symbols-outlined game-info-icon">military_tech</span>
                     <span id="game-status-text">Duy trì tập trung!</span>
                 </div>
 
-                <!-- Khối 4: Nút điều khiển -->
                 <div class="info-block game-controls-grid">
                     <button id="ingame-restart-btn" title="Chơi Lại">
                         <span class="material-symbols-outlined">replay</span>
@@ -149,7 +162,6 @@
                     </button>
                 </div>
             </div>
-            <!-- END: GAME INFO -->
 
             <div id="fixed-number-display-area">
                 <p class="info-label" id="number-context-label">Số ban đầu (Ghi nhớ):</p>
@@ -161,7 +173,9 @@
             </div>
 
             <div id="phase-content-area">
-                <div id="memorization-phase" class="phase-container hidden">
+                <!-- Các phase-container (memorization, question, result, inter-round) -->
+                <!-- ... (Nội dung các phase giữ nguyên như trước) ... -->
+                 <div id="memorization-phase" class="phase-container hidden">
                     <h2>GHI NHỚ (Vòng <span id="memorization-round-number"></span>)</h2>
                     <div class="main-content-wrapper">
                         <div id="memorization-timer" class="timer-display">
@@ -251,7 +265,6 @@ LUẬT CHƠI: THE GENIUS – TRẬN TỬ CHIẾN: 1 TRONG 3
             </div>
         </div>
 
-        <!-- Popup Lịch sử -->
         <div id="history-popup" class="popup hidden">
             <div class="popup-content">
                 <span class="close-popup-btn" id="close-history-popup-btn">×</span>
