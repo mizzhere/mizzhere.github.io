@@ -68,14 +68,25 @@ document.addEventListener("DOMContentLoaded", () => {
         "final-opponent-score"
     );
 
+    const memoTimeSelect = document.getElementById("memo-time-select");
+    const resultTimeSelect = document.getElementById("result-time-select");
+
+
     const toggleRulesBtn = document.getElementById("toggle-rules-btn");
     const rulesContent = document.getElementById("rules-content");
+    const viewHistoryBtn = document.getElementById("view-history-btn");
+    const historyPopup = document.getElementById("history-popup");
+    const closeHistoryPopupBtn = document.getElementById("close-history-popup-btn");
+    const historyListContainer = document.getElementById("history-list-container");
+    const clearHistoryBtn = document.getElementById("clear-history-btn");
 
+    const MAX_HISTORY_ITEMS = 50; // Giới hạn số lượng mục lịch sử được lưu
     const QUESTIONS_PER_ROUND = [0, 3, 4, 5, 6, 7];
     const TOTAL_ROUNDS = 5;
-    const MEMORIZATION_TIME = 15;
+    let MEMORIZATION_TIME_CONFIG = 10;
+    let RESULT_DISPLAY_TIME_CONFIG = 5;
     const ANSWER_TIME_LIMIT = 3;
-    const RESULT_DISPLAY_TIME = 5;
+
 
     let currentRound;
     let currentQuestionInRound;
@@ -109,7 +120,47 @@ document.addEventListener("DOMContentLoaded", () => {
             barElement.style.backgroundColor = 'var(--success-color)';
         }
     }
+    function loadSettings() {
+        const savedMemoTime = localStorage.getItem('geniusGameMemoTime');
+        if (savedMemoTime && memoTimeSelect) {
+            MEMORIZATION_TIME_CONFIG = parseInt(savedMemoTime, 10);
+            memoTimeSelect.value = savedMemoTime;
+        } else if (memoTimeSelect) { // Set giá trị mặc định cho select nếu không có gì được lưu
+            memoTimeSelect.value = MEMORIZATION_TIME_CONFIG.toString();
+        }
 
+
+        const savedResultTime = localStorage.getItem('geniusGameResultTime');
+        if (savedResultTime && resultTimeSelect) {
+            RESULT_DISPLAY_TIME_CONFIG = parseInt(savedResultTime, 10);
+            resultTimeSelect.value = savedResultTime;
+        } else if (resultTimeSelect) {
+            resultTimeSelect.value = RESULT_DISPLAY_TIME_CONFIG.toString();
+        }
+    }
+
+    // Hàm lưu cài đặt vào localStorage
+    function saveSettings() {
+        if (memoTimeSelect) {
+            localStorage.setItem('geniusGameMemoTime', memoTimeSelect.value);
+            MEMORIZATION_TIME_CONFIG = parseInt(memoTimeSelect.value, 10);
+        }
+        if (resultTimeSelect) {
+            localStorage.setItem('geniusGameResultTime', resultTimeSelect.value);
+            RESULT_DISPLAY_TIME_CONFIG = parseInt(resultTimeSelect.value, 10);
+        }
+    }
+
+    // Gọi loadSettings khi DOM đã tải xong
+    loadSettings();
+
+    // Gắn event listener để lưu khi người dùng thay đổi cài đặt
+    if (memoTimeSelect) {
+        memoTimeSelect.addEventListener('change', saveSettings);
+    }
+    if (resultTimeSelect) {
+        resultTimeSelect.addEventListener('change', saveSettings);
+    }
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -135,7 +186,86 @@ document.addEventListener("DOMContentLoaded", () => {
         questionRoundNumber.textContent = currentRound;
         questionNumberInRoundDisplay.textContent = currentQuestionInRound;
     }
+    function saveGameResult(pScore, oScore, resultMsg) {
+        let history = JSON.parse(localStorage.getItem('geniusGameHistory')) || [];
+        const gameDate = new Date();
+        const formattedDate = `${gameDate.toLocaleDateString('vi-VN')} ${gameDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
 
+        let resultType = "draw";
+        if (resultMsg.toLowerCase().includes("thắng") || resultMsg.toLowerCase().includes("chiến thắng")) {
+            resultType = "win";
+        } else if (resultMsg.toLowerCase().includes("thua") || resultMsg.toLowerCase().includes("tiếc")) {
+            resultType = "lose";
+        }
+
+        const newEntry = {
+            playerScore: pScore,
+            opponentScore: oScore,
+            resultText: resultMsg, // Lưu cả thông điệp đầy đủ
+            resultType: resultType, // win, lose, draw
+            date: formattedDate,
+            timestamp: gameDate.getTime() // Để sort nếu cần
+        };
+
+        history.unshift(newEntry); // Thêm vào đầu mảng
+
+        // Giới hạn số lượng mục lịch sử
+        if (history.length > MAX_HISTORY_ITEMS) {
+            history = history.slice(0, MAX_HISTORY_ITEMS);
+        }
+
+        localStorage.setItem('geniusGameHistory', JSON.stringify(history));
+    }
+
+    function loadAndDisplayHistory() {
+        const history = JSON.parse(localStorage.getItem('geniusGameHistory')) || [];
+        historyListContainer.innerHTML = ''; // Xóa nội dung cũ
+
+        if (history.length === 0) {
+            historyListContainer.innerHTML = '<p>Chưa có lịch sử nào.</p>';
+            if(clearHistoryBtn) clearHistoryBtn.classList.add('hidden'); // Ẩn nút xóa nếu không có lịch sử
+            return;
+        }
+        if(clearHistoryBtn) clearHistoryBtn.classList.remove('hidden');
+
+
+        const ul = document.createElement('ul');
+        ul.style.listStyleType = 'none';
+        ul.style.paddingLeft = '0';
+
+        history.forEach(entry => {
+            const li = document.createElement('li');
+            li.classList.add('history-item');
+
+            const resultSpan = document.createElement('span');
+            resultSpan.classList.add('result');
+            resultSpan.classList.add(entry.resultType); // Thêm class win/lose/draw
+            
+            // Rút gọn thông điệp kết quả để hiển thị
+            let displayResultText = "Hòa";
+            if (entry.resultType === 'win') displayResultText = "Thắng";
+            else if (entry.resultType === 'lose') displayResultText = "Thua";
+            if (entry.resultText.toLowerCase().includes("an toàn")) {
+                displayResultText += " An Toàn";
+            }
+
+            resultSpan.textContent = displayResultText;
+
+            const scoreSpan = document.createElement('span');
+            scoreSpan.classList.add('score');
+            scoreSpan.textContent = `Bạn: ${entry.playerScore} - Đối thủ: ${entry.opponentScore}`;
+
+            const dateSpan = document.createElement('span');
+            dateSpan.classList.add('date');
+            dateSpan.textContent = entry.date;
+
+            li.appendChild(resultSpan);
+            li.appendChild(scoreSpan);
+            li.appendChild(dateSpan);
+            ul.appendChild(li);
+        });
+        historyListContainer.appendChild(ul);
+    }
     // Hàm quản lý hiển thị các phase chính (bao gồm cả gameOverScreen)
     function showPhase(phaseToShow) {
         [memorizationPhaseDiv, questionPhaseDiv, resultPhaseDiv, gameOverScreen].forEach(p => {
@@ -166,15 +296,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initGame() {
         currentRound = 0;
+        
         playerScore = 0;
         opponentScore = 0;
         totalQuestionsAnsweredOverall = 0;
         calculateTotalGameQuestions();
         updateScoreDisplay();
 
-        if (memoProgressBar) updateProgressBar(memoProgressBar, MEMORIZATION_TIME, MEMORIZATION_TIME);
-        if (ansProgressBar) updateProgressBar(ansProgressBar, ANSWER_TIME_LIMIT, ANSWER_TIME_LIMIT);
-        if (nextActionProgressBar) updateProgressBar(nextActionProgressBar, RESULT_DISPLAY_TIME, RESULT_DISPLAY_TIME);
+        if (memoProgressBar) updateProgressBar(memoProgressBar, MEMORIZATION_TIME_CONFIG, MEMORIZATION_TIME_CONFIG);
+        if (ansProgressBar) updateProgressBar(ansProgressBar, ANSWER_TIME_LIMIT, ANSWER_TIME_LIMIT); // ANSWER_TIME_LIMIT vẫn cố định
+        if (nextActionProgressBar) updateProgressBar(nextActionProgressBar, RESULT_DISPLAY_TIME_CONFIG, RESULT_DISPLAY_TIME_CONFIG);
 
         clearInterval(memoTimerInterval);
         clearInterval(answerTimerInterval);
@@ -199,8 +330,53 @@ document.addEventListener("DOMContentLoaded", () => {
         currentQuestionInRound = 0;
         updateGameInfoDisplay();
         startMemorizationPhase();
+        let finalMessageText = "";
+        if (isSafeWin) {
+            finalMessageText = message;
+        } else {
+            if (playerScore > opponentScore) {
+                finalMessageText = "CHÚC MỪNG BẠN ĐÃ CHIẾN THẮNG!";
+            } else if (opponentScore > playerScore) {
+                finalMessageText = "Rất tiếc, bạn đã thua cuộc.";
+            } else {
+                finalMessageText = "Kết quả HÒA!";
+            }
+        }
+        if (finalResultMessageDisplay) finalResultMessageDisplay.textContent = finalMessageText;
+
+        // Lưu kết quả game
+        saveGameResult(playerScore, opponentScore, finalMessageText);
+    }
+    if (viewHistoryBtn) {
+        viewHistoryBtn.addEventListener('click', () => {
+            loadAndDisplayHistory();
+            if (historyPopup) historyPopup.classList.remove('hidden');
+        });
     }
 
+    if (closeHistoryPopupBtn) {
+        closeHistoryPopupBtn.addEventListener('click', () => {
+            if (historyPopup) historyPopup.classList.add('hidden');
+        });
+    }
+
+    if (historyPopup) { // Đóng popup khi click bên ngoài content
+        historyPopup.addEventListener('click', (event) => {
+            if (event.target === historyPopup) {
+                historyPopup.classList.add('hidden');
+            }
+        });
+    }
+
+
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử chơi không?")) {
+                localStorage.removeItem('geniusGameHistory');
+                loadAndDisplayHistory(); // Tải lại để hiển thị "Chưa có lịch sử"
+            }
+        });
+    }
     function startMemorizationPhase() {
         showPhase(memorizationPhaseDiv); // SỬA: Dùng showPhase
         if (proceedToQuestionsBtn) proceedToQuestionsBtn.classList.add("hidden");
@@ -218,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (liveBDisplay) liveBDisplay.textContent = initialNumbers.B;
         if (liveCDisplay) liveCDisplay.textContent = initialNumbers.C;
 
-        const totalMemoTime = MEMORIZATION_TIME;
+        const totalMemoTime = MEMORIZATION_TIME_CONFIG; // SỬ DỤNG GIÁ TRỊ CẤU HÌNH
         let timeLeft = totalMemoTime;
         if (memoCountdownDisplay) memoCountdownDisplay.textContent = timeLeft;
         updateProgressBar(memoProgressBar, timeLeft, totalMemoTime);
@@ -505,13 +681,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (cumulativeBDisplay) cumulativeBDisplay.textContent = cumulativeSums.B;
         if (cumulativeCDisplay) cumulativeCDisplay.textContent = cumulativeSums.C;
 
-        const totalResultTime = RESULT_DISPLAY_TIME;
+        const totalResultTime = RESULT_DISPLAY_TIME_CONFIG; // SỬ DỤNG GIÁ TRỊ CẤU HÌNH
         let timeLeft = totalResultTime;
         if (nextActionCountdownDisplay) nextActionCountdownDisplay.textContent = timeLeft;
         updateProgressBar(nextActionProgressBar, timeLeft, totalResultTime);
 
-        clearInterval(nextActionTimerInterval); // SỬA TÊN
-        nextActionTimerInterval = setInterval(() => { // SỬA TÊN
+        clearInterval(nextActionTimerInterval);
+        nextActionTimerInterval = setInterval(() => {
             timeLeft--;
             if (nextActionCountdownDisplay) nextActionCountdownDisplay.textContent = timeLeft;
             updateProgressBar(nextActionProgressBar, timeLeft, totalResultTime);
