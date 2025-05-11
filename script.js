@@ -73,9 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const QUESTIONS_PER_ROUND = [0, 3, 4, 5, 6, 7];
     const TOTAL_ROUNDS = 5;
-    const MEMORIZATION_TIME = 10;
+    const MEMORIZATION_TIME = 15;
     const ANSWER_TIME_LIMIT = 3;
-    const RESULT_DISPLAY_TIME = 3;
+    const RESULT_DISPLAY_TIME = 5;
 
     let currentRound;
     let currentQuestionInRound;
