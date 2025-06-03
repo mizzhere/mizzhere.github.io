@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Tính điểm Sinh viên</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Lightest gray - almost white */
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0; 
+            background-color: white;
+            min-height: 100vh;
+        }
+        .results-sticky-container {
+            position: sticky;
+            top: 0;
+            z-index: 50; 
+            background-color: white;
+            padding: 1rem 1rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* Softer shadow */
+            border-bottom: 1px solid #e5e7eb; /* Light border for separation */
+        }
+        .sticky-content-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .results-sticky-container {
+                padding: 1.5rem 2rem; /* Slightly more padding on desktop */
+            }
+            .sticky-content-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .semester-block {
+            margin-bottom: 0.75rem; /* Increased spacing */
+        }
+        .semester-header {
+            background-color: #f1f5f9; /* Lighter Slate */
+            padding: 0.75rem 1.25rem; 
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+            border: 1px solid #e2e8f0; /* Slate-200 border */
+        }
+        .semester-header:hover {
+            background-color: #e2e8f0; /* Slate-200 */
+        }
+        .semester-header-content {
+            display: flex;
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 0.5rem; 
+        }
+        .semester-header h3 {
+            color: #334155; /* Slate-700 */
+            font-size: 1.125rem; 
+            font-weight: 600; /* semibold */
+            margin: 0; 
+        }
+        .semester-grade-count, .semester-gpa-display {
+            font-size: 0.75rem; /* Slightly smaller */
+            font-weight: 500;
+            color: #475569; /* Slate-600 */
+            background-color: #e2e8f0; /* Slate-200 */
+            padding: 0.125rem 0.5rem; /* Adjusted padding */
+            border-radius: 0.25rem; /* rounded-sm */
+        }
+         .semester-gpa-display { 
+            color: #1e3a8a; /* Darker Blue for GPA */
+            background-color: #dbeafe; /* Blue-100 for GPA bg */
+        }
+
+        .semester-arrow {
+            transition: transform 0.3s ease;
+            color: #475569; /* Slate-600 */
+        }
+        .semester-arrow.expanded svg { /* Targeting SVG inside */
+            transform: rotate(90deg);
+        }
+        .subjects-list {
+            padding-left: 0.5rem; 
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease-out;
+            border-left: 2px solid #e2e8f0; /* Add a subtle left border for expanded list */
+            margin-left: 0.5rem; /* Align with header padding */
+            margin-top: 0.5rem;
+        }
+        .subjects-list.expanded {
+            max-height: 1500px; 
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .subject-item {
+            display: grid;
+            grid-template-columns: auto 60px 100px; 
+            gap: 0.75rem; 
+            align-items: center;
+            padding: 0.875rem 0.75rem; /* Adjusted padding */
+            border-bottom: 1px solid #f1f5f9; /* Lighter border */
+            transition: background-color 0.3s ease;
+        }
+        .subject-item:hover {
+            background-color: #f8fafc; /* Very light hover for subject items */
+        }
+        .subject-item.selected-briefly {
+            background-color: #e0f2fe; /* Lighter blue for feedback */
+        }
+        .subject-item:last-child {
+            border-bottom: none;
+        }
+        .header-item-subjects { 
+            font-weight: 600;
+            color: #4b5563; /* Gray-600 */
+            padding: 0.75rem 0.75rem; /* Adjusted padding */
+            background-color: #f8fafc; 
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 0.5rem 0.5rem 0 0; /* Rounded top corners */
+        }
+        select, button { 
+            padding: 0.625rem 0.875rem; 
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid #cbd5e1; /* Slate-300 */
+            transition: all 0.15s ease-in-out;
+            font-size: 0.95rem; 
+        }
+        select:focus, button:focus {
+            outline: none;
+            border-color: #2563eb; /* Blue-600 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Lighter focus ring */
+        }
+        .main-action-button { 
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            font-weight: 600; 
+            width: 100%; 
+            padding: 0.875rem 1rem; 
+            font-size: 1.125rem; 
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .main-action-button:hover {
+            background-color: #1d4ed8; /* Blue-700 */
+        }
+        .results-card, .target-rank-card {
+            padding: 1.25rem; /* Increased padding */
+            border-radius: 0.5rem; /* rounded-lg */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid transparent; /* Base border */
+        }
+        .results-card { background-color: #eff6ff; border-color: #dbeafe; } /* Blue-50, Blue-100 */
+        .target-rank-card { background-color: #f0fdf4; border-color: #dcfce7; } /* Green-50, Green-100 */
+
+        .results-card h3, .target-rank-card h3 { margin-bottom: 1rem; font-weight: 600; }
+        .results-card p, .target-rank-card p, .target-rank-card label { font-size: 0.875rem; }
+        .target-rank-card select { font-size: 0.875rem; padding: 0.375rem 0.75rem; border-radius: 0.375rem; }
+
+        .results-card h3 { color: #1d4ed8; } .results-card p { color: #1e40af; }
+        .target-rank-card h3 { color: #15803d; } .target-rank-card p, .target-rank-card label { color: #166534; }
+        
+        .target-rank-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr)); 
+            gap: 0.75rem; 
+            text-align: center;
+            margin-top: 0.75rem; 
+        }
+        .target-rank-info-grid > div { 
+            padding: 0.25rem;
+        }
+        .target-rank-info-grid p:first-child { /* Label, e.g., "Khả năng" */
+            font-size: 0.75rem; /* text-xs */
+            color: #64748b; /* Slate-500 */
+            margin-bottom: 0.125rem;
+        }
+        .target-rank-info-grid p:last-child { /* Value */
+            font-weight: 600; /* semibold */
+        }
+
+
+        .gpa-highlight { font-size: 1.75rem; font-weight: 700; } /* Slightly larger */
+        .rank-highlight { font-size: 1.25rem; font-weight: 600; }
+        
+        .toast-notification {
+            display: none; 
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937; /* Gray-800 */
+            color: white;
+            padding: 0.875rem 1.5rem; /* Increased padding */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* Softer shadow */
+            z-index: 1002; 
+            font-size: 0.9rem; /* Slightly larger */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, bottom 0.3s ease-in-out;
+        }
+        .toast-notification.show {
+            display: block;
+            opacity: 1;
+            bottom: 30px; 
+        }
+
+
+        .subject-name { word-break: break-word; font-size: 0.95rem; color: #334155; } /* Slate-700 */
+        .subjects-list-main-container { 
+            padding: 1.5rem; /* Increased padding */
+        }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; text-align: center; }
+        .info-grid p:first-child { font-size: 0.75rem; color: #64748b; margin-bottom: 0.125rem;}
+        .info-grid p:last-child { font-weight: 600; }
+
+
+        #scrollToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 25px; /* Adjusted position */
+            right: 25px;  /* Adjusted position */
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            cursor: pointer;
+            padding: 0.75rem; /* Use padding for size */
+            width: 44px; /* Explicit size */
+            height: 44px; /* Explicit size */
+            border-radius: 50%; 
+            font-size: 20px; /* Icon size */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex; /* For centering icon */
+            align-items: center;
+            justify-content: center;
+        }
+        #scrollToTopBtn:hover { background-color: #1d4ed8; /* Blue-700 */ }
+        .button-container { 
+            padding: 1.5rem; /* Increased padding */
+            background-color: white; 
+            border-top: 1px solid #e5e7eb; /* Add separator line */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="results-sticky-container">
+            <h1 class="text-xl md:text-2xl font-bold text-center mb-6 text-slate-700">Chương trình Tính điểm Sinh viên</h1>
+            <div class="sticky-content-grid">
+                <div id="targetRankArea" class="target-rank-card">
+                    <h3 class="text-md md:text-lg font-semibold mb-3 text-center">Mục tiêu Hạng</h3>
+                    <!-- Row 1: Select -->
+                    <div class="flex items-center justify-center space-x-2 mb-4"> 
+                        <label for="targetRankSelect" class="font-medium whitespace-nowrap text-sm">Hạng:</label>
+                        <select id="targetRankSelect" class="bg-white">
+                            <option value="">-- Chọn --</option>
+                            <option value="Xuất sắc">Xuất sắc (≥ 3.6)</option>
+                            <option value="Giỏi">Giỏi (≥ 3.2)</option>
+                            <option value="Khá">Khá (≥ 2.5)</option>
+                            <option value="Trung bình">Trung bình (≥ 2.0)</option>
+                        </select>
+                    </div>
+                    <!-- Row 2: 3 Columns -->
+                    <div id="targetRankInfo" class="target-rank-info-grid"> 
+                        <div>
+                            <p>Khả năng</p>
+                            <p id="targetAchievable"></p>
+                        </div>
+                        <div>
+                            <p>TC còn lại</p>
+                            <p id="remainingCreditsForTarget"></p>
+                        </div>
+                        <div>
+                            <p>GPA cần</p>
+                            <p id="minAvgForRemaining"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultsArea" class="results-card hidden">
+                    <div>
+                        <h3 class="text-md md:text-lg font-semibold mb-3 text-center">Kết quả Hiện tại</h3>
+                    </div>
+                    <div class="info-grid mt-auto">
+                        <div>
+                            <p>Tổng TC</p>
+                            <p id="totalCredits" class="text-lg"></p>
+                        </div>
+                        <div>
+                            <p>GPA</p>
+                            <p id="gpa" class="gpa-highlight"></p>
+                        </div>
+                        <div>
+                            <p>Xếp Loại</p>
+                            <p id="rank" class="rank-highlight"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subjects-list-main-container">
+            <div class="subject-item header-item-subjects mb-2">
+                <span class="subject-name">Tên Môn học/Học phần</span>
+                <span class="text-center">Số TC</span>
+                <span class="text-center">Điểm chữ</span>
+            </div>
+            <div id="semestersContainer">
+                <!-- Semester blocks will be injected here -->
+            </div>
+        </div>
+
+        <div class="button-container mt-4">
+            <button id="calculateButton" class="main-action-button">Lưu & Cập nhật</button>
+        </div>
+    </div>
+
+    <button id="scrollToTopBtn" title="Cuộn lên đầu trang">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-up-short" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
+        </svg>
+    </button>
+
+    <div id="toastNotification" class="toast-notification">
+        Đã lưu và cập nhật điểm!
+    </div>
+
+    <script>
+        const subjects = [
+            // Học kỳ 1
+            { id: "hk1_nn1", name: "Ngoại ngữ I", credits: 3, semester: 1 },
+            { id: "hk1_shdt", name: "Sinh học - Di truyền Y học", credits: 2, semester: 1 },
+            { id: "hk1_triet", name: "Triết học Mác-Lênin", credits: 3, semester: 1 },
+            { id: "hk1_tin", name: "Tin học", credits: 2, semester: 1 },
+            // Học kỳ 2
+            { id: "hk2_tamly", name: "Tâm lý y học - Đạo đức y học", credits: 2, semester: 2 },
+            { id: "hk2_xstk", name: "Xác suất thống kê Y học", credits: 2, semester: 2 },
+            { id: "hk2_gp", name: "Giải phẫu", credits: 2, semester: 2 },
+            { id: "hk2_hoavc", name: "Hóa đại cương vô cơ", credits: 4, semester: 2 },
+            { id: "hk2_vatly", name: "Vật lý đại cương", credits: 2, semester: 2 },
+            // Học kỳ 3
+            { id: "hk3_sinhly", name: "Sinh lý", credits: 2, semester: 3 },
+            { id: "hk3_kst", name: "Ký sinh trùng", credits: 2, semester: 3 },
+            { id: "hk3_hoahc", name: "Hóa hữu cơ", credits: 4, semester: 3 },
+            { id: "hk3_ktct", name: "Kinh tế chính trị", credits: 2, semester: 3 },
+            { id: "hk3_cnxhkh", name: "Chủ nghĩa xã hội khoa học", credits: 2, semester: 3 },
+            { id: "hk3_tvd1", name: "Thực vật dược I", credits: 2, semester: 3 },
+            { id: "hk3_nn2", name: "Ngoại ngữ II", credits: 4, semester: 3 },
+            // Học kỳ 4
+            { id: "hk4_tthcm", name: "Tư tưởng Hồ Chí Minh", credits: 2, semester: 4 },
+            { id: "hk4_lsd", name: "Lịch sử Đảng cộng sản Việt Nam", credits: 2, semester: 4 },
+            { id: "hk4_hoasinh", name: "Hóa sinh", credits: 3, semester: 4 },
+            { id: "hk4_ttgds", name: "Truyền thông và GD sức khỏe", credits: 2, semester: 4 },
+            { id: "hk4_visinh", name: "Vi sinh", credits: 2, semester: 4 },
+            { id: "hk4_hpt1", name: "Hóa phân tích I", credits: 4, semester: 4 },
+            { id: "hk4_slbmd", name: "Sinh lý bệnh - Miễn dịch", credits: 2, semester: 4 },
+            // Học kỳ 5
+            { id: "hk5_benhhoc", name: "Bệnh học", credits: 3, semester: 5 },
+            { id: "hk5_ddhnd", name: "Đạo đức hành nghề dược", credits: 2, semester: 5 },
+            { id: "hk5_hoalyd", name: "Hóa lý dược", credits: 4, semester: 5 },
+            { id: "hk5_hpt2", name: "Hóa phân tích II", credits: 3, semester: 5 },
+            { id: "hk5_tvd2", name: "Thực vật dược II", credits: 3, semester: 5 },
+            { id: "hk5_pldc", name: "Pháp luật đại cương", credits: 2, semester: 5 },
+            // Học kỳ 6
+            { id: "hk6_qlyktd", name: "Quản lý và kinh tế dược", credits: 3, semester: 6 },
+            { id: "hk6_ddh", name: "Dược động học", credits: 2, semester: 6 },
+            { id: "hk6_qlydbv", name: "Quản lý dược bệnh viện", credits: 2, semester: 6 },
+            { id: "hk6_dl1", name: "Dược liệu I", credits: 4, semester: 6 },
+            { id: "hk6_hd1", name: "Hóa dược I", credits: 3, semester: 6 },
+            { id: "hk6_bcsdh1", name: "Bào chế và sinh dược học I", credits: 3, semester: 6 },
+            // Học kỳ 7
+            { id: "hk7_pcd", name: "Pháp chế dược", credits: 3, semester: 7 },
+            { id: "hk7_hd2", name: "Hóa dược II", credits: 3, semester: 7 },
+            { id: "hk7_dl2", name: "Dược liệu II", credits: 4, semester: 7 },
+            { id: "hk7_dl1_hk7", name: "Dược lý I", credits: 3, semester: 7 },
+            { id: "hk7_bcsdh2", name: "Bào chế và sinh dược học II", credits: 3, semester: 7 },
+            // Học kỳ 8
+            { id: "hk8_dch", name: "Độc chất học", credits: 2, semester: 8 },
+            { id: "hk8_sdtdt", name: "Sử dụng thuốc trong điều trị", credits: 2, semester: 8 },
+            { id: "hk8_ttcd", name: "Thông tin và cảnh giác dược", credits: 2, semester: 8 },
+            { id: "hk8_sxdp", name: "Sản xuất dược phẩm", credits: 4, semester: 8 },
+            { id: "hk8_ppnckh", name: "Phương pháp NCKH", credits: 3, semester: 8 },
+            { id: "hk8_dl2_hk8", name: "Dược lý II", credits: 4, semester: 8 },
+            // Học kỳ 9
+            { id: "hk9_dhct", name: "Dược học cổ truyền", credits: 3, semester: 9 },
+            { id: "hk9_dls", name: "Dược lâm sàng", credits: 4, semester: 9 },
+            { id: "hk9_kndp", name: "Kiểm nghiệm dược phẩm", credits: 4, semester: 9 },
+            { id: "hk9_thdlsbv", name: "Thực hành dược lâm sàng BV", credits: 2, semester: 9 },
+            { id: "hk9_tnct", name: "Tài nguyên cây thuốc", credits: 2, semester: 9 },
+            { id: "hk9_thqlcut", name: "Thực hành quản lý và cung ứng thuốc", credits: 2, semester: 9 },
+            // Học kỳ 10
+            { id: "hk10_tttn", name: "Thực tế tốt nghiệp", credits: 5, semester: 10 },
+            { id: "hk10_kltn", name: "Khóa luận tốt nghiệp/ Thi tốt nghiệp", credits: 10, semester: 10 }
+        ];
+
+        const gradePoints = { "A+": 4.0, "A": 3.7, "B+": 3.5, "B": 3.0, "C+": 2.5, "C": 2.0, "D+": 1.5, "D": 1.0, "F": 0.0, "": null };
+        const gradeOptions = ["", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"];
+        const RANK_THRESHOLDS = { "Xuất sắc": 3.6, "Giỏi": 3.2, "Khá": 2.5, "Trung bình": 2.0 };
+        const MAX_POSSIBLE_GRADE_POINT = 4.0;
+        const LOCAL_STORAGE_KEY = 'studentGrades';
+        const LOCAL_STORAGE_TARGET_RANK_KEY = 'studentTargetRank';
+        const LOCAL_STORAGE_EXPANDED_SEMESTERS_KEY = 'expandedSemesters';
+
+
+        const totalProgramCredits = subjects.reduce((sum, s) => sum + s.credits, 0);
+        const subjectsBySemester = subjects.reduce((acc, subject) => {
+                acc[subject.semester] = acc[subject.semester] || [];
+                acc[subject.semester].push(subject);
+                return acc;
+            }, {});
+
+        // DOM Elements
+        const semestersContainer = document.getElementById('semestersContainer');
+        const calculateButton = document.getElementById('calculateButton');
+        const resultsArea = document.getElementById('resultsArea');
+        const totalCreditsEl = document.getElementById('totalCredits');
+        const gpaEl = document.getElementById('gpa');
+        const rankEl = document.getElementById('rank');
+        const toastNotification = document.getElementById('toastNotification'); 
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        const targetRankSelect = document.getElementById('targetRankSelect');
+        const targetAchievableEl = document.getElementById('targetAchievable');
+        const remainingCreditsForTargetEl = document.getElementById('remainingCreditsForTarget');
+        const minAvgForRemainingEl = document.getElementById('minAvgForRemaining');
+
+        let toastTimeout; 
+
+        function showToast(message) {
+            if (toastTimeout) clearTimeout(toastTimeout); 
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            toastTimeout = setTimeout(() => {
+                toastNotification.classList.remove('show');
+            }, 2500); 
+        }
+        
+        function saveStateToLocalStorage() {
+            const gradesToSave = {};
+            subjects.forEach(subject => {
+                const gradeSelect = document.getElementById(subject.id);
+                if (gradeSelect) gradesToSave[subject.id] = gradeSelect.value;
+            });
+
+            const expandedSemesters = [];
+            document.querySelectorAll('.semester-block .subjects-list.expanded').forEach(list => {
+                expandedSemesters.push(list.dataset.semester);
+            });
+
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(gradesToSave));
+                if (targetRankSelect) localStorage.setItem(LOCAL_STORAGE_TARGET_RANK_KEY, targetRankSelect.value);
+                localStorage.setItem(LOCAL_STORAGE_EXPANDED_SEMESTERS_KEY, JSON.stringify(expandedSemesters));
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+                showToast("Lỗi: Không thể lưu dữ liệu!"); 
+            }
+        }
+
+        function loadStateFromLocalStorage() {
+            let gradesLoaded = false;
+            try {
+                const savedGrades = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (savedGrades) {
+                    const parsedGrades = JSON.parse(savedGrades);
+                    subjects.forEach(subject => {
+                        const gradeSelect = document.getElementById(subject.id);
+                        if (gradeSelect && parsedGrades[subject.id] !== undefined) {
+                            gradeSelect.value = parsedGrades[subject.id];
+                        }
+                    });
+                    gradesLoaded = true;
+                }
+                const savedTargetRank = localStorage.getItem(LOCAL_STORAGE_TARGET_RANK_KEY);
+                if (targetRankSelect && savedTargetRank) {
+                    targetRankSelect.value = savedTargetRank;
+                }
+                const savedExpandedSemesters = localStorage.getItem(LOCAL_STORAGE_EXPANDED_SEMESTERS_KEY);
+                 if (savedExpandedSemesters) {
+                    const expanded = JSON.parse(savedExpandedSemesters);
+                    expanded.forEach(semNum => {
+                        const semList = document.querySelector(`.subjects-list[data-semester="${semNum}"]`);
+                        const semArrow = document.querySelector(`.semester-header[data-semester="${semNum}"] .semester-arrow`);
+                        if (semList) semList.classList.add('expanded');
+                        if (semArrow) semArrow.classList.add('expanded');
+                    });
+                }
+
+            } catch (e) {
+                console.error("Error loading from localStorage:", e);
+                showToast("Lỗi: Không thể tải dữ liệu đã lưu!"); 
+            }
+            return gradesLoaded;
+        }
+
+        function populateSubjectsAndSemesters() {
+            console.log("Populating subjects and semesters..."); 
+            Object.keys(subjectsBySemester).sort((a,b) => parseInt(a) - parseInt(b)).forEach(semesterNumber => {
+                const semesterSubjects = subjectsBySemester[semesterNumber];
+                
+                const semesterBlock = document.createElement('div');
+                semesterBlock.className = 'semester-block';
+
+                const semesterHeader = document.createElement('div');
+                semesterHeader.className = 'semester-header';
+                semesterHeader.dataset.semester = semesterNumber;
+                
+                semesterHeader.innerHTML = `
+                    <div class="semester-header-content">
+                        <h3 class="semester-title-text">Học kỳ ${semesterNumber}</h3>
+                        <span class="semester-grade-count" id="sem-count-${semesterNumber}"></span>
+                        <span class="semester-gpa-display" id="sem-gpa-${semesterNumber}">GPA HK: N/A</span>
+                    </div>
+                    <span class="semester-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right transition-transform duration-300" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </span>
+                `;
+
+                const subjectsList = document.createElement('div');
+                subjectsList.className = 'subjects-list';
+                subjectsList.dataset.semester = semesterNumber;
+
+                semesterSubjects.forEach(subject => {
+                    const subjectDiv = document.createElement('div');
+                    subjectDiv.className = 'subject-item';
+                    subjectDiv.innerHTML = `
+                        <span class="subject-name" title="${subject.name}">${subject.name.length > 30 ? subject.name.substring(0,27) + '...' : subject.name}</span>
+                        <span class="text-center">${subject.credits}</span>
+                        <select id="${subject.id}" class="w-full subject-grade-select bg-white py-2 px-1 text-sm rounded-md border-slate-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            ${gradeOptions.map(grade => `<option value="${grade}" ${grade === "" ? "selected" : ""}>${grade || '--'}</option>`).join('')}
+                        </select>
+                    `;
+                    subjectsList.appendChild(subjectDiv);
+                    // MODIFIED: Use subjectDiv.querySelector instead of document.getElementById
+                    const gradeSelect = subjectDiv.querySelector(`#${subject.id}`); 
+                    
+                    if (gradeSelect) {
+                        console.log(`Attempting to add event listener for subject ID: ${subject.id}`); 
+                        gradeSelect.addEventListener('change', (event) => {
+                            console.log(`--- Event Fired --- Subject ID: ${subject.id}, New Value: ${event.target.value}`); 
+                            
+                            calculateAndDisplayResults(); 
+
+                            const parentItem = event.target.closest('.subject-item');
+                            if (parentItem) {
+                                parentItem.classList.add('selected-briefly');
+                                setTimeout(() => {
+                                    parentItem.classList.remove('selected-briefly');
+                                }, 300);
+                            }
+                            console.log(`--- Event Processed --- Subject ID: ${subject.id}`); 
+                        });
+                        console.log(`Event listener ADDED for subject ID: ${subject.id}`); 
+                    } else {
+                         console.error(`Could not find select element with ID: ${subject.id} within its subjectDiv to attach listener.`); 
+                    }
+                });
+                
+                semesterBlock.appendChild(semesterHeader);
+                semesterBlock.appendChild(subjectsList);
+                semestersContainer.appendChild(semesterBlock);
+
+                semesterHeader.addEventListener('click', () => {
+                    subjectsList.classList.toggle('expanded');
+                    const arrowSvg = semesterHeader.querySelector('.semester-arrow svg');
+                    if (arrowSvg) arrowSvg.parentElement.classList.toggle('expanded'); 
+                    saveStateToLocalStorage(); 
+                });
+            });
+            console.log("Finished populating subjects and semesters."); 
+        }
+
+
+        function getRank(gpa) {
+            if (gpa === null || isNaN(gpa)) return "N/A";
+            if (gpa >= 3.6) return "Xuất sắc";
+            if (gpa >= 3.2) return "Giỏi";
+            if (gpa >= 2.5) return "Khá";
+            if (gpa >= 2.0) return "Trung bình";
+            if (gpa >= 1.0) return "Yếu";
+            return "Kém";
+        }
+        
+        function getRankColor(rank) {
+            const rankLower = String(rank || "").toLowerCase();
+            switch (rankLower) {
+                case "xuất sắc": return "purple";
+                case "giỏi": return "blue";
+                case "khá": return "green";
+                case "trung bình": return "yellow";
+                case "yếu": return "orange"; 
+                case "kém": return "red";
+                default: return "slate"; 
+            }
+        }
+
+        function updateSemesterStats() { 
+            Object.keys(subjectsBySemester).forEach(semesterNumber => {
+                const semesterSubjects = subjectsBySemester[semesterNumber];
+                let gradedCount = 0;
+                let semesterWeightedPoints = 0;
+                let semesterCompletedCredits = 0;
+
+                semesterSubjects.forEach(subject => {
+                    const gradeSelect = document.getElementById(subject.id); // This should be fine if elements are populated
+                    if (gradeSelect && gradeSelect.value !== "") {
+                        gradedCount++;
+                        const point = gradePoints[gradeSelect.value];
+                        if (point !== null) {
+                            semesterWeightedPoints += point * subject.credits;
+                            semesterCompletedCredits += subject.credits;
+                        }
+                    }
+                });
+
+                const countDisplay = document.getElementById(`sem-count-${semesterNumber}`);
+                if (countDisplay) {
+                    countDisplay.textContent = `(${gradedCount}/${semesterSubjects.length})`;
+                }
+
+                const gpaDisplay = document.getElementById(`sem-gpa-${semesterNumber}`);
+                if (gpaDisplay) {
+                    if (semesterCompletedCredits > 0) {
+                        const semesterGPA = semesterWeightedPoints / semesterCompletedCredits;
+                        gpaDisplay.textContent = `GPA HK: ${semesterGPA.toFixed(2)}`;
+                    } else {
+                        gpaDisplay.textContent = `GPA HK: N/A`;
+                    }
+                }
+            });
+        }
+
+
+        function calculateAndDisplayResults() {
+            console.log("calculateAndDisplayResults called"); 
+            let totalWeightedPoints = 0;
+            let currentTotalCompletedCredits = 0;
+            let hasInput = false;
+
+            subjects.forEach(subject => {
+                const gradeSelect = document.getElementById(subject.id);
+                if (!gradeSelect) {
+                    console.error(`Element with ID ${subject.id} not found in calculateAndDisplayResults.`);
+                    return; 
+                }
+                const letterGrade = gradeSelect.value;
+                if (letterGrade && gradePoints[letterGrade] !== null) {
+                    hasInput = true;
+                    const point = gradePoints[letterGrade];
+                    totalWeightedPoints += point * subject.credits;
+                    currentTotalCompletedCredits += subject.credits;
+                }
+            });
+            
+            console.log(`calculateAndDisplayResults - hasInput: ${hasInput}, totalCredits: ${currentTotalCompletedCredits}, totalWeightedPoints: ${totalWeightedPoints}`); 
+
+            if (!hasInput) {
+                resultsArea.classList.add('hidden');
+                totalCreditsEl.textContent = "0";
+                gpaEl.textContent = "0.00";
+                rankEl.textContent = "N/A";
+                rankEl.className = `rank-highlight text-slate-500`; 
+            } else {
+                const currentGPA = currentTotalCompletedCredits > 0 ? (totalWeightedPoints / currentTotalCompletedCredits) : 0;
+                totalCreditsEl.textContent = currentTotalCompletedCredits;
+                gpaEl.textContent = currentGPA.toFixed(2);
+                const currentRank = getRank(currentGPA);
+                rankEl.textContent = currentRank;
+                
+                const rankColorName = getRankColor(currentRank);
+                const rankColorClass = `text-${rankColorName}-600`; 
+                rankEl.className = `rank-highlight ${rankColorClass}`;
+                console.log(`calculateAndDisplayResults - GPA: ${currentGPA.toFixed(2)}, Rank: ${currentRank}, RankColor: ${rankColorName}`); 
+                resultsArea.classList.remove('hidden');
+            }
+
+            const selectedTargetRankValue = targetRankSelect.value;
+            const targetGPAThreshold = RANK_THRESHOLDS[selectedTargetRankValue];
+
+            if (selectedTargetRankValue && targetGPAThreshold) {
+                const remainingCredits = totalProgramCredits - currentTotalCompletedCredits;
+                remainingCreditsForTargetEl.textContent = remainingCredits >= 0 ? remainingCredits : "Lỗi";
+
+                if (remainingCredits < 0) {
+                     targetAchievableEl.textContent = "Lỗi";
+                     minAvgForRemainingEl.textContent = "N/A";
+                } else if (remainingCredits === 0) {
+                    const finalGPA = currentTotalCompletedCredits > 0 ? (totalWeightedPoints / currentTotalCompletedCredits) : 0;
+                    if (finalGPA >= targetGPAThreshold) {
+                        targetAchievableEl.textContent = "Đã đạt!";
+                        minAvgForRemainingEl.textContent = "N/A";
+                    } else {
+                        targetAchievableEl.textContent = "Không thể";
+                        minAvgForRemainingEl.textContent = "N/A";
+                    }
+                } else { 
+                    const requiredTotalPointsForTarget = targetGPAThreshold * totalProgramCredits;
+                    const pointsStillNeeded = requiredTotalPointsForTarget - totalWeightedPoints;
+                    
+                    if (pointsStillNeeded <= 0) { 
+                        targetAchievableEl.textContent = "Có thể";
+                        minAvgForRemainingEl.textContent = "0.00";
+                        const gpaOnCompleted = currentTotalCompletedCredits > 0 ? (totalWeightedPoints / currentTotalCompletedCredits) : 0;
+                        if (gpaOnCompleted >= targetGPAThreshold && currentTotalCompletedCredits >= totalProgramCredits * 0.5) {
+                             targetAchievableEl.textContent = "Rất tốt!";
+                        }
+                    } else {
+                        const avgNeededForRemaining = pointsStillNeeded / remainingCredits;
+                        if (avgNeededForRemaining > MAX_POSSIBLE_GRADE_POINT) {
+                            targetAchievableEl.textContent = "Khó/Không thể";
+                            minAvgForRemainingEl.textContent = `> ${MAX_POSSIBLE_GRADE_POINT.toFixed(1)}`;
+                        } else if (avgNeededForRemaining < 0) { 
+                            targetAchievableEl.textContent = "Có thể";
+                            minAvgForRemainingEl.textContent = "0.00";
+                        }
+                        else {
+                            targetAchievableEl.textContent = "Có thể";
+                            minAvgForRemainingEl.textContent = avgNeededForRemaining.toFixed(2);
+                        }
+                    }
+                }
+            } else { 
+                targetAchievableEl.textContent = "Chọn hạng";
+                remainingCreditsForTargetEl.textContent = "N/A";
+                minAvgForRemainingEl.textContent = "N/A";
+            }
+            updateSemesterStats(); 
+            saveStateToLocalStorage();
+            console.log("calculateAndDisplayResults finished"); 
+        }
+
+        calculateButton.addEventListener('click', () => {
+            calculateAndDisplayResults(); 
+            showToast("Đã lưu và cập nhật điểm!"); 
+        });
+
+        targetRankSelect.addEventListener('change', calculateAndDisplayResults);
+
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                scrollToTopBtn.style.display = "flex"; 
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        }
+        scrollToTopBtn.addEventListener('click', () => {
+            document.body.scrollTop = 0; 
+            document.documentElement.scrollTop = 0; 
+        });
+
+        // Initialize
+        console.log("Initializing application..."); 
+        populateSubjectsAndSemesters(); 
+        console.log("Loading state from localStorage..."); 
+        loadStateFromLocalStorage(); 
+        console.log("Performing initial calculation and display..."); 
+        calculateAndDisplayResults(); 
+        console.log("Initialization complete."); 
+    </script>
+</body>
+</html>
