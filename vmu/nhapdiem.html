@@ -476,6 +476,67 @@
 #clearGradeFilterButton.hidden {
     display: none;
 }
+/* Styles for Enhanced Grade Distribution Items */
+.grade-distribution-list li {
+    /* Các style cũ giữ nguyên: cursor, transition, padding, border-radius, font-size, border */
+    display: flex; /* Cho phép căn chỉnh nội dung bên trong */
+    flex-direction: column; /* Xếp chồng thông tin */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0.75rem 0.5rem; /* Điều chỉnh padding nếu cần */
+    line-height: 1.3;
+}
+
+.grade-distribution-list li .grade-label {
+    font-weight: 600;
+    font-size: 1.1em; /* Làm to chữ điểm (A, B, C...) */
+    margin-bottom: 0.25rem;
+}
+.grade-distribution-list li .grade-info {
+    font-size: 0.8em; /* Thông tin phụ nhỏ hơn */
+    color: #4b5563; /* Màu chữ phụ */
+}
+.grade-distribution-list li .grade-percentage {
+    font-size: 0.9em;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+/* Màu nền dựa trên ưu thế (tỷ lệ phần trăm) - Ví dụ */
+/* Bạn có thể điều chỉnh các ngưỡng % và màu sắc */
+
+/* Màu cho loại điểm (giữ nguyên từ trước, chỉ điều chỉnh nếu cần) */
+.grade-dist-item-default { background-color: #eff6ff; color: #1e40af; border-color: #dbeafe; }
+.grade-dist-item-default:hover { background-color: #dbeafe; border-color: #bfdbfe;}
+.grade-dist-item-default.active-filter { background-color: #93c5fd; color: #1e3a8a; border-color: #60a5fa; }
+
+
+/* Màu nền nhấn mạnh - ví dụ với 3 mức */
+/* Mức 1: Chiếm ưu thế cao (ví dụ > 35%) - Nền đậm hơn, chữ tương phản */
+.grade-emphasis-high.grade-A, .grade-emphasis-high.grade-Aplus { background-color: #c4b5fd; color: #5b21b6; border-color: #a78bfa;} /* Purple-400 bg, Purple-700 text */
+.grade-emphasis-high.grade-B, .grade-emphasis-high.grade-Bplus { background-color: #93c5fd; color: #1e40af; border-color: #60a5fa;} /* Blue-400 bg, Blue-700 text */
+.grade-emphasis-high.grade-C, .grade-emphasis-high.grade-Cplus { background-color: #86efac; color: #166534; border-color: #4ade80;} /* Green-400 bg, Green-700 text */
+
+/* Mức 2: Chiếm ưu thế trung bình (ví dụ > 20%) - Nền hơi đậm */
+.grade-emphasis-medium.grade-A, .grade-emphasis-medium.grade-Aplus { background-color: #ddd6fe; color: #6d28d9; border-color: #c4b5fd;} /* Purple-300 bg, Purple-600 text */
+.grade-emphasis-medium.grade-B, .grade-emphasis-medium.grade-Bplus { background-color: #bfdbfe; color: #1d4ed8; border-color: #93c5fd;} /* Blue-300 bg, Blue-600 text */
+.grade-emphasis-medium.grade-C, .grade-emphasis-medium.grade-Cplus { background-color: #bbf7d0; color: #15803d; border-color: #86efac;} /* Green-300 bg, Green-600 text */
+
+/* Các điểm thấp hơn (D, F) có thể có màu riêng nếu muốn, hoặc dùng default */
+.grade-emphasis-low.grade-D, .grade-emphasis-low.grade-Dplus { background-color: #fed7aa; color: #9a3412; border-color: #fbbf24;} /* Orange-300 */
+.grade-emphasis-very-low.grade-F { background-color: #fecaca; color: #b91c1c; border-color: #f87171;} /* Red-300 */
+
+/* Khi active filter, ưu tiên màu của active-filter */
+.grade-distribution-list li.active-filter {
+  background-color: #60a5fa !important; /* Sử dụng !important để ghi đè màu nhấn mạnh */
+  color: #1d4ed8 !important;
+  border-color: #3b82f6 !important;
+}
+.grade-distribution-list li.active-filter .grade-info,
+.grade-distribution-list li.active-filter .grade-percentage {
+    color: #1e3a8a !important;
+}
 	</style>
 </head>
 <body>
@@ -943,40 +1004,91 @@ const clearGradeFilterButton = document.getElementById('clearGradeFilterButton')
             });
         }
 
-        function updateDetailedStatistics(completedSubjectsData, overallTotalWeightedPoints, overallCompletedCredits, overallGPA) {
+       function updateDetailedStatistics(completedSubjectsData, overallTotalWeightedPoints, overallCompletedCredits, overallGPA) {
     // Store the full list of completed subjects for filtering/sorting
     allCompletedSubjectsForStats = [...completedSubjectsData]; // Tạo bản sao
 
+    // Cập nhật các thông số tổng quan
     statsTotalProgramCreditsEl.textContent = totalProgramCredits;
     statsTotalCompletedCreditsEl.textContent = overallCompletedCredits;
     const completionRate = totalProgramCredits > 0 ? (overallCompletedCredits / totalProgramCredits * 100) : 0;
     statsCompletionRateEl.textContent = `${completionRate.toFixed(1)}%`;
     statsOverallGPAEl.textContent = overallGPA.toFixed(2);
 
-    const gradeCounts = {};
-    gradeOptions.forEach(g => { if (g) gradeCounts[g] = 0; });
+    // --- Tính toán cho Phân phối Điểm ---
+    const gradeCounts = {};         // Số lượng môn cho mỗi loại điểm
+    const gradeCredits = {};        // Tổng tín chỉ cho mỗi loại điểm
+    let totalGradedSubjects = 0;    // Tổng số môn đã có điểm
+    let totalGradedCredits = 0;     // Tổng số tín chỉ của các môn đã có điểm
 
-    allCompletedSubjectsForStats.forEach(data => { // Dùng allCompletedSubjectsForStats để đếm
+    gradeOptions.forEach(g => {
+        if (g) { // Chỉ xử lý các grade hợp lệ, bỏ qua ""
+            gradeCounts[g] = 0;
+            gradeCredits[g] = 0;
+        }
+    });
+
+    allCompletedSubjectsForStats.forEach(data => {
         if (data.letterGrade && gradeCounts.hasOwnProperty(data.letterGrade)) {
             gradeCounts[data.letterGrade]++;
+            gradeCredits[data.letterGrade] += data.credits;
+            totalGradedSubjects++; // Chỉ tăng khi có môn được chấm điểm thực sự
+            totalGradedCredits += data.credits; // Chỉ tăng khi có môn được chấm điểm thực sự
         }
     });
+    // --- Kết thúc tính toán cho Phân phối Điểm ---
 
+    // Hiển thị Phân phối Điểm
     statsGradeDistributionEl.innerHTML = '';
-    Object.keys(gradeCounts).sort((a, b) => gradePoints[b] - gradePoints[a]).forEach(grade => {
-        if (gradeCounts[grade] > 0) {
-            const li = document.createElement('li');
-            li.textContent = `${grade}: ${gradeCounts[grade]} môn`;
-            li.dataset.gradeFilter = grade; // Thêm data attribute để lọc
-            if (grade === currentGradeFilter) {
-                li.classList.add('active-filter'); // Đánh dấu nếu đang là filter hiện tại
-            }
-            li.addEventListener('click', () => handleGradeFilterClick(grade));
-            statsGradeDistributionEl.appendChild(li);
-        }
-    });
-    if (statsGradeDistributionEl.children.length === 0) {
+    if (totalGradedCredits === 0) { // Nếu không có tín chỉ nào được chấm điểm
         statsGradeDistributionEl.innerHTML = '<li>Chưa có điểm nào được nhập.</li>';
+    } else {
+        Object.keys(gradeCounts).sort((a, b) => gradePoints[b] - gradePoints[a]).forEach(grade => {
+            if (gradeCounts[grade] > 0) { // Chỉ hiển thị các loại điểm có xuất hiện
+                const count = gradeCounts[grade];
+                const credits = gradeCredits[grade];
+                
+                const percentageOfTotalCredits = totalGradedCredits > 0 ? (credits / totalGradedCredits * 100).toFixed(1) : "0.0";
+
+                const li = document.createElement('li');
+                // Thêm class cơ bản và class cho loại điểm cụ thể (vd: grade-a, grade-bplus)
+                li.classList.add('grade-dist-item-default', `grade-${grade.replace('+', 'plus').toLowerCase()}`);
+
+                li.innerHTML = `
+                    <span class="grade-label">${grade}</span>
+                    <span class="grade-info">${count} môn / ${credits} TC</span>
+                    <span class="grade-percentage">${percentageOfTotalCredits}% TC</span>
+                `;
+                li.dataset.gradeFilter = grade;
+
+                // Xác định mức độ nhấn mạnh dựa trên tỷ lệ phần trăm TÍN CHỈ
+                let emphasisClass = '';
+                const numericPercentage = parseFloat(percentageOfTotalCredits);
+
+                if (numericPercentage > 40) { // Ví dụ: hơn 40% tổng tín chỉ
+                    emphasisClass = 'grade-emphasis-high';
+                } else if (numericPercentage > 25) { // Ví dụ: hơn 25% tổng tín chỉ
+                    emphasisClass = 'grade-emphasis-medium';
+                } else if (grade === 'F' && numericPercentage > 0) {
+                     emphasisClass = 'grade-emphasis-very-low';
+                } else if ((grade === 'D' || grade === 'D+') && numericPercentage > 0) {
+                    emphasisClass = 'grade-emphasis-low';
+                }
+                // Bạn có thể thêm các ngưỡng khác nếu muốn
+
+                if (emphasisClass) {
+                    li.classList.add(emphasisClass);
+                }
+
+                // Nếu đang lọc theo điểm này, thêm class active
+                if (grade === currentGradeFilter) {
+                    li.classList.add('active-filter');
+                }
+
+                li.addEventListener('click', () => handleGradeFilterClick(grade));
+                statsGradeDistributionEl.appendChild(li);
+            }
+        });
     }
 
     // Logic cho nút bỏ lọc
@@ -986,61 +1098,56 @@ const clearGradeFilterButton = document.getElementById('clearGradeFilterButton')
         clearGradeFilterButton.classList.add('hidden');
     }
 
-    // --- Lọc và Sắp xếp dữ liệu cho bảng ---
+    // --- Lọc và Sắp xếp dữ liệu cho bảng Chi tiết Từng Môn ---
     let displayData = [...allCompletedSubjectsForStats]; // Bắt đầu với tất cả dữ liệu
 
-    // 1. Áp dụng lọc
+    // 1. Áp dụng lọc theo điểm chữ (nếu có)
     if (currentGradeFilter) {
         displayData = displayData.filter(subject => subject.letterGrade === currentGradeFilter);
     }
 
-    // 2. Áp dụng sắp xếp
+    // 2. Áp dụng sắp xếp (nếu có)
     if (currentSort.key) {
         displayData.sort((a, b) => {
             let valA = a[currentSort.key];
             let valB = b[currentSort.key];
 
-            // Xử lý % contribution (được tính toán, không phải thuộc tính gốc)
+            // Xử lý cho các trường hợp đặc biệt cần tính toán hoặc chuyển đổi giá trị trước khi so sánh
             if (currentSort.key === 'contribution') {
-                const completedTotalWeightedPoints = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
-                valA = completedTotalWeightedPoints > 0 ? (a.weightedPoints / completedTotalWeightedPoints * 100) : 0;
-                valB = completedTotalWeightedPoints > 0 ? (b.weightedPoints / completedTotalWeightedPoints * 100) : 0;
-            }
-
-
-            if (typeof valA === 'string') {
+                // Tính toán % đóng góp GPA TL tại chỗ để sắp xếp
+                const completedTotalWeightedPointsForSort = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
+                valA = completedTotalWeightedPointsForSort > 0 ? (a.weightedPoints / completedTotalWeightedPointsForSort * 100) : 0;
+                valB = completedTotalWeightedPointsForSort > 0 ? (b.weightedPoints / completedTotalWeightedPointsForSort * 100) : 0;
+            } else if (currentSort.key === 'letterGrade') {
+                // Sắp xếp điểm chữ theo giá trị điểm số (A+ > A > B+...)
+                valA = gradePoints[a.letterGrade] !== null ? gradePoints[a.letterGrade] : -1; // Gán -1 cho giá trị không hợp lệ để đẩy xuống cuối
+                valB = gradePoints[b.letterGrade] !== null ? gradePoints[b.letterGrade] : -1;
+            } else if (typeof valA === 'string') {
+                // Chuẩn hóa chuỗi về chữ thường để sắp xếp không phân biệt hoa thường
                 valA = valA.toLowerCase();
                 valB = valB.toLowerCase();
             }
-            // Đối với điểm chữ, sắp xếp theo giá trị gradePoints
-            if (currentSort.key === 'letterGrade') {
-                valA = gradePoints[a.letterGrade] !== null ? gradePoints[a.letterGrade] : -1;
-                valB = gradePoints[b.letterGrade] !== null ? gradePoints[b.letterGrade] : -1;
-            }
 
-
+            // Thực hiện so sánh
             if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
             if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
-            return 0;
+            return 0; // Bằng nhau
         });
     } else {
-         // Sắp xếp mặc định theo thứ tự môn học gốc nếu không có sắp xếp nào được chọn
+         // Nếu không có sắp xếp nào được áp dụng, sắp xếp mặc định theo thứ tự môn học gốc
         displayData.sort((a,b) => subjects.findIndex(s => s.id === a.id) - subjects.findIndex(s => s.id === b.id));
     }
     // --- Kết thúc Lọc và Sắp xếp ---
 
+    // Vẽ lại bảng Chi tiết Từng Môn với dữ liệu đã được lọc/sắp xếp
     statsSubjectDetailsTableBodyEl.innerHTML = '';
     if (displayData.length === 0) {
         const row = statsSubjectDetailsTableBodyEl.insertRow();
         const cell = row.insertCell();
-        cell.colSpan = 6;
+        cell.colSpan = 6; // Số cột của bảng
         cell.textContent = currentGradeFilter ? 'Không có môn nào khớp với bộ lọc.' : 'Chưa có môn nào được nhập điểm.';
         cell.style.textAlign = 'center';
     } else {
-        // Sắp xếp displayData theo thứ tự môn học gốc ban đầu nếu không có sắp xếp cụ thể
-        // if (!currentSort.key) {
-        //    displayData.sort((a,b) => subjects.findIndex(s => s.id === a.id) - subjects.findIndex(s => s.id === b.id));
-        // }
         displayData.forEach(data => {
             const row = statsSubjectDetailsTableBodyEl.insertRow();
             row.insertCell().textContent = data.name;
@@ -1049,13 +1156,18 @@ const clearGradeFilterButton = document.getElementById('clearGradeFilterButton')
             row.insertCell().textContent = data.point.toFixed(1);
             row.insertCell().textContent = data.weightedPoints.toFixed(1);
 
-            const completedTotalWeightedPoints = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
-            const directContribution = completedTotalWeightedPoints > 0 ? (data.weightedPoints / completedTotalWeightedPoints * 100) : 0;
+            // Tính % đóng góp GPA TL cho mỗi môn trong bảng
+            const completedTotalWeightedPointsForTable = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
+            const directContribution = completedTotalWeightedPointsForTable > 0 ? (data.weightedPoints / completedTotalWeightedPointsForTable * 100) : 0;
             row.insertCell().textContent = `${directContribution.toFixed(1)}%`;
         });
     }
-	  updateCumulativeGpaChart(allCompletedSubjectsForStats); // THÊM LỆNH GỌI NÀY
-    updateSortArrows(); // Cập nhật mũi tên sắp xếp trên header
+
+    // Cập nhật hoặc tạo biểu đồ GPA tích lũy qua các học kỳ
+    updateCumulativeGpaChart(allCompletedSubjectsForStats);
+
+    // Cập nhật mũi tên chỉ hướng sắp xếp trên header của bảng
+    updateSortArrows();
 }
 function updateCumulativeGpaChart(completedSubjects) {
     const chartCanvas = document.getElementById('cumulativeGpaChart');
