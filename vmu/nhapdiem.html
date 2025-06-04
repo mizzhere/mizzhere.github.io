@@ -379,232 +379,136 @@
     </style>
 </head>
 <body>
-<div class="container">
-  <!-- PHẦN NHẬP ĐIỂM -->
-  <div id="mainContent">
-    <div class="results-sticky-container">
-      <h1 class="text-xl md:text-2xl font-bold text-center mb-4 text-slate-700">Chương trình Tính điểm Sinh viên</h1>
-      <div class="sticky-content-grid">
-        <div id="targetRankArea" class="target-rank-card">
-          <h3 class="text-base font-semibold mb-2 text-center">Mục tiêu Hạng</h3>
-          <div class="flex items-center justify-center space-x-2 mb-2"> 
-            <label for="targetRankSelect" class="font-medium whitespace-nowrap text-xs">Hạng:</label>
-            <select id="targetRankSelect" class="bg-white text-xs">
-              <option value="">-- Chọn --</option>
-              <option value="Xuất sắc">Xuất sắc (≥ 3.6)</option>
-              <option value="Giỏi">Giỏi (≥ 3.2)</option>
-              <option value="Khá">Khá (≥ 2.5)</option>
-              <option value="Trung bình">Trung bình (≥ 2.0)</option>
-            </select>
-          </div>
-          <div id="targetRankInfo" class="target-rank-info-grid"> 
-            <div>
-              <p>Khả năng</p>
-              <p id="targetAchievable"></p>
+    <div class="container">
+        <div class="results-sticky-container">
+            <h1 class="text-xl md:text-2xl font-bold text-center mb-4 text-slate-700">Chương trình Tính điểm Sinh viên</h1>
+            <div class="sticky-content-grid">
+                <div id="targetRankArea" class="target-rank-card">
+                    <h3 class="text-base font-semibold mb-2 text-center">Mục tiêu Hạng</h3>
+                    <div class="flex items-center justify-center space-x-2 mb-2"> 
+                        <label for="targetRankSelect" class="font-medium whitespace-nowrap text-xs">Hạng:</label>
+                        <select id="targetRankSelect" class="bg-white text-xs">
+                            <option value="">-- Chọn --</option>
+                            <option value="Xuất sắc">Xuất sắc (≥ 3.6)</option>
+                            <option value="Giỏi">Giỏi (≥ 3.2)</option>
+                            <option value="Khá">Khá (≥ 2.5)</option>
+                            <option value="Trung bình">Trung bình (≥ 2.0)</option>
+                        </select>
+                    </div>
+                    <div id="targetRankInfo" class="target-rank-info-grid"> 
+                        <div>
+                            <p>Khả năng</p>
+                            <p id="targetAchievable"></p>
+                        </div>
+                        <div>
+                            <p>TC còn lại</p>
+                            <p id="remainingCreditsForTarget"></p>
+                        </div>
+                        <div>
+                            <p>GPA cần</p>
+                            <p id="minAvgForRemaining"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultsArea" class="results-card results-card-slate hidden"> <!-- Default to slate -->
+                    <div>
+                        <h3 class="text-base font-semibold mb-2 text-center">Kết quả Hiện tại</h3>
+                    </div>
+                    <div class="info-grid pt-2"> <!-- Removed mt-auto, added pt-2 for spacing -->
+                        <div>
+                            <p>Tổng TC</p>
+                            <p id="totalCredits" class="text-lg"></p>
+                        </div>
+                        <div>
+                            <p>GPA</p>
+                            <p id="gpa" class="gpa-highlight text-2xl"></p> <!-- Increased GPA size -->
+                        </div>
+                        <div>
+                            <p>Xếp Loại</p>
+                            <p id="rank" class="rank-highlight text-xl"></p> <!-- Increased Rank size -->
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <p>TC còn lại</p>
-              <p id="remainingCreditsForTarget"></p>
-            </div>
-            <div>
-              <p>GPA cần</p>
-              <p id="minAvgForRemaining"></p>
-            </div>
-          </div>
         </div>
-        <div id="resultsArea" class="results-card results-card-slate hidden">
-          <div>
-            <h3 class="text-base font-semibold mb-2 text-center">Kết quả Hiện tại</h3>
-          </div>
-          <div class="info-grid pt-2">
-            <div>
-              <p>Tổng TC</p>
-              <p id="totalCredits" class="text-lg"></p>
+
+        <div class="subjects-list-main-container">
+            <div class="subject-item header-item-subjects mb-2">
+                <span class="subject-name">Tên Môn học/Học phần</span>
+                <span class="text-center">Số TC</span>
+                <span class="text-center">Điểm chữ</span>
             </div>
-            <div>
-              <p>GPA</p>
-              <p id="gpa" class="gpa-highlight text-2xl"></p>
+            <div id="semestersContainer">
+                <!-- Semester blocks will be injected here -->
             </div>
-            <div>
-              <p>Xếp Loại</p>
-              <p id="rank" class="rank-highlight text-xl"></p>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <div class="button-container mt-4">
+            <button id="calculateButton" class="main-action-button">Lưu & Cập nhật</button>
+            <button id="toggleDetailedStatsButton" class="secondary-action-button mt-2">Xem Thống Kê Chi Tiết</button>
+        </div>
+
+        <div id="detailedStatsContainer" class="detailed-stats-section hidden">
+            <h2>Thống Kê Chi Tiết</h2>
+            
+            <div class="stats-summary-grid">
+                <div>
+                    <p>Tổng TC Chương trình</p>
+                    <p id="statsTotalProgramCredits"></p>
+                </div>
+                <div>
+                    <p>Tổng TC Hoàn thành</p>
+                    <p id="statsTotalCompletedCredits"></p>
+                </div>
+                <div>
+                    <p>Tỷ lệ Hoàn thành</p>
+                    <p id="statsCompletionRate"></p>
+                </div>
+                <div>
+                    <p>GPA Tích lũy</p>
+                    <p id="statsOverallGPA"></p>
+                </div>
+            </div>
+
+            <h3>Phân phối Điểm</h3>
+            <ul id="statsGradeDistribution" class="grade-distribution-list">
+                <!-- Grade distribution will be populated here -->
+            </ul>
+
+            <h3>Chi tiết Từng Môn</h3>
+            <div class="overflow-x-auto">
+                <table class="subject-details-table">
+                    <thead>
+                        <tr>
+                            <th>Tên Môn</th>
+                            <th>Số TC</th>
+                            <th>Điểm Chữ</th>
+                            <th>Điểm 4</th>
+                            <th>Điểm TS</th>
+                            <th>% ĐG GPA TL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsSubjectDetailsTableBody">
+                        <!-- Subject details will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="closeDetailedStatsButton" class="secondary-action-button mt-6 w-auto mx-auto px-6">Đóng</button>
+        </div>
+
     </div>
-    <div class="subjects-list-main-container">
-      <div class="subject-item header-item-subjects mb-2">
-        <span class="subject-name">Tên Môn học/Học phần</span>
-        <span class="text-center">Số TC</span>
-        <span class="text-center">Điểm chữ</span>
-      </div>
-      <div id="semestersContainer"></div>
+
+    <button id="scrollToTopBtn" title="Cuộn lên đầu trang">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-up-short" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
+        </svg>
+    </button>
+
+    <div id="toastNotification" class="toast-notification">
+        Đã lưu và cập nhật điểm!
     </div>
-    <div class="button-container mt-4">
-      <button id="calculateButton" class="main-action-button">Lưu & Cập nhật</button>
-      <button id="toggleDetailedStatsButton" class="secondary-action-button mt-2">Xem Thống Kê Chi Tiết</button>
-    </div>
-  </div>
-  <!-- PHẦN THỐNG KÊ CHI TIẾT -->
-  <div id="detailedContent" class="hidden">
-    <div id="detailedStatsContainer" class="detailed-stats-section">
-      <h2>Thống Kê Chi Tiết</h2>
-      <div class="mb-6">
-        <canvas id="semesterGpaAreaChart" height="220"></canvas>
-      </div>
-      <div class="stats-summary-grid">
-        <div>
-          <p>Tổng TC Chương trình</p>
-          <p id="statsTotalProgramCredits"></p>
-        </div>
-        <div>
-          <p>Tổng TC Hoàn thành</p>
-          <p id="statsTotalCompletedCredits"></p>
-        </div>
-        <div>
-          <p>Tỷ lệ Hoàn thành</p>
-          <p id="statsCompletionRate"></p>
-        </div>
-        <div>
-          <p>GPA Tích lũy</p>
-          <p id="statsOverallGPA"></p>
-        </div>
-      </div>
-      <h3>Phân phối Điểm</h3>
-      <ul id="statsGradeDistribution" class="grade-distribution-list"></ul>
-      <h3>Chi tiết Từng Môn</h3>
-      <div class="overflow-x-auto">
-        <table class="subject-details-table">
-          <thead>
-            <tr>
-              <th>Tên Môn</th>
-              <th>Số TC</th>
-              <th>Điểm Chữ</th>
-              <th>Điểm 4</th>
-              <th>Điểm TS</th>
-              <th>% ĐG GPA TL</th>
-            </tr>
-          </thead>
-          <tbody id="statsSubjectDetailsTableBody"></tbody>
-        </table>
-      </div>
-      <button id="closeDetailedStatsButton" class="secondary-action-button mt-6 w-auto mx-auto px-6">Đóng</button>
-    </div>
-  </div>
-</div>
-<button id="scrollToTopBtn" title="Cuộn lên đầu trang">
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-up-short" viewBox="0 0 16 16">
-    <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
-  </svg>
-</button>
-<div id="toastNotification" class="toast-notification">Đã lưu và cập nhật điểm!</div>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Script phần tính điểm và chuyển giao diện -->
-<script>
-// --- Toàn bộ phần JS giữ nguyên từ file cũ của bạn, chỉ thêm phần dưới đây vào cuối file ---
-
-// PHẦN CHUYỂN GIAO DIỆN
-const mainContent = document.getElementById('mainContent');
-const detailedContent = document.getElementById('detailedContent');
-const toggleDetailedStatsButton = document.getElementById('toggleDetailedStatsButton');
-const closeDetailedStatsButton = document.getElementById('closeDetailedStatsButton');
-
-toggleDetailedStatsButton.addEventListener('click', () => {
-  mainContent.classList.add('hidden');
-  detailedContent.classList.remove('hidden');
-  renderSemesterGpaAreaChart();
-});
-
-closeDetailedStatsButton.addEventListener('click', () => {
-  detailedContent.classList.add('hidden');
-  mainContent.classList.remove('hidden');
-});
-
-// BIỂU ĐỒ MIỀN GPA TỪNG HỌC KỲ
-let semesterGpaChart = null;
-function renderSemesterGpaAreaChart() {
-  const ctx = document.getElementById('semesterGpaAreaChart').getContext('2d');
-  // Tính điểm trung bình từng học kỳ
-  const semesterNumbers = Object.keys(subjectsBySemester).map(Number).sort((a, b) => a - b);
-  const gpaData = [];
-  const semesterLabels = [];
-
-  semesterNumbers.forEach(semNum => {
-    const semSubjects = subjectsBySemester[semNum];
-    let totalPoints = 0, totalCredits = 0;
-    semSubjects.forEach(subject => {
-      const gradeSelect = document.getElementById(subject.id);
-      if (gradeSelect && gradeSelect.value && gradePoints[gradeSelect.value] !== null) {
-        totalPoints += gradePoints[gradeSelect.value] * subject.credits;
-        totalCredits += subject.credits;
-      }
-    });
-    if (totalCredits > 0) {
-      gpaData.push(Number((totalPoints / totalCredits).toFixed(2)));
-      semesterLabels.push('HK ' + semNum);
-    }
-  });
-
-  // Lấy 4 học kỳ cuối cùng có điểm
-  const lastGpaData = gpaData.slice(-4);
-  const lastLabels = semesterLabels.slice(-4);
-
-  // Nếu chưa có đủ dữ liệu, thêm label/dữ liệu trống
-  while (lastGpaData.length < 4) {
-    lastGpaData.unshift(null);
-    lastLabels.unshift('');
-  }
-
-  if (semesterGpaChart) semesterGpaChart.destroy();
-
-  semesterGpaChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: lastLabels,
-      datasets: [{
-        label: 'GPA từng học kỳ',
-        data: lastGpaData,
-        fill: true,
-        backgroundColor: 'rgba(37, 99, 235, 0.15)',
-        borderColor: 'rgba(37, 99, 235, 1)',
-        tension: 0.3,
-        pointRadius: 5,
-        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
-        spanGaps: true,
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          min: 0,
-          max: 4,
-          title: { display: true, text: 'GPA' }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true }
-      }
-    }
-  });
-}
-
-// Đảm bảo cập nhật lại biểu đồ khi nhập/sửa điểm (nếu đang ở detailedContent)
-const oldCalculateAndDisplayResults = calculateAndDisplayResults;
-calculateAndDisplayResults = function() {
-  oldCalculateAndDisplayResults.apply(this, arguments);
-  if (!detailedContent.classList.contains('hidden')) {
-    renderSemesterGpaAreaChart();
-  }
-}
-
-// Nếu bạn đã sửa hàm calculateAndDisplayResults trực tiếp thì bỏ đoạn trên, 
-// chỉ cần đảm bảo cuối hàm có dòng:
-/// if (!detailedContent.classList.contains('hidden')) { renderSemesterGpaAreaChart(); }
-</script>
     <script>
         const subjects = [
             // Học kỳ 1
