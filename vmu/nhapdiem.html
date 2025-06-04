@@ -6,7 +6,9 @@
     <title>Ứng dụng Tính điểm Sinh viên</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- THÊM DÒNG NÀY -->
+
+	<style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; 
@@ -375,8 +377,106 @@
         {
             text-align: center;
         }
+/* Modal Styles */
+.modal-overlay {
+  display: none; /* Initially hidden, JS will change to flex */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Darker overlay for better focus */
+  z-index: 1001; /* Above other content, below toast potentially */
+  justify-content: center;
+  align-items: center;
+  padding: 1rem; /* Padding for smaller screens, allows modal to not touch edges */
+}
 
-    </style>
+.modal-overlay.visible {
+  display: flex; /* Use flex to center content */
+}
+
+.modal-content-wrapper {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); /* Softer shadow */
+  width: 100%;
+  max-width: 800px; /* Max width for the modal, can be adjusted */
+  max-height: 90vh; /* Max height, relative to viewport height */
+  overflow: hidden; /* Important: child will scroll, not this wrapper */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Adjust detailed-stats-section for modal context */
+.modal-content-wrapper .detailed-stats-section {
+  background-color: white; /* Ensure it has a background */
+  border: none; /* Modal wrapper handles outer border/shadow */
+  border-radius: 0; /* Modal wrapper handles radius for the whole box */
+  margin: 0; /* No margin, it fills the modal content wrapper */
+  flex-grow: 1; /* Allow this section to take available space */
+  overflow-y: auto; /* Crucial: This makes the content inside detailed-stats-section scrollable */
+  padding: 1.5rem; /* Keep its internal padding */
+}
+
+.modal-content-wrapper .detailed-stats-section h2 {
+  margin-top: 0; /* Good practice for first element in a container */
+}
+
+/* Ensure close button in modal is easily clickable */
+#closeDetailedStatsButton { /* This is the button inside the modal */
+  display: block; /* To allow auto margins for centering */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Remove original hidden style for detailedStatsContainer if it was applied by JS somewhere else for other reasons */
+/* #detailedStatsContainer.hidden { display: none; } */ /* This is now controlled by modal overlay */
+    /* Styles for Sortable Table Headers */
+.subject-details-table th[data-sortable] {
+  cursor: pointer;
+  position: relative; /* For positioning the arrow */
+}
+.subject-details-table th[data-sortable]:hover {
+  background-color: #e9ecef; /* Light hover effect */
+}
+.sort-arrow {
+  font-size: 0.8em;
+  margin-left: 5px;
+  display: inline-block;
+  width: 1em; /* Reserve space for arrow */
+  text-align: center;
+}
+.sort-arrow::before {
+  content: '\00a0'; /* Default: non-breaking space, no arrow */
+}
+.subject-details-table th.sorted-asc .sort-arrow::before {
+  content: '▲'; /* Up arrow for ascending */
+}
+.subject-details-table th.sorted-desc .sort-arrow::before {
+  content: '▼'; /* Down arrow for descending */
+}
+
+/* Styles for Grade Distribution Filtering */
+.grade-distribution-list li {
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.grade-distribution-list li:hover {
+  background-color: #dbeafe; /* Lighter blue on hover */
+  border-color: #bfdbfe;
+}
+.grade-distribution-list li.active-filter {
+  background-color: #93c5fd; /* Darker blue for active filter */
+  color: #1e3a8a;
+  font-weight: 600;
+  border-color: #60a5fa;
+}
+
+#clearGradeFilterButton.hidden {
+    display: none;
+}
+	</style>
 </head>
 <body>
     <div class="container">
@@ -449,9 +549,15 @@
             <button id="toggleDetailedStatsButton" class="secondary-action-button mt-2">Xem Thống Kê Chi Tiết</button>
         </div>
 
-        <div id="detailedStatsContainer" class="detailed-stats-section hidden">
+
+    </div>
+<!-- MODAL CHO THỐNG KÊ CHI TIẾT -->
+<div id="detailedStatsModalOverlay" class="modal-overlay">
+    <div class="modal-content-wrapper">
+        <!-- Nội dung của detailedStatsContainer sẽ được đặt ở đây -->
+        <div id="detailedStatsContainer" class="detailed-stats-section">
             <h2>Thống Kê Chi Tiết</h2>
-            
+
             <div class="stats-summary-grid">
                 <div>
                     <p>Tổng TC Chương trình</p>
@@ -475,30 +581,41 @@
             <ul id="statsGradeDistribution" class="grade-distribution-list">
                 <!-- Grade distribution will be populated here -->
             </ul>
+            <!-- THÊM PHẦN BIỂU ĐỒ GPA TÍCH LŨY -->
+            <div class="cumulative-gpa-chart-container mt-6 mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-center text-gray-700">Biến động GPA Tích lũy qua các Học kỳ</h3>
+                <div style="height: 300px; position: relative;"> <!-- Container cho canvas với chiều cao cố định -->
+                     <canvas id="cumulativeGpaChart"></canvas>
+                </div>
+            </div>
+            <!-- KẾT THÚC PHẦN BIỂU ĐỒ -->
 
             <h3>Chi tiết Từng Môn</h3>
-            <div class="overflow-x-auto">
-                <table class="subject-details-table">
-                    <thead>
-                        <tr>
-                            <th>Tên Môn</th>
-                            <th>Số TC</th>
-                            <th>Điểm Chữ</th>
-                            <th>Điểm 4</th>
-                            <th>Điểm TS</th>
-                            <th>% ĐG GPA TL</th>
-                        </tr>
-                    </thead>
-                    <tbody id="statsSubjectDetailsTableBody">
-                        <!-- Subject details will be populated here -->
-                    </tbody>
-                </table>
-            </div>
+<div style="margin-bottom: 0.5rem; text-align: right;"> <!-- Thêm container cho nút bỏ lọc -->
+    <button id="clearGradeFilterButton" class="secondary-action-button hidden" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Bỏ lọc điểm</button>
+</div>
+<div class="overflow-x-auto">
+<table class="subject-details-table">
+    <thead>
+        <tr>
+            <th>Tên Môn</th> <!-- Không sắp xếp cột này -->
+            <th data-sortable data-sort-key="credits">Số TC <span class="sort-arrow"></span></th>
+            <th data-sortable data-sort-key="letterGrade">Điểm Chữ <span class="sort-arrow"></span></th>
+            <th data-sortable data-sort-key="point">Điểm 4 <span class="sort-arrow"></span></th>
+            <th data-sortable data-sort-key="weightedPoints">Điểm TS <span class="sort-arrow"></span></th>
+            <th data-sortable data-sort-key="contribution">% ĐG GPA TL <span class="sort-arrow"></span></th>
+        </tr>
+    </thead>
+    <tbody id="statsSubjectDetailsTableBody">
+        <!-- Subject details will be populated here -->
+    </tbody>
+</table>
+</div>
             <button id="closeDetailedStatsButton" class="secondary-action-button mt-6 w-auto mx-auto px-6">Đóng</button>
         </div>
-
     </div>
-
+</div>
+<!-- KẾT THÚC MODAL -->
     <button id="scrollToTopBtn" title="Cuộn lên đầu trang">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-up-short" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
@@ -510,6 +627,9 @@
     </div>
 
     <script>
+	// ...
+
+	const detailedStatsModalOverlay = document.getElementById('detailedStatsModalOverlay');
         const subjects = [
             // Học kỳ 1
             { id: "hk1_nn1", name: "Ngoại ngữ I", credits: 3, semester: 1 },
@@ -586,6 +706,11 @@
         const LOCAL_STORAGE_EXPANDED_SEMESTERS_KEY = 'expandedSemesters';
 
 
+let currentGradeFilter = null; // Để lưu trữ điểm chữ đang được lọc
+let currentSort = { key: null, order: 'asc' };
+let allCompletedSubjectsForStats = [];
+let detailedStatsTableHeadersInitialized = false; // THÊM DÒNG NÀY
+let cumulativeGpaChartInstance = null; // THÊM DÒNG NÀY
         const totalProgramCredits = subjects.reduce((sum, s) => sum + s.credits, 0);
         const subjectsBySemester = subjects.reduce((acc, subject) => {
                 acc[subject.semester] = acc[subject.semester] || [];
@@ -619,6 +744,7 @@
         const statsGradeDistributionEl = document.getElementById('statsGradeDistribution');
         const statsSubjectDetailsTableBodyEl = document.getElementById('statsSubjectDetailsTableBody');
 
+const clearGradeFilterButton = document.getElementById('clearGradeFilterButton'); // THÊM DÒNG NÀY
         let currentResultsCardRankClass = 'results-card-slate'; // For dynamic background
         let toastTimeout; 
 
@@ -818,62 +944,273 @@
         }
 
         function updateDetailedStatistics(completedSubjectsData, overallTotalWeightedPoints, overallCompletedCredits, overallGPA) {
-            if (detailedStatsContainer.classList.contains('hidden')) {
-                return; // Don't update if not visible
+    // Store the full list of completed subjects for filtering/sorting
+    allCompletedSubjectsForStats = [...completedSubjectsData]; // Tạo bản sao
+
+    statsTotalProgramCreditsEl.textContent = totalProgramCredits;
+    statsTotalCompletedCreditsEl.textContent = overallCompletedCredits;
+    const completionRate = totalProgramCredits > 0 ? (overallCompletedCredits / totalProgramCredits * 100) : 0;
+    statsCompletionRateEl.textContent = `${completionRate.toFixed(1)}%`;
+    statsOverallGPAEl.textContent = overallGPA.toFixed(2);
+
+    const gradeCounts = {};
+    gradeOptions.forEach(g => { if (g) gradeCounts[g] = 0; });
+
+    allCompletedSubjectsForStats.forEach(data => { // Dùng allCompletedSubjectsForStats để đếm
+        if (data.letterGrade && gradeCounts.hasOwnProperty(data.letterGrade)) {
+            gradeCounts[data.letterGrade]++;
+        }
+    });
+
+    statsGradeDistributionEl.innerHTML = '';
+    Object.keys(gradeCounts).sort((a, b) => gradePoints[b] - gradePoints[a]).forEach(grade => {
+        if (gradeCounts[grade] > 0) {
+            const li = document.createElement('li');
+            li.textContent = `${grade}: ${gradeCounts[grade]} môn`;
+            li.dataset.gradeFilter = grade; // Thêm data attribute để lọc
+            if (grade === currentGradeFilter) {
+                li.classList.add('active-filter'); // Đánh dấu nếu đang là filter hiện tại
             }
-            
-            statsTotalProgramCreditsEl.textContent = totalProgramCredits;
-            statsTotalCompletedCreditsEl.textContent = overallCompletedCredits;
-            const completionRate = totalProgramCredits > 0 ? (overallCompletedCredits / totalProgramCredits * 100) : 0;
-            statsCompletionRateEl.textContent = `${completionRate.toFixed(1)}%`;
-            statsOverallGPAEl.textContent = overallGPA.toFixed(2);
+            li.addEventListener('click', () => handleGradeFilterClick(grade));
+            statsGradeDistributionEl.appendChild(li);
+        }
+    });
+    if (statsGradeDistributionEl.children.length === 0) {
+        statsGradeDistributionEl.innerHTML = '<li>Chưa có điểm nào được nhập.</li>';
+    }
 
-            const gradeCounts = {};
-            gradeOptions.forEach(g => { if(g) gradeCounts[g] = 0; }); 
+    // Logic cho nút bỏ lọc
+    if (currentGradeFilter) {
+        clearGradeFilterButton.classList.remove('hidden');
+    } else {
+        clearGradeFilterButton.classList.add('hidden');
+    }
 
-            completedSubjectsData.forEach(data => {
-                if (data.letterGrade && gradeCounts.hasOwnProperty(data.letterGrade)) {
-                    gradeCounts[data.letterGrade]++;
-                }
-            });
-            statsGradeDistributionEl.innerHTML = ''; 
-            Object.keys(gradeCounts).sort((a,b) => gradePoints[b] - gradePoints[a]).forEach(grade => { // Sort by grade point
-                if (gradeCounts[grade] > 0) {
-                    const li = document.createElement('li');
-                    li.textContent = `${grade}: ${gradeCounts[grade]} môn`;
-                    statsGradeDistributionEl.appendChild(li);
-                }
-            });
-             if (statsGradeDistributionEl.children.length === 0) {
-                statsGradeDistributionEl.innerHTML = '<li>Chưa có điểm nào được nhập.</li>';
+    // --- Lọc và Sắp xếp dữ liệu cho bảng ---
+    let displayData = [...allCompletedSubjectsForStats]; // Bắt đầu với tất cả dữ liệu
+
+    // 1. Áp dụng lọc
+    if (currentGradeFilter) {
+        displayData = displayData.filter(subject => subject.letterGrade === currentGradeFilter);
+    }
+
+    // 2. Áp dụng sắp xếp
+    if (currentSort.key) {
+        displayData.sort((a, b) => {
+            let valA = a[currentSort.key];
+            let valB = b[currentSort.key];
+
+            // Xử lý % contribution (được tính toán, không phải thuộc tính gốc)
+            if (currentSort.key === 'contribution') {
+                const completedTotalWeightedPoints = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
+                valA = completedTotalWeightedPoints > 0 ? (a.weightedPoints / completedTotalWeightedPoints * 100) : 0;
+                valB = completedTotalWeightedPoints > 0 ? (b.weightedPoints / completedTotalWeightedPoints * 100) : 0;
             }
 
-            statsSubjectDetailsTableBodyEl.innerHTML = ''; 
-            if (completedSubjectsData.length === 0) {
-                 const row = statsSubjectDetailsTableBodyEl.insertRow();
-                 const cell = row.insertCell();
-                 cell.colSpan = 6;
-                 cell.textContent = 'Chưa có môn nào được nhập điểm.';
-                 cell.style.textAlign = 'center';
-            } else {
-                completedSubjectsData.sort((a,b) => subjects.findIndex(s => s.id === a.id) - subjects.findIndex(s => s.id === b.id)); // Sort by original subject order
-                completedSubjectsData.forEach(data => {
-                    const row = statsSubjectDetailsTableBodyEl.insertRow();
-                    row.insertCell().textContent = data.name;
-                    row.insertCell().textContent = data.credits;
-                    row.insertCell().textContent = data.letterGrade;
-                    row.insertCell().textContent = data.point.toFixed(1);
-                    row.insertCell().textContent = data.weightedPoints.toFixed(1);
-                    const contribution = overallTotalWeightedPoints > 0 ? (data.weightedPoints / overallTotalWeightedPoints * 100) : 0;
-                    // Make contribution relative to total weighted points of *completed* subjects for a more direct impact view
-                    const completedTotalWeightedPoints = completedSubjectsData.reduce((sum, subj) => sum + subj.weightedPoints, 0);
-                    const directContribution = completedTotalWeightedPoints > 0 ? (data.weightedPoints / completedTotalWeightedPoints * 100) : 0;
 
-                    row.insertCell().textContent = `${directContribution.toFixed(1)}%`;
-                });
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+            // Đối với điểm chữ, sắp xếp theo giá trị gradePoints
+            if (currentSort.key === 'letterGrade') {
+                valA = gradePoints[a.letterGrade] !== null ? gradePoints[a.letterGrade] : -1;
+                valB = gradePoints[b.letterGrade] !== null ? gradePoints[b.letterGrade] : -1;
+            }
+
+
+            if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
+            return 0;
+        });
+    } else {
+         // Sắp xếp mặc định theo thứ tự môn học gốc nếu không có sắp xếp nào được chọn
+        displayData.sort((a,b) => subjects.findIndex(s => s.id === a.id) - subjects.findIndex(s => s.id === b.id));
+    }
+    // --- Kết thúc Lọc và Sắp xếp ---
+
+    statsSubjectDetailsTableBodyEl.innerHTML = '';
+    if (displayData.length === 0) {
+        const row = statsSubjectDetailsTableBodyEl.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 6;
+        cell.textContent = currentGradeFilter ? 'Không có môn nào khớp với bộ lọc.' : 'Chưa có môn nào được nhập điểm.';
+        cell.style.textAlign = 'center';
+    } else {
+        // Sắp xếp displayData theo thứ tự môn học gốc ban đầu nếu không có sắp xếp cụ thể
+        // if (!currentSort.key) {
+        //    displayData.sort((a,b) => subjects.findIndex(s => s.id === a.id) - subjects.findIndex(s => s.id === b.id));
+        // }
+        displayData.forEach(data => {
+            const row = statsSubjectDetailsTableBodyEl.insertRow();
+            row.insertCell().textContent = data.name;
+            row.insertCell().textContent = data.credits;
+            row.insertCell().textContent = data.letterGrade;
+            row.insertCell().textContent = data.point.toFixed(1);
+            row.insertCell().textContent = data.weightedPoints.toFixed(1);
+
+            const completedTotalWeightedPoints = allCompletedSubjectsForStats.reduce((sum, subj) => sum + subj.weightedPoints, 0);
+            const directContribution = completedTotalWeightedPoints > 0 ? (data.weightedPoints / completedTotalWeightedPoints * 100) : 0;
+            row.insertCell().textContent = `${directContribution.toFixed(1)}%`;
+        });
+    }
+	  updateCumulativeGpaChart(allCompletedSubjectsForStats); // THÊM LỆNH GỌI NÀY
+    updateSortArrows(); // Cập nhật mũi tên sắp xếp trên header
+}
+function updateCumulativeGpaChart(completedSubjects) {
+    const chartCanvas = document.getElementById('cumulativeGpaChart');
+    if (!chartCanvas) return; // Thoát nếu canvas không tồn tại
+
+    // Hủy biểu đồ cũ nếu đã tồn tại để tránh lỗi và rò rỉ bộ nhớ
+    if (cumulativeGpaChartInstance) {
+        cumulativeGpaChartInstance.destroy();
+    }
+
+    if (completedSubjects.length === 0) {
+        // Có thể hiển thị thông báo "Không có dữ liệu" trên canvas nếu muốn
+        // Hoặc đơn giản là không vẽ gì cả
+        const ctx = chartCanvas.getContext('2d');
+        ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height); // Xóa canvas
+        // Vẽ văn bản (tùy chọn)
+        // ctx.textAlign = 'center';
+        // ctx.fillStyle = '#6b7280'; // text-gray-500
+        // ctx.font = '16px Inter';
+        // ctx.fillText('Chưa có dữ liệu điểm để vẽ biểu đồ.', chartCanvas.width / 2, chartCanvas.height / 2);
+        return;
+    }
+
+    // 1. Nhóm các môn đã hoàn thành theo học kỳ
+    const subjectsByCompletedSemester = {};
+    completedSubjects.forEach(subject => {
+        const originalSubject = subjects.find(s => s.id === subject.id);
+        if (originalSubject) {
+            const semester = originalSubject.semester;
+            if (!subjectsByCompletedSemester[semester]) {
+                subjectsByCompletedSemester[semester] = [];
+            }
+            subjectsByCompletedSemester[semester].push(subject);
+        }
+    });
+
+    const semesterLabels = [];
+    const cumulativeGpaData = [];
+    let cumulativeWeightedPoints = 0;
+    let cumulativeCredits = 0;
+
+    // Sắp xếp các kỳ theo thứ tự tăng dần
+    const sortedSemesters = Object.keys(subjectsByCompletedSemester)
+                                 .map(Number) // Chuyển key sang số để sắp xếp đúng
+                                 .sort((a, b) => a - b);
+
+    // Tìm học kỳ tối đa có điểm để đảm bảo biểu đồ hiển thị đủ các kỳ đã qua
+    let maxSemesterWithGrade = 0;
+    if (sortedSemesters.length > 0) {
+        maxSemesterWithGrade = sortedSemesters[sortedSemesters.length - 1];
+    }
+    // Hoặc dựa trên tất cả các kỳ trong chương trình nếu muốn biểu đồ luôn full
+    // const allProgramSemesters = [...new Set(subjects.map(s => s.semester))].sort((a, b) => a - b);
+    // const lastProgramSemester = allProgramSemesters.length > 0 ? allProgramSemesters[allProgramSemesters.length -1] : 0;
+    // const maxRelevantSemester = Math.max(maxSemesterWithGrade, lastProgramSemester);
+
+
+    for (let sem = 1; sem <= maxSemesterWithGrade; sem++) {
+        semesterLabels.push(`Kỳ ${sem}`);
+        if (subjectsByCompletedSemester[sem]) {
+            subjectsByCompletedSemester[sem].forEach(subject => {
+                cumulativeWeightedPoints += subject.weightedPoints;
+                cumulativeCredits += subject.credits;
+            });
+        }
+        // Chỉ tính GPA nếu có tín chỉ, tránh chia cho 0
+        const currentCumulativeGpa = cumulativeCredits > 0 ? (cumulativeWeightedPoints / cumulativeCredits) : 0;
+        cumulativeGpaData.push(currentCumulativeGpa.toFixed(2));
+    }
+
+    if (semesterLabels.length === 0) { // Nếu không có kỳ nào có điểm
+         const ctx = chartCanvas.getContext('2d');
+        ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+        return;
+    }
+
+    const data = {
+        labels: semesterLabels,
+        datasets: [{
+            label: 'GPA Tích lũy',
+            data: cumulativeGpaData,
+            fill: true, // Để tạo biểu đồ miền
+            borderColor: 'rgb(59, 130, 246)', // Màu viền (blue-500)
+            backgroundColor: 'rgba(59, 130, 246, 0.2)', // Màu nền (blue-500 với độ mờ)
+            tension: 0.1, // Độ cong của đường
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(59, 130, 246)'
+        }]
+    };
+
+    const config = {
+        type: 'line', // Chart.js dùng 'line' cho cả line và area chart (fill: true)
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Cho phép biểu đồ co giãn theo div cha
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 4.0, // Giới hạn trục y là 4.0
+                    title: {
+                        display: true,
+                        text: 'Điểm GPA (Hệ 4.0)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Học kỳ'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
             }
         }
+    };
 
+    cumulativeGpaChartInstance = new Chart(chartCanvas, config);
+}
+function handleGradeFilterClick(grade) {
+    if (currentGradeFilter === grade) {
+        currentGradeFilter = null; // Nhấn lần nữa để bỏ lọc
+    } else {
+        currentGradeFilter = grade;
+    }
+    // Gọi lại calculateAndDisplayResults để nó gọi updateDetailedStatistics
+    // với dữ liệu gốc, rồi updateDetailedStatistics sẽ áp dụng filter mới
+    calculateAndDisplayResults();
+}
 
         function calculateAndDisplayResults() {
             let totalWeightedPoints = 0;
@@ -983,6 +1320,16 @@
                 remainingCreditsForTargetEl.textContent = "N/A";
                 minAvgForRemainingEl.textContent = "N/A";
             }
+			if (!detailedStatsTableHeadersInitialized) { // Biến cờ để chỉ gắn một lần
+    const tableHeaders = document.querySelectorAll('.subject-details-table th[data-sortable]');
+    tableHeaders.forEach(th => {
+        th.addEventListener('click', () => {
+            const sortKey = th.dataset.sortKey;
+            handleSortClick(sortKey);
+        });
+    });
+    detailedStatsTableHeadersInitialized = true; // Đặt cờ
+}
             updateSemesterStats(); 
             updateDetailedStatistics(completedSubjectsDetails, totalWeightedPoints, currentTotalCompletedCredits, currentGPA);
             saveStateToLocalStorage();
@@ -992,24 +1339,65 @@
             calculateAndDisplayResults(); 
             showToast("Đã lưu và cập nhật điểm!"); 
         });
+function handleSortClick(key) {
+    if (currentSort.key === key) {
+        currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.key = key;
+        currentSort.order = 'asc'; // Mặc định tăng dần khi sắp xếp cột mới
+    }
+    // Gọi lại calculateAndDisplayResults để cập nhật
+    calculateAndDisplayResults();
+}
 
+function updateSortArrows() {
+    const headers = document.querySelectorAll('.subject-details-table th[data-sortable]');
+    headers.forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        const sortKey = th.dataset.sortKey;
+        if (sortKey === currentSort.key) {
+            th.classList.add(currentSort.order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        }
+    });
+}
         targetRankSelect.addEventListener('change', calculateAndDisplayResults);
 
         toggleDetailedStatsButton.addEventListener('click', () => {
-            detailedStatsContainer.classList.toggle('hidden');
-            if (detailedStatsContainer.classList.contains('hidden')) {
-                toggleDetailedStatsButton.textContent = "Xem Thống Kê Chi Tiết";
-            } else {
-                toggleDetailedStatsButton.textContent = "Ẩn Thống Kê Chi Tiết";
-                calculateAndDisplayResults(); 
-            }
-        });
-        closeDetailedStatsButton.addEventListener('click', () => {
-            detailedStatsContainer.classList.add('hidden');
-            toggleDetailedStatsButton.textContent = "Xem Thống Kê Chi Tiết";
-        });
+    calculateAndDisplayResults(); // Luôn cập nhật thống kê trước khi hiển thị
+    detailedStatsModalOverlay.classList.add('visible');
+    // Không cần thay đổi text của nút này nữa, nó luôn là "Xem Thống Kê Chi Tiết"
+});
+closeDetailedStatsButton.addEventListener('click', () => {
+    detailedStatsModalOverlay.classList.remove('visible');
+    if (cumulativeGpaChartInstance) {
+        cumulativeGpaChartInstance.destroy(); // Hủy biểu đồ
+        cumulativeGpaChartInstance = null;
+    }
+});
 
-
+detailedStatsModalOverlay.addEventListener('click', function(event) {
+    if (event.target === detailedStatsModalOverlay) {
+        detailedStatsModalOverlay.classList.remove('visible');
+        if (cumulativeGpaChartInstance) {
+            cumulativeGpaChartInstance.destroy(); // Hủy biểu đồ
+            cumulativeGpaChartInstance = null;
+        }
+    }
+});
+clearGradeFilterButton.addEventListener('click', () => {
+    currentGradeFilter = null;
+    calculateAndDisplayResults(); // Cập nhật lại bảng
+});
+// Đóng modal khi nhấn phím Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape" && detailedStatsModalOverlay.classList.contains('visible')) {
+        detailedStatsModalOverlay.classList.remove('visible');
+        if (cumulativeGpaChartInstance) {
+            cumulativeGpaChartInstance.destroy(); // Hủy biểu đồ
+            cumulativeGpaChartInstance = null;
+        }
+    }
+});
         window.onscroll = function() {scrollFunction()};
         function scrollFunction() {
             if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
