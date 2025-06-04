@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo và Làm Bài Trắc Nghiệm Tương Tác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .input-section-card { 
+            background-color: white;
+            border-radius: 0.75rem; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem; 
+        }
+        @media (min-width: 640px) { .input-section-card { padding: 2rem; } }
+        textarea::placeholder { color: #9ca3af; }
+
+        .quiz-display-body { background-color: #202124; color: #e8eaed; }
+        .quiz-display-card {
+            background-color: #303134; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+            padding: 24px; color: #e8eaed;
+        }
+        
+        .question-counter-style { color: #bdc1c6; font-size: 0.875rem; margin-bottom: 16px; }
+        .quiz-title-style { color: #e8eaed; font-size: 1.25rem; font-weight: 600; margin-bottom: 24px; line-height: 1.6; }
+
+        .option-block {
+            background-color: #3c4043; border: 1px solid #5f6368; border-radius: 8px;
+            padding: 12px 16px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; color: #e8eaed;
+            opacity: 1; 
+        }
+        .option-block:hover:not(.checked-option):not(.disabled-interaction) { background-color: #4a4d50; }
+        .option-block.selected-outline:not(.checked-option) { border-color: #8ab4f8; background-color: #4a4d50; }
+        
+        .disabled-interaction { 
+            cursor: default; 
+        }
+
+        .option-feedback-container { 
+            margin-top: 8px;
+            max-height: 0; /* Initially collapsed */
+            opacity: 0; /* Initially transparent */
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out; /* Animation */
+        }
+        .option-feedback-container.expanded {
+            opacity: 1 !important; /* Use !important to override inline styles */
+            max-height: 500px !important; /* Large enough to fit content */
+        }
+
+        .feedback-header { display: flex; align-items: center; font-weight: 500; }
+        .feedback-icon { margin-right: 8px; font-weight: 700; }
+        .feedback-explanation-text { color: #bdc1c6; font-size: 0.875rem; margin-top: 4px; padding-left: 24px; line-height: 1.5; }
+
+        .correct-option-display { border-color: #1e8e3e !important; background-color: #303134; }
+        .correct-option-display .feedback-header { color: #81c995; }
+        .correct-option-display .feedback-icon { color: #1e8e3e; }
+
+        .incorrect-option-selected-display { border-color: #d93025 !important; background-color: #303134; }
+        .incorrect-option-selected-display .feedback-header { color: #f28b82; }
+        .incorrect-option-selected-display .feedback-icon { color: #d93025; }
+        
+        .checked-option { cursor: default; } 
+       
+        .quiz-nav-btn {
+            padding: 8px 16px; 
+            border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+            transition: background-color 0.2s, box-shadow 0.2s; border: none;
+        }
+        .quiz-nav-btn-primary { background-color: #8ab4f8; color: #202124; }
+        .quiz-nav-btn-primary:hover { background-color: #9ac0f9; box-shadow: 0 1px 2px 0 rgba(95,134,226,0.3), 0 1px 3px 1px rgba(95,134,226,0.15); }
+        .quiz-nav-btn-secondary { background-color: transparent; color: #8ab4f8; border: 1px solid #5f6368; }
+        .quiz-nav-btn-secondary:hover { background-color: rgba(138, 180, 248, 0.08); }
+        .quiz-nav-btn-warning { background-color: #f9ab00; color: #202124; } 
+        .quiz-nav-btn-warning:hover { background-color: #fbc02d; }
+        .quiz-nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .message-area-style { margin-top: 24px; text-align: center; font-weight: 500; }
+        .message-error { color: #f28b82; }
+        .message-success { color: #81c995; }
+
+        .saved-set-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem; border-bottom: 1px solid #e5e7eb;
+        }
+        .saved-set-item:last-child { border-bottom: none; }
+        .action-btn {
+            padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; margin-left: 0.5rem;
+        }
+        .load-btn { background-color: #3b82f6; color: white; }
+        .delete-btn { background-color: #ef4444; color: white; }
+
+        .summary-table { width: 100%; margin-top: 1rem; border-collapse: collapse;}
+        .summary-table th, .summary-table td { text-align: left; padding: 0.5rem; border: 1px solid #4b5563;}
+        .summary-table th { background-color: #3c4043; }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100" id="page-body">
+    <div class="w-full max-w-xl space-y-8"> 
+        <!-- Input Section & Saved Sets Section -->
+        <div class="input-section-card" id="input-management-section">
+            <div id="input-area">
+                <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-700 mb-6">
+                    Tạo hoặc Tải Đề Trắc Nghiệm
+                </h1>
+                <div class="mb-4">
+                    <label for="quiz-data-input" class="block text-sm font-medium text-gray-700 mb-1">
+                        Nhập dữ liệu bộ câu hỏi tại đây:
+                    </label>
+                    <textarea id="quiz-data-input" rows="10" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Dán nội dung các câu hỏi..."></textarea>
+                </div>
+                <div class="flex space-x-2 mb-4">
+                    <button id="create-quiz-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
+                        Bắt Đầu Làm Đề Này
+                    </button>
+                    <button id="save-quiz-set-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
+                        Lưu Đề Hiện Tại
+                    </button>
+                </div>
+                <div id="parse-error-message" class="text-center text-red-600 font-medium mb-4"></div>
+            </div>
+
+            <div id="saved-sets-area" class="mt-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-3">Các Đề Đã Lưu</h2>
+                <div id="saved-sets-list" class="bg-gray-50 rounded-lg max-h-60 overflow-y-auto">
+                    <!-- Saved sets will be listed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Display Section -->
+        <div id="quiz-display-area" class="quiz-display-card hidden">
+            <div id="question-counter" class="question-counter-style"></div>
+            <h2 id="quiz-title" class="quiz-title-style">Nội dung câu hỏi</h2>
+            <div id="quiz-container" class="space-y-3"> </div>
+            <div id="message-area" class="message-area-style"></div>
+            <div class="mt-8 flex flex-row justify-between items-center space-x-3"> 
+                <button id="exit-quiz-btn" class="quiz-nav-btn quiz-nav-btn-secondary"> 
+                    Về Trang Nhập Đề
+                </button>
+                <div class="flex space-x-2"> 
+                    <button id="skip-question-btn" class="quiz-nav-btn quiz-nav-btn-warning">
+                        Bỏ qua
+                    </button>
+                    <!-- Nút "Kiểm tra" đã bị ẩn vì không cần thiết nữa -->
+                    <button id="check-answer-btn" class="quiz-nav-btn quiz-nav-btn-primary hidden">
+                        Kiểm tra
+                    </button>
+                    <button id="next-question-btn" class="quiz-nav-btn quiz-nav-btn-primary hidden">
+                        Tiếp theo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Display Section -->
+        <div id="summary-display-area" class="quiz-display-card hidden">
+            <h2 class="quiz-title-style text-center">Kết Quả Làm Bài</h2>
+            <div id="summary-stats" class="text-lg space-y-2 mb-4">
+                <!-- Stats will be here -->
+            </div>
+            <table id="summary-details-table" class="summary-table hidden">
+                <thead>
+                    <tr><th>Câu hỏi</th><th>Đáp án của bạn</th><th>Kết quả</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Detailed results per question -->
+                </tbody>
+            </table>
+             <div class="mt-8 flex flex-row justify-center items-center">
+                <button id="back-to-input-btn" class="quiz-nav-btn quiz-nav-btn-secondary">
+                    Quay Lại Trang Chủ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pageBody = document.getElementById('page-body');
+        const inputManagementSection = document.getElementById('input-management-section');
+        const inputArea = document.getElementById('input-area');
+        const quizDataInput = document.getElementById('quiz-data-input');
+        const createQuizBtn = document.getElementById('create-quiz-btn');
+        const saveQuizSetBtn = document.getElementById('save-quiz-set-btn');
+        const parseErrorMessage = document.getElementById('parse-error-message');
+        
+        const savedSetsArea = document.getElementById('saved-sets-area');
+        const savedSetsList = document.getElementById('saved-sets-list');
+
+        const quizDisplayArea = document.getElementById('quiz-display-area');
+        const questionCounterEl = document.getElementById('question-counter');
+        const quizTitle = document.getElementById('quiz-title');
+        const quizContainer = document.getElementById('quiz-container');
+        const checkAnswerBtn = document.getElementById('check-answer-btn');
+        const skipQuestionBtn = document.getElementById('skip-question-btn');
+        const messageArea = document.getElementById('message-area');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const exitQuizBtn = document.getElementById('exit-quiz-btn'); 
+
+        const summaryDisplayArea = document.getElementById('summary-display-area');
+        const summaryStats = document.getElementById('summary-stats');
+        const summaryDetailsTable = document.getElementById('summary-details-table').getElementsByTagName('tbody')[0];
+        const backToInputBtn = document.getElementById('back-to-input-btn');
+
+
+        let allQuizQuestions = [];
+        let currentQuestionIndex = 0;
+        let currentQuizData = null;
+        let userResults = []; 
+
+        const LS_QUIZ_SETS_KEY = 'geminiQuizAppSets';
+
+        // --- PARSING LOGIC ---
+        function parseSingleQuestionBlock(questionBlockText, questionNumberForLog) {
+            const lines = questionBlockText.trim().split('\n').map(line => line.trim()).filter(line => line);
+            if (lines.length < 3) return null;
+            let questionText = ""; const options = []; let correctOptionId = null; const feedback = {};
+            let parsingState = "question_text"; 
+            const optionRegex = /^([A-D])\.\s*(.*)/i; const answerRegex = /^Đáp án:\s*([A-D])/i;
+            const explanationHeaderRegex = /^Giải thích:/i; const feedbackRegex = /^([A-D])\s*-\s*(Đúng|Sai|ĐÚNG|SAI):\s*(.*)/i; 
+            let lineIndex = 0;
+            while(lineIndex < lines.length && !optionRegex.test(lines[lineIndex]) && !answerRegex.test(lines[lineIndex].toLowerCase()) && !explanationHeaderRegex.test(lines[lineIndex].toLowerCase()) ) {
+                questionText += (questionText ? " " : "") + lines[lineIndex]; lineIndex++;
+            }
+            if (!questionText) return null;
+            parsingState = "options";
+            for (; lineIndex < lines.length; lineIndex++) {
+                const line = lines[lineIndex];
+                if (parsingState === "options") {
+                    const optionMatch = line.match(optionRegex);
+                    if (optionMatch) { options.push({ id: optionMatch[1].toUpperCase(), text: optionMatch[2].trim() }); continue; } 
+                    else { parsingState = "answer"; }
+                }
+                if (parsingState === "answer") {
+                    const answerMatch = line.match(answerRegex);
+                    if (answerMatch) { correctOptionId = answerMatch[1].toUpperCase(); parsingState = "explanations_scan_header"; continue; } 
+                    else if (explanationHeaderRegex.test(line) || feedbackRegex.test(line)) return null;
+                    else return null;
+                }
+                if (parsingState === "explanations_scan_header") {
+                    if (explanationHeaderRegex.test(line)) { parsingState = "explanations"; continue; }
+                    parsingState = "explanations"; 
+                }
+                if (parsingState === "explanations") {
+                    const feedbackMatch = line.match(feedbackRegex);
+                    if (feedbackMatch) feedback[feedbackMatch[1].toUpperCase()] = feedbackMatch[3].trim(); 
+                }
+            }
+            if (options.length === 0 || !correctOptionId) return null;
+            return { id: `q${questionNumberForLog}`, questionText, options, correctOptionId, feedback, questionNumber: questionNumberForLog };
+        }
+        function parseMultipleQuizData(textData) {
+            allQuizQuestions = []; const questionBlocksText = []; const lines = textData.trim().split('\n');
+            let currentBlockLines = []; const questionStartRegex = /^(Câu\s*\d+[:.]?\s*)/i;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i]; 
+                if (questionStartRegex.test(line.trim()) && currentBlockLines.length > 0) {
+                    if (currentBlockLines.some(l => l.trim() !== "")) questionBlocksText.push(currentBlockLines.join('\n'));
+                    currentBlockLines = [line];
+                } else { currentBlockLines.push(line); }
+            }
+            if (currentBlockLines.some(l => l.trim() !== "")) questionBlocksText.push(currentBlockLines.join('\n'));
+            if (questionBlocksText.length === 0 && textData.trim() !== "") {
+                const singleQuestion = parseSingleQuestionBlock(textData, 1);
+                if (singleQuestion) allQuizQuestions.push(singleQuestion);
+            } else {
+                questionBlocksText.forEach((block, index) => {
+                    const questionData = parseSingleQuestionBlock(block, index + 1);
+                    if (questionData) allQuizQuestions.push(questionData);
+                    else parseErrorMessage.textContent += `Lỗi phân tích khối câu hỏi ${index + 1}.\n`;
+                });
+            }
+            return allQuizQuestions.length > 0;
+        }
+
+        // --- Local Storage Functions ---
+        function getSavedQuizSets() {
+            const sets = localStorage.getItem(LS_QUIZ_SETS_KEY);
+            return sets ? JSON.parse(sets) : [];
+        }
+        function saveQuizSetToStorage(name, text) {
+            if (!name || !text) {
+                alert("Tên đề và nội dung không được để trống!");
+                return false;
+            }
+            const sets = getSavedQuizSets();
+            if (sets.some(set => set.name.toLowerCase() === name.trim().toLowerCase())) {
+                alert(`Tên đề "${name.trim()}" đã tồn tại. Vui lòng chọn tên khác.`);
+                return false;
+            }
+            const newSet = { id: Date.now(), name: name.trim(), quizText: text.trim() };
+            sets.push(newSet);
+            try {
+                localStorage.setItem(LS_QUIZ_SETS_KEY, JSON.stringify(sets));
+                renderSavedQuizSets(); 
+                return true;
+            } catch (e) {
+                console.error("Lỗi khi lưu vào Local Storage:", e);
+                alert("Đã có lỗi xảy ra khi lưu đề. Local Storage có thể đã đầy hoặc bị vô hiệu hóa.");
+                return false;
+            }
+        }
+        function deleteQuizSetFromStorage(id) {
+            let sets = getSavedQuizSets();
+            sets = sets.filter(set => set.id !== id);
+            localStorage.setItem(LS_QUIZ_SETS_KEY, JSON.stringify(sets));
+            renderSavedQuizSets();
+        }
+        function renderSavedQuizSets() {
+            const sets = getSavedQuizSets();
+            savedSetsList.innerHTML = ''; 
+            if (sets.length === 0) {
+                savedSetsList.innerHTML = '<p class="p-3 text-sm text-gray-500 text-center">Chưa có đề nào được lưu.</p>';
+                return;
+            }
+            sets.forEach(set => {
+                const item = document.createElement('div');
+                item.className = 'saved-set-item';
+                item.innerHTML = `
+                    <span class="text-gray-700 text-sm flex-1 truncate pr-2" title="${set.name}">${set.name}</span>
+                    <div>
+                        <button class="action-btn load-btn" data-id="${set.id}" data-text="${encodeURIComponent(set.quizText)}" data-name="${encodeURIComponent(set.name)}">Tải</button>
+                        <button class="action-btn delete-btn" data-id="${set.id}" data-name="${encodeURIComponent(set.name)}">Xóa</button>
+                    </div>
+                `;
+                item.querySelector('.load-btn').addEventListener('click', (e) => {
+                    quizDataInput.value = decodeURIComponent(e.target.dataset.text);
+                    alert(`Đã tải "${decodeURIComponent(e.target.dataset.name)}" vào ô nhập liệu.`);
+                });
+                item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    if (confirm(`Bạn có chắc muốn xóa đề "${decodeURIComponent(e.target.dataset.name)}"?`)) {
+                        deleteQuizSetFromStorage(parseInt(e.target.dataset.id));
+                    }
+                });
+                savedSetsList.appendChild(item);
+            });
+        }
+        
+        // --- UI Update Functions ---
+        createQuizBtn.addEventListener('click', () => {
+            const rawData = quizDataInput.value;
+            parseErrorMessage.textContent = '';
+            if (!rawData.trim()) {
+                parseErrorMessage.textContent = 'Vui lòng nhập dữ liệu câu hỏi.';
+                return;
+            }
+            if (parseMultipleQuizData(rawData) && allQuizQuestions.length > 0) {
+                console.log("Parsed questions:", allQuizQuestions); // Debug
+                currentQuestionIndex = 0;
+                userResults = []; 
+                pageBody.classList.remove('bg-gray-100');
+                pageBody.classList.add('quiz-display-body');
+                inputManagementSection.classList.add('hidden');
+                summaryDisplayArea.classList.add('hidden');
+                quizDisplayArea.classList.remove('hidden');
+                loadQuestion(currentQuestionIndex);
+            } else {
+                parseErrorMessage.textContent = (parseErrorMessage.textContent || '') + 'Không tìm thấy câu hỏi hợp lệ hoặc lỗi phân tích.';
+            }
+        });
+
+        saveQuizSetBtn.addEventListener('click', () => {
+            const quizText = quizDataInput.value.trim();
+            if (!quizText) {
+                alert("Không có nội dung đề để lưu.");
+                return;
+            }
+            const setName = prompt("Nhập tên cho bộ đề này:", `Bộ đề ngày ${new Date().toLocaleDateString()}`);
+            if (setName) { 
+                if (saveQuizSetToStorage(setName, quizText)) {
+                    alert(`Đã lưu bộ đề "${setName}"!`);
+                }
+            }
+        });
+
+        // UPDATED: Modified to handle click directly on options
+        function loadQuestion(index) {
+            if (index < 0 || index >= allQuizQuestions.length) return;
+            currentQuizData = allQuizQuestions[index]; 
+            questionCounterEl.textContent = `${index + 1}/${allQuizQuestions.length}`;
+            quizTitle.textContent = currentQuizData.questionText;
+            quizContainer.innerHTML = ''; messageArea.textContent = '';
+            
+            nextQuestionBtn.classList.add('hidden'); 
+            exitQuizBtn.classList.remove('hidden'); 
+            
+            // Ẩn nút "Kiểm tra" vì không cần thiết nữa
+            checkAnswerBtn.classList.add('hidden'); 
+            skipQuestionBtn.classList.remove('hidden'); skipQuestionBtn.disabled = false;
+
+            currentQuizData.options.forEach(option => {
+                const optionWrapper = document.createElement('div');
+                optionWrapper.className = 'option-block'; 
+                optionWrapper.dataset.optionId = option.id;
+
+                const radioInput = document.createElement('input');
+                radioInput.type = 'radio'; radioInput.name = `q${index}`; radioInput.id = `o${option.id}_q${index}`;
+                radioInput.value = option.id; radioInput.className = 'sr-only';
+                const optionTextEl = document.createElement('span');
+                optionTextEl.textContent = `${option.id}. ${option.text}`;
+                optionWrapper.appendChild(radioInput); optionWrapper.appendChild(optionTextEl);
+                const feedbackContainer = document.createElement('div');
+                feedbackContainer.className = 'option-feedback-container'; 
+                optionWrapper.appendChild(feedbackContainer);
+                
+                // Thay đổi: Khi click vào option, tự động kiểm tra đáp án
+                optionWrapper.addEventListener('click', () => {
+                    // Chỉ xử lý khi câu hỏi chưa được trả lời
+                    if (skipQuestionBtn.disabled) return;
+                    
+                    radioInput.checked = true;
+                    document.querySelectorAll('#quiz-container .option-block').forEach(el => el.classList.remove('selected-outline'));
+                    optionWrapper.classList.add('selected-outline');
+                    
+                    // Tự động kiểm tra đáp án ngay khi chọn
+                    processAnswer(option.id, false);
+                });
+                
+                quizContainer.appendChild(optionWrapper);
+            });
+        }
+
+        function handleAnswerProcessingUIUpdates() {
+            // Ẩn nút "Kiểm tra" và "Bỏ qua" sau khi đã trả lời
+            skipQuestionBtn.classList.add('hidden'); skipQuestionBtn.disabled = true;
+            exitQuizBtn.classList.add('hidden'); 
+
+            if (currentQuestionIndex < allQuizQuestions.length - 1) {
+                nextQuestionBtn.classList.remove('hidden');
+            } else { 
+                displaySummary();
+            }
+        }
+        
+        function expandFeedbackContainer(container) {
+            console.log("Expanding feedback container"); // Debug
+            if (container.innerHTML.trim() !== "") { 
+                container.classList.add('expanded');
+            }
+        }
+
+        function processAnswer(selectedOptionId, isSkipped = false) {
+            const isCorrect = !isSkipped && selectedOptionId === currentQuizData.correctOptionId;
+            userResults.push({
+                questionText: currentQuizData.questionText.substring(0, 50) + (currentQuizData.questionText.length > 50 ? "..." : ""),
+                selectedOption: isSkipped ? "Bỏ qua" : selectedOptionId,
+                correctOption: currentQuizData.correctOptionId,
+                isCorrect: isCorrect
+            });
+
+            document.querySelectorAll('#quiz-container .option-block').forEach(block => {
+                block.classList.remove('selected-outline'); 
+                block.classList.add('checked-option', 'disabled-interaction'); 
+
+                const optionId = block.dataset.optionId;
+                const feedbackContainer = block.querySelector('.option-feedback-container');
+                feedbackContainer.innerHTML = ''; 
+
+                const explanationText = currentQuizData.feedback[optionId] || "";
+                console.log(`Option ${optionId} explanation:`, explanationText); // Debug
+
+                // Mặc định: luôn hiển thị giải thích nếu có
+                let showExplanation = !!explanationText;
+
+                // Giao diện header
+                let headerHtml = "";
+
+                if (isSkipped) {
+                    // Use classList instead of style.opacity
+                    if (optionId === currentQuizData.correctOptionId) {
+                        block.classList.add('correct-option-display');
+                        headerHtml = `<span class="feedback-icon">✓</span> Đáp án đúng`;
+                    } else {
+                        block.style.opacity = '0.7'; // This is fine for non-correct options when skipped
+                    }
+                } else {
+                    // Don't set opacity directly
+                    if (optionId === selectedOptionId) {
+                        if (isCorrect) {
+                            block.classList.add('correct-option-display');
+                            headerHtml = `<span class="feedback-icon">✓</span> Câu trả lời chính xác`;
+                        } else {
+                            block.classList.add('incorrect-option-selected-display');
+                            headerHtml = `<span class="feedback-icon">✗</span> Chưa đúng lắm!`;
+                        }
+                    } else if (optionId === currentQuizData.correctOptionId && !isCorrect) {
+                        block.classList.add('correct-option-display');
+                        headerHtml = `<span class="feedback-icon">✓</span> Đáp án đúng`;
+                    }
+                }
+
+                // Nếu có header, thêm vào
+                if (headerHtml) {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'feedback-header';
+                    headerDiv.innerHTML = headerHtml;
+                    feedbackContainer.appendChild(headerDiv);
+                }
+                
+                // Nếu có giải thích, luôn hiển thị
+                if (showExplanation) {
+                    console.log(`Adding explanation for option ${optionId}`); // Debug
+                    const p = document.createElement('p');
+                    p.className = 'feedback-explanation-text';
+                    if (!headerHtml) p.style.paddingLeft = '0px';
+                    p.textContent = explanationText;
+                    feedbackContainer.appendChild(p);
+                }
+
+                // Animate (dù chỉ có giải thích)
+                if (feedbackContainer.innerHTML.trim() !== "") {
+                    console.log(`Container for option ${optionId} has content, will expand`); // Debug
+                    setTimeout(() => expandFeedbackContainer(feedbackContainer), 10);
+                }
+            });
+
+            handleAnswerProcessingUIUpdates();
+        }
+
+        // Giữ lại sự kiện này cho nút "Kiểm tra" nếu sau này cần dùng lại
+        checkAnswerBtn.addEventListener('click', () => {
+            if (!currentQuizData) return;
+            const selectedOptionInput = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+            messageArea.textContent = '';
+
+            if (!selectedOptionInput) {
+                messageArea.textContent = 'Vui lòng chọn một đáp án!';
+                messageArea.classList.add('message-error');
+                return;
+            }
+            messageArea.classList.remove('message-error');
+            processAnswer(selectedOptionInput.value, false);
+        });
+
+        skipQuestionBtn.addEventListener('click', () => {
+            if (!currentQuizData) return;
+            messageArea.textContent = `Bạn đã bỏ qua câu này. Đáp án đúng là ${currentQuizData.correctOptionId}.`;
+            messageArea.classList.remove('message-error', 'message-success');
+            processAnswer(null, true);
+        });
+
+
+        function displaySummary() {
+            quizDisplayArea.classList.add('hidden'); 
+            summaryDisplayArea.classList.remove('hidden'); 
+
+            const totalQuestions = allQuizQuestions.length;
+            const correctAnswers = userResults.filter(r => r.isCorrect).length;
+            const incorrectAnswers = totalQuestions - correctAnswers;
+            const score = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+            summaryStats.innerHTML = `
+                <p>Tổng số câu hỏi: <strong>${totalQuestions}</strong></p>
+                <p>Số câu trả lời đúng: <strong class="text-green-400">${correctAnswers}</strong></p>
+                <p>Số câu trả lời sai/bỏ qua: <strong class="text-red-400">${incorrectAnswers}</strong></p>
+                <p>Điểm số: <strong class="text-blue-400">${score.toFixed(2)}%</strong></p>
+            `;
+            summaryDetailsTable.innerHTML = ''; 
+            userResults.forEach(res => {
+                const row = summaryDetailsTable.insertRow();
+                row.insertCell().textContent = res.questionText;
+                const selectedDisplay = res.selectedOption === "Bỏ qua" ? "Bỏ qua" : `Lựa chọn: ${res.selectedOption}`;
+                row.insertCell().textContent = `${selectedDisplay} (Đúng: ${res.correctOption})`;
+                const resultCell = row.insertCell();
+                resultCell.textContent = res.isCorrect ? 'Đúng' : (res.selectedOption === "Bỏ qua" ? "Bỏ qua" : "Sai");
+                resultCell.style.color = res.isCorrect ? '#81c995' : (res.selectedOption === "Bỏ qua" ? '#bdc1c6' : '#f28b82');
+            });
+             summaryDetailsTable.parentElement.classList.remove('hidden'); 
+        }
+        
+        backToInputBtn.addEventListener('click', () => { 
+            resetQuizStateAndUIs();
+        });
+        
+        nextQuestionBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < allQuizQuestions.length) {
+                loadQuestion(currentQuestionIndex);
+            }
+        });
+
+        exitQuizBtn.addEventListener('click', () => { 
+            if (confirm("Bạn có chắc muốn thoát khỏi bài làm hiện tại? Tiến trình sẽ không được lưu.")) {
+                resetQuizStateAndUIs();
+            }
+        });
+
+        function resetQuizStateAndUIs() {
+            allQuizQuestions = []; currentQuestionIndex = 0; currentQuizData = null; userResults = [];
+            pageBody.classList.add('bg-gray-100'); pageBody.classList.remove('quiz-display-body');
+            inputManagementSection.classList.remove('hidden'); 
+            quizDisplayArea.classList.add('hidden');
+            summaryDisplayArea.classList.add('hidden');
+            quizDataInput.focus();
+            parseErrorMessage.textContent = '';
+            messageArea.textContent = '';
+            messageArea.className = 'message-area-style';
+            renderSavedQuizSets(); 
+        }
+
+        document.addEventListener('DOMContentLoaded', renderSavedQuizSets);
+        
+        quizDataInput.placeholder = 
+`Ví dụ định dạng cho nhiều câu hỏi:
+
+Câu 1: Mặt trời mọc ở hướng nào?
+A. Hướng Đông
+B. Hướng Tây
+C. Hướng Nam
+Đáp án: A
+Giải thích:
+A - Đúng: Trái Đất quay từ Tây sang Đông...
+B - Sai: Mặt Trời lặn ở hướng Tây.
+C - Sai: Đây là một hướng phụ...
+
+    </script>
+</body>
+</html>
