@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trận Tử Chiến: Ghép Cặp Hoàn Hảo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation;
+            overscroll-behavior-y: contain;
+            -webkit-user-select: none; user-select: none;
+            background: linear-gradient(-45deg, #f0f9ff, #e0f2fe, #dbeafe, #e0e7ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes deal {
+            from { opacity: 0; transform: translateY(20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pop {
+            0%, 100% { transform: scale(1.05); }
+            50% { transform: scale(1.15); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes timeBonus {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        @keyframes pulse {
+           50% { box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.5); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card.selected, .card.tut-correct {
+            transform: scale(1.08);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        .card.dimmed { opacity: 0.35; }
+        .card svg { width: 70%; height: 70%; }
+        #game-board {
+            display: grid;
+            gap: 0.75rem; /* 12px */
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+        #game-board.level-1 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #game-board.level-2 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        #game-board.level-3 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .history-list { display: flex; flex-direction: column; gap: 8px; }
+        .history-item { 
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; 
+            border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.7); cursor: pointer;
+            transition: background-color 0.2s;
+        }
+         .history-item:hover { background-color: rgba(230, 240, 255, 0.9); }
+        #missed-sets-summary .history-item { background-color: rgba(255, 255, 255, 0.1); color: white; }
+        #missed-sets-summary .history-item .text-gray-500 { color: #d1d5db; /* gray-300 */ }
+        .history-item .card-container { display: flex; flex-grow: 1; justify-content: center; gap: 0.375rem; }
+        .history-item .card { width: 24px; height: 24px; border-width: 1px; box-shadow: none; border-radius: 4px; }
+        .history-item .card svg { width: 80%; height: 80%; }
+        
+        .mode-btn.active { background-color: #3b82f6; color: white; }
+
+        #missed-sets-summary::-webkit-scrollbar { height: 8px; }
+        #missed-sets-summary::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
+        .panel {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+    </style>
+</head>
+<body class="text-gray-800 flex items-center justify-center p-2">
+
+    <div class="w-full max-w-7xl h-full mx-auto">
+        <!-- Main Menu -->
+        <div id="main-menu" class="h-full flex flex-col items-center justify-center text-center p-4" style="animation: fadeInUp 0.5s ease-out;">
+            <h1 class="text-4xl sm:text-6xl font-extrabold text-gray-900 mb-4">Trận Tử Chiến</h1>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto text-lg">Thử thách khả năng quan sát và logic của bạn.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 mb-8">
+                <div class="p-4 panel">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Chế độ chơi</h3>
+                    <div class="flex justify-center rounded-lg shadow-sm" role="group">
+                        <button id="mode-classic-btn" type="button" class="mode-btn px-6 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700">
+                            Cổ điển
+                        </button>
+                        <button id="mode-dual-btn" type="button" class="mode-btn px-6 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700 active">
+                            Nền Kép
+                        </button>
+                    </div>
+                </div>
+                 <div class="p-4 panel">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Hỗ trợ</h3>
+                    <div class="space-y-2 text-left">
+                        <label for="useless-dim-toggle" class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="useless-dim-toggle" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span>Làm mờ ô vô dụng</span>
+                        </label>
+                         <label for="bg-dim-toggle" class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="bg-dim-toggle" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span>Làm mờ nền khác màu</span>
+                        </label>
+                        <label for="shape-dim-toggle" class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="shape-dim-toggle" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span>Làm mờ khác hình</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="start-game-btn" class="bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg">Bắt đầu chơi</button>
+                <button id="start-tutorial-btn" class="bg-white text-gray-800 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-100 transition-transform hover:scale-105 shadow-lg">Hướng dẫn</button>
+            </div>
+        </div>
+
+        <!-- Tutorial Container -->
+        <div id="tutorial-container" class="hidden h-full flex flex-col panel p-4 sm:p-6" style="animation: fadeInUp 0.5s ease-out;">
+             <h2 class="text-2xl font-bold text-center mb-4">Hướng dẫn chơi</h2>
+             <p id="tutorial-instructions" class="text-center text-gray-700 mb-4 h-20"></p>
+             <div id="tutorial-board" class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 max-w-sm mx-auto"></div>
+             <button id="tutorial-next-btn" class="w-full max-w-sm mx-auto bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors hidden mt-auto shadow-lg">Tiếp tục</button>
+        </div>
+
+        <!-- Game Container -->
+        <div id="game-container" class="hidden h-full relative flex flex-col panel">
+            <div id="game-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 text-center max-w-sm w-full" style="animation: fadeInUp 0.3s ease-out;">
+                    <h2 id="game-modal-title" class="text-2xl font-bold mb-4"></h2>
+                    <p id="game-modal-message" class="mb-6"></p>
+                    <button id="game-modal-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700">OK</button>
+                </div>
+            </div>
+
+            <div id="post-game-overlay" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center p-4 pt-8 z-45" style="animation: fadeInUp 0.5s;">
+                <div class="w-full max-w-3xl">
+                    <div id="missed-sets-summary" class="flex flex-nowrap gap-4 overflow-x-auto pb-4">
+                    </div>
+                </div>
+                <div class="absolute bottom-8 right-8">
+                    <button id="show-results-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-blue-700 shadow-xl">Bỏ qua</button>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-grow flex flex-col lg:flex-row gap-4 p-4 lg:p-6 overflow-hidden">
+                
+                <!-- Left Panel -->
+                <div class="w-full lg:w-60 flex-shrink-0 flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <button id="back-to-menu-btn" class="text-sm font-semibold text-blue-600 hover:text-blue-800">‹ Trang chính</button>
+                        <button id="pause-btn" class="lg:hidden p-2 rounded-full bg-white/50 hover:bg-white/80">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white/50 border border-white/30 rounded-xl p-3">
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <div class="font-semibold text-gray-600">Cấp</div>
+                            <div id="level-stat" class="font-bold text-right text-base">1</div>
+
+                            <div class="font-semibold text-gray-600">Điểm</div>
+                            <div id="score-stat" class="font-bold text-right text-base">0</div>
+
+                            <div class="font-semibold text-gray-600 flex items-center">
+                                <span>Mạng</span>
+                                <div id="penalty-tracker" class="flex items-center gap-1 ml-2">
+                                </div>
+                            </div>
+                            <div id="lives-stat" class="font-bold text-right text-xl">❤️❤️❤️</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden lg:flex flex-col gap-3">
+                        <button id="pause-btn-desktop" class="w-full flex items-center justify-center gap-2 bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 shadow-md">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>
+                           Tạm dừng
+                        </button>
+                        <button id="surrender-btn" class="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 shadow-md">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 3.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L9 6.414V17a1 1 0 102 0V6.414l4.293 4.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                           Bỏ cuộc
+                        </button>
+                    </div>
+
+                    <div class="hidden lg:flex flex-col gap-3 mt-auto">
+                         <button id="confirm-btn-desktop" disabled class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 shadow-lg">Xác Nhận</button>
+                    </div>
+                </div>
+
+                <!-- Center Panel -->
+                <div class="flex-grow flex flex-col min-w-0 order-first lg:order-none relative">
+                     <div class="flex items-center gap-4 mb-4">
+                        <div class="w-full bg-gray-200/70 rounded-full h-2.5 flex-grow">
+                            <div id="selection-timer-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 100%"></div>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 font-semibold text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" />
+                            </svg>
+                            <p id="total-time-stat">00:00</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 100-2H9V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            <p id="selection-time-stat">00</p>
+                            <div id="time-bonus-container" class="absolute right-0 top-0"></div>
+                        </div>
+                    </div>
+                    <div class="flex-grow flex flex-col items-center justify-center min-h-0 relative">
+                        <div id="game-board" class="aspect-square"></div>
+                        <div id="board-pause-overlay" class="hidden absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <svg class="w-24 h-24 text-gray-800 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="w-full lg:w-72 flex-shrink-0 flex flex-col min-h-[120px] lg:min-h-0">
+                    <div class="mb-2">
+                        <div class="flex justify-between items-center text-lg font-medium text-gray-800 mb-1">
+                            <h3>Tiến độ</h3>
+                            <span id="completion-stat">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200/70 rounded-full h-2">
+                            <div id="completion-bar" class="bg-green-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div id="history-panel" class="history-list flex-grow bg-white/50 border border-white/30 rounded-xl p-2 overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Controls -->
+            <div class="p-3 sm:p-4 border-t bg-white/50 backdrop-blur-sm lg:hidden">
+                <div class="flex gap-3">
+                    <button id="surrender-btn-mobile" class="w-1/3 bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 shadow-md">Bỏ cuộc</button>
+                    <button id="confirm-btn-mobile" disabled class="w-2/3 bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 shadow-md">Xác Nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedback-popup" class="fixed top-5 right-5 rounded-lg shadow-lg p-4 font-semibold transition-transform duration-300 z-50 text-white">
+        <p id="feedback-popup-text"></p>
+    </div>
+
+
+    <script type="module">
+        // --- CONSTANTS & CONFIG ---
+        const ALL_SHAPES = ['square', 'circle', 'triangle', 'inv-triangle'];
+        const SHAPE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e']; 
+        const BACKGROUNDS = ['#FFFFFF', '#27272a'];
+        const LEVEL_CONFIG = {
+            1: { size: 3, totalTime: 180, baseLives: 3 },
+            2: { size: 4, totalTime: 240, baseLives: 4 },
+            3: { size: 5, totalTime: 300, baseLives: 5 },
+        };
+        const SVGS = {
+            square: c => `<svg viewBox="0 0 100 100" fill="${c}"><rect x="10" y="10" width="80" height="80" rx="8"></rect></svg>`,
+            circle: c => `<svg viewBox="0 0 100 100" fill="${c}"><circle cx="50" cy="50" r="45"></circle></svg>`,
+            triangle: c => `<svg viewBox="0 0 100 100" fill="${c}"><polygon points="50,5 95,95 5,95"></polygon></svg>`,
+            'inv-triangle': c => `<svg viewBox="0 0 100 100" fill="${c}"><polygon points="5,5 95,5 50,95"></polygon></svg>`,
+        };
+        const FIXED_SELECTION_TIME = 15;
+        const TIME_BONUS_ON_CORRECT = 3;
+        const MAX_PENALTY_COUNT = 5;
+        const AUTO_REDIRECT_DELAY = 5; // seconds
+
+        // --- GAME STATE & UI ELEMENTS ---
+        let state = {}; let tutorialState = {}; let selectedGameMode = 'dual';
+        let settings = {
+            isUselessDimEnabled: false,
+            isBgDimEnabled: false,
+            isShapeDimEnabled: false,
+        };
+
+        const ui = {
+            views: { mainMenu: document.getElementById('main-menu'), tutorial: document.getElementById('tutorial-container'), game: document.getElementById('game-container') },
+            gameBoard: document.getElementById('game-board'),
+            confirmBtns: [document.getElementById('confirm-btn-desktop'), document.getElementById('confirm-btn-mobile')],
+            pauseBtns: [document.getElementById('pause-btn'), document.getElementById('pause-btn-desktop')],
+            surrenderBtns: [document.getElementById('surrender-btn'), document.getElementById('surrender-btn-mobile')],
+            boardPauseOverlay: document.getElementById('board-pause-overlay'),
+            historyPanel: document.getElementById('history-panel'),
+            selectionTimerBar: document.getElementById('selection-timer-bar'),
+            feedbackPopup: { container: document.getElementById('feedback-popup'), text: document.getElementById('feedback-popup-text') },
+            gameModal: { container: document.getElementById('game-modal'), title: document.getElementById('game-modal-title'), message: document.getElementById('game-modal-message'), button: document.getElementById('game-modal-button') },
+            postGameOverlay: document.getElementById('post-game-overlay'),
+            showResultsBtn: document.getElementById('show-results-btn'),
+            missedSetsSummary: document.getElementById('missed-sets-summary'),
+            timeBonusContainer: document.getElementById('time-bonus-container'),
+            stats: { 
+                level: document.getElementById('level-stat'), 
+                score: document.getElementById('score-stat'), 
+                lives: document.getElementById('lives-stat'), 
+                completion: document.getElementById('completion-stat'), 
+                completionBar: document.getElementById('completion-bar'),
+                totalTime: document.getElementById('total-time-stat'),
+                selectionTime: document.getElementById('selection-time-stat'),
+                penaltyTracker: document.getElementById('penalty-tracker'),
+            },
+            tutorial: { board: document.getElementById('tutorial-board'), instructions: document.getElementById('tutorial-instructions'), nextBtn: document.getElementById('tutorial-next-btn') },
+            modeButtons: { classic: document.getElementById('mode-classic-btn'), dual: document.getElementById('mode-dual-btn') },
+            settingsToggles: {
+                uselessDim: document.getElementById('useless-dim-toggle'),
+                bgDim: document.getElementById('bg-dim-toggle'),
+                shapeDim: document.getElementById('shape-dim-toggle'),
+            }
+        };
+
+        // --- UTILITY & CORE LOGIC ---
+        const formatTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+        const getSetId = cs => cs.map(c => c.id).sort((a,b) => a-b).join('-');
+        const parseMarkdown = (text) => text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-600">$1</strong>');
+        
+        function getCardPool(mode) {
+            let cs=[], id=0;
+            const bgs = mode === 'classic' ? [BACKGROUNDS[0]] : BACKGROUNDS;
+            bgs.forEach(b => ALL_SHAPES.forEach(s => SHAPE_COLORS.forEach(sc => cs.push({id:id++,background:b,shape:s,shapeColor:sc}))));
+            return cs;
+        }
+
+        function checkSet(cards) {
+            if (cards.length !== 3) return false;
+
+            // Điều kiện 1: Tất cả 3 thẻ phải có cùng màu nền.
+            const backgrounds = new Set(cards.map(c => c.background));
+            if (backgrounds.size !== 1) {
+                return false;
+            }
+
+            const shapes = new Set(cards.map(c => c.shape));
+            const shapeColors = new Set(cards.map(c => c.shapeColor));
+
+            // Trường hợp 1: Cùng hình dạng, 3 màu sắc khác nhau.
+            const isRule1 = (shapes.size === 1 && shapeColors.size === 3);
+
+            // Trường hợp 2: 3 hình dạng khác nhau, 3 màu sắc khác nhau.
+            const isRule2 = (shapes.size === 3 && shapeColors.size === 3);
+
+            // Một bộ hợp lệ nếu cùng màu nền VÀ (thỏa mãn Trường hợp 1 HOẶC Trường hợp 2)
+            return isRule1 || isRule2;
+        }
+
+        function findAllSets(board) {
+            const sets = [];
+            for (let i = 0; i < board.length; i++) for (let j = i + 1; j < board.length; j++) for (let k = j + 1; k < board.length; k++) {
+                if (checkSet([board[i], board[j], board[k]])) sets.push([board[i], board[j], board[k]]);
+            }
+            return sets;
+        }
+
+        function generateBoard(level, mode) {
+            const boardSize = LEVEL_CONFIG[level].size ** 2;
+            const cardPool = getCardPool(mode);
+            while (true) {
+                let currentPool = [...cardPool];
+                // Shuffle pool
+                for(let i=currentPool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[currentPool[i],currentPool[j]]=[currentPool[j],currentPool[i]];}
+                const candidateBoard=currentPool.slice(0,boardSize);
+                if (findAllSets(candidateBoard).length > 0) return candidateBoard;
+            }
+        }
+        
+        // --- RENDER & UI ---
+        function showView(viewName) { 
+            Object.values(ui.views).forEach(v => v.classList.add('hidden')); 
+            ui.views[viewName].classList.remove('hidden'); 
+        }
+        
+        function showMessage(text, textColor, bgColor) {
+            const popup = ui.feedbackPopup;
+            popup.text.textContent = text;
+            popup.container.className = `fixed top-5 right-5 rounded-lg shadow-lg p-4 font-semibold transition-all duration-300 z-50 ${textColor} ${bgColor}`;
+            popup.container.style.transform = 'translateX(0)';
+            if (state.messageTimer) clearTimeout(state.messageTimer);
+            state.messageTimer = setTimeout(() => { popup.container.style.transform = 'translateX(120%)'; }, 2000);
+        }
+
+        function renderCard(card, index = 0) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card aspect-square rounded-xl flex items-center justify-center cursor-pointer border-4 border-transparent';
+            cardEl.dataset.id = card.id;
+            cardEl.style.backgroundColor = card.background;
+            if (card.background === BACKGROUNDS[1]) cardEl.classList.add('border-gray-700');
+            cardEl.innerHTML = SVGS[card.shape](card.shapeColor);
+            cardEl.style.animation = `deal 0.5s ease-out ${index * 0.04}s both`;
+            
+            const onDealAnimationEnd = (e) => {
+                if (e.animationName === 'deal') {
+                    cardEl.style.animation = '';
+                    cardEl.removeEventListener('animationend', onDealAnimationEnd);
+                }
+            };
+            cardEl.addEventListener('animationend', onDealAnimationEnd);
+
+            return cardEl;
+        }
+
+        function renderBoard(container, cards, clickHandler) {
+            container.innerHTML = '';
+            if (state.level) { 
+                container.classList.remove('level-1', 'level-2', 'level-3');
+                container.classList.add(`level-${state.level}`);
+            }
+            cards.forEach((card, index) => {
+                const cardEl = renderCard(card, index);
+                if (clickHandler) cardEl.addEventListener('click', () => clickHandler(cardEl, card));
+                
+                 cardEl.addEventListener('mouseover', () => {
+                    if (state.isGameOver || state.isPaused || !ui.postGameOverlay.classList.contains('hidden')) return;
+                    state.hoveredShape = card.shape;
+                    updateBoardAppearance();
+                });
+                cardEl.addEventListener('mouseout', () => {
+                    if (state.isGameOver || state.isPaused) return;
+                    state.hoveredShape = null;
+                    updateBoardAppearance();
+                });
+
+                container.appendChild(cardEl);
+            });
+        }
+        
+        function createHistoryItem(cards, itemNumber) {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item flex-shrink-0';
+            
+            historyItem.addEventListener('mouseover', () => {
+                if (state.isGameOver) return;
+                state.historyHoverSet = cards;
+                updateBoardAppearance();
+            });
+
+            historyItem.addEventListener('mouseout', () => {
+                if (state.isGameOver) return;
+                state.historyHoverSet = null;
+                updateBoardAppearance();
+            });
+
+            const numberEl = document.createElement('span');
+            numberEl.className = 'text-sm font-bold text-gray-500 w-5 text-center';
+            numberEl.textContent = `${itemNumber}.`;
+            historyItem.appendChild(numberEl);
+
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'card-container';
+            cards.sort((a, b) => a.id - b.id).forEach(card => {
+                const cardEl = renderCard(card);
+                cardEl.classList.remove('cursor-pointer', 'aspect-square');
+                cardEl.style.animation = 'none';
+                cardContainer.appendChild(cardEl);
+            });
+            historyItem.appendChild(cardContainer);
+            return historyItem;
+        }
+        
+        function renderStats() {
+             ui.stats.level.textContent = state.level;
+             ui.stats.score.textContent = state.score;
+             ui.stats.lives.textContent = '❤️'.repeat(state.lives > 0 ? state.lives : 0);
+             
+             const percentage = state.totalSetsInRound > 0 ? Math.round((state.foundSets.size / state.totalSetsInRound) * 100) : 0;
+             ui.stats.completion.textContent = `${percentage}%`;
+             ui.stats.completionBar.style.width = `${percentage}%`;
+             
+             ui.stats.totalTime.textContent = formatTime(state.totalTimeLeft || 0);
+             ui.stats.selectionTime.textContent = String(state.selectionTimeLeft || 0).padStart(2, '0');
+
+             ui.stats.penaltyTracker.innerHTML = '';
+             for (let i = 0; i < MAX_PENALTY_COUNT; i++) {
+                 const dot = document.createElement('div');
+                 dot.className = 'w-2 h-2 rounded-full transition-colors duration-300';
+                 dot.classList.add(i < state.penaltyCount ? 'bg-red-500' : 'bg-gray-300');
+                 ui.stats.penaltyTracker.appendChild(dot);
+             }
+        }
+        
+        function updateBoardAppearance() {
+            // [FIX] Add a guard clause to prevent the function from running before the game state is initialized.
+            // This stops errors when toggling settings on the main menu.
+            if (!state.boardCards) {
+                return;
+            }
+
+            const historyCardIds = state.historyHoverSet ? new Set(state.historyHoverSet.map(c => c.id)) : null;
+
+            const reFoundThirdCardIds = new Set();
+            if (state.selectedCards.length === 2) {
+                state.boardCards.forEach(cardOnBoard => {
+                    if (state.selectedCards.some(sel => sel.id === cardOnBoard.id)) return;
+                    const potentialSetId = getSetId([...state.selectedCards, cardOnBoard]);
+                    if (state.foundSets.has(potentialSetId)) {
+                        reFoundThirdCardIds.add(cardOnBoard.id);
+                    }
+                });
+            }
+
+            ui.gameBoard.querySelectorAll('.card').forEach(cardEl => {
+                const cardId = parseInt(cardEl.dataset.id, 10);
+                const cardData = state.boardCards.find(c => c.id === cardId);
+                if (!cardData) return;
+
+                const isSelected = state.selectedCards.some(c => c.id === cardId);
+
+                if (historyCardIds) {
+                    cardEl.classList.toggle('dimmed', !historyCardIds.has(cardId));
+                    return;
+                }
+
+                if (reFoundThirdCardIds.has(cardId)) {
+                    cardEl.classList.toggle('dimmed', true);
+                    return;
+                }
+
+                let isDimmed = settings.isUselessDimEnabled && !state.usefulCardIds.has(cardId) && !isSelected;
+
+                if (state.selectedCards.length > 0) {
+                    const bgRule = settings.isBgDimEnabled && state.gameMode === 'dual' && !isSelected && cardData.background !== state.selectedCards[0].background;
+                    if (bgRule) isDimmed = true;
+                } else {
+                    const shapeRule = settings.isShapeDimEnabled && state.hoveredShape && cardData.shape !== state.hoveredShape;
+                    if (shapeRule) isDimmed = true;
+                }
+                
+                cardEl.classList.toggle('dimmed', isDimmed);
+            });
+        }
+
+
+        function updateConfirmButtons() {
+            const disabled = state.selectedCards.length !== 3;
+            const text = `Xác Nhận`;
+            ui.confirmBtns.forEach(btn => {
+                btn.disabled = disabled;
+                btn.textContent = text;
+                if(!disabled && !btn.style.animation) btn.style.animation = 'pulse 1s infinite';
+                else if(disabled) btn.style.animation = '';
+            });
+        }
+        
+        function handlePenalty() {
+            state.penaltyCount++;
+            if (state.penaltyCount >= MAX_PENALTY_COUNT) {
+                loseLife();
+                showMessage('5 lần bị phạt, -1 mạng!', 'text-white', 'bg-red-600');
+                state.penaltyCount = 0;
+            }
+            renderStats();
+        }
+
+        // --- TIMERS & PAUSE ---
+        function togglePause() {
+            if (ui.views.game.classList.contains('hidden') || !ui.postGameOverlay.classList.contains('hidden')) return;
+            state.isPaused = !state.isPaused;
+            if (state.isPaused) {
+                stopAllTimers();
+                ui.boardPauseOverlay.classList.remove('hidden');
+                ui.pauseBtns.forEach(btn => btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a10 10 0 100-20 10 10 0 000 20zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" /></svg> Tiếp tục');
+            } else {
+                startAllTimers();
+                ui.boardPauseOverlay.classList.add('hidden');
+                ui.pauseBtns.forEach(btn => btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg> Tạm dừng');
+            }
+        }
+
+        function stopAllTimers() {
+            clearInterval(state.totalTimerId);
+            clearInterval(state.selectionTimerId);
+            if(state.revealInterval) clearInterval(state.revealInterval);
+            if(state.gameOverCountdown) clearInterval(state.gameOverCountdown);
+            if (ui.selectionTimerBar) {
+                const bar = ui.selectionTimerBar;
+                const currentWidth = window.getComputedStyle(bar).width;
+                bar.style.transition = 'none';
+                bar.style.width = currentWidth;
+            }
+        }
+
+        function startAllTimers() {
+            stopAllTimers();
+            state.totalTimerId = setInterval(() => {
+                if (state.totalTimeLeft > 0) state.totalTimeLeft--;
+                renderStats();
+                if (state.totalTimeLeft <= 0) gameOver('Hết giờ!');
+            }, 1000);
+            
+            const bar = ui.selectionTimerBar;
+            bar.style.transition = `width ${state.selectionTimeLeft}s linear`;
+            bar.style.width = '0%';
+            
+            state.selectionTimerId = setInterval(() => {
+                if (state.selectionTimeLeft > 0) {
+                    state.selectionTimeLeft--;
+                }
+                renderStats();
+
+                if (state.selectionTimeLeft <= 0) {
+                    handlePenalty();
+                    resetAndStartSelectionTimer();
+                }
+            }, 1000);
+        }
+        
+        function resetAndStartSelectionTimer() {
+            stopAllTimers();
+            state.selectionTimeLeft = FIXED_SELECTION_TIME;
+            
+            const bar = ui.selectionTimerBar;
+            bar.style.transition = 'none'; 
+            bar.style.width = '100%';
+            
+            renderStats();
+            startAllTimers();
+        }
+
+        // --- GAME FLOW ---
+        function handleConfirm() {
+            if (state.isGameOver || state.isPaused || state.selectedCards.length !== 3) return;
+
+            const cards = state.selectedCards.map(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`));
+
+            const isAValidSet = checkSet(state.selectedCards);
+            const currentSetId = getSetId(state.selectedCards);
+            if (isAValidSet) {
+                if (!state.foundSets.has(currentSetId)) {
+                    state.foundSets.add(currentSetId);
+                    const timeTaken = (Date.now() - state.lastSetFoundTimestamp) / 1000;
+                    const basePoints = Math.round(Math.max(10, 1000 / timeTaken));
+                    const multiplier = state.gameMode === 'classic' ? 1.5 : 1;
+                    const pointsEarned = Math.round(basePoints * multiplier);
+
+                    state.score += pointsEarned;
+                    state.totalTimeLeft += TIME_BONUS_ON_CORRECT;
+
+                    const timeBonusEl = document.createElement('div');
+                    timeBonusEl.className = 'absolute font-bold text-green-500';
+                    timeBonusEl.textContent = `+${TIME_BONUS_ON_CORRECT}s`;
+                    timeBonusEl.style.animation = 'timeBonus 1s ease-out forwards';
+                    ui.timeBonusContainer.appendChild(timeBonusEl);
+                    setTimeout(() => timeBonusEl.remove(), 1000);
+                    
+                    cards.forEach(c => c.style.animation = 'pop 0.3s');
+
+                    ui.historyPanel.prepend(createHistoryItem(state.selectedCards, state.foundSets.size));
+                    
+                    state.lastSetFoundTimestamp = Date.now();
+                    state.penaltyCount = 0;
+                    
+                    const unfoundSets = state.allSetsInRound.filter(set => !state.foundSets.has(getSetId(set)));
+                    state.usefulCardIds = new Set(unfoundSets.flat().map(card => card.id));
+
+                    if (state.foundSets.size >= state.totalSetsInRound) {
+                        renderStats();
+                        setTimeout(() => levelUp(), 500);
+                    } else {
+                        resetAndStartSelectionTimer();
+                    }
+                } else { 
+                    showMessage('Đã tìm thấy!', 'text-yellow-800', 'bg-yellow-300');
+                }
+            } else { 
+                showMessage('Sai rồi!', 'text-white', 'bg-red-600');
+                handlePenalty();
+                cards.forEach(c => c.style.animation = 'shake 0.4s');
+            }
+
+            setTimeout(() => {
+                cards.forEach(c => c.style.animation = '');
+                state.selectedCards.forEach(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`)?.classList.remove('selected'));
+                state.selectedCards = [];
+                updateConfirmButtons();
+                renderStats(); 
+                updateBoardAppearance();
+                if (state.totalTimeLeft <= 0) gameOver('Hết giờ!');
+            }, 400);
+        }
+        
+        function loseLife(){ if(state.lives>0){ state.lives--; renderStats(); if(state.lives<=0) gameOver('Hết mạng!'); } }
+
+        function showGameModal(title, message, buttonText, callback, options = {}) {
+            ui.gameModal.container.classList.remove('hidden');
+            ui.gameModal.title.textContent = title;
+            ui.gameModal.message.innerHTML = message;
+            const button = ui.gameModal.button;
+            
+            stopAllTimers();
+
+            const originalOnClick = () => {
+                stopAllTimers();
+                ui.gameModal.container.classList.add('hidden');
+                if (callback) callback();
+            };
+            
+            button.onclick = originalOnClick;
+
+            if (options.autoCloseDelay) {
+                let countdown = options.autoCloseDelay;
+                button.textContent = `${buttonText} (${countdown})`;
+                state.gameOverCountdown = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        button.textContent = `${buttonText} (${countdown})`;
+                    } else {
+                        originalOnClick();
+                    }
+                }, 1000);
+            } else {
+                 button.textContent = buttonText;
+            }
+        }
+
+        function gameOver(reason) {
+            stopAllTimers();
+            state.isGameOver = true;
+            const allSetsOnBoard = findAllSets(state.boardCards);
+            const missedSets = allSetsOnBoard.filter(set => !state.foundSets.has(getSetId(set)));
+
+            const showFinalModal = () => {
+                stopAllTimers();
+                ui.postGameOverlay.classList.add('hidden');
+                ui.gameBoard.querySelectorAll('.card').forEach(c => c.classList.remove('dimmed'));
+                showGameModal(
+                    'Trò Chơi Kết Thúc', 
+                    `${reason}<br>Điểm cuối cùng: <span class="font-bold">${state.score}</span>`, 
+                    'Về Trang Chính', 
+                    () => showView('mainMenu'),
+                    { autoCloseDelay: AUTO_REDIRECT_DELAY }
+                );
+            };
+
+            if (missedSets.length > 0) {
+                ui.postGameOverlay.classList.remove('hidden');
+                ui.missedSetsSummary.innerHTML = '';
+                ui.showResultsBtn.onclick = showFinalModal;
+
+                let revealIndex = 0;
+                state.revealInterval = setInterval(() => {
+                    if (revealIndex < missedSets.length) {
+                        ui.gameBoard.querySelectorAll('.card').forEach(c => c.classList.add('dimmed'));
+                        
+                        const set = missedSets[revealIndex];
+                        set.forEach(card => {
+                            const cardEl = ui.gameBoard.querySelector(`[data-id='${card.id}']`);
+                            if (cardEl) cardEl.classList.remove('dimmed');
+                        });
+                        
+                        const historyItem = createHistoryItem(set, revealIndex + 1);
+                        ui.missedSetsSummary.appendChild(historyItem);
+                        ui.missedSetsSummary.scrollLeft = ui.missedSetsSummary.scrollWidth;
+
+                        revealIndex++;
+                    } else {
+                        stopAllTimers(); // All sets revealed
+                    }
+                }, 2000);
+            } else {
+                showFinalModal(reason);
+            }
+        }
+        
+        function levelUp() {
+            stopAllTimers();
+            state.timeRollover = state.totalTimeLeft;
+            const nextLevel = state.level + 1;
+            if (LEVEL_CONFIG[nextLevel]) {
+                showGameModal(`Hoàn Thành Cấp Độ ${state.level}!`, `Bạn thật xuất sắc!<br>Thưởng +${state.timeRollover} giây.<br>Điểm hiện tại: <span class="font-bold">${state.score}</span>`, `Tới Cấp Độ ${nextLevel}`, () => startLevel(nextLevel));
+            } else {
+                showGameModal('Chúc Mừng!', `Bạn đã hoàn thành tất cả các cấp độ!<br>Điểm tổng: <span class="font-bold">${state.score}</span>`, 'Về Trang Chính', () => showView('mainMenu'), { autoCloseDelay: AUTO_REDIRECT_DELAY });
+            }
+        }
+
+        function startLevel(level) {
+            const config = LEVEL_CONFIG[level];
+            state.level = level;
+            state.isGameOver = false;
+            state.hoveredShape = null;
+            state.historyHoverSet = null;
+
+            if (level === 1) { 
+                state.lives = config.baseLives; 
+                state.timeRollover = 0; 
+                state.totalTimeLeft = config.totalTime;
+            } else { 
+                state.lives++; 
+                state.totalTimeLeft += state.timeRollover;
+            }
+            state.penaltyCount = 0; 
+            state.selectedCards = []; 
+            state.foundSets = new Set();
+            state.lastSetFoundTimestamp = Date.now();
+            state.boardCards = generateBoard(level, state.gameMode);
+            state.allSetsInRound = findAllSets(state.boardCards);
+            state.totalSetsInRound = state.allSetsInRound.length;
+            state.usefulCardIds = new Set(state.allSetsInRound.flat().map(card => card.id));
+            ui.historyPanel.innerHTML = '';
+            ui.postGameOverlay.classList.add('hidden');
+            
+            renderBoard(ui.gameBoard, state.boardCards, (el, card) => {
+                if (state.isGameOver || state.isPaused) return;
+                
+                if (el.classList.contains('dimmed') && !state.selectedCards.some(c => c.id == el.dataset.id)) {
+                    return;
+                }
+
+                const cardData = state.boardCards.find(c => c.id == el.dataset.id);
+                const index = state.selectedCards.findIndex(c => c.id == cardData.id);
+                if (index > -1) { 
+                    state.selectedCards.splice(index, 1); 
+                    el.classList.remove('selected'); 
+                } 
+                else if (state.selectedCards.length < 3) { 
+                    state.selectedCards.push(cardData); 
+                    el.classList.add('selected'); 
+                }
+                updateConfirmButtons();
+                updateBoardAppearance();
+            });
+            updateConfirmButtons();
+            resetAndStartSelectionTimer();
+            updateBoardAppearance();
+        }
+
+        function initializeGame() { 
+            state = { score: 0, gameMode: selectedGameMode, isPaused: false, historyHoverSet: null }; 
+            startLevel(1); 
+            showView('game'); 
+        }
+
+        // --- TUTORIAL LOGIC ---
+        function startTutorial() {
+            const whiteBg = BACKGROUNDS[0];
+            const allColors = [...SHAPE_COLORS]; // red, orange, blue, green
+
+            // Helper to create a card
+            const makeCard = (id, shape, shapeColor) => ({ id, shape, shapeColor, background: whiteBg });
+
+            // --- Step 1: Same Shape, Different Colors ---
+            const step1_set = [ makeCard(1001, 'square', allColors[0]), makeCard(1002, 'square', allColors[1]), makeCard(1003, 'square', allColors[2]) ];
+            const step1_board = [
+                ...step1_set,
+                makeCard(1004, 'circle', allColors[0]),       // distractor
+                makeCard(1005, 'triangle', allColors[1]),     // distractor
+                makeCard(1006, 'square', allColors[0]),       // distractor (duplicate color in set)
+                makeCard(1007, 'inv-triangle', allColors[3]), // distractor
+                makeCard(1008, 'triangle', allColors[0]),     // distractor
+                makeCard(1009, 'circle', allColors[3])        // distractor
+            ].sort(() => Math.random() - 0.5);
+
+            // --- Step 2: Different Shapes, Different Colors ---
+            const step2_set = [ makeCard(2001, 'square', allColors[0]), makeCard(2002, 'circle', allColors[1]), makeCard(2003, 'triangle', allColors[2]) ];
+            const step2_board = [
+                ...step2_set,
+                makeCard(2004, 'square', allColors[1]),       // distractor (shape and color clash with set)
+                makeCard(2005, 'circle', allColors[0]),       // distractor (shape and color clash with set)
+                makeCard(2006, 'inv-triangle', allColors[1]), // distractor
+                makeCard(2007, 'square', allColors[2]),       // distractor (shape and color clash with set)
+                makeCard(2008, 'circle', allColors[3]),       // distractor
+                makeCard(2009, 'inv-triangle', allColors[0])  // distractor
+            ].sort(() => Math.random() - 0.5);
+            
+            tutorialState = {
+                step: 0, 
+                selectedIds: new Set(),
+                steps: [
+                    { 
+                        board: step1_board, 
+                        instruction: "Bộ 1: **Cùng hình dạng** và **3 màu khác nhau**. (Luôn phải cùng màu nền)."
+                    },
+                    { 
+                        board: step2_board, 
+                        instruction: "Bộ 2: **3 hình dạng khác nhau** và **3 màu khác nhau**. (Luôn phải cùng màu nền)."
+                    }
+                ]
+            };
+            showView('tutorial'); 
+            loadTutorialStep();
+        }
+
+        function loadTutorialStep() {
+            const stepData = tutorialState.steps[tutorialState.step];
+            tutorialState.selectedIds.clear();
+            ui.tutorial.instructions.innerHTML = parseMarkdown(stepData.instruction);
+            ui.tutorial.nextBtn.classList.add('hidden');
+            
+            renderBoard(ui.tutorial.board, stepData.board, (el, card) => {
+                 if (tutorialState.selectedIds.size === 3 && !ui.tutorial.nextBtn.classList.contains('hidden')) return;
+                 
+                 if (tutorialState.selectedIds.has(card.id)) {
+                    tutorialState.selectedIds.delete(card.id);
+                    el.classList.remove('selected', 'tut-correct');
+                 } else if (tutorialState.selectedIds.size < 3) {
+                    tutorialState.selectedIds.add(card.id);
+                    el.classList.add('selected');
+                 }
+                 
+                 if (tutorialState.selectedIds.size === 3) {
+                    const selectedCards = stepData.board.filter(c => tutorialState.selectedIds.has(c.id));
+                    const isCorrect = checkSet(selectedCards);
+                    
+                    if (isCorrect) {
+                        ui.tutorial.instructions.innerHTML = parseMarkdown("Chính xác! **Bạn đã hiểu rồi.**");
+                        ui.tutorial.nextBtn.classList.remove('hidden');
+                        tutorialState.selectedIds.forEach(id => {
+                             const cardEl = ui.tutorial.board.querySelector(`[data-id='${id}']`);
+                             if (cardEl) cardEl.classList.add('tut-correct');
+                        });
+                    } else {
+                        ui.tutorial.instructions.innerHTML = parseMarkdown("Chưa đúng. **Hãy thử lại!**");
+                        setTimeout(() => {
+                            tutorialState.selectedIds.forEach(id => { 
+                                const cardEl = ui.tutorial.board.querySelector(`[data-id='${id}']`);
+                                if (cardEl) cardEl.classList.remove('selected');
+                            });
+                            tutorialState.selectedIds.clear(); 
+                            ui.tutorial.instructions.innerHTML = parseMarkdown(stepData.instruction);
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
+        // --- APP INITIALIZATION ---
+        function initApp() {
+            document.getElementById('start-game-btn').addEventListener('click', initializeGame);
+            document.getElementById('start-tutorial-btn').addEventListener('click', startTutorial);
+            document.getElementById('back-to-menu-btn').addEventListener('click', () => { stopAllTimers(); showView('mainMenu'); });
+            
+            ui.confirmBtns.forEach(btn => btn.addEventListener('click', handleConfirm));
+            ui.pauseBtns.forEach(btn => btn.addEventListener('click', togglePause));
+            ui.surrenderBtns.forEach(btn => btn.addEventListener('click', () => gameOver("Bạn đã bỏ cuộc")));
+            
+            ui.tutorial.nextBtn.addEventListener('click', () => {
+                tutorialState.step++;
+                if (tutorialState.step >= tutorialState.steps.length) {
+                     showMessage('Hoàn thành hướng dẫn!', 'text-white', 'bg-green-600');
+                     setTimeout(() => showView('mainMenu'), 1500); // Tự động quay về trang chính sau 1.5 giây
+                } else {
+                    loadTutorialStep();
+                }
+            });
+
+            ui.modeButtons.classic.addEventListener('click', () => {
+                selectedGameMode = 'classic';
+                ui.modeButtons.classic.classList.add('active');
+                ui.modeButtons.dual.classList.remove('active');
+            });
+            ui.modeButtons.dual.addEventListener('click', () => {
+                selectedGameMode = 'dual';
+                ui.modeButtons.dual.classList.add('active');
+                ui.modeButtons.classic.classList.remove('active');
+            });
+            
+            ui.settingsToggles.uselessDim.addEventListener('change', (e) => {
+                settings.isUselessDimEnabled = e.target.checked;
+                updateBoardAppearance();
+            });
+            ui.settingsToggles.bgDim.addEventListener('change', (e) => {
+                settings.isBgDimEnabled = e.target.checked;
+                updateBoardAppearance();
+            });
+            ui.settingsToggles.shapeDim.addEventListener('change', (e) => {
+                settings.isShapeDimEnabled = e.target.checked;
+                updateBoardAppearance();
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (ui.views.game.classList.contains('hidden')) return;
+
+                if (event.key === 'Enter') {
+                    if (state.isPaused || !ui.postGameOverlay.classList.contains('hidden')) return;
+                    if (!ui.confirmBtns[0].disabled) {
+                        event.preventDefault(); 
+                        handleConfirm();
+                    }
+                } else if (event.key === 'p' || event.key === 'P') {
+                    event.preventDefault();
+                    togglePause();
+                }
+            });
+
+            showView('mainMenu');
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
