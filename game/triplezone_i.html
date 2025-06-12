@@ -86,7 +86,7 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
         .card.dimmed { 
-            filter: blur(4px);
+            filter: blur(4px) brightness(0.8);
             opacity: 0.5;
             transform: scale(0.95);
         }
@@ -160,10 +160,10 @@
         html.dark .item-count { box-shadow: 0 0 0 2px var(--panel-bg-dark); }
 
 
-        #missed-sets-summary::-webkit-scrollbar, #achievements-list::-webkit-scrollbar { height: 8px; width: 8px; }
-        #missed-sets-summary::-webkit-scrollbar-track, #achievements-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-        #missed-sets-summary::-webkit-scrollbar-thumb, #achievements-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
-        #missed-sets-summary::-webkit-scrollbar-thumb:hover, #achievements-list::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+        #missed-sets-summary::-webkit-scrollbar, #achievements-list::-webkit-scrollbar, #history-content-area::-webkit-scrollbar { height: 8px; width: 8px; }
+        #missed-sets-summary::-webkit-scrollbar-track, #achievements-list::-webkit-scrollbar-track, #history-content-area::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb, #achievements-list::-webkit-scrollbar-thumb, #history-content-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb:hover, #achievements-list::-webkit-scrollbar-thumb:hover, #history-content-area::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
         
         :root {
             --panel-bg: rgba(255, 255, 255, 0.85);
@@ -223,6 +223,7 @@
                 <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center py-6">
                     <!-- Left Column (Title & Art) -->
                     <div class="text-center lg:text-left">
+                        <!-- FIX #6: Bố cục hợp lý hơn -->
                         <h1 class="text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">Ghép Cặp Hoàn Hảo</h1>
                         <p class="text-slate-600 dark:text-slate-400 text-lg mb-8">Thử thách đỉnh cao về khả năng quan sát và tốc độ. Tìm các bộ ba hợp lệ để ghi điểm và chinh phục các cấp độ!</p>
                         <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -261,12 +262,10 @@
                         </div>
                         <!-- Action Buttons -->
                         <div class="mt-8 flex flex-col gap-4">
-                             <button id="start-game-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg">Bắt đầu chơi</button>
-                             <div class="grid grid-cols-3 gap-4 lg:hidden">
-                                <button id="shop-btn-mobile" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-green-700">Cửa hàng</button>
-                                <button id="achievements-btn-mobile" class="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-amber-600">Thành tựu</button>
-                                <button id="history-btn-mobile" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-gray-700">Lịch sử</button>
-                             </div>
+                             <!-- FIX #6: Làm nổi bật nút bắt đầu -->
+                             <button id="start-game-btn" class="w-full bg-blue-600 text-white font-bold py-4 px-4 rounded-lg text-lg hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg">Bắt đầu chơi</button>
+                             <!-- FIX #1: Loại bỏ các nút lặp lại trên điện thoại -->
+                             <!-- Đoạn mã cho các nút mobile đã bị xóa khỏi đây -->
                         </div>
                     </div>
                 </div>
@@ -301,13 +300,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                  </button>
             </div>
-            <div id="history-content-area" class="flex-grow overflow-y-auto space-y-8">
+            <div id="history-content-area" class="flex-grow overflow-y-auto space-y-8 pr-2">
                  <!-- Overall Stats Section -->
                  <div id="overall-stats-section"></div>
                  <!-- High Score Section -->
                  <div id="high-scores-section"></div>
                  <!-- Game Log Section -->
                  <div id="game-log-section"></div>
+            </div>
+            <!-- FIX #5: Thêm chức năng Reset Game -->
+            <div class="flex-shrink-0 pt-4 mt-4 border-t border-slate-300 dark:border-slate-600">
+                <button id="reset-game-btn" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-red-700 shadow-md">Xóa Toàn Bộ Dữ Liệu</button>
+                <p class="text-xs text-center text-slate-500 mt-2">Hành động này không thể hoàn tác. Tất cả xu, vật phẩm, và thành tựu sẽ bị xóa vĩnh viễn.</p>
             </div>
         </div>
 
@@ -362,6 +366,20 @@
                 </div>
                 <div class="flex-grow p-6 overflow-y-auto space-y-6">
                     <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v1.2.0</span> - 12/06/2025</h3>
+                        <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                            <li><strong>Cải tiến:</strong> Bố cục trang chính được sắp xếp lại.</li>
+                            <li><strong>Cải tiến:</strong> Tặng 5 vật phẩm mỗi loại cho người chơi mới.</li>
+                            <li><strong>Cải tiến:</strong> Hiển thị rõ phần thưởng trong giao diện Thành tựu.</li>
+                            <li><strong>Cải tiến:</strong> Giao diện lịch sử trên điện thoại được nâng cao.</li>
+                            <li><strong>Mới:</strong> Thêm chức năng xóa toàn bộ dữ liệu (Reset Game) trong Lịch sử.</li>
+                            <li><strong>Sửa lỗi:</strong> Loại bỏ các nút bị lặp lại ở trang chính trên điện thoại.</li>
+                            <li><strong>Sửa lỗi:</strong> Nền và hình không còn bị trùng màu ở chế độ Cổ điển.</li>
+                            <li><strong>Sửa lỗi:</strong> Dừng đồng hồ đếm ngược cứu hộ ngay sau khi người chơi đồng ý.</li>
+                            <li><strong>Sửa lỗi:</strong> Các ô đã thuộc bộ cũ sẽ bị làm mờ đúng cách khi chọn 2/3 ô.</li>
+                        </ul>
+                    </div>
+                    <div>
                         <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v1.1.0</span> - 13/06/2025</h3>
                         <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
                             <li><strong>Mới:</strong> Trợ giúp "Ẩn 1 ô" cho phép ẩn một thẻ bài trong một cấp độ.</li>
@@ -370,15 +388,6 @@
                             <li><strong>Cập nhật:</strong> Giao diện Cứu hộ được làm mới với đồng hồ đếm ngược.</li>
                             <li><strong>Sửa lỗi:</strong> Lịch sử ván chơi có thể cuộn trên điện thoại.</li>
                             <li><strong>Tinh gọn:</strong> Loại bỏ hỗ trợ "Mờ nền khác".</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v.1.0.1</span> - 12/06/2025</h3>
-                        <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
-                            <li><strong>Sửa lỗi:</strong> Ở chế độ Cổ điển, các thẻ bài có nền màu xám giờ sẽ chỉ có hình dạng màu trắng hoặc đen, đúng theo luật chơi.</li>
-                            <li><strong>Cập nhật:</strong> Thay đổi cách hiển thị mạng sống (trái tim) thành một biểu tượng duy nhất kèm theo số.</li>
-                            <li><strong>Cập nhật:</strong> Hình thoi (kim cương) được vẽ lại để có kích thước cân đối hơn.</li>
-                            <li><strong>Sửa lỗi:</strong> Hỗ trợ "Mờ nền khác" sẽ bị vô hiệu hóa khi chọn chế độ Cổ điển để tránh nhầm lẫn.</li>
                         </ul>
                     </div>
                 </div>
@@ -483,7 +492,8 @@
                 </div>
 
                 <!-- Right Panel -->
-                <div class="w-full lg:w-72 flex-shrink-0 flex flex-col h-40 lg:h-auto min-h-0">
+                <!-- FIX #4: Tăng chiều cao của bảng lịch sử trên điện thoại -->
+                <div class="w-full lg:w-72 flex-shrink-0 flex flex-col h-48 lg:h-auto min-h-0">
                     <div id="history-panel" class="history-list h-full bg-white/50 dark:bg-slate-800/30 border border-white/30 dark:border-slate-700/50 rounded-xl p-2 overflow-y-auto">
                     </div>
                 </div>
@@ -497,7 +507,7 @@
     
     <script type="module">
         // --- CONSTANTS & CONFIG ---
-        const CURRENT_VERSION = 'v1.1.0';
+        const CURRENT_VERSION = 'v1.2.0';
         const ALL_SHAPES = ['square', 'circle', 'triangle', 'diamond'];
         const DUAL_SHAPE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e']; 
         const DUAL_BACKGROUNDS = ['#FFFFFF', '#27272a'];
@@ -570,19 +580,20 @@
             earlyFinishIconBtn: document.getElementById('early-finish-icon-btn'),
             ingameActiveAssistsDisplay: document.getElementById('ingame-active-assists-display'),
             historyView: {
-                openBtns: [document.getElementById('history-btn-main'), document.getElementById('history-btn-mobile')],
+                openBtns: [document.getElementById('history-btn-main') /*, document.getElementById('history-btn-mobile') - REMOVED */],
                 closeBtn: document.getElementById('close-history-btn'),
                 overallStats: document.getElementById('overall-stats-section'),
                 highScores: document.getElementById('high-scores-section'),
                 gameLog: document.getElementById('game-log-section'),
+                resetBtn: document.getElementById('reset-game-btn'),
             },
             achievementsView: {
-                openBtns: [document.getElementById('achievements-btn-main'), document.getElementById('achievements-btn-mobile')],
+                openBtns: [document.getElementById('achievements-btn-main') /*, document.getElementById('achievements-btn-mobile') - REMOVED */],
                 closeBtn: document.getElementById('close-achievements-btn'),
                 list: document.getElementById('achievements-list'),
             },
             shop: {
-                openBtns: [document.getElementById('shop-btn-main'), document.getElementById('shop-btn-mobile')],
+                openBtns: [document.getElementById('shop-btn-main') /*, document.getElementById('shop-btn-mobile') - REMOVED */],
                 closeBtn: document.getElementById('close-shop-btn'),
                 coinsMenu: document.getElementById('player-coins-menu-value'),
                 coinsShop: document.getElementById('player-coins-shop-value'),
@@ -714,16 +725,17 @@
             if (savedData) {
                 playerData = JSON.parse(savedData);
             } else {
+                 // FIX #3: Tặng 5 vật phẩm mỗi loại khi bắt đầu
                 playerData = { 
                     coins: 0, 
-                    inventory: { hints: 3, hideCard: 1, assistUseless: 1, assistShape: 1 },
+                    inventory: { hints: 5, hideCard: 5, assistUseless: 5, assistShape: 5 },
                     achievements: {},
                     stats: { totalSetsFound: 0 }
                 };
             }
             // Migration for new data structures
-            if (!playerData.inventory) playerData.inventory = { hints: 3, hideCard: 1, assistUseless: 1, assistShape: 1 };
-            if (!playerData.inventory.hideCard) playerData.inventory.hideCard = 1;
+            if (!playerData.inventory) playerData.inventory = { hints: 5, hideCard: 5, assistUseless: 5, assistShape: 5 };
+            if (!playerData.inventory.hideCard) playerData.inventory.hideCard = 5;
             if (playerData.inventory.assistBg) delete playerData.inventory.assistBg;
             if (!playerData.achievements) playerData.achievements = {};
             if (!playerData.stats) playerData.stats = { totalSetsFound: 0 };
@@ -759,6 +771,7 @@
         const getSetId = cs => cs.map(c => c.id).sort((a,b) => a-b).join('-');
         const parseMarkdown = (text) => text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-600 dark:text-blue-400">$1</strong>');
         
+        // FIX #2: Ngăn màu nền và hình trùng nhau trong chế độ Cổ điển
         function getCardPool(mode) {
             let cs = [], id = 0;
             const bgs = mode === 'classic' ? CLASSIC_BACKGROUNDS : DUAL_BACKGROUNDS;
@@ -767,10 +780,17 @@
             bgs.forEach(bg => {
                 let availableColors = allColors;
                 if (mode === 'classic') {
+                    // Luật đặc biệt cho nền xám: chỉ có hình trắng hoặc đen
                     if (bg === '#9CA3AF') {
                         availableColors = ['#FFFFFF', '#111827'];
                     } else {
-                        availableColors = allColors.filter(c => c !== bg);
+                        // Lọc tất cả các màu hình trùng với màu nền
+                        availableColors = allColors.filter(c => {
+                            if (bg === '#FFFFFF') return c !== '#FFFFFF';
+                            // Nếu nền gần đen (#1F2937), loại bỏ hình màu đen (#111827) để tránh nhầm lẫn
+                            if (bg === '#1F2937') return c !== '#1F2937' && c !== '#111827';
+                            return c !== bg;
+                        });
                     }
                 }
 
@@ -783,13 +803,6 @@
             return cs;
         }
 
-        /**
-         * Checks if a combination of three cards forms a valid set based on the current game mode.
-         * This function implements the official rules provided by the user.
-         * @param {Array<Object>} cards - An array of three card objects.
-         * @param {string} mode - The current game mode ('classic' or 'dual').
-         * @returns {boolean} - True if the cards form a valid set, false otherwise.
-         */
         function checkSet(cards, mode) {
             if (cards.length !== 3) return false;
             const gameMode = mode || state.gameMode;
@@ -799,24 +812,12 @@
             const shapeColors = new Set(cards.map(c => c.shapeColor));
 
             if (gameMode === 'classic') {
-                // Rule for Classic Mode: Different background, different shape, different shape color.
-                // (Khác màu nền, khác hình, và khác màu hình)
                 return backgrounds.size === 3 && shapes.size === 3 && shapeColors.size === 3;
             } else { // 'dual' mode
-                // Rule for Dual Background Mode: Same background, different shape, different shape color.
-                // (Cùng màu nền, khác hình, khác màu của hình)
                 return backgrounds.size === 1 && shapes.size === 3 && shapeColors.size === 3;
             }
         }
 
-        /**
-         * Finds all valid sets on the current board.
-         * This function iterates through all possible combinations of three cards and uses the
-         * `checkSet` function to validate them, ensuring consistency with the game rules.
-         * @param {Array<Object>} board - An array of card objects currently on the board.
-         * @param {string} mode - The current game mode.
-         * @returns {Array<Array<Object>>} - An array containing all valid sets.
-         */
         function findAllSets(board, mode) {
             const sets = [];
             const n = board.length;
@@ -1090,16 +1091,19 @@
                 } else {
                     showNotification(`${item.name} đã được thêm vào!`, 'success');
                 }
+                return true;
             } else {
                  if (!fromGame) {
                     showGameModal('Không đủ xu', 'Bạn không có đủ xu để mua vật phẩm này. Hãy chơi game để kiếm thêm!', 'OK', () => { ui.gameModalContainer.innerHTML = '' });
                 } else {
                     showNotification('Không đủ xu!', 'error');
                 }
+                return false;
             }
         }
         
         function promptInGamePurchase(itemId) {
+            stopAllTimers();
             const item = SHOP_ITEMS[itemId];
             if (!item) return;
 
@@ -1113,19 +1117,20 @@
                     buttons: [
                          { id: 'ingame-buy-yes', text: 'Mua', classes: `w-full font-bold py-2 px-4 rounded-lg ${canAfford ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`,
                             callback: () => {
-                                if (canAfford) {
-                                    buyItem(itemId, true);
-                                    if(itemId === 'hints') useHint();
-                                    if(itemId === 'hideCard') useHideCard();
-                                }
                                 ui.gameModalContainer.innerHTML = ''; 
-                                if(state.isPaused) togglePause(); else startAllTimers();
+                                if (canAfford) {
+                                    if (buyItem(itemId, true)) {
+                                       if(itemId === 'hints') useHint(true);
+                                       if(itemId === 'hideCard') useHideCard(true);
+                                    }
+                                }
+                                startAllTimers();
                             }
                         },
                          { id: 'ingame-buy-no', text: 'Không', classes: 'w-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg',
                             callback: () => { 
                                 ui.gameModalContainer.innerHTML = ''; 
-                                if(state.isPaused) togglePause(); else startAllTimers();
+                                startAllTimers();
                             } 
                         }
                     ]
@@ -1135,8 +1140,8 @@
         }
 
         // --- ASSIST LOGIC ---
-        function useHint() {
-            if (playerData.inventory.hints <= 0) {
+        function useHint(justPurchased = false) {
+            if (!justPurchased && playerData.inventory.hints <= 0) {
                 promptInGamePurchase('hints');
                 return;
             }
@@ -1145,10 +1150,12 @@
             const undiscoveredSets = findAllSets(boardCards, state.gameMode).filter(set => !state.foundSets.has(getSetId(set)));
 
             if (undiscoveredSets.length > 0) {
-                if(state.currentSessionStats) state.currentSessionStats.hintsUsed++;
-                playerData.inventory.hints--;
-                savePlayerData();
-                updateInventoryDisplay();
+                if(!justPurchased) {
+                   if(state.currentSessionStats) state.currentSessionStats.hintsUsed++;
+                   playerData.inventory.hints--;
+                   savePlayerData();
+                   updateInventoryDisplay();
+                }
 
                 const setToReveal = undiscoveredSets[0];
                 setToReveal.forEach(card => {
@@ -1167,8 +1174,8 @@
             }
         }
         
-        function useHideCard() {
-             if (playerData.inventory.hideCard <= 0) {
+        function useHideCard(justPurchased = false) {
+             if (!justPurchased && playerData.inventory.hideCard <= 0) {
                 promptInGamePurchase('hideCard');
                 return;
             }
@@ -1176,12 +1183,15 @@
                 showNotification('Bạn chỉ có thể ẩn 1 ô mỗi cấp!', 'info');
                 return;
             }
+            
+            if(!justPurchased) {
+               stopAllTimers();
+            }
 
             state.isHidingCard = true;
             ui.gameBoard.classList.add('hiding-mode');
             showNotification('Chọn một thẻ bài để ẩn đi', 'info');
             ui.gameBoard.querySelectorAll('.card').forEach(c => c.classList.add('hiding-mode'));
-            stopAllTimers();
         }
         
         // --- GAME FLOW (Updates) ---
@@ -1291,10 +1301,17 @@
             
             // Handle "Hide Card" logic
             if (state.isHidingCard) {
-                playerData.inventory.hideCard--;
-                state.currentSessionStats.hidesUsed++;
-                updateInventoryDisplay();
-                savePlayerData();
+                if(playerData.inventory.hideCard > 0) {
+                    playerData.inventory.hideCard--;
+                    if(state.currentSessionStats) state.currentSessionStats.hidesUsed++;
+                    updateInventoryDisplay();
+                    savePlayerData();
+                } else { // Should not happen due to initial check, but as a safeguard
+                     state.isHidingCard = false;
+                     updateBoardAppearance();
+                     startAllTimers();
+                     return;
+                }
 
                 state.isHidingCard = false;
                 state.hiddenCardId = cardId;
@@ -1356,7 +1373,7 @@
             const buttonsHtml = options.buttons ? options.buttons.map(btn => `<button id="${btn.id}" class="${btn.classes}">${btn.text}</button>`).join('') : `<button id="modal-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700">OK</button>`;
             
             let modalContent = `
-                <div id="game-modal-overlay" class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" ${options.countdown ? 'data-close-on-overlay="true"' : ''}>
+                <div id="game-modal-overlay" class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" ${options.closeOnOverlay ? 'data-close-on-overlay="true"' : ''}>
                     <div class="panel p-6 sm:p-8 text-center max-w-sm w-full" style="animation: fadeInUp 0.3s ease-out;">
                         ${options.countdownCircle || ''}
                         <h2 class="text-2xl font-bold mb-4">${title}</h2>
@@ -1389,18 +1406,24 @@
                 });
             }
 
-             if (options.countdown) {
+            // FIX #8: Xử lý đồng hồ đếm ngược
+            if (options.countdown) {
                 let timeLeft = options.countdown;
+                if (state.modalTimerId) clearInterval(state.modalTimerId);
                 const countdownCircle = document.getElementById('countdown-timer-path');
                 const timer = setInterval(() => {
                     timeLeft--;
-                    const progress = (timeLeft / options.countdown);
-                    countdownCircle.style.strokeDashoffset = 283 * (1 - progress);
+                    if(countdownCircle) {
+                        const progress = (timeLeft / options.countdown);
+                        countdownCircle.style.strokeDashoffset = 283 * (1 - progress);
+                    }
                     if (timeLeft <= 0) {
                         clearInterval(timer);
+                        state.modalTimerId = null;
                         if (options.onTimerEnd) options.onTimerEnd();
                     }
                 }, 1000);
+                state.modalTimerId = timer;
             }
         }
 
@@ -1408,6 +1431,8 @@
             stopAllTimers();
             const canAfford = playerData.coins >= TIME_RESCUE_COST;
             const endRescue = () => {
+                if (state.modalTimerId) clearInterval(state.modalTimerId);
+                state.modalTimerId = null;
                 ui.gameModalContainer.innerHTML = '';
                 gameOver('Hết giờ!');
             };
@@ -1423,6 +1448,10 @@
                         text: `Đồng ý (${TIME_RESCUE_COST.toLocaleString()} xu)`,
                         classes: `w-full font-bold py-3 px-4 rounded-lg ${canAfford ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`,
                         callback: () => {
+                            // FIX #8: Dừng đồng hồ khi đồng ý
+                            if (state.modalTimerId) clearInterval(state.modalTimerId);
+                            state.modalTimerId = null;
+
                             if (canAfford) {
                                 playerData.coins -= TIME_RESCUE_COST;
                                 state.totalTimeLeft += TIME_RESCUE_AMOUNT;
@@ -1430,6 +1459,9 @@
                                 updateCoinDisplay();
                                 ui.gameModalContainer.innerHTML = '';
                                 startAllTimers();
+                            } else {
+                                // If somehow clicked while disabled, just close and end game.
+                                endRescue();
                             }
                         }
                     }],
@@ -1445,7 +1477,7 @@
                                       class="text-red-500" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent"
                                       style="stroke-dasharray: 283; stroke-dashoffset: 283; transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset 1s linear;" />
                             </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold">${TIME_RESCUE_AMOUNT}</span>
+                            <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold">${TIME_RESCUE_COUNTDOWN}</span>
                         </div>
                     `
                 }
@@ -1508,7 +1540,7 @@
                  gameContainer.insertAdjacentHTML('beforeend', `
                     <div id="post-game-overlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col justify-between items-center py-8 px-4 z-40 cursor-pointer" style="animation: fadeInUp 0.5s;">
                         <div class="w-full max-w-3xl mx-auto pointer-events-none">
-                            <div id="missed-sets-summary" class="flex flex-nowrap gap-4 overflow-x-auto pb-4 pointer-events-auto"></div>
+                              <div id="missed-sets-summary" class="flex flex-nowrap gap-4 overflow-x-auto pb-4 pointer-events-auto"></div>
                         </div>
                         <div class="w-full max-w-3xl mx-auto pointer-events-none">
                             <p class="text-white/80 text-center text-sm">Nhấn vào vùng trống để bỏ qua</p>
@@ -1571,10 +1603,28 @@
             }
             renderStats();
         }
-
+        
+        // FIX #9: Sửa lỗi làm mờ các ô đã thuộc bộ cũ
         function updateBoardAppearance() {
             if (!state.boardCards) return;
             const historyCardIds = state.historyHoverSet ? new Set(state.historyHoverSet.map(c => c.id)) : null;
+            
+            // Logic mới để tìm các thẻ thứ ba hoàn thành một bộ đã tìm thấy
+            let completedSetThirdCardIds = new Set();
+            if (state.selectedCards.length === 2) {
+                const boardCardsToCheck = state.boardCards.filter(c => 
+                    c.id !== state.selectedCards[0].id && 
+                    c.id !== state.selectedCards[1].id
+                );
+
+                for (const thirdCard of boardCardsToCheck) {
+                    const candidateSet = [state.selectedCards[0], state.selectedCards[1], thirdCard];
+                    const setId = getSetId(candidateSet);
+                    if (state.foundSets.has(setId)) {
+                        completedSetThirdCardIds.add(thirdCard.id);
+                    }
+                }
+            }
             
             ui.gameBoard.querySelectorAll('.card').forEach(cardEl => {
                 const cardId = parseInt(cardEl.dataset.id, 10);
@@ -1589,14 +1639,20 @@
                 }
 
                 let isDimmed = false;
+                // Làm mờ các ô không thuộc bộ nào
                 if (settings.isUselessDimEnabled && !state.usefulCardIds.has(cardId)) {
                     isDimmed = true;
                 }
+                // Làm mờ các ô cùng hình dạng
                 if (!isDimmed && settings.isShapeDimEnabled && state.selectedCards.length > 0) {
                     const selectedShapes = new Set(state.selectedCards.map(c => c.shape));
                     if (!isSelected && selectedShapes.has(cardData.shape)) {
                         isDimmed = true;
                     }
+                }
+                // Làm mờ ô thứ 3 của một bộ đã tìm thấy
+                if (!isDimmed && !isSelected && completedSetThirdCardIds.has(cardId)) {
+                    isDimmed = true;
                 }
                 
                 cardEl.classList.toggle('dimmed', isDimmed);
@@ -1604,7 +1660,7 @@
         }
         
         function togglePause() {
-            if (ui.views.game.classList.contains('hidden') || document.getElementById('post-game-overlay')) return;
+            if (ui.views.game.classList.contains('hidden') || document.getElementById('post-game-overlay') || state.isGameOver) return;
             state.isPaused = !state.isPaused;
             const continueIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" /></svg>';
             const pauseIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>';
@@ -1623,6 +1679,7 @@
             clearInterval(state.totalTimerId);
             clearInterval(state.selectionTimerId);
             if(state.revealInterval) clearInterval(state.revealInterval);
+            if(state.modalTimerId) clearInterval(state.modalTimerId);
         }
 
         function startAllTimers() {
@@ -1663,6 +1720,7 @@
                 level: level,
                 isGameOver: false, isChecking: false, isHidingCard: false,
                 hiddenCardId: null,
+                modalTimerId: null,
                 hoveredShape: null, historyHoverSet: null,
                 penaltyCount: 0, comboCount: 0,
                 selectedCards: [], foundSets: new Set(),
@@ -1738,6 +1796,7 @@
                 gameMode: selectedGameMode, 
                 isPaused: false, 
                 historyHoverSet: null,
+                modalTimerId: null,
                 currentSessionStats: { 
                     date: new Date().toISOString(), setFindTimes: [], errors: 0, hintsUsed: 0, hidesUsed: 0,
                     correctStreak: 0, errorStreak: 0, maxCorrectStreak: 0, maxErrorStreak: 0 
@@ -1792,6 +1851,20 @@
             updateInventoryDisplay();
             renderAchievementsModal();
         }
+        
+        // FIX #7: Hiển thị phần thưởng của thành tựu
+        function formatRewardText(reward) {
+            if (!reward) return 'Không có';
+            const itemInfo = SHOP_ITEMS[reward.type];
+            const itemName = itemInfo ? itemInfo.name : reward.type;
+            
+            switch (reward.type) {
+                case 'coins':
+                    return `+${reward.amount.toLocaleString()} Xu`;
+                default:
+                    return `+${reward.amount} ${itemName}`;
+            }
+        }
 
         function renderAchievementsModal() {
             ui.achievementsView.list.innerHTML = '';
@@ -1801,17 +1874,16 @@
                 const isClaimed = playerAch.claimed;
                 
                 let progressHtml = '';
-                // Simple progress for demonstration
                 if (!isUnlocked && (id.startsWith('score_') || id.startsWith('sets_'))) {
                     let current = 0;
-                    let target = 0;
+                    let target = 1; // avoid division by zero
                     if (id === 'score_1') { current = playerData.coins; target = 10000; }
                     if (id === 'score_2') { current = playerData.coins; target = 100000; }
-                    if (id === 'sets_1') { current = playerData.stats.totalSetsFound; target = 50; }
-                    if (id === 'sets_2') { current = playerData.stats.totalSetsFound; target = 250; }
+                    if (id === 'sets_1') { current = playerData.stats.totalSetsFound || 0; target = 50; }
+                    if (id === 'sets_2') { current = playerData.stats.totalSetsFound || 0; target = 250; }
                     const percent = Math.min(100, (current / target) * 100);
                     progressHtml = `
-                        <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 mt-1">
+                        <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 mt-2">
                           <div class="bg-amber-500 h-1.5 rounded-full" style="width: ${percent}%"></div>
                         </div>`;
                 }
@@ -1824,12 +1896,13 @@
                     <div class="flex-grow">
                         <h4 class="font-bold text-slate-800 dark:text-slate-100">${ach.name}</h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400">${ach.description}</p>
+                        <p class="text-xs font-semibold text-green-500 dark:text-green-400 mt-1">Phần thưởng: ${formatRewardText(ach.reward)}</p>
                         ${progressHtml}
                     </div>
                     <button data-ach-id="${id}" class="claim-ach-btn flex-shrink-0 font-bold py-2 px-4 rounded-lg text-sm transition-colors ${
                         isUnlocked && !isClaimed ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400'
                     }" ${!isUnlocked || isClaimed ? 'disabled' : ''}>
-                        ${isClaimed ? 'Đã nhận' : (isUnlocked ? 'Nhận thưởng' : 'Chưa mở')}
+                        ${isClaimed ? 'Đã nhận' : (isUnlocked ? 'Nhận' : 'Đã khóa')}
                     </button>
                 `;
                 ui.achievementsView.list.appendChild(achEl);
@@ -1958,7 +2031,19 @@
             const pauseIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>';
             ui.pauseBtns.forEach(btn => btn.innerHTML = (btn.id === 'pause-btn-desktop') ? `${pauseIcon} Tạm dừng` : pauseIcon);
         }
-        
+        function handleResetData() {
+    // Xóa dữ liệu người chơi (xu, vật phẩm, thành tựu) khỏi bộ nhớ trình duyệt
+    localStorage.removeItem('tripleZonePlayerData');
+    
+    // Xóa toàn bộ lịch sử các ván đã chơi
+    localStorage.removeItem('tripleZoneGameHistory');
+    
+    // Xóa dữ liệu phiên bản đã xem để hiển thị lại nhật ký thay đổi
+    localStorage.removeItem('lastVersionSeen');
+
+    // Tải lại trang web để bắt đầu lại từ đầu
+    location.reload();
+}
         // --- APP INITIALIZATION ---
         function initApp() {
             document.getElementById('version-number').textContent = CURRENT_VERSION;
@@ -2007,7 +2092,30 @@
                     ]}
                 );
             });
-            
+            document.getElementById('reset-game-btn').addEventListener('click', () => {
+    showGameModal(
+        'Xác nhận Xóa Dữ Liệu',
+        'Hành động này không thể hoàn tác. Toàn bộ xu, vật phẩm, và lịch sử chơi của bạn sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn tiếp tục không?',
+        null, null, {
+            buttons: [
+                {
+                    id: 'confirm-reset-yes',
+                    text: 'Xóa Tất Cả',
+                    classes: 'w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700',
+                    callback: () => {
+                        handleResetData(); // Gọi hàm xóa dữ liệu
+                    }
+                },
+                {
+                    id: 'confirm-reset-no',
+                    text: 'Hủy',
+                    classes: 'w-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg',
+                    callback: () => { ui.gameModalContainer.innerHTML = ''; }
+                }
+            ]
+        }
+    );
+});
             ui.shop.openBtns.forEach(btn => btn.addEventListener('click', () => {
                 renderShop();
                 showView('shop');
