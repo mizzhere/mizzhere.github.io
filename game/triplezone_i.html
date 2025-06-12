@@ -67,9 +67,18 @@
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes countdown-circle { from { stroke-dashoffset: 283; } to { stroke-dashoffset: 0; } }
 
         .card {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card.hiding-mode {
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+        .card.hidden-card {
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
         .card.selected, .card.tut-correct {
             transform: scale(1.08);
@@ -118,7 +127,7 @@
         #game-board.level-3 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .history-list { display: flex; flex-direction: column; gap: 8px; }
+        .history-list { display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
         .history-item { 
             display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; 
             border-radius: 0.5rem; cursor: pointer;
@@ -151,10 +160,10 @@
         html.dark .item-count { box-shadow: 0 0 0 2px var(--panel-bg-dark); }
 
 
-        #missed-sets-summary::-webkit-scrollbar { height: 8px; }
-        #missed-sets-summary::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-        #missed-sets-summary::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
-        #missed-sets-summary::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+        #missed-sets-summary::-webkit-scrollbar, #achievements-list::-webkit-scrollbar { height: 8px; width: 8px; }
+        #missed-sets-summary::-webkit-scrollbar-track, #achievements-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb, #achievements-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+        #missed-sets-summary::-webkit-scrollbar-thumb:hover, #achievements-list::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
         
         :root {
             --panel-bg: rgba(255, 255, 255, 0.85);
@@ -178,6 +187,11 @@
         #ingame-notification.hide {
             animation: fadeOut 0.3s ease-in forwards;
         }
+        .achievement-notification {
+            animation: slideInUp 0.5s ease-out forwards, slideOutDown 0.5s ease-in 4s forwards;
+        }
+        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
 
     </style>
 </head>
@@ -211,8 +225,9 @@
                     <div class="text-center lg:text-left">
                         <h1 class="text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">Ghép Cặp Hoàn Hảo</h1>
                         <p class="text-slate-600 dark:text-slate-400 text-lg mb-8">Thử thách đỉnh cao về khả năng quan sát và tốc độ. Tìm các bộ ba hợp lệ để ghi điểm và chinh phục các cấp độ!</p>
-                        <div class="flex gap-4 justify-center lg:justify-start">
+                        <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
                            <button id="shop-btn-main" class="w-auto bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-base hover:bg-green-700 transition-transform hover:scale-105 shadow-lg">Cửa hàng</button>
+                           <button id="achievements-btn-main" class="w-auto bg-amber-500 text-white font-bold py-3 px-6 rounded-lg text-base hover:bg-amber-600 transition-transform hover:scale-105 shadow-lg">Thành tựu</button>
                            <button id="history-btn-main" class="w-auto bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-base hover:bg-gray-700 transition-transform hover:scale-105 shadow-lg">Lịch sử</button>
                            <button class="start-tutorial-btn w-auto bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-3 px-6 rounded-lg text-base hover:bg-slate-100 dark:hover:bg-slate-600 transition-transform hover:scale-105 shadow-lg">Hướng dẫn</button>
                         </div>
@@ -231,16 +246,11 @@
                         <!-- Assist Selection -->
                         <div class="mb-6">
                             <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-3 text-center">Kích hoạt Hỗ trợ <span class="text-sm font-normal text-slate-500 dark:text-slate-400">(tiêu hao)</span></h3>
-                             <div class="grid grid-cols-3 gap-2 text-center">
+                             <div class="grid grid-cols-2 gap-2 text-center">
                                 <button id="assist-useless-btn" data-assist-type="useless" class="assist-btn p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex flex-col items-center justify-center gap-1">
                                    <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59" /></svg>
                                    <span class="text-xs font-semibold">Mờ ô vô dụng</span>
                                    <span class="item-count" data-item="assistUseless">0</span>
-                                </button>
-                                <button id="assist-bg-btn" data-assist-type="bg" class="assist-btn p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex flex-col items-center justify-center gap-1">
-                                   <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.5 11.5a8.5 8.5 0 1117 0 8.5 8.5 0 01-17 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.5 11.5a6 6 0 10-12 0 6 6 0 0012 0z" /></svg>
-                                   <span class="text-xs font-semibold">Mờ nền khác</span>
-                                   <span class="item-count" data-item="assistBg">0</span>
                                 </button>
                                 <button id="assist-shape-btn" data-assist-type="shape" class="assist-btn p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex flex-col items-center justify-center gap-1">
                                     <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
@@ -252,8 +262,9 @@
                         <!-- Action Buttons -->
                         <div class="mt-8 flex flex-col gap-4">
                              <button id="start-game-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg">Bắt đầu chơi</button>
-                             <div class="grid grid-cols-2 gap-4 lg:hidden">
+                             <div class="grid grid-cols-3 gap-4 lg:hidden">
                                 <button id="shop-btn-mobile" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-green-700">Cửa hàng</button>
+                                <button id="achievements-btn-mobile" class="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-amber-600">Thành tựu</button>
                                 <button id="history-btn-mobile" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg text-base hover:bg-gray-700">Lịch sử</button>
                              </div>
                         </div>
@@ -300,6 +311,21 @@
             </div>
         </div>
 
+        <!-- Achievements Modal -->
+        <div id="achievements-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+             <div class="panel w-full max-w-2xl max-h-[90vh] flex flex-col">
+                <div class="flex-shrink-0 flex justify-between items-center p-4 border-b border-white/10 dark:border-slate-700">
+                    <h2 class="text-xl font-bold">Thành Tựu</h2>
+                    <button id="close-achievements-btn" class="text-slate-500 hover:text-slate-200">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div id="achievements-list" class="flex-grow p-4 sm:p-6 space-y-3 overflow-y-auto">
+                    <!-- Achievements will be injected here -->
+                </div>
+             </div>
+        </div>
+
 
         <!-- Tutorial Modal -->
         <div id="tutorial-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -335,6 +361,17 @@
                     </button>
                 </div>
                 <div class="flex-grow p-6 overflow-y-auto space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v1.1.0</span> - 13/06/2025</h3>
+                        <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                            <li><strong>Mới:</strong> Trợ giúp "Ẩn 1 ô" cho phép ẩn một thẻ bài trong một cấp độ.</li>
+                            <li><strong>Mới:</strong> Hệ thống Thành tựu với nhiều phần thưởng hấp dẫn.</li>
+                            <li><strong>Cập nhật:</strong> Có thể mua "Gợi ý" và "Ẩn 1 ô" ngay trong trận đấu.</li>
+                            <li><strong>Cập nhật:</strong> Giao diện Cứu hộ được làm mới với đồng hồ đếm ngược.</li>
+                            <li><strong>Sửa lỗi:</strong> Lịch sử ván chơi có thể cuộn trên điện thoại.</li>
+                            <li><strong>Tinh gọn:</strong> Loại bỏ hỗ trợ "Mờ nền khác".</li>
+                        </ul>
+                    </div>
                     <div>
                         <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v.1.0.1</span> - 12/06/2025</h3>
                         <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
@@ -390,17 +427,22 @@
                     
                     <!-- In-game Hint Button -->
                     <div id="ingame-assists" class="mt-2 p-2 bg-white/50 dark:bg-slate-800/30 border border-white/30 dark:border-slate-700/50 rounded-xl">
-                        <div class="grid grid-cols-1 gap-2 text-center">
+                        <div class="grid grid-cols-2 gap-2 text-center">
                              <button id="assist-hint-btn" class="assist-btn p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex flex-col items-center justify-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                                 <span class="text-xs font-semibold">Gợi ý</span>
                                 <span class="item-count" data-item="hints">0</span>
                             </button>
+                            <button id="assist-hide-card-btn" class="assist-btn p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 flex flex-col items-center justify-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                <span class="text-xs font-semibold">Ẩn 1 ô</span>
+                                <span class="item-count" data-item="hideCard">0</span>
+                             </button>
                         </div>
                     </div>
                     
-                    <div id="early-finish-container" class="mt-auto hidden lg:block"></div>
                     <div class="hidden lg:flex flex-col gap-3 mt-auto">
+                        <div id="early-finish-container" class="w-full hidden"></div>
                         <button id="pause-btn-desktop" class="w-full flex items-center justify-center gap-2 bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 shadow-md">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>
                            Tạm dừng
@@ -451,10 +493,11 @@
     
     <!-- MODALS & POPUPS - Moved outside of main container for correct positioning -->
     <div id="game-modal-container"></div>
+    <div id="achievement-unlocked-container" class="fixed bottom-4 right-4 z-[9999] pointer-events-none"></div>
     
     <script type="module">
         // --- CONSTANTS & CONFIG ---
-        const CURRENT_VERSION = 'v.1.0.1';
+        const CURRENT_VERSION = 'v1.1.0';
         const ALL_SHAPES = ['square', 'circle', 'triangle', 'diamond'];
         const DUAL_SHAPE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e']; 
         const DUAL_BACKGROUNDS = ['#FFFFFF', '#27272a'];
@@ -473,19 +516,19 @@
         };
         const SHOP_ITEMS = {
             'hints': { name: 'Gợi ý', price: 5000, description: 'Sử dụng trong trận để làm nổi bật một bộ ba hợp lệ.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`},
+            'hideCard': { name: 'Ẩn 1 ô', price: 10000, description: 'Sử dụng trong trận để ẩn đi 1 thẻ bài bạn chọn.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`},
             'assistUseless': { name: 'Mờ ô vô dụng', price: 4000, description: 'Kích hoạt trước trận để làm mờ các ô không thuộc bộ nào.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59" /></svg>` },
-            'assistBg': { name: 'Mờ nền khác', price: 3000, description: 'Khi chọn 1 ô, các ô khác nền sẽ bị làm mờ (chế độ Nền Kép).', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.5 11.5a8.5 8.5 0 1117 0 8.5 8.5 0 01-17 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.5 11.5a6 6 0 10-12 0 6 6 0 0012 0z" /></svg>` },
             'assistShape': { name: 'Ẩn hình đã chọn', price: 3000, description: 'Khi chọn 1 ô, các ô khác có cùng hình dạng sẽ bị ẩn.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>` },
         };
         const ASSIST_ICONS = {
             useless: `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59" /></svg>`,
-            bg: `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.5 11.5a8.5 8.5 0 1117 0 8.5 8.5 0 01-17 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.5 11.5a6 6 0 10-12 0 6 6 0 0012 0z" /></svg>`,
             shape: `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>`
         };
         const NOTIFICATION_ICONS = {
             success: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
             error: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
             info: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+            achievement: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`
         };
         const FIXED_SELECTION_TIME = 10;
         const TIME_BONUS_ON_CORRECT = 5;
@@ -496,6 +539,7 @@
         const GAMEOVER_REVEAL_INTERVAL = 1800;
         const TIME_RESCUE_COST = 5000;
         const TIME_RESCUE_AMOUNT = 60; // seconds
+        const TIME_RESCUE_COUNTDOWN = 10;
 
         // --- GAME STATE & UI ELEMENTS ---
         let state = {}; let tutorialState = {}; let selectedGameMode = 'dual';
@@ -503,12 +547,11 @@
         let gameHistory = [];
         let settings = {
             isUselessDimEnabled: false,
-            isBgDimEnabled: false,
             isShapeDimEnabled: false,
         };
 
         const ui = {
-            views: { mainMenu: document.getElementById('main-menu'), shop: document.getElementById('shop-container'), tutorial: document.getElementById('tutorial-modal'), game: document.getElementById('game-container'), history: document.getElementById('history-view'), changelog: document.getElementById('changelog-modal') },
+            views: { mainMenu: document.getElementById('main-menu'), shop: document.getElementById('shop-container'), tutorial: document.getElementById('tutorial-modal'), game: document.getElementById('game-container'), history: document.getElementById('history-view'), changelog: document.getElementById('changelog-modal'), achievements: document.getElementById('achievements-modal') },
             gameBoard: document.getElementById('game-board'),
             gameBoardContainer: document.querySelector('.game-board-container'),
             gameInfoBar: document.getElementById('game-info-bar'),
@@ -522,6 +565,7 @@
                 text: document.getElementById('ingame-notification-text'),
             },
             gameModalContainer: document.getElementById('game-modal-container'),
+            achievementUnlockedContainer: document.getElementById('achievement-unlocked-container'),
             earlyFinishContainer: document.getElementById('early-finish-container'),
             earlyFinishIconBtn: document.getElementById('early-finish-icon-btn'),
             ingameActiveAssistsDisplay: document.getElementById('ingame-active-assists-display'),
@@ -531,6 +575,11 @@
                 overallStats: document.getElementById('overall-stats-section'),
                 highScores: document.getElementById('high-scores-section'),
                 gameLog: document.getElementById('game-log-section'),
+            },
+            achievementsView: {
+                openBtns: [document.getElementById('achievements-btn-main'), document.getElementById('achievements-btn-mobile')],
+                closeBtn: document.getElementById('close-achievements-btn'),
+                list: document.getElementById('achievements-list'),
             },
             shop: {
                 openBtns: [document.getElementById('shop-btn-main'), document.getElementById('shop-btn-mobile')],
@@ -565,8 +614,8 @@
             modeButtons: { classic: document.getElementById('mode-classic-btn'), dual: document.getElementById('mode-dual-btn') },
             assistBtns: {
                 hint: document.getElementById('assist-hint-btn'),
+                hideCard: document.getElementById('assist-hide-card-btn'),
                 useless: document.getElementById('assist-useless-btn'),
-                bg: document.getElementById('assist-bg-btn'),
                 shape: document.getElementById('assist-shape-btn')
             },
             itemCounts: document.querySelectorAll('.item-count'),
@@ -641,13 +690,23 @@
                     <p class="mb-4">Dùng Xu kiếm được để mua các vật phẩm trong <strong>Cửa hàng</strong>.</p>
                     <ul class="list-disc list-inside space-y-2 text-left">
                         <li><strong>Gợi ý:</strong> Sử dụng trong trận để làm nổi bật một SET. Rất hữu ích khi bị bí!</li>
-                        <li><strong>Hỗ trợ (Mờ ô, Mờ nền, v.v.):</strong> Kích hoạt tại màn hình chính <strong>trước khi bắt đầu</strong>. Vật phẩm sẽ bị tiêu hao và có hiệu lực trong suốt 3 vòng chơi.</li>
+                        <li><strong>Ẩn 1 ô:</strong> Sử dụng trong trận để loại bỏ 1 ô bài khó chịu.</li>
+                        <li><strong>Hỗ trợ (Mờ ô, Ẩn hình):</strong> Kích hoạt tại màn hình chính <strong>trước khi bắt đầu</strong>. Vật phẩm sẽ bị tiêu hao và có hiệu lực trong suốt 3 vòng chơi.</li>
                     </ul>
                     <p class="mt-4">Chúc bạn chơi game vui vẻ!</p>
                 `
             }
         ];
-
+        
+        const ACHIEVEMENTS = {
+            'score_1': { name: "Triệu phú Tập sự", description: "Đạt tổng cộng 10,000 xu.", icon: '💰', condition: (p) => p.coins >= 10000, reward: { type: 'coins', amount: 2500 } },
+            'score_2': { name: "Đại gia", description: "Đạt tổng cộng 100,000 xu.", icon: '🤑', condition: (p) => p.coins >= 100000, reward: { type: 'hints', amount: 5 } },
+            'sets_1': { name: "Thợ săn SET", description: "Tìm thấy 50 bộ hợp lệ.", icon: '🎯', condition: (p) => (p.stats.totalSetsFound || 0) >= 50, reward: { type: 'coins', amount: 5000 } },
+            'sets_2': { name: "Bậc thầy SET", description: "Tìm thấy 250 bộ hợp lệ.", icon: '👑', condition: (p) => (p.stats.totalSetsFound || 0) >= 250, reward: { type: 'hideCard', amount: 3 } },
+            'streak_1': { name: "Phong độ đỉnh cao", description: "Đạt chuỗi 10 bộ đúng liên tiếp trong một ván.", icon: '🔥', condition: (s) => s.maxCorrectStreak >= 10, reward: { type: 'coins', amount: 7500 } },
+            'level_3_finish': { name: "Phá đảo", description: "Hoàn thành cấp độ 3.", icon: '🏆', condition: (s) => s.highestLevel > 3 || (s.highestLevel === 3 && s.isWin), reward: { type: 'assistUseless', amount: 2 } },
+            'no_hints_win': { name: "Tự lực cánh sinh", description: "Thắng một ván (hoàn thành 3 cấp) mà không dùng Gợi ý hay Ẩn ô.", icon: '💪', condition: (s) => (s.highestLevel > 3 || (s.highestLevel === 3 && s.isWin)) && s.hintsUsed === 0 && s.hidesUsed === 0, reward: { type: 'coins', amount: 10000 } }
+        };
 
         // --- DATA PERSISTENCE ---
         function loadPlayerData() {
@@ -655,11 +714,26 @@
             if (savedData) {
                 playerData = JSON.parse(savedData);
             } else {
-                playerData = { coins: 0, inventory: { hints: 3, assistUseless: 3, assistBg: 3, assistShape: 3 } };
+                playerData = { 
+                    coins: 0, 
+                    inventory: { hints: 3, hideCard: 1, assistUseless: 1, assistShape: 1 },
+                    achievements: {},
+                    stats: { totalSetsFound: 0 }
+                };
             }
-            if (!playerData.inventory) {
-                 playerData.inventory = { hints: 3, assistUseless: 3, assistBg: 3, assistShape: 3 };
-            }
+            // Migration for new data structures
+            if (!playerData.inventory) playerData.inventory = { hints: 3, hideCard: 1, assistUseless: 1, assistShape: 1 };
+            if (!playerData.inventory.hideCard) playerData.inventory.hideCard = 1;
+            if (playerData.inventory.assistBg) delete playerData.inventory.assistBg;
+            if (!playerData.achievements) playerData.achievements = {};
+            if (!playerData.stats) playerData.stats = { totalSetsFound: 0 };
+
+            Object.keys(ACHIEVEMENTS).forEach(id => {
+                if (!playerData.achievements[id]) {
+                    playerData.achievements[id] = { unlocked: false, claimed: false };
+                }
+            });
+            
             updateCoinDisplay();
             updateInventoryDisplay();
         }
@@ -709,60 +783,58 @@
             return cs;
         }
 
+        /**
+         * Checks if a combination of three cards forms a valid set based on the current game mode.
+         * This function implements the official rules provided by the user.
+         * @param {Array<Object>} cards - An array of three card objects.
+         * @param {string} mode - The current game mode ('classic' or 'dual').
+         * @returns {boolean} - True if the cards form a valid set, false otherwise.
+         */
         function checkSet(cards, mode) {
             if (cards.length !== 3) return false;
             const gameMode = mode || state.gameMode;
+            
             const backgrounds = new Set(cards.map(c => c.background));
             const shapes = new Set(cards.map(c => c.shape));
             const shapeColors = new Set(cards.map(c => c.shapeColor));
 
-            if (gameMode === 'classic') return backgrounds.size === 3 && shapes.size === 3 && shapeColors.size === 3;
-            else return backgrounds.size === 1 && shapes.size === 3 && shapeColors.size === 3;
+            if (gameMode === 'classic') {
+                // Rule for Classic Mode: Different background, different shape, different shape color.
+                // (Khác màu nền, khác hình, và khác màu hình)
+                return backgrounds.size === 3 && shapes.size === 3 && shapeColors.size === 3;
+            } else { // 'dual' mode
+                // Rule for Dual Background Mode: Same background, different shape, different shape color.
+                // (Cùng màu nền, khác hình, khác màu của hình)
+                return backgrounds.size === 1 && shapes.size === 3 && shapeColors.size === 3;
+            }
         }
 
+        /**
+         * Finds all valid sets on the current board.
+         * This function iterates through all possible combinations of three cards and uses the
+         * `checkSet` function to validate them, ensuring consistency with the game rules.
+         * @param {Array<Object>} board - An array of card objects currently on the board.
+         * @param {string} mode - The current game mode.
+         * @returns {Array<Array<Object>>} - An array containing all valid sets.
+         */
         function findAllSets(board, mode) {
             const sets = [];
-            const cardLookup = new Map(board.map(c => [`${c.shape}|${c.shapeColor}|${c.background}`, c]));
-            const shapeOptions = ALL_SHAPES;
-            const colorOptions = mode === 'classic' ? CLASSIC_SHAPE_COLORS : DUAL_SHAPE_COLORS;
-            const bgOptions = mode === 'classic' ? CLASSIC_BACKGROUNDS : DUAL_BACKGROUNDS;
+            const n = board.length;
+            if (n < 3) return sets;
 
-            const getThirdProperty = (p1, p2, allOptions) => {
-                if (p1 === p2) return p1;
-                return allOptions.find(p => p !== p1 && p !== p2);
-            };
-
-            for (let i = 0; i < board.length; i++) {
-                for (let j = i + 1; j < board.length; j++) {
-                    const card1 = board[i];
-                    const card2 = board[j];
-
-                    let targetCardProps;
-                    if (mode === 'dual') {
-                         if (card1.background !== card2.background) continue;
-                         targetCardProps = {
-                            background: card1.background,
-                            shape: getThirdProperty(card1.shape, card2.shape, shapeOptions),
-                            shapeColor: getThirdProperty(card1.shapeColor, card2.shapeColor, colorOptions)
-                        };
-                    } else { // classic
-                         targetCardProps = {
-                            background: getThirdProperty(card1.background, card2.background, bgOptions),
-                            shape: getThirdProperty(card1.shape, card2.shape, shapeOptions),
-                            shapeColor: getThirdProperty(card1.shapeColor, card2.shapeColor, colorOptions)
-                        };
-                    }
-
-                    const targetKey = `${targetCardProps.shape}|${targetCardProps.shapeColor}|${targetCardProps.background}`;
-                    const card3 = cardLookup.get(targetKey);
-
-                    if (card3 && card1.id < card2.id && card2.id < card3.id) {
-                         sets.push([card1, card2, card3]);
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    for (let k = j + 1; k < n; k++) {
+                        const candidateSet = [board[i], board[j], board[k]];
+                        if (checkSet(candidateSet, mode)) {
+                            sets.push(candidateSet);
+                        }
                     }
                 }
             }
             return sets;
         }
+
 
         function generateBoard(level, mode) {
             const boardSize = LEVEL_CONFIG[level].size ** 2;
@@ -783,7 +855,22 @@
         }
         
         function showNotification(message, type = 'info') {
-            if (state.isGameOver) return; 
+            if (state.isGameOver && type !== 'achievement') return; 
+
+            if (type === 'achievement') {
+                 const notifEl = document.createElement('div');
+                 notifEl.className = 'achievement-notification panel flex items-center gap-3 p-4 rounded-lg shadow-lg w-72';
+                 notifEl.innerHTML = `
+                    <div class="flex-shrink-0 text-2xl">${NOTIFICATION_ICONS.achievement}</div>
+                    <div>
+                        <h4 class="font-bold">Mở khóa thành tựu!</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">${message}</p>
+                    </div>
+                 `;
+                 ui.achievementUnlockedContainer.appendChild(notifEl);
+                 setTimeout(() => notifEl.remove(), 4500);
+                 return;
+            }
 
             if (state.notificationTimer) {
                 clearTimeout(state.notificationTimer);
@@ -871,12 +958,12 @@
                 const cardEl = renderCard(card, index);
                 // Mouseover for assist preview is still useful
                 cardEl.addEventListener('mouseover', () => {
-                    if (state.isGameOver || state.isPaused || state.isChecking || document.getElementById('post-game-overlay')) return;
+                    if (state.isGameOver || state.isPaused || state.isChecking || state.isHidingCard || document.getElementById('post-game-overlay')) return;
                     state.hoveredShape = card.shape;
                     updateBoardAppearance();
                 });
                 cardEl.addEventListener('mouseout', () => {
-                    if (state.isGameOver || state.isPaused || state.isChecking) return;
+                    if (state.isGameOver || state.isPaused || state.isChecking || state.isHidingCard) return;
                     state.hoveredShape = null;
                     updateBoardAppearance();
                 });
@@ -955,7 +1042,6 @@
             }
 
             if (settings.isUselessDimEnabled) ui.ingameActiveAssistsDisplay.innerHTML += createIcon('useless', 'Mờ ô vô dụng');
-            if (settings.isBgDimEnabled) ui.ingameActiveAssistsDisplay.innerHTML += createIcon('bg', 'Mờ nền khác');
             if (settings.isShapeDimEnabled) ui.ingameActiveAssistsDisplay.innerHTML += createIcon('shape', 'Ẩn hình đã chọn');
         }
 
@@ -989,7 +1075,7 @@
             document.querySelectorAll('.buy-btn').forEach(btn => btn.addEventListener('click', (e) => buyItem(e.target.dataset.itemId)));
         }
 
-        function buyItem(itemId) {
+        function buyItem(itemId, fromGame = false) {
             const item = SHOP_ITEMS[itemId];
             if (!item) return;
 
@@ -999,20 +1085,65 @@
                 savePlayerData();
                 updateCoinDisplay();
                 updateInventoryDisplay(); 
-                showGameModal('Mua thành công!', `Bạn đã mua ${item.name}.`, 'OK', () => ui.gameModalContainer.innerHTML = '');
+                if (!fromGame) {
+                    showGameModal('Mua thành công!', `Bạn đã mua ${item.name}.`, 'OK', () => ui.gameModalContainer.innerHTML = '');
+                } else {
+                    showNotification(`${item.name} đã được thêm vào!`, 'success');
+                }
             } else {
-                showGameModal('Không đủ xu', 'Bạn không có đủ xu để mua vật phẩm này. Hãy chơi game để kiếm thêm!', 'OK', () => { ui.gameModalContainer.innerHTML = '' });
+                 if (!fromGame) {
+                    showGameModal('Không đủ xu', 'Bạn không có đủ xu để mua vật phẩm này. Hãy chơi game để kiếm thêm!', 'OK', () => { ui.gameModalContainer.innerHTML = '' });
+                } else {
+                    showNotification('Không đủ xu!', 'error');
+                }
             }
+        }
+        
+        function promptInGamePurchase(itemId) {
+            const item = SHOP_ITEMS[itemId];
+            if (!item) return;
+
+            const canAfford = playerData.coins >= item.price;
+
+            showGameModal(
+                `Mua ${item.name}?`,
+                `Bạn đã hết ${item.name.toLowerCase()}. Bạn có muốn mua 1 cái với giá ${item.price.toLocaleString()} xu không?<br><br><strong>Số dư: ${playerData.coins.toLocaleString()} xu</strong>`,
+                null,
+                null, {
+                    buttons: [
+                         { id: 'ingame-buy-yes', text: 'Mua', classes: `w-full font-bold py-2 px-4 rounded-lg ${canAfford ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`,
+                            callback: () => {
+                                if (canAfford) {
+                                    buyItem(itemId, true);
+                                    if(itemId === 'hints') useHint();
+                                    if(itemId === 'hideCard') useHideCard();
+                                }
+                                ui.gameModalContainer.innerHTML = ''; 
+                                if(state.isPaused) togglePause(); else startAllTimers();
+                            }
+                        },
+                         { id: 'ingame-buy-no', text: 'Không', classes: 'w-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg',
+                            callback: () => { 
+                                ui.gameModalContainer.innerHTML = ''; 
+                                if(state.isPaused) togglePause(); else startAllTimers();
+                            } 
+                        }
+                    ]
+                }
+            );
+            document.getElementById('ingame-buy-yes').disabled = !canAfford;
         }
 
         // --- ASSIST LOGIC ---
         function useHint() {
             if (playerData.inventory.hints <= 0) {
-                showNotification('Hết Gợi ý! Hãy vào cửa hàng để mua thêm.', 'info');
+                promptInGamePurchase('hints');
                 return;
             }
             
-            const undiscoveredSets = state.allSetsInRound.filter(set => !state.foundSets.has(getSetId(set)));
+            const boardCards = state.boardCards.filter(c => c.id !== state.hiddenCardId);
+            const undiscoveredSets = findAllSets(boardCards, state.gameMode).filter(set => !state.foundSets.has(getSetId(set)));
+
             if (undiscoveredSets.length > 0) {
                 if(state.currentSessionStats) state.currentSessionStats.hintsUsed++;
                 playerData.inventory.hints--;
@@ -1036,9 +1167,25 @@
             }
         }
         
+        function useHideCard() {
+             if (playerData.inventory.hideCard <= 0) {
+                promptInGamePurchase('hideCard');
+                return;
+            }
+            if(state.hiddenCardId !== null) {
+                showNotification('Bạn chỉ có thể ẩn 1 ô mỗi cấp!', 'info');
+                return;
+            }
+
+            state.isHidingCard = true;
+            ui.gameBoard.classList.add('hiding-mode');
+            showNotification('Chọn một thẻ bài để ẩn đi', 'info');
+            ui.gameBoard.querySelectorAll('.card').forEach(c => c.classList.add('hiding-mode'));
+            stopAllTimers();
+        }
+        
         // --- GAME FLOW (Updates) ---
 
-        // REFACTORED: Smaller helper function for correct set processing
         function processCorrectSet() {
             const currentSetId = getSetId(state.selectedCards);
             if (state.foundSets.has(currentSetId)) {
@@ -1047,17 +1194,18 @@
             }
             
             state.foundSets.add(currentSetId);
+            playerData.stats.totalSetsFound = (playerData.stats.totalSetsFound || 0) + 1;
             
             const timeTaken = (Date.now() - state.lastSetFoundTimestamp) / 1000;
             const pointsEarned = Math.round(Math.max(10, 500 / timeTaken) * (state.gameMode === 'classic' ? 1.5 : 1));
             
             playerData.coins += pointsEarned;
             state.sessionScore += pointsEarned;
-            savePlayerData();
 
             state.totalTimeLeft += TIME_BONUS_ON_CORRECT;
             showSetFeedback(true);
             ui.historyPanel.prepend(createHistoryItem(state.selectedCards, state.foundSets.size));
+            ui.historyPanel.scrollTop = 0;
             
             state.lastSetFoundTimestamp = Date.now();
             state.comboCount++;
@@ -1076,15 +1224,18 @@
                 state.comboCount = 0; 
             }
             
-            const unfoundSets = state.allSetsInRound.filter(set => !state.foundSets.has(getSetId(set)));
+            const boardCards = state.boardCards.filter(c => c.id !== state.hiddenCardId);
+            const unfoundSets = findAllSets(boardCards, state.gameMode).filter(set => !state.foundSets.has(getSetId(set)));
             state.usefulCardIds = new Set(unfoundSets.flat().map(card => card.id));
             
             updateEarlyFinishButton();
 
             state.selectedCards.forEach(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`)?.classList.add('correct'));
+            
+            checkAchievements();
+            savePlayerData();
         }
 
-        // REFACTORED: Smaller helper function for incorrect set processing
         function processIncorrectSet() {
             showNotification('Sai rồi!', 'error');
             handlePenalty();
@@ -1094,7 +1245,6 @@
             });
         }
         
-        // REFACTORED: The main confirmation logic is now cleaner
         function handleConfirm() {
             if (state.isGameOver || state.isPaused || state.selectedCards.length !== 3 || state.isChecking) return;
             state.isChecking = true;
@@ -1106,7 +1256,6 @@
                 processIncorrectSet();
             }
 
-            // Common cleanup logic after a small delay
             setTimeout(() => {
                 state.selectedCards.forEach(c => {
                      const cardEl = ui.gameBoard.querySelector(`[data-id='${c.id}']`);
@@ -1134,14 +1283,40 @@
             }, 500);
         }
 
-        // OPTIMIZED: Using Event Delegation for card clicks
         function handleBoardClick(event) {
             const cardEl = event.target.closest('.card');
             if (!cardEl) return;
+            
+            const cardId = parseInt(cardEl.dataset.id, 10);
+            
+            // Handle "Hide Card" logic
+            if (state.isHidingCard) {
+                playerData.inventory.hideCard--;
+                state.currentSessionStats.hidesUsed++;
+                updateInventoryDisplay();
+                savePlayerData();
 
+                state.isHidingCard = false;
+                state.hiddenCardId = cardId;
+                ui.gameBoard.classList.remove('hiding-mode');
+                cardEl.classList.add('hidden-card');
+                ui.gameBoard.querySelectorAll('.card').forEach(c => c.classList.remove('hiding-mode'));
+                
+                // Recalculate sets
+                const currentBoard = state.boardCards.filter(c => c.id !== state.hiddenCardId);
+                state.allSetsInRound = findAllSets(currentBoard, state.gameMode);
+                state.totalSetsInRound = state.allSetsInRound.length;
+                state.usefulCardIds = new Set(state.allSetsInRound.flat().map(c => c.id));
+
+                updateBoardAppearance();
+                renderStats();
+                startAllTimers();
+                return;
+            }
+            
+            // Normal card selection logic
             if (state.isGameOver || state.isPaused || state.isChecking || (cardEl.classList.contains('dimmed') && !cardEl.classList.contains('selected'))) return;
 
-            const cardId = parseInt(cardEl.dataset.id, 10);
             const cardData = state.boardCards.find(c => c.id === cardId);
             if (!cardData) return;
             
@@ -1165,7 +1340,7 @@
             const isVisible = state.level === 3 && percentage >= 50 && state.foundSets.size < state.totalSetsInRound;
 
             if(isVisible) {
-                const finishButtonHtml = `<button id="finish-early-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-md">Tổng kết ngay (${percentage}%)</button>`;
+                const finishButtonHtml = `<button id="finish-early-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-md w-full mb-2">Tổng kết ngay (${percentage}%)</button>`;
                 ui.earlyFinishContainer.innerHTML = finishButtonHtml;
                 document.getElementById('finish-early-btn').onclick = () => gameOver(`Kết thúc sớm ở cấp 3 với ${percentage}% hoàn thành.`);
             }
@@ -1176,68 +1351,103 @@
         function loseLife(){ if(state.lives>0){ state.lives--; renderStats(); if(state.lives<=0) gameOver('Hết mạng!'); } }
 
         function showGameModal(title, message, buttonText, callback, options = {}) {
+            if (document.getElementById('game-modal-overlay')) return; // Prevent multiple modals
+
             const buttonsHtml = options.buttons ? options.buttons.map(btn => `<button id="${btn.id}" class="${btn.classes}">${btn.text}</button>`).join('') : `<button id="modal-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700">OK</button>`;
-            ui.gameModalContainer.innerHTML = `
-                <div id="game-modal-overlay" class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            
+            let modalContent = `
+                <div id="game-modal-overlay" class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" ${options.countdown ? 'data-close-on-overlay="true"' : ''}>
                     <div class="panel p-6 sm:p-8 text-center max-w-sm w-full" style="animation: fadeInUp 0.3s ease-out;">
+                        ${options.countdownCircle || ''}
                         <h2 class="text-2xl font-bold mb-4">${title}</h2>
                         <p class="mb-6">${message}</p>
                         <div class="flex gap-4 justify-center">${buttonsHtml}</div>
                     </div>
                 </div>`;
+                
+            ui.gameModalContainer.innerHTML = modalContent;
             
             stopAllTimers();
 
-            if(options.buttons) {
+            if (options.buttons) {
                 options.buttons.forEach(btn => {
-                    document.getElementById(btn.id).onclick = () => {
-                         if(btn.callback) btn.callback();
-                    };
+                    const btnEl = document.getElementById(btn.id);
+                    if(btnEl) btnEl.onclick = () => { if(btn.callback) btn.callback(); };
                 });
             } else {
                  document.getElementById('modal-button').onclick = () => {
-                    stopAllTimers();
                     ui.gameModalContainer.innerHTML = '';
                     if (callback) callback();
                  };
+            }
+            
+            if (options.closeOnOverlay) {
+                document.getElementById('game-modal-overlay').addEventListener('click', (e) => {
+                    if (e.target.id === 'game-modal-overlay') {
+                        if (options.onOverlayClick) options.onOverlayClick();
+                    }
+                });
+            }
+
+             if (options.countdown) {
+                let timeLeft = options.countdown;
+                const countdownCircle = document.getElementById('countdown-timer-path');
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    const progress = (timeLeft / options.countdown);
+                    countdownCircle.style.strokeDashoffset = 283 * (1 - progress);
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        if (options.onTimerEnd) options.onTimerEnd();
+                    }
+                }, 1000);
             }
         }
 
         function promptForTimeRescue() {
             stopAllTimers();
             const canAfford = playerData.coins >= TIME_RESCUE_COST;
+            const endRescue = () => {
+                ui.gameModalContainer.innerHTML = '';
+                gameOver('Hết giờ!');
+            };
+            
             showGameModal(
                 'Hết giờ!',
-                `Bạn có muốn dùng ${TIME_RESCUE_COST.toLocaleString()} xu để thêm ${TIME_RESCUE_AMOUNT} giây không?`,
-                null, 
+                `Dùng ${TIME_RESCUE_COST.toLocaleString()} xu để thêm ${TIME_RESCUE_AMOUNT} giây? <br><br><strong>Số dư: ${playerData.coins.toLocaleString()} xu</strong>`,
+                null,
                 null,
                 {
-                    buttons: [
-                        {
-                            id: 'rescue-yes-btn',
-                            text: `Có (${TIME_RESCUE_COST.toLocaleString()} xu)`,
-                            classes: `w-full font-bold py-3 px-4 rounded-lg ${canAfford ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`,
-                            callback: () => {
-                                if (canAfford) {
-                                    playerData.coins -= TIME_RESCUE_COST;
-                                    state.totalTimeLeft += TIME_RESCUE_AMOUNT;
-                                    savePlayerData();
-                                    updateCoinDisplay();
-                                    ui.gameModalContainer.innerHTML = '';
-                                    startAllTimers();
-                                }
-                            }
-                        },
-                        {
-                            id: 'rescue-no-btn',
-                            text: 'Không',
-                            classes: 'w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700',
-                            callback: () => {
-                                 ui.gameModalContainer.innerHTML = '';
-                                 gameOver('Hết giờ!');
+                    buttons: [{
+                        id: 'rescue-yes-btn',
+                        text: `Đồng ý (${TIME_RESCUE_COST.toLocaleString()} xu)`,
+                        classes: `w-full font-bold py-3 px-4 rounded-lg ${canAfford ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`,
+                        callback: () => {
+                            if (canAfford) {
+                                playerData.coins -= TIME_RESCUE_COST;
+                                state.totalTimeLeft += TIME_RESCUE_AMOUNT;
+                                savePlayerData();
+                                updateCoinDisplay();
+                                ui.gameModalContainer.innerHTML = '';
+                                startAllTimers();
                             }
                         }
-                    ]
+                    }],
+                    countdown: TIME_RESCUE_COUNTDOWN,
+                    onTimerEnd: endRescue,
+                    closeOnOverlay: true,
+                    onOverlayClick: endRescue,
+                    countdownCircle: `
+                        <div class="relative w-24 h-24 mx-auto mb-4">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-slate-300 dark:text-slate-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                <path id="countdown-timer-path" d="M 50, 5 a 45,45 0 1,1 0,90 a 45,45 0 1,1 0,-90"
+                                      class="text-red-500" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent"
+                                      style="stroke-dasharray: 283; stroke-dashoffset: 283; transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset 1s linear;" />
+                            </svg>
+                            <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold">${TIME_RESCUE_AMOUNT}</span>
+                        </div>
+                    `
                 }
             );
             document.getElementById('rescue-yes-btn').disabled = !canAfford;
@@ -1255,6 +1465,7 @@
             
             if (state.currentSessionStats) {
                 const finalStats = state.currentSessionStats;
+                finalStats.isWin = state.level > 3 || (state.level === 3 && state.foundSets.size >= state.totalSetsInRound);
                 finalStats.finalScore = state.sessionScore || 0;
                 finalStats.highestLevel = state.level;
                 finalStats.totalSets = finalStats.setFindTimes.length;
@@ -1265,10 +1476,13 @@
                     finalStats.avgTimePerSet = 0;
                 }
                 gameHistory.push(finalStats);
+                checkAchievements(); // Check achievements one last time with final game stats
                 saveGameHistory();
+                savePlayerData();
             }
 
-            const allSetsOnBoard = findAllSets(state.boardCards, state.gameMode);
+            const boardCards = state.boardCards.filter(c => c.id !== state.hiddenCardId);
+            const allSetsOnBoard = findAllSets(boardCards, state.gameMode);
             const missedSets = allSetsOnBoard.filter(set => !state.foundSets.has(getSetId(set)));
 
             const showFinalModal = () => {
@@ -1327,6 +1541,9 @@
             updateEarlyFinishButton();
             state.timeRollover = state.totalTimeLeft;
             const nextLevel = state.level + 1;
+            
+            state.hiddenCardId = null; // Reset hidden card for new level
+
             if (LEVEL_CONFIG[nextLevel]) {
                 showGameModal(`Hoàn Thành Cấp Độ ${state.level}!`, `Bạn thật xuất sắc!<br>Thưởng +${state.timeRollover} giây và +1 mạng!<br>Tổng xu: <span class="font-bold">${playerData.coins.toLocaleString()}</span>`, `Tới Cấp Độ ${nextLevel}`, () => startLevel(nextLevel));
             } else {
@@ -1381,11 +1598,7 @@
                         isDimmed = true;
                     }
                 }
-                if (!isDimmed && state.gameMode === 'dual' && settings.isBgDimEnabled && state.selectedCards.length > 0) {
-                    if (!isSelected && cardData.background !== state.selectedCards[0].background) {
-                        isDimmed = true;
-                    }
-                }
+                
                 cardEl.classList.toggle('dimmed', isDimmed);
             });
         }
@@ -1410,15 +1623,15 @@
             clearInterval(state.totalTimerId);
             clearInterval(state.selectionTimerId);
             if(state.revealInterval) clearInterval(state.revealInterval);
-            if(state.gameOverCountdown) clearInterval(state.gameOverCountdown);
         }
 
         function startAllTimers() {
             stopAllTimers();
             state.totalTimerId = setInterval(() => {
+                if(state.isPaused || state.isGameOver) return;
                 if (state.totalTimeLeft > 0) {
                      state.totalTimeLeft--;
-                } else if (!state.isGameOver) {
+                } else {
                     promptForTimeRescue();
                 }
                 renderStats();
@@ -1448,7 +1661,8 @@
             state = {
                 ...state,
                 level: level,
-                isGameOver: false, isChecking: false,
+                isGameOver: false, isChecking: false, isHidingCard: false,
+                hiddenCardId: null,
                 hoveredShape: null, historyHoverSet: null,
                 penaltyCount: 0, comboCount: 0,
                 selectedCards: [], foundSets: new Set(),
@@ -1504,7 +1718,7 @@
             }
 
             cleanupAndResetGame();
-            settings = { isUselessDimEnabled: false, isBgDimEnabled: false, isShapeDimEnabled: false };
+            settings = { isUselessDimEnabled: false, isShapeDimEnabled: false };
 
             selectedAssists.forEach(btn => {
                 const assistType = btn.dataset.assistType;
@@ -1524,11 +1738,103 @@
                 gameMode: selectedGameMode, 
                 isPaused: false, 
                 historyHoverSet: null,
-                currentSessionStats: { date: new Date().toISOString(), setFindTimes: [], errors: 0, hintsUsed: 0, correctStreak: 0, errorStreak: 0, maxCorrectStreak: 0, maxErrorStreak: 0 }
+                currentSessionStats: { 
+                    date: new Date().toISOString(), setFindTimes: [], errors: 0, hintsUsed: 0, hidesUsed: 0,
+                    correctStreak: 0, errorStreak: 0, maxCorrectStreak: 0, maxErrorStreak: 0 
+                }
             };
             startLevel(1);
             showView('game');
             selectedAssists.forEach(btn => btn.classList.remove('active'));
+        }
+
+        // --- ACHIEVEMENTS ---
+        function checkAchievements() {
+            const lastGameStats = gameHistory[gameHistory.length - 1];
+            Object.entries(ACHIEVEMENTS).forEach(([id, ach]) => {
+                const playerAch = playerData.achievements[id];
+                if (playerAch && !playerAch.unlocked) {
+                    let conditionMet = false;
+                    // Pass player data for global achievements, and game stats for session-based ones
+                    if (id.startsWith('score_') || id.startsWith('sets_')) {
+                        conditionMet = ach.condition(playerData);
+                    } else if (lastGameStats) {
+                         conditionMet = ach.condition(lastGameStats);
+                    }
+
+                    if (conditionMet) {
+                        unlockAchievement(id);
+                    }
+                }
+            });
+        }
+        
+        function unlockAchievement(id) {
+            playerData.achievements[id].unlocked = true;
+            showNotification(ACHIEVEMENTS[id].name, 'achievement');
+            savePlayerData();
+        }
+
+        function claimAchievement(id) {
+            const ach = ACHIEVEMENTS[id];
+            const playerAch = playerData.achievements[id];
+            if (!ach || !playerAch || !playerAch.unlocked || playerAch.claimed) return;
+
+            playerAch.claimed = true;
+            const reward = ach.reward;
+            if (reward.type === 'coins') {
+                playerData.coins += reward.amount;
+            } else {
+                playerData.inventory[reward.type] = (playerData.inventory[reward.type] || 0) + reward.amount;
+            }
+            savePlayerData();
+            updateCoinDisplay();
+            updateInventoryDisplay();
+            renderAchievementsModal();
+        }
+
+        function renderAchievementsModal() {
+            ui.achievementsView.list.innerHTML = '';
+            Object.entries(ACHIEVEMENTS).forEach(([id, ach]) => {
+                const playerAch = playerData.achievements[id];
+                const isUnlocked = playerAch.unlocked;
+                const isClaimed = playerAch.claimed;
+                
+                let progressHtml = '';
+                // Simple progress for demonstration
+                if (!isUnlocked && (id.startsWith('score_') || id.startsWith('sets_'))) {
+                    let current = 0;
+                    let target = 0;
+                    if (id === 'score_1') { current = playerData.coins; target = 10000; }
+                    if (id === 'score_2') { current = playerData.coins; target = 100000; }
+                    if (id === 'sets_1') { current = playerData.stats.totalSetsFound; target = 50; }
+                    if (id === 'sets_2') { current = playerData.stats.totalSetsFound; target = 250; }
+                    const percent = Math.min(100, (current / target) * 100);
+                    progressHtml = `
+                        <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 mt-1">
+                          <div class="bg-amber-500 h-1.5 rounded-full" style="width: ${percent}%"></div>
+                        </div>`;
+                }
+
+
+                const achEl = document.createElement('div');
+                achEl.className = `panel p-4 rounded-xl flex items-center gap-4 transition-all ${!isUnlocked ? 'opacity-60' : ''}`;
+                achEl.innerHTML = `
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-amber-100 dark:bg-slate-700 rounded-lg text-3xl">${ach.icon}</div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100">${ach.name}</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">${ach.description}</p>
+                        ${progressHtml}
+                    </div>
+                    <button data-ach-id="${id}" class="claim-ach-btn flex-shrink-0 font-bold py-2 px-4 rounded-lg text-sm transition-colors ${
+                        isUnlocked && !isClaimed ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400'
+                    }" ${!isUnlocked || isClaimed ? 'disabled' : ''}>
+                        ${isClaimed ? 'Đã nhận' : (isUnlocked ? 'Nhận thưởng' : 'Chưa mở')}
+                    </button>
+                `;
+                ui.achievementsView.list.appendChild(achEl);
+            });
+            document.querySelectorAll('.claim-ach-btn').forEach(btn => btn.addEventListener('click', () => claimAchievement(btn.dataset.achId)));
         }
 
         function startTutorial() {
@@ -1609,7 +1915,6 @@
                 let assistsHtml = '';
                 if (game.usedAssists) {
                     if (game.usedAssists.isUselessDimEnabled) assistsHtml += ASSIST_ICONS.useless;
-                    if (game.usedAssists.isBgDimEnabled) assistsHtml += ASSIST_ICONS.bg;
                     if (game.usedAssists.isShapeDimEnabled) assistsHtml += ASSIST_ICONS.shape;
                 }
 
@@ -1670,6 +1975,7 @@
             loadPlayerData();
             loadGameHistory();
             renderShop();
+            checkAchievements(); // Initial check on load
 
             // OPTIMIZED: Central event listener for the game board
             ui.gameBoard.addEventListener('click', handleBoardClick);
@@ -1714,6 +2020,12 @@
             }));
             ui.historyView.closeBtn.addEventListener('click', () => showView('mainMenu'));
             
+            ui.achievementsView.openBtns.forEach(btn => btn.addEventListener('click', () => {
+                renderAchievementsModal();
+                showView('achievements');
+            }));
+            ui.achievementsView.closeBtn.addEventListener('click', () => showView('mainMenu'));
+
             ui.pauseBtns.forEach(btn => btn.addEventListener('click', togglePause));
             ui.surrenderBtnPause.addEventListener('click', () => { gameOver("Bạn đã bỏ cuộc"); });
             
@@ -1727,21 +2039,17 @@
             
             document.querySelectorAll('#main-menu .assist-btn').forEach(button => { button.addEventListener('click', () => button.classList.toggle('active')); });
             ui.assistBtns.hint.addEventListener('click', useHint);
+            ui.assistBtns.hideCard.addEventListener('click', useHideCard);
 
             ui.modeButtons.classic.addEventListener('click', () => {
                 selectedGameMode = 'classic';
                 ui.modeButtons.classic.classList.add('active');
                 ui.modeButtons.dual.classList.remove('active');
-                // Disable BG assist for classic mode
-                ui.assistBtns.bg.disabled = true;
-                ui.assistBtns.bg.classList.remove('active');
             });
             ui.modeButtons.dual.addEventListener('click', () => {
                 selectedGameMode = 'dual';
                 ui.modeButtons.dual.classList.add('active');
                 ui.modeButtons.classic.classList.remove('active');
-                // Enable BG assist for dual mode
-                ui.assistBtns.bg.disabled = false;
             });
 
             document.addEventListener('keydown', (e) => {
