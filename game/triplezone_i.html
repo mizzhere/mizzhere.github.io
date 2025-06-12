@@ -59,19 +59,14 @@
             50% { box-shadow: 0 0 0 6px rgba(253, 224, 71, 0.7); }
             100% { box-shadow: 0 0 0 0px rgba(253, 224, 71, 0.7); }
         }
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(0); opacity: 1; }
-            to { transform: translateY(-100%); opacity: 0; }
-        }
         @keyframes pop-fade {
             0% { transform: scale(0.5); opacity: 0; }
             50% { transform: scale(1.1); opacity: 1; }
             100% { transform: scale(1); opacity: 0; }
         }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
         .card {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -176,22 +171,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        #notification-banner {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            animation-duration: 0.5s;
-            animation-timing-function: ease-out;
-        }
-        #notification-banner.show {
+        #ingame-notification.show {
             display: flex;
-            animation-name: slideDown;
+            animation: fadeIn 0.3s ease-out forwards;
         }
-        #notification-banner.hide {
-            animation-name: slideUp;
+        #ingame-notification.hide {
+            animation: fadeOut 0.3s ease-in forwards;
         }
 
     </style>
@@ -203,7 +188,10 @@
         <div id="main-menu" class="h-full w-full flex flex-col p-4 sm:p-6 lg:p-8">
             <!-- Header -->
             <header class="w-full flex justify-between items-center pb-4 flex-shrink-0">
-                <h2 class="text-xl font-bold text-slate-700 dark:text-slate-300">Trận Tử Chiến</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold text-slate-700 dark:text-slate-300">Trận Tử Chiến</h2>
+                    <span id="version-number" class="text-xs font-mono bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-md cursor-pointer"></span>
+                </div>
                 <div class="flex items-center gap-4">
                     <div id="player-coins-menu" class="flex items-center gap-2 font-bold text-lg bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full shadow-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
@@ -337,6 +325,29 @@
              </div>
         </div>
 
+        <!-- Changelog Modal -->
+        <div id="changelog-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+             <div class="panel w-full max-w-lg max-h-[90vh] flex flex-col">
+                <div class="flex-shrink-0 flex justify-between items-center p-4 border-b border-white/10 dark:border-slate-700">
+                    <h2 class="text-xl font-bold">Nhật ký thay đổi</h2>
+                    <button id="close-changelog-btn" class="text-slate-500 hover:text-slate-200">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div class="flex-grow p-6 overflow-y-auto space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">v.1.0.1</span> - 12/06/2025</h3>
+                        <ul class="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                            <li><strong>Sửa lỗi:</strong> Ở chế độ Cổ điển, các thẻ bài có nền màu xám giờ sẽ chỉ có hình dạng màu trắng hoặc đen, đúng theo luật chơi.</li>
+                            <li><strong>Cập nhật:</strong> Thay đổi cách hiển thị mạng sống (trái tim) thành một biểu tượng duy nhất kèm theo số.</li>
+                            <li><strong>Cập nhật:</strong> Hình thoi (kim cương) được vẽ lại để có kích thước cân đối hơn.</li>
+                            <li><strong>Sửa lỗi:</strong> Hỗ trợ "Mờ nền khác" sẽ bị vô hiệu hóa khi chọn chế độ Cổ điển để tránh nhầm lẫn.</li>
+                        </ul>
+                    </div>
+                </div>
+             </div>
+        </div>
+
         <!-- Game Container -->
         <div id="game-container" class="hidden h-full relative flex flex-col panel">
             <!-- Main Content -->
@@ -346,9 +357,17 @@
                 <div class="w-full lg:w-60 flex-shrink-0 flex flex-col gap-4">
                     <div class="flex justify-between items-center">
                         <button id="back-to-menu-btn" class="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">‹ Trang chính</button>
-                        <button id="pause-btn" class="lg:hidden p-2 rounded-full bg-white/50 hover:bg-white/80 dark:bg-slate-700/50 dark:hover:bg-slate-600/80">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>
-                        </button>
+                        <div class="flex items-center gap-2 lg:hidden">
+                            <button id="early-finish-icon-btn" class="hidden p-2 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                  <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                            <button id="pause-btn" class="p-2 rounded-full bg-white/50 hover:bg-white/80 dark:bg-slate-700/50 dark:hover:bg-slate-600/80">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z"></path></svg>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="bg-white/50 dark:bg-slate-800/30 border border-white/30 dark:border-slate-700/50 rounded-xl p-3 text-sm">
@@ -391,7 +410,13 @@
 
                 <!-- Center Panel -->
                 <div class="flex-grow flex flex-col min-w-0 relative game-board-container">
-                    <div id="game-info-bar" class="flex items-center gap-4 mb-2">
+                    <!-- In-game notification bar -->
+                    <div id="ingame-notification" class="hidden items-center gap-2 rounded-lg shadow-md p-2 font-semibold z-10 mb-2 w-full h-[34px]">
+                        <div id="ingame-notification-icon" class="flex-shrink-0"></div>
+                        <p id="ingame-notification-text" class="flex-grow text-center text-sm"></p>
+                    </div>
+                    <!-- Original Game Info Bar -->
+                    <div id="game-info-bar" class="flex items-center gap-4 mb-2 w-full h-[34px]">
                          <div id="ingame-active-assists-display" class="flex-shrink-0 flex items-center gap-1"></div>
                          <div class="flex-grow flex items-center gap-2">
                             <div class="w-full bg-slate-200/70 dark:bg-slate-700/70 rounded-full h-2.5">
@@ -413,7 +438,6 @@
                             <button id="surrender-btn-pause" class="bg-red-600 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-red-700 shadow-md">Bỏ cuộc</button>
                         </div>
                     </div>
-                     <div id="early-finish-container-mobile" class="mt-4 text-center lg:hidden"></div>
                 </div>
 
                 <!-- Right Panel -->
@@ -428,15 +452,10 @@
     <!-- MODALS & POPUPS - Moved outside of main container for correct positioning -->
     <div id="game-modal-container"></div>
     
-     <div id="notification-banner" class="items-center gap-3 rounded-lg shadow-lg p-3 font-semibold z-50">
-        <div id="notification-icon"></div>
-        <p id="notification-text"></p>
-    </div>
-
-
     <script type="module">
         // --- CONSTANTS & CONFIG ---
-        const ALL_SHAPES = ['square', 'circle', 'triangle', 'inv-triangle'];
+        const CURRENT_VERSION = 'v.1.0.1';
+        const ALL_SHAPES = ['square', 'circle', 'triangle', 'diamond'];
         const DUAL_SHAPE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e']; 
         const DUAL_BACKGROUNDS = ['#FFFFFF', '#27272a'];
         const CLASSIC_BACKGROUNDS = ['#9CA3AF', '#FFFFFF', '#1F2937'];
@@ -450,7 +469,7 @@
             square: c => `<svg viewBox="0 0 100 100" fill="${c}"><rect x="10" y="10" width="80" height="80" rx="8"></rect></svg>`,
             circle: c => `<svg viewBox="0 0 100 100" fill="${c}"><circle cx="50" cy="50" r="45"></circle></svg>`,
             triangle: c => `<svg viewBox="0 0 100 100" fill="${c}"><polygon points="50,5 95,95 5,95"></polygon></svg>`,
-            'inv-triangle': c => `<svg viewBox="0 0 100 100" fill="${c}"><polygon points="5,5 95,5 50,95"></polygon></svg>`,
+            diamond: c => `<svg viewBox="0 0 100 100" fill="${c}"><polygon points="50,5 95,50 50,95 5,50"></polygon></svg>`,
         };
         const SHOP_ITEMS = {
             'hints': { name: 'Gợi ý', price: 5000, description: 'Sử dụng trong trận để làm nổi bật một bộ ba hợp lệ.', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`},
@@ -468,7 +487,7 @@
             error: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
             info: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
         };
-        const FIXED_SELECTION_TIME = 15;
+        const FIXED_SELECTION_TIME = 10;
         const TIME_BONUS_ON_CORRECT = 5;
         const PENALTY_TIMES = [3, 5, 7, 10, 15];
         const COMBO_TIME_BONUS = 30;
@@ -478,8 +497,84 @@
         const TIME_RESCUE_COST = 5000;
         const TIME_RESCUE_AMOUNT = 60; // seconds
 
-        // --- RENDER & UI ---
-        // Moved here to be available for TUTORIAL_STEPS constant
+        // --- GAME STATE & UI ELEMENTS ---
+        let state = {}; let tutorialState = {}; let selectedGameMode = 'dual';
+        let playerData = {};
+        let gameHistory = [];
+        let settings = {
+            isUselessDimEnabled: false,
+            isBgDimEnabled: false,
+            isShapeDimEnabled: false,
+        };
+
+        const ui = {
+            views: { mainMenu: document.getElementById('main-menu'), shop: document.getElementById('shop-container'), tutorial: document.getElementById('tutorial-modal'), game: document.getElementById('game-container'), history: document.getElementById('history-view'), changelog: document.getElementById('changelog-modal') },
+            gameBoard: document.getElementById('game-board'),
+            gameBoardContainer: document.querySelector('.game-board-container'),
+            gameInfoBar: document.getElementById('game-info-bar'),
+            pauseBtns: [document.getElementById('pause-btn'), document.getElementById('pause-btn-desktop')],
+            surrenderBtnPause: document.getElementById('surrender-btn-pause'),
+            boardPauseOverlay: document.getElementById('board-pause-overlay'),
+            historyPanel: document.getElementById('history-panel'),
+            notification: {
+                banner: document.getElementById('ingame-notification'),
+                icon: document.getElementById('ingame-notification-icon'),
+                text: document.getElementById('ingame-notification-text'),
+            },
+            gameModalContainer: document.getElementById('game-modal-container'),
+            earlyFinishContainer: document.getElementById('early-finish-container'),
+            earlyFinishIconBtn: document.getElementById('early-finish-icon-btn'),
+            ingameActiveAssistsDisplay: document.getElementById('ingame-active-assists-display'),
+            historyView: {
+                openBtns: [document.getElementById('history-btn-main'), document.getElementById('history-btn-mobile')],
+                closeBtn: document.getElementById('close-history-btn'),
+                overallStats: document.getElementById('overall-stats-section'),
+                highScores: document.getElementById('high-scores-section'),
+                gameLog: document.getElementById('game-log-section'),
+            },
+            shop: {
+                openBtns: [document.getElementById('shop-btn-main'), document.getElementById('shop-btn-mobile')],
+                closeBtn: document.getElementById('close-shop-btn'),
+                coinsMenu: document.getElementById('player-coins-menu-value'),
+                coinsShop: document.getElementById('player-coins-shop-value'),
+                itemsGrid: document.getElementById('shop-items-grid'),
+            },
+            stats: { 
+                level: document.getElementById('level-stat'), 
+                score: document.getElementById('score-stat'), 
+                lives: document.getElementById('lives-stat'), 
+                completion: document.getElementById('completion-stat'), 
+                completionBar: document.getElementById('completion-bar'),
+                totalTime: document.getElementById('total-time-stat'),
+                selectionTime: document.getElementById('selection-time-stat'),
+                penaltyTracker: document.getElementById('penalty-tracker'),
+            },
+            tutorial: { 
+                modal: document.getElementById('tutorial-modal'),
+                contentArea: document.getElementById('tutorial-content-area'),
+                progress: document.getElementById('tutorial-progress'),
+                prevBtn: document.getElementById('tutorial-prev-btn'),
+                nextBtn: document.getElementById('tutorial-next-btn'),
+                closeBtn: document.getElementById('close-tutorial-btn')
+            },
+            changelog: {
+                modal: document.getElementById('changelog-modal'),
+                openBtn: document.getElementById('version-number'),
+                closeBtn: document.getElementById('close-changelog-btn'),
+            },
+            modeButtons: { classic: document.getElementById('mode-classic-btn'), dual: document.getElementById('mode-dual-btn') },
+            assistBtns: {
+                hint: document.getElementById('assist-hint-btn'),
+                useless: document.getElementById('assist-useless-btn'),
+                bg: document.getElementById('assist-bg-btn'),
+                shape: document.getElementById('assist-shape-btn')
+            },
+            itemCounts: document.querySelectorAll('.item-count'),
+            darkModeToggle: document.getElementById('dark-mode-toggle'),
+            lightThemeIcon: document.getElementById('theme-icon-light'),
+            darkThemeIcon: document.getElementById('theme-icon-dark'),
+        };
+        
         function renderCard(card, index = 0) {
             const cardEl = document.createElement('div');
             cardEl.className = 'card aspect-square rounded-xl flex items-center justify-center cursor-pointer border-4 border-transparent';
@@ -512,7 +607,7 @@
                         <li>3 lá bài có <strong>3 MÀU SẮC HÌNH DẠNG KHÁC NHAU</strong>.</li>
                     </ul>
                     <p class="font-semibold mb-2">Ví dụ về một SET hợp lệ:</p>
-                    <div class="flex justify-center gap-2">${renderCard({background: '#FFFFFF', shape: 'square', shapeColor: '#ef4444'}, 0).outerHTML} ${renderCard({background: '#FFFFFF', shape: 'circle', shapeColor: '#3b82f6'}, 0).outerHTML} ${renderCard({background: '#FFFFFF', shape: 'triangle', shapeColor: '#22c55e'}, 0).outerHTML}</div>
+                    <div class="flex justify-center gap-2">${renderCard({id: -1, background: '#FFFFFF', shape: 'square', shapeColor: '#ef4444'}, 0).outerHTML} ${renderCard({id: -2, background: '#FFFFFF', shape: 'circle', shapeColor: '#3b82f6'}, 0).outerHTML} ${renderCard({id: -3, background: '#FFFFFF', shape: 'triangle', shapeColor: '#22c55e'}, 0).outerHTML}</div>
                 `
             },
             {
@@ -525,7 +620,7 @@
                         <li>3 lá bài có <strong>3 MÀU SẮC HÌNH DẠNG KHÁC NHAU</strong>.</li>
                     </ul>
                      <p class="font-semibold mb-2">Ví dụ về một SET hợp lệ:</p>
-                    <div class="flex justify-center gap-2">${renderCard({background: '#9CA3AF', shape: 'square', shapeColor: '#FFFFFF'}, 0).outerHTML} ${renderCard({background: '#FFFFFF', shape: 'circle', shapeColor: '#ef4444'}, 0).outerHTML} ${renderCard({background: '#1F2937', shape: 'triangle', shapeColor: '#22c55e'}, 0).outerHTML}</div>
+                    <div class="flex justify-center gap-2">${renderCard({id: -4, background: '#9CA3AF', shape: 'square', shapeColor: '#FFFFFF'}, 0).outerHTML} ${renderCard({id: -5, background: '#FFFFFF', shape: 'circle', shapeColor: '#ef4444'}, 0).outerHTML} ${renderCard({id: -6, background: '#1F2937', shape: 'triangle', shapeColor: '#22c55e'}, 0).outerHTML}</div>
                 `
             },
             {
@@ -554,79 +649,6 @@
         ];
 
 
-        // --- GAME STATE & UI ELEMENTS ---
-        let state = {}; let tutorialState = {}; let selectedGameMode = 'dual';
-        let playerData = {};
-        let gameHistory = [];
-        let settings = {
-            isUselessDimEnabled: false,
-            isBgDimEnabled: false,
-            isShapeDimEnabled: false,
-        };
-
-        const ui = {
-            views: { mainMenu: document.getElementById('main-menu'), shop: document.getElementById('shop-container'), tutorial: document.getElementById('tutorial-modal'), game: document.getElementById('game-container'), history: document.getElementById('history-view') },
-            gameBoard: document.getElementById('game-board'),
-            gameBoardContainer: document.querySelector('.game-board-container'),
-            gameInfoBar: document.getElementById('game-info-bar'),
-            pauseBtns: [document.getElementById('pause-btn'), document.getElementById('pause-btn-desktop')],
-            surrenderBtnPause: document.getElementById('surrender-btn-pause'),
-            boardPauseOverlay: document.getElementById('board-pause-overlay'),
-            historyPanel: document.getElementById('history-panel'),
-            notification: {
-                banner: document.getElementById('notification-banner'),
-                icon: document.getElementById('notification-icon'),
-                text: document.getElementById('notification-text'),
-            },
-            gameModalContainer: document.getElementById('game-modal-container'),
-            earlyFinishContainer: document.getElementById('early-finish-container'),
-            earlyFinishContainerMobile: document.getElementById('early-finish-container-mobile'),
-            ingameActiveAssistsDisplay: document.getElementById('ingame-active-assists-display'),
-            historyView: {
-                openBtns: [document.getElementById('history-btn-main'), document.getElementById('history-btn-mobile')],
-                closeBtn: document.getElementById('close-history-btn'),
-                overallStats: document.getElementById('overall-stats-section'),
-                highScores: document.getElementById('high-scores-section'),
-                gameLog: document.getElementById('game-log-section'),
-            },
-            shop: {
-                coinsMenu: document.getElementById('player-coins-menu-value'),
-                coinsShop: document.getElementById('player-coins-shop-value'),
-                itemsGrid: document.getElementById('shop-items-grid'),
-                openBtns: [document.getElementById('shop-btn-main'), document.getElementById('shop-btn-mobile')],
-                closeBtn: document.getElementById('close-shop-btn')
-            },
-            stats: { 
-                level: document.getElementById('level-stat'), 
-                score: document.getElementById('score-stat'), 
-                lives: document.getElementById('lives-stat'), 
-                completion: document.getElementById('completion-stat'), 
-                completionBar: document.getElementById('completion-bar'),
-                totalTime: document.getElementById('total-time-stat'),
-                selectionTime: document.getElementById('selection-time-stat'),
-                penaltyTracker: document.getElementById('penalty-tracker'),
-            },
-            tutorial: { 
-                modal: document.getElementById('tutorial-modal'),
-                contentArea: document.getElementById('tutorial-content-area'),
-                progress: document.getElementById('tutorial-progress'),
-                prevBtn: document.getElementById('tutorial-prev-btn'),
-                nextBtn: document.getElementById('tutorial-next-btn'),
-                closeBtn: document.getElementById('close-tutorial-btn')
-            },
-            modeButtons: { classic: document.getElementById('mode-classic-btn'), dual: document.getElementById('mode-dual-btn') },
-            assistBtns: {
-                hint: document.getElementById('assist-hint-btn'),
-                useless: document.getElementById('assist-useless-btn'),
-                bg: document.getElementById('assist-bg-btn'),
-                shape: document.getElementById('assist-shape-btn')
-            },
-            itemCounts: document.querySelectorAll('.item-count'),
-            darkModeToggle: document.getElementById('dark-mode-toggle'),
-            lightThemeIcon: document.getElementById('theme-icon-light'),
-            darkThemeIcon: document.getElementById('theme-icon-dark'),
-        };
-
         // --- DATA PERSISTENCE ---
         function loadPlayerData() {
             const savedData = localStorage.getItem('tripleZonePlayerData');
@@ -635,7 +657,6 @@
             } else {
                 playerData = { coins: 0, inventory: { hints: 3, assistUseless: 3, assistBg: 3, assistShape: 3 } };
             }
-            // Ensure inventory exists
             if (!playerData.inventory) {
                  playerData.inventory = { hints: 3, assistUseless: 3, assistBg: 3, assistShape: 3 };
             }
@@ -653,7 +674,6 @@
         }
 
         function saveGameHistory() {
-            // Keep the last 50 games
             if (gameHistory.length > 50) {
                 gameHistory = gameHistory.slice(gameHistory.length - 50);
             }
@@ -667,30 +687,25 @@
         
         function getCardPool(mode) {
             let cs = [], id = 0;
-            if (mode === 'classic') {
-                const BGS = CLASSIC_BACKGROUNDS; 
-                const COLORS = CLASSIC_SHAPE_COLORS;
-                BGS.forEach(bg => {
-                    ALL_SHAPES.forEach(s => {
-                        let allowedColors = COLORS;
-                        if (bg === '#9CA3AF') allowedColors = ['#FFFFFF', '#111827'];
-                        allowedColors.forEach(sc => {
-                            if (!(bg === '#FFFFFF' && sc === '#FFFFFF') && !(bg === '#1F2937' && sc === '#111827')) {
-                                cs.push({ id: id++, background: bg, shape: s, shapeColor: sc });
-                            }
-                        });
+            const bgs = mode === 'classic' ? CLASSIC_BACKGROUNDS : DUAL_BACKGROUNDS;
+            const allColors = mode === 'classic' ? CLASSIC_SHAPE_COLORS : DUAL_SHAPE_COLORS;
+            
+            bgs.forEach(bg => {
+                let availableColors = allColors;
+                if (mode === 'classic') {
+                    if (bg === '#9CA3AF') {
+                        availableColors = ['#FFFFFF', '#111827'];
+                    } else {
+                        availableColors = allColors.filter(c => c !== bg);
+                    }
+                }
+
+                ALL_SHAPES.forEach(s => {
+                    availableColors.forEach(sc => {
+                        cs.push({ id: id++, background: bg, shape: s, shapeColor: sc });
                     });
                 });
-            } else {
-                const bgs = DUAL_BACKGROUNDS;
-                bgs.forEach(b => {
-                    ALL_SHAPES.forEach(s => {
-                        DUAL_SHAPE_COLORS.forEach(sc => {
-                            cs.push({ id: id++, background: b, shape: s, shapeColor: sc });
-                        });
-                    });
-                });
-            }
+            });
             return cs;
         }
 
@@ -707,8 +722,44 @@
 
         function findAllSets(board, mode) {
             const sets = [];
-            for (let i = 0; i < board.length; i++) for (let j = i + 1; j < board.length; j++) for (let k = j + 1; k < board.length; k++) {
-                if (checkSet([board[i], board[j], board[k]], mode)) sets.push([board[i], board[j], board[k]]);
+            const cardLookup = new Map(board.map(c => [`${c.shape}|${c.shapeColor}|${c.background}`, c]));
+            const shapeOptions = ALL_SHAPES;
+            const colorOptions = mode === 'classic' ? CLASSIC_SHAPE_COLORS : DUAL_SHAPE_COLORS;
+            const bgOptions = mode === 'classic' ? CLASSIC_BACKGROUNDS : DUAL_BACKGROUNDS;
+
+            const getThirdProperty = (p1, p2, allOptions) => {
+                if (p1 === p2) return p1;
+                return allOptions.find(p => p !== p1 && p !== p2);
+            };
+
+            for (let i = 0; i < board.length; i++) {
+                for (let j = i + 1; j < board.length; j++) {
+                    const card1 = board[i];
+                    const card2 = board[j];
+
+                    let targetCardProps;
+                    if (mode === 'dual') {
+                         if (card1.background !== card2.background) continue;
+                         targetCardProps = {
+                            background: card1.background,
+                            shape: getThirdProperty(card1.shape, card2.shape, shapeOptions),
+                            shapeColor: getThirdProperty(card1.shapeColor, card2.shapeColor, colorOptions)
+                        };
+                    } else { // classic
+                         targetCardProps = {
+                            background: getThirdProperty(card1.background, card2.background, bgOptions),
+                            shape: getThirdProperty(card1.shape, card2.shape, shapeOptions),
+                            shapeColor: getThirdProperty(card1.shapeColor, card2.shapeColor, colorOptions)
+                        };
+                    }
+
+                    const targetKey = `${targetCardProps.shape}|${targetCardProps.shapeColor}|${targetCardProps.background}`;
+                    const card3 = cardLookup.get(targetKey);
+
+                    if (card3 && card1.id < card2.id && card2.id < card3.id) {
+                         sets.push([card1, card2, card3]);
+                    }
+                }
             }
             return sets;
         }
@@ -718,6 +769,7 @@
             const cardPool = getCardPool(mode);
             while (true) {
                 let currentPool = [...cardPool];
+                // Fisher-Yates shuffle
                 for(let i=currentPool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[currentPool[i],currentPool[j]]=[currentPool[j],currentPool[i]];}
                 const candidateBoard=currentPool.slice(0,boardSize);
                 if (findAllSets(candidateBoard, mode).length > 0) return candidateBoard;
@@ -731,13 +783,19 @@
         }
         
         function showNotification(message, type = 'info') {
-            const banner = ui.notification.banner;
+            if (state.isGameOver) return; 
+
             if (state.notificationTimer) {
                 clearTimeout(state.notificationTimer);
-                banner.classList.remove('show', 'hide');
             }
 
-            ui.notification.text.textContent = message;
+            ui.gameInfoBar.classList.add('hidden');
+
+            const banner = ui.notification.banner;
+            const icon = ui.notification.icon;
+            const text = ui.notification.text;
+
+            text.textContent = message;
             
             const typeClasses = {
                 success: 'bg-green-500 text-white',
@@ -745,19 +803,34 @@
                 info: 'bg-yellow-400 text-yellow-900'
             };
             
-            banner.className = 'items-center gap-3 rounded-lg shadow-lg p-3 font-semibold z-50'; // Reset
-            banner.classList.add(...typeClasses[type].split(' '));
-            ui.notification.icon.innerHTML = NOTIFICATION_ICONS[type];
+            banner.className = 'flex items-center gap-2 rounded-lg shadow-md p-2 font-semibold z-10 mb-2 w-full h-[34px]'; // Reset
             
+            const classesToAdd = typeClasses[type].split(' ');
+            banner.classList.add(...classesToAdd);
+
+            icon.innerHTML = NOTIFICATION_ICONS[type];
+            
+            banner.classList.remove('hidden', 'hide');
             banner.classList.add('show');
             
-            state.notificationTimer = setTimeout(() => {
+            const hideBanner = () => {
+                const onFadeOutEnd = (event) => {
+                    if (event.animationName === 'fadeOut') {
+                        banner.classList.add('hidden');
+                        if (!state.isGameOver) {
+                            ui.gameInfoBar.classList.remove('hidden');
+                        }
+                        state.notificationTimer = null;
+                        banner.removeEventListener('animationend', onFadeOutEnd);
+                    }
+                };
+                
+                banner.addEventListener('animationend', onFadeOutEnd);
                 banner.classList.remove('show');
                 banner.classList.add('hide');
-                banner.addEventListener('animationend', () => {
-                    banner.classList.remove('hide');
-                }, { once: true });
-            }, 2500);
+            };
+
+            state.notificationTimer = setTimeout(hideBanner, 2000);
         }
 
         function showSetFeedback(isCorrect) {
@@ -767,7 +840,6 @@
                  feedbackContainer.innerHTML = '✓';
                  feedbackContainer.className += ' text-green-500';
              }
-             // The "incorrect" feedback is the card shake animation, so we don't need a symbol.
              
              ui.gameBoard.appendChild(feedbackContainer);
              setTimeout(() => feedbackContainer.remove(), 800);
@@ -784,13 +856,12 @@
                    el.textContent = playerData.inventory[itemKey] || 0;
                 }
             });
-            // Also update counts on the shop items if the shop is visible
             if (!ui.views.shop.classList.contains('hidden')) {
                 renderShop();
             }
         }
 
-        function renderBoard(container, cards, clickHandler) {
+        function renderBoard(container, cards) {
             container.innerHTML = '';
             if (container.id === 'game-board' && state.level) { 
                 container.classList.remove('level-1', 'level-2', 'level-3');
@@ -798,7 +869,7 @@
             }
             cards.forEach((card, index) => {
                 const cardEl = renderCard(card, index);
-                if (clickHandler) cardEl.addEventListener('click', () => clickHandler(cardEl, card));
+                // Mouseover for assist preview is still useful
                 cardEl.addEventListener('mouseover', () => {
                     if (state.isGameOver || state.isPaused || state.isChecking || document.getElementById('post-game-overlay')) return;
                     state.hoveredShape = card.shape;
@@ -848,25 +919,26 @@
 
         function renderStats() {
              ui.stats.level.textContent = state.level;
-             ui.stats.score.textContent = playerData.coins.toLocaleString();
-             const isDesktop = window.innerWidth >= 1024;
+             ui.stats.score.textContent = (state.sessionScore || 0).toLocaleString();
              const livesCount = state.lives > 0 ? state.lives : 0;
-             if (isDesktop) {
-                 ui.stats.lives.innerHTML = `<span class="text-red-500 text-2xl mr-1">❤️</span> <span class="font-bold text-lg align-middle">${livesCount}</span>`;
-             } else {
-                 ui.stats.lives.textContent = '❤️'.repeat(livesCount);
-             }
+             ui.stats.lives.innerHTML = `<span class="text-red-500 text-xl mr-1">❤️</span> <span class="font-bold text-lg align-middle">${livesCount}</span>`;
+             
              const percentage = state.totalSetsInRound > 0 ? Math.round((state.foundSets.size / state.totalSetsInRound) * 100) : 0;
              ui.stats.completion.textContent = `${percentage}%`;
              ui.stats.completionBar.style.width = `${percentage}%`;
              ui.stats.totalTime.textContent = formatTime(state.totalTimeLeft || 0);
              ui.stats.selectionTime.textContent = String(state.selectionTimeLeft || 0).padStart(2, '0');
-            ui.stats.penaltyTracker.innerHTML = '';
-            for (let i = 0; i < MAX_PENALTY_COUNT; i++) {
+             ui.stats.penaltyTracker.innerHTML = '';
+             for (let i = 0; i < MAX_PENALTY_COUNT; i++) {
                 const dot = document.createElement('div');
-                dot.className = 'w-2 h-2 rounded-full transition-colors duration-300 bg-slate-300 dark:bg-slate-600';
-                if (state.comboCount > 0 && i < state.comboCount) dot.classList.replace('bg-slate-300', 'bg-green-500');
-                else if (state.penaltyCount > 0 && i < state.penaltyCount) dot.classList.replace('bg-slate-300', 'bg-red-500');
+                dot.className = 'w-2 h-2 rounded-full transition-colors duration-300';
+                if (state.comboCount > 0 && i < state.comboCount) {
+                    dot.classList.add('bg-green-500');
+                } else if (state.penaltyCount > 0 && i < state.penaltyCount) {
+                    dot.classList.add('bg-red-500');
+                } else {
+                    dot.classList.add('bg-slate-300', 'dark:bg-slate-600');
+                }
                 ui.stats.penaltyTracker.appendChild(dot);
             }
         }
@@ -887,7 +959,7 @@
             if (settings.isShapeDimEnabled) ui.ingameActiveAssistsDisplay.innerHTML += createIcon('shape', 'Ẩn hình đã chọn');
         }
 
-        // --- SHOP LOGIC (New Design)---
+        // --- SHOP LOGIC ---
         function renderShop() {
             ui.shop.itemsGrid.innerHTML = '';
             Object.entries(SHOP_ITEMS).forEach(([id, item]) => {
@@ -923,16 +995,13 @@
 
             if (playerData.coins >= item.price) {
                 playerData.coins -= item.price;
-                if (!playerData.inventory[itemId]) {
-                    playerData.inventory[itemId] = 0;
-                }
-                playerData.inventory[itemId]++;
+                playerData.inventory[itemId] = (playerData.inventory[itemId] || 0) + 1;
                 savePlayerData();
                 updateCoinDisplay();
                 updateInventoryDisplay(); 
-                showNotification(`Đã mua ${item.name}!`, 'success');
+                showGameModal('Mua thành công!', `Bạn đã mua ${item.name}.`, 'OK', () => ui.gameModalContainer.innerHTML = '');
             } else {
-                showNotification('Không đủ xu!', 'info');
+                showGameModal('Không đủ xu', 'Bạn không có đủ xu để mua vật phẩm này. Hãy chơi game để kiếm thêm!', 'OK', () => { ui.gameModalContainer.innerHTML = '' });
             }
         }
 
@@ -968,84 +1037,140 @@
         }
         
         // --- GAME FLOW (Updates) ---
+
+        // REFACTORED: Smaller helper function for correct set processing
+        function processCorrectSet() {
+            const currentSetId = getSetId(state.selectedCards);
+            if (state.foundSets.has(currentSetId)) {
+                showNotification('Đã tìm thấy!', 'info');
+                return; 
+            }
+            
+            state.foundSets.add(currentSetId);
+            
+            const timeTaken = (Date.now() - state.lastSetFoundTimestamp) / 1000;
+            const pointsEarned = Math.round(Math.max(10, 500 / timeTaken) * (state.gameMode === 'classic' ? 1.5 : 1));
+            
+            playerData.coins += pointsEarned;
+            state.sessionScore += pointsEarned;
+            savePlayerData();
+
+            state.totalTimeLeft += TIME_BONUS_ON_CORRECT;
+            showSetFeedback(true);
+            ui.historyPanel.prepend(createHistoryItem(state.selectedCards, state.foundSets.size));
+            
+            state.lastSetFoundTimestamp = Date.now();
+            state.comboCount++;
+            state.penaltyCount = 0; 
+            
+            if(state.currentSessionStats) {
+                state.currentSessionStats.setFindTimes.push(timeTaken);
+                state.currentSessionStats.correctStreak++;
+                state.currentSessionStats.errorStreak = 0;
+                state.currentSessionStats.maxCorrectStreak = Math.max(state.currentSessionStats.maxCorrectStreak, state.currentSessionStats.correctStreak);
+            }
+
+            if (state.comboCount >= MAX_PENALTY_COUNT) {
+                state.totalTimeLeft += COMBO_TIME_BONUS;
+                showNotification(`COMBO! +${COMBO_TIME_BONUS}s`, 'success');
+                state.comboCount = 0; 
+            }
+            
+            const unfoundSets = state.allSetsInRound.filter(set => !state.foundSets.has(getSetId(set)));
+            state.usefulCardIds = new Set(unfoundSets.flat().map(card => card.id));
+            
+            updateEarlyFinishButton();
+
+            state.selectedCards.forEach(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`)?.classList.add('correct'));
+        }
+
+        // REFACTORED: Smaller helper function for incorrect set processing
+        function processIncorrectSet() {
+            showNotification('Sai rồi!', 'error');
+            handlePenalty();
+            state.selectedCards.forEach(c => {
+                const cardEl = ui.gameBoard.querySelector(`[data-id='${c.id}']`);
+                if (cardEl) cardEl.style.animation = 'shake 0.4s';
+            });
+        }
+        
+        // REFACTORED: The main confirmation logic is now cleaner
         function handleConfirm() {
             if (state.isGameOver || state.isPaused || state.selectedCards.length !== 3 || state.isChecking) return;
             state.isChecking = true;
-            const cards = state.selectedCards.map(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`));
+
             const isAValidSet = checkSet(state.selectedCards);
-            const currentSetId = getSetId(state.selectedCards);
-
             if (isAValidSet) {
-                if (!state.foundSets.has(currentSetId)) {
-                    state.foundSets.add(currentSetId);
-                    
-                    const timeTaken = (Date.now() - state.lastSetFoundTimestamp) / 1000;
-                    const pointsEarned = Math.round(Math.max(10, 500 / timeTaken) * (state.gameMode === 'classic' ? 1.5 : 1));
-                    
-                    playerData.coins += pointsEarned;
-                    savePlayerData();
-
-                    state.totalTimeLeft += TIME_BONUS_ON_CORRECT;
-                    cards.forEach(c => c.classList.add('correct'));
-                    showSetFeedback(true);
-                    ui.historyPanel.prepend(createHistoryItem(state.selectedCards, state.foundSets.size));
-                    
-                    state.lastSetFoundTimestamp = Date.now();
-                    state.comboCount++;
-                    state.penaltyCount = 0; 
-                    
-                    if(state.currentSessionStats) {
-                        state.currentSessionStats.setFindTimes.push(timeTaken);
-                        state.currentSessionStats.correctStreak++;
-                        state.currentSessionStats.errorStreak = 0;
-                        state.currentSessionStats.maxCorrectStreak = Math.max(state.currentSessionStats.maxCorrectStreak, state.currentSessionStats.correctStreak);
-                    }
-
-                    if (state.comboCount >= MAX_PENALTY_COUNT) {
-                        state.totalTimeLeft += COMBO_TIME_BONUS;
-                        showNotification(`COMBO! +${COMBO_TIME_BONUS}s`, 'success');
-                        state.comboCount = 0; 
-                    }
-                    
-                    const unfoundSets = state.allSetsInRound.filter(set => !state.foundSets.has(getSetId(set)));
-                    state.usefulCardIds = new Set(unfoundSets.flat().map(card => card.id));
-
-                    const percentage = Math.round((state.foundSets.size / state.totalSetsInRound) * 100);
-                    if (state.level === 3 && percentage >= 50 && state.foundSets.size < state.totalSetsInRound) {
-                        const finishButtonHtml = `<button id="finish-early-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-md">Tổng kết ngay (${percentage}%)</button>`;
-                        ui.earlyFinishContainer.innerHTML = finishButtonHtml;
-                        ui.earlyFinishContainerMobile.innerHTML = finishButtonHtml;
-                        ui.earlyFinishContainer.classList.remove('hidden');
-                        ui.earlyFinishContainerMobile.classList.remove('hidden');
-
-                        document.querySelectorAll('#finish-early-btn').forEach(btn => {
-                            btn.onclick = () => gameOver(`Kết thúc sớm ở cấp 3 với ${percentage}% hoàn thành.`);
-                        });
-                    }
-
-                    if (state.foundSets.size >= state.totalSetsInRound) {
-                        renderStats(); setTimeout(() => levelUp(), 500);
-                    }
-                } else { 
-                    showNotification('Đã tìm thấy!', 'info');
-                }
+                processCorrectSet();
             } else { 
-                showNotification('Sai rồi!', 'error');
-                handlePenalty();
-                cards.forEach(c => c.style.animation = 'shake 0.4s');
+                processIncorrectSet();
             }
 
+            // Common cleanup logic after a small delay
             setTimeout(() => {
-                cards.forEach(c => c.style.animation = '');
-                cards.forEach(c => c.classList.remove('correct'));
-                state.selectedCards.forEach(c => ui.gameBoard.querySelector(`[data-id='${c.id}']`)?.classList.remove('selected'));
+                state.selectedCards.forEach(c => {
+                     const cardEl = ui.gameBoard.querySelector(`[data-id='${c.id}']`);
+                     if(cardEl) {
+                        cardEl.style.animation = '';
+                        cardEl.classList.remove('correct', 'selected');
+                     }
+                });
+                
                 state.selectedCards = [];
                 state.isChecking = false;
                 renderStats(); 
                 updateBoardAppearance();
-                if (state.foundSets.size < state.totalSetsInRound) resetAndStartSelectionTimer();
-                if (state.totalTimeLeft <= 0 && !state.isGameOver) gameOver('Hết giờ!');
+
+                if (state.isGameOver) return; 
+
+                if (state.foundSets.size >= state.totalSetsInRound) {
+                    levelUp();
+                } else {
+                    resetAndStartSelectionTimer();
+                    if (state.totalTimeLeft <= 0) {
+                        promptForTimeRescue();
+                    }
+                }
             }, 500);
+        }
+
+        // OPTIMIZED: Using Event Delegation for card clicks
+        function handleBoardClick(event) {
+            const cardEl = event.target.closest('.card');
+            if (!cardEl) return;
+
+            if (state.isGameOver || state.isPaused || state.isChecking || (cardEl.classList.contains('dimmed') && !cardEl.classList.contains('selected'))) return;
+
+            const cardId = parseInt(cardEl.dataset.id, 10);
+            const cardData = state.boardCards.find(c => c.id === cardId);
+            if (!cardData) return;
+            
+            const index = state.selectedCards.findIndex(c => c.id === cardData.id);
+            
+            if (index > -1) { 
+                state.selectedCards.splice(index, 1); 
+                cardEl.classList.remove('selected'); 
+            } else if (state.selectedCards.length < 3) { 
+                state.selectedCards.push(cardData); 
+                cardEl.classList.add('selected'); 
+                if (state.selectedCards.length === 3) {
+                    handleConfirm();
+                }
+            }
+            updateBoardAppearance();
+        }
+
+        function updateEarlyFinishButton() {
+            const percentage = Math.round((state.foundSets.size / state.totalSetsInRound) * 100);
+            const isVisible = state.level === 3 && percentage >= 50 && state.foundSets.size < state.totalSetsInRound;
+
+            if(isVisible) {
+                const finishButtonHtml = `<button id="finish-early-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 shadow-md">Tổng kết ngay (${percentage}%)</button>`;
+                ui.earlyFinishContainer.innerHTML = finishButtonHtml;
+                document.getElementById('finish-early-btn').onclick = () => gameOver(`Kết thúc sớm ở cấp 3 với ${percentage}% hoàn thành.`);
+            }
+            ui.earlyFinishContainer.classList.toggle('hidden', !isVisible);
+            ui.earlyFinishIconBtn.classList.toggle('hidden', !isVisible);
         }
         
         function loseLife(){ if(state.lives>0){ state.lives--; renderStats(); if(state.lives<=0) gameOver('Hết mạng!'); } }
@@ -1083,7 +1208,7 @@
             const canAfford = playerData.coins >= TIME_RESCUE_COST;
             showGameModal(
                 'Hết giờ!',
-                `Bạn có muốn dùng ${TIME_RESCUE_COST} xu để thêm ${TIME_RESCUE_AMOUNT} giây không?`,
+                `Bạn có muốn dùng ${TIME_RESCUE_COST.toLocaleString()} xu để thêm ${TIME_RESCUE_AMOUNT} giây không?`,
                 null, 
                 null,
                 {
@@ -1100,8 +1225,6 @@
                                     updateCoinDisplay();
                                     ui.gameModalContainer.innerHTML = '';
                                     startAllTimers();
-                                } else {
-                                    showNotification("Không đủ xu!", 'info');
                                 }
                             }
                         },
@@ -1128,18 +1251,16 @@
             state.isGameOver = true;
             ui.gameInfoBar.classList.add('hidden');
             ui.earlyFinishContainer.classList.add('hidden'); 
-            ui.earlyFinishContainerMobile.classList.add('hidden');
+            ui.earlyFinishIconBtn.classList.add('hidden');
             
-            // Finalize and save session stats
             if (state.currentSessionStats) {
                 const finalStats = state.currentSessionStats;
-                finalStats.finalScore = playerData.coins;
+                finalStats.finalScore = state.sessionScore || 0;
                 finalStats.highestLevel = state.level;
                 finalStats.totalSets = finalStats.setFindTimes.length;
-                finalStats.usedAssists = settings; // Save used assists
+                finalStats.usedAssists = settings;
                 if (finalStats.totalSets > 0) {
-                    const sumOfTimes = finalStats.setFindTimes.reduce((a, b) => a + b, 0);
-                    finalStats.avgTimePerSet = sumOfTimes / finalStats.totalSets;
+                    finalStats.avgTimePerSet = finalStats.setFindTimes.reduce((a, b) => a + b, 0) / finalStats.totalSets;
                 } else {
                     finalStats.avgTimePerSet = 0;
                 }
@@ -1203,8 +1324,7 @@
         
         function levelUp() {
             stopAllTimers();
-            ui.earlyFinishContainer.classList.add('hidden');
-            ui.earlyFinishContainerMobile.classList.add('hidden');
+            updateEarlyFinishButton();
             state.timeRollover = state.totalTimeLeft;
             const nextLevel = state.level + 1;
             if (LEVEL_CONFIG[nextLevel]) {
@@ -1238,29 +1358,19 @@
         function updateBoardAppearance() {
             if (!state.boardCards) return;
             const historyCardIds = state.historyHoverSet ? new Set(state.historyHoverSet.map(c => c.id)) : null;
-            const reFoundThirdCardIds = new Set();
-            if (state.selectedCards.length === 2) {
-                state.boardCards.forEach(cardOnBoard => {
-                    if (state.selectedCards.some(sel => sel.id === cardOnBoard.id)) return;
-                    const potentialSetId = getSetId([...state.selectedCards, cardOnBoard]);
-                    if (state.foundSets.has(potentialSetId)) {
-                        reFoundThirdCardIds.add(cardOnBoard.id);
-                    }
-                });
-            }
+            
             ui.gameBoard.querySelectorAll('.card').forEach(cardEl => {
                 const cardId = parseInt(cardEl.dataset.id, 10);
                 const cardData = state.boardCards.find(c => c.id === cardId);
                 if (!cardData) return;
+
                 const isSelected = state.selectedCards.some(c => c.id === cardId);
+                
                 if (historyCardIds) {
                     cardEl.classList.toggle('dimmed', !historyCardIds.has(cardId));
                     return;
                 }
-                if (reFoundThirdCardIds.has(cardId)) {
-                    cardEl.classList.toggle('dimmed', true);
-                    return;
-                }
+
                 let isDimmed = false;
                 if (settings.isUselessDimEnabled && !state.usefulCardIds.has(cardId)) {
                     isDimmed = true;
@@ -1288,23 +1398,11 @@
             if (state.isPaused) {
                 stopAllTimers();
                 ui.boardPauseOverlay.classList.remove('hidden');
-                ui.pauseBtns.forEach(btn => {
-                    if (btn.id === 'pause-btn-desktop') {
-                        btn.innerHTML = `${continueIcon} Tiếp tục`;
-                    } else {
-                        btn.innerHTML = continueIcon;
-                    }
-                });
+                ui.pauseBtns.forEach(btn => btn.innerHTML = (btn.id === 'pause-btn-desktop') ? `${continueIcon} Tiếp tục` : continueIcon);
             } else {
                 startAllTimers();
                 ui.boardPauseOverlay.classList.add('hidden');
-                ui.pauseBtns.forEach(btn => {
-                    if (btn.id === 'pause-btn-desktop') {
-                        btn.innerHTML = `${pauseIcon} Tạm dừng`;
-                    } else {
-                        btn.innerHTML = pauseIcon;
-                    }
-                });
+                ui.pauseBtns.forEach(btn => btn.innerHTML = (btn.id === 'pause-btn-desktop') ? `${pauseIcon} Tạm dừng` : pauseIcon);
             }
         }
 
@@ -1345,9 +1443,8 @@
 
         function startLevel(level) {
             ui.gameInfoBar.classList.remove('hidden');
-            ui.earlyFinishContainer.classList.add('hidden'); 
-            ui.earlyFinishContainerMobile.classList.add('hidden');
             const config = LEVEL_CONFIG[level];
+            
             state = {
                 ...state,
                 level: level,
@@ -1359,6 +1456,7 @@
             };
 
             if (level === 1) { 
+                state.sessionScore = 0;
                 state.lives = config.baseLives; 
                 state.timeRollover = 0; 
                 state.totalTimeLeft = config.totalTime;
@@ -1373,23 +1471,11 @@
             state.usefulCardIds = new Set(state.allSetsInRound.flat().map(card => card.id));
             ui.historyPanel.innerHTML = '';
             
-            renderBoard(ui.gameBoard, state.boardCards, (el, card) => {
-                if (state.isGameOver || state.isPaused || state.isChecking || (el.classList.contains('dimmed') && !state.selectedCards.some(c => c.id == el.dataset.id))) return;
-                const cardData = state.boardCards.find(c => c.id == el.dataset.id);
-                const index = state.selectedCards.findIndex(c => c.id == cardData.id);
-                if (index > -1) { 
-                    state.selectedCards.splice(index, 1); 
-                    el.classList.remove('selected'); 
-                } else if (state.selectedCards.length < 3) { 
-                    state.selectedCards.push(cardData); 
-                    el.classList.add('selected'); 
-                    if (state.selectedCards.length === 3) setTimeout(() => handleConfirm(), 100);
-                }
-                updateBoardAppearance();
-            });
+            renderBoard(ui.gameBoard, state.boardCards);
             startAllTimers();
             resetAndStartSelectionTimer();
             updateBoardAppearance();
+            updateEarlyFinishButton();
         }
 
         function initializeGame() {
@@ -1406,7 +1492,7 @@
             });
 
             if (!canStart) {
-                showNotification(`Không đủ vật phẩm: ${failedItems.join(', ')}`, 'info');
+                showGameModal('Không đủ vật phẩm', `Bạn không có đủ: ${failedItems.join(', ')}. Hãy vào cửa hàng để mua thêm.`, 'OK', () => { ui.gameModalContainer.innerHTML = '' });
                 selectedAssists.forEach(btn => {
                     const assistType = btn.dataset.assistType;
                     const itemKey = `assist${assistType.charAt(0).toUpperCase() + assistType.slice(1)}`;
@@ -1434,7 +1520,7 @@
             renderActiveAssists(); 
 
             state = { 
-                score: 0, 
+                sessionScore: 0,
                 gameMode: selectedGameMode, 
                 isPaused: false, 
                 historyHoverSet: null,
@@ -1477,7 +1563,6 @@
                 return;
             }
 
-            // 1. Overall Stats
             const allTimes = gameHistory.flatMap(g => g.setFindTimes);
             const overall = gameHistory.reduce((acc, game) => {
                 acc.totalSets += game.totalSets;
@@ -1505,7 +1590,6 @@
                     <div class="panel p-3 rounded-lg"><div class="text-2xl font-bold text-purple-500">${overall.totalHints.toLocaleString()}</div><div class="text-xs text-slate-500">Gợi ý đã dùng</div></div>
                 </div>`;
 
-            // 2. High Scores
             const highScores = [...gameHistory].sort((a, b) => b.finalScore - a.finalScore).slice(0, 5);
             let highScoresHtml = `<h3 class="text-xl font-bold mb-3">Top 5 Kỉ Lục</h3><div class="space-y-2">`;
             highScores.forEach((game, index) => {
@@ -1520,9 +1604,8 @@
             highScoresHtml += `</div>`;
             ui.historyView.highScores.innerHTML = highScoresHtml;
 
-            // 3. Game Log
             let gameLogHtml = `<h3 class="text-xl font-bold mb-3">Nhật Ký Ván Chơi</h3><div class="space-y-2">`;
-             [...gameHistory].reverse().forEach(game => {
+             [...gameHistory].reverse().slice(0, 20).forEach(game => { // Show last 20 games
                 let assistsHtml = '';
                 if (game.usedAssists) {
                     if (game.usedAssists.isUselessDimEnabled) assistsHtml += ASSIST_ICONS.useless;
@@ -1562,27 +1645,39 @@
             
             ui.boardPauseOverlay.classList.add('hidden');
             ui.earlyFinishContainer.classList.add('hidden');
-            ui.earlyFinishContainerMobile.classList.add('hidden');
+            ui.earlyFinishIconBtn.classList.add('hidden');
             ui.historyPanel.innerHTML = '';
             ui.gameBoard.innerHTML = '';
             ui.ingameActiveAssistsDisplay.innerHTML = '';
             
             const pauseIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1zm8 0a1 1 0 01-1-1V5a1 1 0 012 0v10a1 1 0 01-1 1z" /></svg>';
-            ui.pauseBtns.forEach(btn => {
-                if (btn.id === 'pause-btn-desktop') {
-                    btn.innerHTML = `${pauseIcon} Tạm dừng`;
-                } else {
-                    btn.innerHTML = pauseIcon;
-                }
-            });
+            ui.pauseBtns.forEach(btn => btn.innerHTML = (btn.id === 'pause-btn-desktop') ? `${pauseIcon} Tạm dừng` : pauseIcon);
         }
         
         // --- APP INITIALIZATION ---
         function initApp() {
+            document.getElementById('version-number').textContent = CURRENT_VERSION;
+            ui.changelog.openBtn.addEventListener('click', () => ui.changelog.modal.classList.remove('hidden'));
+            ui.changelog.closeBtn.addEventListener('click', () => ui.changelog.modal.classList.add('hidden'));
+
+            const lastVersionSeen = localStorage.getItem('lastVersionSeen');
+            if (lastVersionSeen !== CURRENT_VERSION) {
+                ui.changelog.modal.classList.remove('hidden');
+                localStorage.setItem('lastVersionSeen', CURRENT_VERSION);
+            }
+
             tutorialState.steps = TUTORIAL_STEPS;
             loadPlayerData();
             loadGameHistory();
             renderShop();
+
+            // OPTIMIZED: Central event listener for the game board
+            ui.gameBoard.addEventListener('click', handleBoardClick);
+            ui.earlyFinishIconBtn.addEventListener('click', () => {
+                const percentage = Math.round((state.foundSets.size / state.totalSetsInRound) * 100);
+                gameOver(`Kết thúc sớm ở cấp 3 với ${percentage}% hoàn thành.`);
+            });
+
 
             document.getElementById('start-game-btn').addEventListener('click', initializeGame);
             
@@ -1601,7 +1696,7 @@
                             }
                         },
                         { id: 'confirm-exit-no', text: 'Hủy', classes: 'w-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg',
-                            callback: () => { ui.gameModalContainer.innerHTML = ''; }
+                            callback: () => { ui.gameModalContainer.innerHTML = ''; startAllTimers(); } 
                         }
                     ]}
                 );
@@ -1637,15 +1732,20 @@
                 selectedGameMode = 'classic';
                 ui.modeButtons.classic.classList.add('active');
                 ui.modeButtons.dual.classList.remove('active');
+                // Disable BG assist for classic mode
+                ui.assistBtns.bg.disabled = true;
+                ui.assistBtns.bg.classList.remove('active');
             });
             ui.modeButtons.dual.addEventListener('click', () => {
                 selectedGameMode = 'dual';
                 ui.modeButtons.dual.classList.add('active');
                 ui.modeButtons.classic.classList.remove('active');
+                // Enable BG assist for dual mode
+                ui.assistBtns.bg.disabled = false;
             });
 
             document.addEventListener('keydown', (e) => {
-                if (ui.views.game.classList.contains('hidden')) return;
+                if (ui.views.game.classList.contains('hidden') || state.isGameOver) return;
                 if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); }
             });
 
@@ -1660,7 +1760,8 @@
             });
 
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
                 document.documentElement.classList.add('dark');
                 updateThemeIcons(true);
             } else {
@@ -1680,7 +1781,6 @@
             }
         }
 
-        // --- PWA SETUP ---
         function setupManifest() {
             const createIconDataUrl = (size, isMaskable) => {
                 const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
