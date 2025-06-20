@@ -2,20 +2,26 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Thegenius 8P - Ám Sát Nhà Vua</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Crimson Text', serif;
+            font-family: 'Quicksand', sans-serif;
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
         }
         .card {
-            width: 100%;
-            aspect-ratio: 3 / 4;
             perspective: 1000px;
             transition: transform 0.3s ease;
         }
@@ -23,8 +29,7 @@
             position: relative;
             width: 100%;
             height: 100%;
-            text-align: center;
-            transition: transform 0.6s;
+            transition: transform 0.8s;
             transform-style: preserve-3d;
         }
         .card.is-flipped .card-inner {
@@ -36,835 +41,692 @@
             height: 100%;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            border-radius: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 0.75rem; /* 12px */
             background-size: cover;
             background-position: center;
-        }
-        .card-front {
-            background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);
-            color: white;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            font-size: 0.75rem; /* Small font for card text */
+            padding: 0.5rem; /* 8px */
+            overflow: hidden;
         }
-        .card-front svg {
-            width: 40%;
+        .card-front {
+            background: #1F2937; /* gray-800 */
+            color: white;
+            border: 1px solid #4B5563; /* gray-600 */
+        }
+        .card-front::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            opacity: 0.5;
+        }
+        .card-front-icon {
+            width: 50%;
             height: auto;
-            margin-bottom: 8px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+        }
+        .card-front-text {
+            width: 100%;
+            text-align: center;
         }
         .card-back {
-            background-image: linear-gradient(to right, #434343 0%, black 100%);
+            background: linear-gradient(145deg, #18181b, #27272a); /* zinc-900, zinc-800 */
+            border: 1px solid #52525b; /* zinc-600 */
             transform: rotateY(180deg);
-            display: flex;
             justify-content: center;
-            align-items: center;
         }
         .card-back-icon {
             width: 60%;
-            opacity: 0.7;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 10px #f59e0b); /* amber-500 */
         }
-        .player-container {
-            position: relative;
-        }
-        .status-icon {
+        .status-overlay {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 24px;
-            height: 24px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
+            inset: 0;
+            border-radius: 0.75rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            z-index: 10;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+            z-index: 5;
+        }
+        .status-overlay-icon {
+            width: 40%;
+            height: 40%;
         }
         .player-dead .card-inner {
-            transform: rotate(15deg) scale(0.9);
-            opacity: 0.5;
+            transform: rotate(10deg) scale(0.95);
         }
         .player-dead .card-front {
-            filter: grayscale(100%);
-        }
-        #modal {
-            transition: opacity 0.3s ease;
-        }
-        #game-board {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            max-height: 100dvh; /* Dynamic viewport height */
-        }
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+            filter: grayscale(1) brightness(0.7);
         }
         #players-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px; /* Reduced gap */
-            padding: 8px;
+            gap: 0.5rem; /* 8px */
         }
-        #status-log {
-             font-size: 0.875rem; /* 14px */
+        .player-card {
+            position: relative;
+        }
+        .glow-border {
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .selectable .glow-border {
+            cursor: pointer;
+            box-shadow: 0 0 15px 3px #fde047; /* yellow-300 */
+            border: 2px solid #fde047;
+        }
+        .selected .glow-border {
+            box-shadow: 0 0 20px 5px #16a34a; /* green-600 */
+            border: 2px solid #16a34a;
         }
         #action-buttons button {
             transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
         }
-        #action-buttons button:hover {
+        #action-buttons button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
         }
-        .selectable {
-            cursor: pointer;
-            border: 2px solid #fde047; /* yellow-300 */
-            box-shadow: 0 0 20px #fde047;
+         #action-buttons button:active:not(:disabled) {
+            transform: translateY(0);
+         }
+        #status-log {
+            font-size: 0.875rem; /* 14px */
+            scrollbar-width: thin;
+            scrollbar-color: #4B5563 #1F2937;
         }
-        .selected {
-            border: 3px solid #16a34a; /* green-600 */
-            box-shadow: 0 0 25px #16a34a;
-        }
-        .team-king { border: 2px solid #60a5fa; } /* blue-400 */
-        .team-assassin { border: 2px solid #f87171; } /* red-400 */
-        .team-daredevil { border: 2px solid #a78bfa; } /* violet-400 */
-        .role-hidden { border: 2px solid #9ca3af; } /* gray-400 */
     </style>
 </head>
-<body class="bg-gray-900 text-white overflow-hidden">
+<body class="bg-zinc-900 text-gray-200 overflow-hidden">
 
-<div id="game-board" class="w-full max-w-lg mx-auto bg-gray-800 shadow-2xl">
+<div id="game-container" class="w-full max-w-md mx-auto bg-zinc-900 shadow-2xl">
     <!-- Header -->
-    <header class="p-2 bg-gray-900 text-center border-b border-gray-700">
-        <h1 class="text-xl md:text-2xl font-bold">Ám Sát Nhà Vua</h1>
-        <p id="round-counter" class="text-sm text-amber-400">Chờ bắt đầu...</p>
+    <header class="p-3 bg-black/20 text-center border-b border-zinc-700">
+        <h1 class="text-xl md:text-2xl font-cinzel font-bold text-amber-400 tracking-wider">Ám Sát Nhà Vua</h1>
+        <p id="round-counter" class="text-sm text-gray-400 h-5">Chờ bắt đầu...</p>
     </header>
 
     <!-- Main Game Area -->
-    <main class="main-content p-2">
-        <div id="players-container">
-            <!-- Player cards will be generated here -->
+    <main id="main-content" class="flex-grow p-2 flex items-center justify-center">
+        <div id="players-container" class="w-full">
+            <!-- Player cards generated by JS -->
         </div>
     </main>
 
     <!-- Status Log and Action Buttons -->
-    <footer class="p-2 border-t border-gray-700 bg-gray-900">
-        <div id="status-log" class="h-20 overflow-y-auto bg-black bg-opacity-20 rounded-lg p-2 mb-2 text-sm">
-             <p>Chào mừng đến với cuộc chiến sinh tử!</p>
+    <footer class="p-3 border-t border-zinc-700 bg-black/20">
+        <div id="status-log" class="h-24 overflow-y-auto bg-black/30 rounded-lg p-2 mb-3">
+             <p class="text-amber-300">Chào mừng đến với cuộc chiến sinh tử!</p>
         </div>
-        <div id="action-buttons" class="flex justify-center items-center space-x-2">
-            <!-- Action buttons will be generated here -->
+        <div id="action-buttons" class="h-12 flex justify-center items-center space-x-3">
+            <!-- Action buttons generated by JS -->
         </div>
     </footer>
 </div>
 
 <!-- Modal -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
-    <div id="modal-content" class="bg-gray-800 rounded-2xl p-6 w-full max-w-sm text-center shadow-xl border border-gray-600">
-        <h2 id="modal-title" class="text-xl font-bold mb-4 text-amber-400">Thông Báo</h2>
-        <div id="modal-body" class="mb-6"></div>
-        <button id="modal-close-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Đã hiểu</button>
+<div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="modal-content" class="bg-zinc-800 rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl border border-zinc-600 scale-95 transition-transform duration-300">
+        <h2 id="modal-title" class="text-2xl font-bold mb-4 font-cinzel text-amber-400"></h2>
+        <div id="modal-body" class="mb-6 text-gray-300"></div>
+        <button id="modal-close-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg">Đã hiểu</button>
     </div>
 </div>
 
 <script>
     // --- DOM Elements ---
-    const playersContainer = document.getElementById('players-container');
-    const statusLog = document.getElementById('status-log');
-    const actionButtonsContainer = document.getElementById('action-buttons');
-    const roundCounter = document.getElementById('round-counter');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const dom = {
+        playersContainer: document.getElementById('players-container'),
+        statusLog: document.getElementById('status-log'),
+        actionButtons: document.getElementById('action-buttons'),
+        roundCounter: document.getElementById('round-counter'),
+        modal: document.getElementById('modal'),
+        modalContent: document.getElementById('modal-content'),
+        modalTitle: document.getElementById('modal-title'),
+        modalBody: document.getElementById('modal-body'),
+        modalCloseBtn: document.getElementById('modal-close-btn'),
+    };
 
-    // --- Game Configuration ---
+    // --- Game Configuration & Assets ---
     const ROLES = {
         NHAVUA: { name: 'Nhà Vua', team: 'King', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1Z"></path></svg>` },
         CANVE: { name: 'Cận Vệ', team: 'King', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5l-9-4m0 10.9c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3Z"></path></svg>` },
         THAMTU: { name: 'Thám Tử', team: 'King', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C16 5.9 13.1 3 9.5 3S3 5.9 3 9.5 5.9 16 9.5 16c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l5 5 1.5-1.5-5-5m-6 0C7 14 5 12 5 9.5S7 5 9.5 5 14 7 14 9.5 12 14 9.5 14Z"></path></svg>` },
         CANHVE: { name: 'Cảnh Vệ', team: 'King', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5l-9-4m-1 6h2v2h-2V7m0 4h2v6h-2v-6Z"></path></svg>` },
         SIEU_SATTHU: { name: 'Siêu Sát Thủ', team: 'Assassin', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="m16 7.5-1.2-1.2-3.8 3.8-3.8-3.8-1.2 1.2 3.8 3.8-3.8 3.8 1.2 1.2 3.8-3.8 3.8 3.8 1.2-1.2-3.8-3.8M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Z"></path></svg>` },
-        SATTHU_NGAM: { name: 'Sát Thủ Ngầm', trueName: 'Sát Thủ Ngầm', publicName: 'Cảnh Vệ', team: 'Assassin', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5l-9-4m-1 6h2v2h-2V7m0 4h2v6h-2v-6Z"></path></svg>` },
+        SATTHU_NGAM: { name: 'Sát Thủ Ngầm', publicName: 'Cảnh Vệ', team: 'Assassin', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5l-9-4m-1 6h2v2h-2V7m0 4h2v6h-2v-6Z"></path></svg>` },
         KELIEUMINH: { name: 'Kẻ Liều Mình', team: 'Daredevil', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 7h-2v2h2V7m0 4h-2v6h2v-6m-1-9a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"></path></svg>` },
     };
-
     const ROLE_SETUP = ['NHAVUA', 'CANVE', 'THAMTU', 'CANHVE', 'CANHVE', 'SIEU_SATTHU', 'SATTHU_NGAM', 'KELIEUMINH'];
-    const CARD_BACK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-help-circle card-back-icon text-gray-400"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+    const CARD_BACK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="card-back-icon text-amber-500"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>`;
+    const STATUS_ICONS = {
+        PROTECTED: `<svg viewBox="0 0 24 24" fill="currentColor" class="status-overlay-icon text-blue-400"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Z"></path></svg>`,
+        INJURED: `<svg viewBox="0 0 24 24" fill="currentColor" class="status-overlay-icon text-red-500"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"></path></svg>`,
+    };
 
     // --- Game State ---
-    let gameState = {};
-    let humanPlayerId = 0;
+    let state = {};
+    const humanPlayerId = 0;
     let selectedPlayerId = null;
+    let currentAction = null;
 
-    // --- Game Logic Functions ---
+    // --- Utility Functions ---
+    const getPlayer = (id) => state.players.find(p => p.id === id);
+    const findPlayersByRole = (roleKey, includeUndercover = false) => {
+        if (includeUndercover && roleKey === 'CANHVE') {
+            return state.players.filter(p => p.role === 'CANHVE' || p.role === 'SATTHU_NGAM');
+        }
+        return state.players.filter(p => p.role === roleKey);
+    };
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // --- UI & Rendering Functions ---
+    function logMessage(message, type = 'info') {
+        const p = document.createElement('p');
+        p.innerHTML = message; // Use innerHTML to allow bold tags
+        const typeClasses = {
+            action: 'text-yellow-300',
+            death: 'text-red-400 font-semibold',
+            reveal: 'text-cyan-300',
+            system: 'text-purple-300',
+            info: 'text-gray-300'
+        };
+        p.className = `mb-1 ${typeClasses[type] || typeClasses.info}`;
+        dom.statusLog.appendChild(p);
+        dom.statusLog.scrollTop = dom.statusLog.scrollHeight;
+    }
+
+    function showModal(title, body, closable = true) {
+        dom.modalTitle.textContent = title;
+        dom.modalBody.innerHTML = body;
+        dom.modalCloseBtn.style.display = closable ? 'inline-block' : 'none';
+        dom.modal.classList.remove('opacity-0', 'pointer-events-none');
+        dom.modalContent.classList.remove('scale-95');
+    }
+
+    function hideModal() {
+        dom.modal.classList.add('opacity-0', 'pointer-events-none');
+        dom.modalContent.classList.add('scale-95');
+    }
+
+    function renderGameBoard() {
+        dom.playersContainer.innerHTML = '';
+        state.players.forEach(p => {
+            const playerCard = document.createElement('div');
+            playerCard.className = 'player-card';
+            playerCard.dataset.id = p.id;
+            
+            let statusHTML = '';
+            if (!p.isAlive) {
+                statusHTML = `<div class="status-overlay"><svg viewBox="0 0 24 24" fill="currentColor" class="status-overlay-icon text-gray-400"><path d="M19 6.4L17.6 5L12 10.6L6.4 5L5 6.4l5.6 5.6L5 17.6L6.4 19l5.6-5.6l5.6 5.6l1.4-1.4l-5.6-5.6L19 6.4Z"></path></svg></div>`;
+            } else if (p.status.includes('INJURED')) {
+                statusHTML = `<div class="status-overlay">${STATUS_ICONS.INJURED}</div>`;
+            } else if (p.status.includes('PROTECTED')) {
+                statusHTML = `<div class="status-overlay">${STATUS_ICONS.PROTECTED}</div>`;
+            }
+            
+            const cardHTML = `
+                <div class="glow-border">
+                    <div class="card aspect-[3/4.2] ${p.isHuman || !p.isAlive ? 'is-flipped' : ''} ${p.isAlive ? '' : 'player-dead'}" data-id="${p.id}">
+                        <div class="card-inner">
+                            <div class="card-face card-back">
+                                ${CARD_BACK_ICON}
+                            </div>
+                            <div class="card-face card-front">
+                                <div class="card-front-icon text-white">${p.trueRole.svg}</div>
+                                <div class="card-front-text">
+                                    <p class="font-bold font-cinzel text-sm leading-tight">${p.publicRoleName}</p>
+                                    <p class="text-xs text-gray-400">${p.name}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${statusHTML}
+            `;
+            playerCard.innerHTML = cardHTML;
+            dom.playersContainer.appendChild(playerCard);
+        });
+        addCardEventListeners();
+    }
+    
+    function addCardEventListeners() {
+        document.querySelectorAll('.player-card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (currentAction) {
+                    const id = parseInt(card.dataset.id);
+                    handlePlayerSelection(id);
+                }
+            });
+        });
+    }
+
+    function highlightSelectablePlayers(playerIds, showSelected = true) {
+        document.querySelectorAll('.player-card').forEach(c => {
+            const cardDiv = c.querySelector('.glow-border');
+            cardDiv.classList.remove('selectable', 'selected');
+            const id = parseInt(c.dataset.id);
+            if(playerIds.includes(id)) {
+                cardDiv.classList.add('selectable');
+            }
+            if(showSelected && id === selectedPlayerId) {
+                cardDiv.classList.add('selected');
+            }
+        });
+    }
+    
+    function updateActionButtons(buttons = []) {
+        dom.actionButtons.innerHTML = '';
+        if (buttons.length === 0) return;
+
+        buttons.forEach(btnInfo => {
+            const button = document.createElement('button');
+            button.textContent = btnInfo.text;
+            button.className = 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50 text-white font-bold py-2 px-5 rounded-lg';
+            button.onclick = btnInfo.onClick;
+            button.disabled = btnInfo.disabled || false;
+            dom.actionButtons.appendChild(button);
+        });
+    }
+    
+    // --- Game Logic & Flow ---
     
     function initGame() {
-        logMessage("Bắt đầu ván mới. Các vai trò đang được phân phát...");
+        logMessage("Bắt đầu ván mới. Các vai trò đang được phân phát...", 'system');
+        updateActionButtons([]); // Clear start button
         
         let rolesToAssign = [...ROLE_SETUP];
-        // Shuffle roles
         for (let i = rolesToAssign.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [rolesToAssign[i], rolesToAssign[j]] = [rolesToAssign[j], rolesToAssign[i]];
         }
 
-        gameState = {
+        state = {
             round: 1,
             phase: 'INIT',
             players: [],
             gameOver: false,
             winner: null,
-            actionLog: [],
             nightActions: {},
         };
 
         for (let i = 0; i < 8; i++) {
             const roleKey = rolesToAssign[i];
-            const roleInfo = ROLES[roleKey];
-            gameState.players.push({
+            const trueRole = ROLES[roleKey];
+            state.players.push({
                 id: i,
                 name: `Người chơi ${i + 1}`,
                 isHuman: i === humanPlayerId,
                 role: roleKey,
-                publicRole: roleInfo.publicName ? ROLES[roleKey] : roleInfo, // Sát thủ ngầm shows as Cảnh Vệ
-                trueRole: roleInfo,
-                team: roleInfo.team,
+                trueRole: trueRole,
+                publicRoleName: trueRole.publicName || trueRole.name,
+                team: trueRole.team,
                 isAlive: true,
-                status: [], // 'INJURED', 'PROTECTED', 'HEALING'
+                status: [], // 'INJURED', 'PROTECTED_GUARD', 'PROTECTED_BODYGUARD'
                 knownInfo: {},
                 abilities: {
                     deepInvestigate: roleKey === 'THAMTU' ? 1 : 0,
-                    canHeal: false,
-                    canGuardAttack: false,
-                    canAssassinate: false,
-                    pledgedTo: null,
-                    canBetray: false,
+                    canHeal: roleKey === 'CANVE' ? 1 : 0,
+                    canGuardAttack: roleKey === 'CANVE' ? 1 : 0,
                     assassinationCooldown: 0,
-                    guardCooldown: 0,
+                    guardAttackCooldown: 0,
+                },
+                internal: {
+                    pledgedTo: null,
                 }
             });
         }
         
-        // Initial knowledge setup
+        // Initial knowledge
         const king = findPlayersByRole('NHAVUA')[0];
         const detective = findPlayersByRole('THAMTU')[0];
         const bodyguard = findPlayersByRole('CANVE')[0];
-        const assassins = findPlayersByRole('SIEU_SATTHU').concat(findPlayersByRole('SATTHU_NGAM'));
-        const guards = findPlayersByRole('CANHVE', true); // True to get all, including undercover
+        const assassins = [...findPlayersByRole('SIEU_SATTHU'), ...findPlayersByRole('SATTHU_NGAM')];
+        const allGuards = findPlayersByRole('CANHVE', true);
 
-        if (king && detective) {
-            king.knownInfo[detective.id] = 'Thám Tử';
-            detective.knownInfo[king.id] = 'Nhà Vua';
-        }
-        if (bodyguard && king) bodyguard.knownInfo[king.id] = 'Nhà Vua';
-        if (bodyguard && guards.length > 0) {
-           guards.forEach(g => bodyguard.knownInfo[g.id] = 'Cảnh Vệ');
-        }
-        assassins.forEach(a1 => {
-            assassins.forEach(a2 => {
-                if (a1.id !== a2.id) a1.knownInfo[a2.id] = a2.trueRole.name;
-            });
-        });
+        if(king && detective) { king.knownInfo[detective.id] = 'Thám Tử'; detective.knownInfo[king.id] = 'Nhà Vua'; }
+        if(bodyguard && king) { bodyguard.knownInfo[king.id] = 'Nhà Vua'; }
+        if(bodyguard) { allGuards.forEach(g => bodyguard.knownInfo[g.id] = 'Cảnh Vệ'); }
+        assassins.forEach(a1 => assassins.forEach(a2 => { if (a1.id !== a2.id) a1.knownInfo[a2.id] = a2.trueRole.name; }));
 
         renderGameBoard();
-        revealHumanPlayerCard();
-        setTimeout(startGameLoop, 2000);
+        
+        setTimeout(() => {
+            const humanPlayer = getPlayer(humanPlayerId);
+            let initialInfo = `Bạn là <b>${humanPlayer.trueRole.name}</b>.`;
+            const knownRoles = Object.entries(humanPlayer.knownInfo);
+            if (knownRoles.length > 0) {
+                initialInfo += "<br>Bạn biết: " + knownRoles.map(([id, role]) => `<b>${getPlayer(parseInt(id)).name}</b> là <b>${role}</b>`).join(', ');
+            }
+            showModal("Vai trò của bạn", initialInfo);
+        }, 1000);
+        
+        dom.modalCloseBtn.onclick = () => { 
+            hideModal();
+            gameLoop();
+        };
     }
 
-    function logMessage(message, type = 'info') {
-        const p = document.createElement('p');
-        p.textContent = `> ${message}`;
-        if(type === 'action') p.classList.add('text-yellow-400');
-        if(type === 'death') p.classList.add('text-red-500', 'font-bold');
-        if(type === 'reveal') p.classList.add('text-cyan-400');
-        statusLog.appendChild(p);
-        statusLog.scrollTop = statusLog.scrollHeight;
-    }
+    async function gameLoop() {
+        while(!state.gameOver) {
+            state.phase = 'NIGHT';
+            dom.roundCounter.textContent = `Đêm thứ ${state.round}`;
+            state.nightActions = { protections: [], attacks: [], investigations: [], others: {} };
 
-    function showModal(title, body, closable = true) {
-        modalTitle.textContent = title;
-        modalBody.innerHTML = body;
-        modal.classList.remove('hidden');
-        if (closable) {
-            modalCloseBtn.onclick = () => modal.classList.add('hidden');
-        } else {
-            modalCloseBtn.classList.add('hidden');
-        }
-    }
-
-    function findPlayersByRole(roleKey, includeUndercover = false) {
-        if(includeUndercover && roleKey === 'CANHVE'){
-             return gameState.players.filter(p => p.role === 'CANHVE' || p.role === 'SATTHU_NGAM');
-        }
-        return gameState.players.filter(p => p.role === roleKey);
-    }
-    
-    function getPlayer(id) {
-        return gameState.players.find(p => p.id === id);
-    }
-
-    // --- Rendering Functions ---
-
-    function renderGameBoard() {
-        playersContainer.innerHTML = '';
-        gameState.players.forEach(player => {
-            const playerDiv = document.createElement('div');
-            playerDiv.className = `player-container ${player.isAlive ? '' : 'player-dead'}`;
-            playerDiv.dataset.id = player.id;
-
-            let teamClass = 'role-hidden';
-            if (!player.isAlive || (getPlayer(humanPlayerId).knownInfo[player.id] && player.isAlive) || (player.isHuman && player.isAlive)) {
-                if(player.team === 'King') teamClass = 'team-king';
-                else if(player.team === 'Assassin') teamClass = 'team-assassin';
-                else if(player.team === 'Daredevil') teamClass = 'team-daredevil';
+            // --- NIGHT PHASES ---
+            // Simplified loop for clarity
+            await runPlayerActionPhase('KELIEUMINH', { actionText: 'ủng hộ', filter: (p,a) => a.id !== p.id });
+            await runPlayerActionPhase('THAMTU', { actionText: 'điều tra', filter: (p, a) => a.id !== p.id });
+            
+            await processKingPhase();
+            
+            await runPlayerActionPhase('CANHVE', { actionText: 'bảo vệ', filter: (p, a) => true });
+            
+            if (state.round > 1) {
+                const undercover = findPlayersByRole('SATTHU_NGAM')[0];
+                if (undercover && undercover.isAlive && undercover.abilities.assassinationCooldown === 0) {
+                    await runPlayerActionPhase('SATTHU_NGAM', { actionText: 'ám sát', filter: (p, a) => a.id !== p.id, roleAction: 'assassinate' });
+                } else {
+                     await runPlayerActionPhase('SATTHU_NGAM', { actionText: 'điều tra', filter: (p, a) => a.id !== p.id, roleAction: 'investigate' });
+                }
+            } else {
+                await runPlayerActionPhase('SATTHU_NGAM', { actionText: 'điều tra', filter: (p, a) => a.id !== p.id, roleAction: 'investigate' });
             }
             
-            const cardHTML = `
-                <div class="card" data-id="${player.id}">
-                    <div class="card-inner">
-                        <div class="card-face card-front ${teamClass}">
-                            ${player.isAlive ? player.publicRole.svg : '<svg viewBox="0 0 24 24" fill="currentColor" class="text-gray-500"><path d="M19 6.4L17.6 5L12 10.6L6.4 5L5 6.4l5.6 5.6L5 17.6L6.4 19l5.6-5.6l5.6 5.6l1.4-1.4l-5.6-5.6L19 6.4Z"></path></svg>'}
-                            <p class="font-bold text-xs mt-1">${player.isAlive ? player.publicRole.name : 'Đã chết'}</p>
-                            <p class="text-xs">${player.name}</p>
-                        </div>
-                        <div class="card-face card-back">
-                            ${CARD_BACK_ICON}
-                        </div>
-                    </div>
-                </div>
-                <div class="status-icons-container"></div>
-            `;
-            playerDiv.innerHTML = cardHTML;
-            playersContainer.appendChild(playerDiv);
-        });
-        updateStatusIcons();
-        addCardEventListeners();
-    }
-    
-    function updateStatusIcons() {
-        gameState.players.forEach(p => {
-            const container = playersContainer.querySelector(`.player-container[data-id="${p.id}"] .status-icons-container`);
-            if(!container) return;
-            container.innerHTML = '';
-            if (p.status.includes('PROTECTED')) {
-                const icon = document.createElement('div');
-                icon.className = 'status-icon';
-                icon.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-blue-500"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Z"></path></svg>`;
-                icon.title = 'Được bảo vệ';
-                container.appendChild(icon);
+            await runPlayerActionPhase('SIEU_SATTHU', { actionText: 'giết', filter: (p, a) => a.id !== p.id });
+            
+            if (state.round > 1) {
+                await processBodyguardSpecialPhase();
             }
-            if (p.status.includes('INJURED')) {
-                 const icon = document.createElement('div');
-                icon.className = 'status-icon';
-                icon.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-red-500"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"></path></svg>`;
-                icon.title = 'Bị trọng thương';
-                container.appendChild(icon);
-            }
-        });
-    }
 
-    function addCardEventListeners() {
-        document.querySelectorAll('.player-container .card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                const id = parseInt(e.currentTarget.dataset.id);
-                handlePlayerSelection(id);
+            // --- NIGHT RESOLUTION ---
+            await resolveNight();
+
+            if (state.gameOver) break;
+
+            // --- DAY PHASE ---
+            state.phase = 'DAY';
+            dom.roundCounter.textContent = `Ngày thứ ${state.round} - Thảo luận`;
+            logMessage(`Trời sáng. Mọi người tập trung để thảo luận.`, 'system');
+            await sleep(5000); // Simulate discussion
+
+            // Post-round cleanup
+            state.players.forEach(p => {
+                if (p.abilities.assassinationCooldown > 0) p.abilities.assassinationCooldown--;
+                if (p.abilities.guardAttackCooldown > 0) p.abilities.guardAttackCooldown--;
             });
+
+            state.round++;
+            if (state.round > 7) {
+                endGame('TIME_UP');
+                break;
+            }
+        }
+        announceWinner();
+    }
+    
+    function runPlayerActionPhase(roleKey, config) {
+        return new Promise(async resolve => {
+            const actors = state.players.filter(p => p.isAlive && p.role === roleKey);
+            for (const actor of actors) {
+                const validTargets = state.players.filter(p => p.isAlive && config.filter(p, actor));
+                
+                if (actor.isHuman) {
+                    await promptHumanAction(actor, validTargets, config);
+                } else {
+                    // AI Logic
+                    await sleep(1000 + Math.random() * 500);
+                    const targetId = validTargets[Math.floor(Math.random() * validTargets.length)]?.id;
+                    if (targetId !== undefined) recordAction(actor.id, targetId, config.roleAction || actor.role);
+                }
+            }
+            resolve();
         });
     }
 
-    function revealHumanPlayerCard() {
-        const humanPlayer = getPlayer(humanPlayerId);
-        const card = document.querySelector(`.card[data-id="${humanPlayerId}"]`);
-        if(card && !card.classList.contains('is-flipped')){
-            card.classList.add('is-flipped');
-        }
-        
-        let initialInfo = `Bạn là <b>${humanPlayer.trueRole.name}</b>.`;
-        const knownRoles = Object.entries(humanPlayer.knownInfo);
-        if (knownRoles.length > 0) {
-            initialInfo += " Bạn biết: ";
-            initialInfo += knownRoles.map(([id, role]) => `${getPlayer(parseInt(id)).name} là ${role}`).join(', ');
-        }
+    function promptHumanAction(actor, validTargets, config) {
+        return new Promise(resolve => {
+            currentAction = { actor, validTargets, config, resolve };
+            selectedPlayerId = null;
 
-        showModal("Vai trò của bạn", initialInfo);
-    }
-    
-    function updateActionButtons(buttons) {
-        actionButtonsContainer.innerHTML = '';
-        if(!buttons || buttons.length === 0) {
-             const startBtn = document.createElement('button');
-             startBtn.textContent = 'Bắt đầu trò chơi';
-             startBtn.className = 'bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-6 rounded-lg shadow-md';
-             startBtn.onclick = initGame;
-             actionButtonsContainer.appendChild(startBtn);
-             return;
-        }
-
-        buttons.forEach(btnInfo => {
-            const button = document.createElement('button');
-            button.textContent = btnInfo.text;
-            button.className = 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md disabled:bg-gray-500 disabled:cursor-not-allowed';
-            button.onclick = btnInfo.onClick;
-            button.disabled = btnInfo.disabled || false;
-            actionButtonsContainer.appendChild(button);
-        });
-    }
-    
-    function highlightSelectablePlayers(playerIds, showSelected = true) {
-        document.querySelectorAll('.player-container .card').forEach(c => {
-            c.classList.remove('selectable', 'selected');
-            const id = parseInt(c.dataset.id);
-            if(playerIds.includes(id)) {
-                c.classList.add('selectable');
-            }
-            if(showSelected && id === selectedPlayerId) {
-                c.classList.add('selected');
-            }
+            logMessage(`Lượt của bạn: Hãy chọn một người để <b>${config.actionText}</b>.`, 'action');
+            highlightSelectablePlayers(validTargets.map(p => p.id), false);
+            
+            updateActionButtons([{
+                text: `Xác nhận ${config.actionText}`,
+                onClick: () => {
+                    if (selectedPlayerId !== null) {
+                        recordAction(actor.id, selectedPlayerId, config.roleAction || actor.role);
+                        highlightSelectablePlayers([]);
+                        updateActionButtons([]);
+                        currentAction.resolve();
+                        currentAction = null;
+                    } else {
+                        logMessage("Bạn phải chọn một mục tiêu.");
+                    }
+                }
+            }]);
         });
     }
 
     function handlePlayerSelection(id) {
-       const player = getPlayer(id);
-       const human = getPlayer(humanPlayerId);
-       if(!player.isAlive) return;
-
-       const selectableCards = document.querySelectorAll('.selectable');
-       if (selectableCards.length === 0) return;
-        
-       let isSelectable = false;
-       selectableCards.forEach(c => {
-           if(parseInt(c.dataset.id) === id) isSelectable = true;
-       });
-
-       if(!isSelectable) return;
-        
-       selectedPlayerId = id;
-       highlightSelectablePlayers(gameState.players.filter(p => p.isAlive).map(p => p.id), true);
-       logMessage(`Bạn đã chọn ${player.name}.`);
+        if (!currentAction) return;
+        const { validTargets } = currentAction;
+        if (validTargets.some(p => p.id === id)) {
+            selectedPlayerId = id;
+            logMessage(`Bạn đã chọn <b>${getPlayer(id).name}</b>.`);
+            highlightSelectablePlayers(validTargets.map(p => p.id), true);
+        }
     }
 
-    // --- AI Logic ---
-    function getAiChoice(actor, validTargets) {
-        // Simple AI: choose a random valid target.
-        if (validTargets.length === 0) return null;
-        
-        const { role } = actor;
-        const livingPlayers = gameState.players.filter(p => p.isAlive);
-        
-        // Assassins prioritize high-value targets
-        if (role === 'SIEU_SATTHU') {
-            const king = findPlayersByRole('NHAVUA')[0];
-            const bodyguard = findPlayersByRole('CANVE')[0];
-            if (king && king.isAlive && !king.status.includes('PROTECTED') && bodyguard && (bodyguard.status.includes('INJURED') || !bodyguard.isAlive) && validTargets.includes(king.id)) {
-                return king.id; // Go for the win
-            }
-            if (bodyguard && bodyguard.isAlive && validTargets.includes(bodyguard.id)) {
-                return bodyguard.id; // Weaken the king
-            }
-        }
-        
-        // Guards protect high-value targets
-        if (role === 'CANHVE' || role === 'CANVE') {
-            const king = findPlayersByRole('NHAVUA')[0];
-            const detective = findPlayersByRole('THAMTU')[0];
-            if (king && king.isAlive && validTargets.includes(king.id)) return king.id;
-            if (detective && detective.isAlive && validTargets.includes(detective.id)) return detective.id;
-        }
-
-        return validTargets[Math.floor(Math.random() * validTargets.length)];
-    }
-
-
-    // --- Game Flow ---
-    
-    async function startGameLoop() {
-        while(!gameState.gameOver) {
-            roundCounter.textContent = `Đêm thứ ${gameState.round} - ${gameState.phase}`;
-            gameState.nightActions = { protections: [], investigations: [], attacks: [] };
-            
-            // PHASE: Daredevil
-            await runPhase('KELIEUMINH', 'ủng hộ', (actor, targetId) => {
-                gameState.nightActions.daredevilSupport = targetId;
-                logMessage(`${actor.name} đã hành động.`, 'action');
-            }, (actor) => actor.abilities.pledgedTo === null);
-            
-            // PHASE: Detective
-            await runPhase('THAMTU', 'điều tra', (actor, targetId) => {
-                gameState.nightActions.investigations.push({ actorId: actor.id, targetId: targetId, isDeep: false }); // Simplified
-                logMessage(`${actor.name} đã hành động.`, 'action');
-            });
-            
-            // PHASE: King
-            await processKingPhase();
-            
-            // PHASE: Guards
-            const royalGuards = gameState.players.filter(p => p.isAlive && p.role === 'CANHVE' && p.abilities.guardCooldown === 0);
-            for (const guard of royalGuards) {
-                await runPlayerTurn(guard, 'bảo vệ', (actor, targetId) => {
-                    gameState.nightActions.protections.push({ actorId: actor.id, targetId: targetId });
-                    logMessage(`${actor.name} đã hành động.`, 'action');
-                });
-            }
-            
-            const bodyguard = gameState.players.find(p => p.isAlive && p.role === 'CANVE' && p.abilities.guardCooldown === 0);
-            if (bodyguard) {
-                 await runPlayerTurn(bodyguard, 'bảo vệ', (actor, targetId) => {
-                    gameState.nightActions.protections.push({ actorId: actor.id, targetId: targetId });
-                    logMessage(`${actor.name} đã hành động.`, 'action');
-                });
-            }
-
-            // PHASE: Undercover Assassin
-            if (gameState.round > 1) {
-                 await runPhase('SATTHU_NGAM', 'ám sát', (actor, targetId) => {
-                    if (actor.abilities.assassinationCooldown === 0) {
-                        gameState.nightActions.attacks.push({ actorId: actor.id, targetId: targetId, type: 'assassination' });
-                        logMessage(`${actor.name} đã hành động.`, 'action');
-                    }
-                }, p => p.abilities.canAssassinate);
-            } else {
-                 await runPhase('SATTHU_NGAM', 'điều tra', (actor, targetId) => {
-                     gameState.nightActions.investigations.push({ actorId: actor.id, targetId: targetId, isDeep: true }); // Undercover gets true role
-                     logMessage(`${actor.name} đã hành động.`, 'action');
-                });
-            }
-
-            // PHASE: Master Assassin
-            await runPhase('SIEU_SATTHU', 'ám sát', (actor, targetId) => {
-                gameState.nightActions.attacks.push({ actorId: actor.id, targetId: targetId, type: 'kill' });
-                logMessage(`${actor.name} đã hành động.`, 'action');
-            });
-            
-            // PHASE: Bodyguard round 2+ special
-            if (gameState.round > 1) {
-                 const bodyguard = findPlayersByRole('CANVE')[0];
-                 if(bodyguard && bodyguard.isAlive) {
-                    await processBodyguardSpecial(bodyguard);
-                 }
-            }
-            
-            // Resolution Phase
-            await processNight();
-            
-            if (gameState.gameOver) break;
-            
-            // Day Phase
-            await runDayPhase();
-
-            gameState.round++;
-            if (gameState.round > 7) {
-                endGame('TIME_UP');
-            }
-        }
-        
-        announceWinner();
-    }
-    
-    async function runPhase(roleKey, actionText, callback, condition = () => true) {
-        const actors = gameState.players.filter(p => p.isAlive && p.role === roleKey && condition(p));
-        for (const actor of actors) {
-            await runPlayerTurn(actor, actionText, callback);
+    function recordAction(actorId, targetId, type) {
+        const actor = getPlayer(actorId);
+        logMessage(`<b>${actor.name}</b> đã hành động.`, 'system');
+        switch (type) {
+            case 'KELIEUMINH': state.nightActions.others.daredevilSupport = targetId; break;
+            case 'THAMTU': state.nightActions.investigations.push({ actorId, targetId }); break;
+            case 'CANHVE': state.nightActions.protections.push({ actorId, targetId, type: 'GUARD' }); break;
+            case 'investigate': state.nightActions.investigations.push({ actorId, targetId, isUndercover: true }); break;
+            case 'assassinate': state.nightActions.attacks.push({ actorId, targetId, type: 'ASSASSINATION' }); break;
+            case 'SIEU_SATTHU': state.nightActions.attacks.push({ actorId, targetId, type: 'KILL' }); break;
+            case 'bodyguard_heal': getPlayer(actorId).status.push('HEALING'); break;
+            case 'bodyguard_attack': state.nightActions.attacks.push({ actorId, targetId, type: 'GUARD_ATTACK' }); break;
         }
     }
     
-    function runPlayerTurn(actor, actionText, callback) {
-        return new Promise(resolve => {
-            gameState.phase = `${actor.trueRole.name} hành động`;
-            roundCounter.textContent = `Đêm thứ ${gameState.round} - ${gameState.phase}`;
-            selectedPlayerId = null;
-            
-            let validTargets = gameState.players.filter(p => p.isAlive && p.id !== actor.id).map(p => p.id);
-            if(actionText === 'bảo vệ') {
-                validTargets = gameState.players.filter(p => p.isAlive).map(p => p.id);
-            }
-
-            if (actor.isHuman) {
-                logMessage(`Lượt của bạn. Hãy chọn một người để ${actionText}.`);
-                highlightSelectablePlayers(validTargets, false);
-                const button = {
-                    text: `Xác nhận ${actionText}`,
-                    onClick: () => {
-                        if (selectedPlayerId !== null) {
-                            highlightSelectablePlayers([], false);
-                            callback(actor, selectedPlayerId);
-                            updateActionButtons([]);
-                            resolve();
-                        } else {
-                            logMessage("Bạn phải chọn một mục tiêu.");
-                        }
-                    }
-                };
-                updateActionButtons([button]);
-            } else {
-                logMessage(`${actor.name} đang hành động...`);
-                setTimeout(() => {
-                    const targetId = getAiChoice(actor, validTargets);
-                    if (targetId !== null) {
-                        callback(actor, targetId);
-                    }
-                    resolve();
-                }, 1500 + Math.random() * 1000);
-            }
-        });
-    }
-
     async function processKingPhase() {
-        return new Promise(resolve => {
-            gameState.phase = 'Nhà Vua nhận tin';
-            roundCounter.textContent = `Đêm thứ ${gameState.round} - ${gameState.phase}`;
-            const king = findPlayersByRole('NHAVUA')[0];
-            const detectiveReport = gameState.nightActions.investigations.find(inv => getPlayer(inv.actorId).role === 'THAMTU');
-            
-            if (king && king.isAlive && detectiveReport) {
-                 const target = getPlayer(detectiveReport.targetId);
-                 let result = target.publicRole.name;
-                 
-                 // Daredevil interference
-                 if (gameState.nightActions.daredevilSupport === target.id) {
-                     const daredevil = findPlayersByRole('KELIEUMINH')[0];
-                     if(daredevil && daredevil.abilities.pledgedTo === null) {
-                        result = 'Không xác định';
-                     }
-                 }
-                
-                const message = `Thám Tử đã điều tra ${target.name} và kết quả là: <b>${result}</b>.`;
-                
-                if (king.isHuman) {
-                    showModal('Báo cáo từ Thám Tử', message);
-                } else {
-                    logMessage(`Nhà Vua đã nhận được báo cáo từ Thám tử.`);
-                }
+        const king = findPlayersByRole('NHAVUA')[0];
+        const detectiveReport = state.nightActions.investigations.find(inv => getPlayer(inv.actorId).role === 'THAMTU');
+        if (king && king.isAlive && detectiveReport) {
+            const target = getPlayer(detectiveReport.targetId);
+            let result = target.publicRoleName;
+            // Daredevil interference
+            if (state.nightActions.others.daredevilSupport === target.id) result = 'Không xác định';
+
+            const message = `Thám Tử đã điều tra <b>${target.name}</b>. Kết quả: <b>${result}</b>.`;
+            if (king.isHuman) {
+                showModal('Báo cáo từ Thám Tử', message);
+                return new Promise(resolve => { dom.modalCloseBtn.onclick = () => { hideModal(); resolve(); } });
+            } else {
+                logMessage('Nhà Vua đã nhận được báo cáo.', 'system');
                 king.knownInfo[target.id] = result;
             }
-            setTimeout(resolve, 1500);
-        });
+        }
+        await sleep(1000);
     }
-    
-    async function processBodyguardSpecial(bodyguard) {
-         return new Promise(resolve => {
-            gameState.phase = 'Cận Vệ hành động đặc biệt';
-            roundCounter.textContent = `Đêm thứ ${gameState.round} - ${gameState.phase}`;
-            
-            let choices = [];
-            if(bodyguard.status.includes('INJURED') && bodyguard.abilities.canHeal) {
-                choices.push({ text: 'Hồi Sức', action: 'heal' });
-            }
-            if(bodyguard.abilities.canGuardAttack) {
-                 choices.push({ text: 'Chém', action: 'attack' });
-            }
-            choices.push({ text: 'Bỏ qua', action: 'skip'});
 
-            if (bodyguard.isHuman && choices.length > 1) {
-                logMessage('Lượt của bạn: Cận Vệ có thể dùng kỹ năng đặc biệt.');
+    async function processBodyguardSpecialPhase() {
+        const bodyguard = findPlayersByRole('CANVE')[0];
+        if (!bodyguard || !bodyguard.isAlive) return;
+
+        const choices = [];
+        if (bodyguard.status.includes('INJURED') && bodyguard.abilities.canHeal > 0) {
+            choices.push({ text: 'Hồi Sức', action: 'bodyguard_heal' });
+        }
+        if (bodyguard.abilities.canGuardAttack > 0 && bodyguard.abilities.guardAttackCooldown === 0) {
+            choices.push({ text: 'Chém', action: 'bodyguard_attack' });
+        }
+        if (choices.length === 0) return;
+
+        if (bodyguard.isHuman) {
+            logMessage('Bạn có thể dùng kỹ năng đặc biệt của Cận Vệ.', 'action');
+            return new Promise(resolve => {
                 const buttons = choices.map(c => ({
                     text: c.text,
-                    onClick: () => {
-                        handleBodyguardChoice(bodyguard, c.action).then(resolve);
+                    onClick: async () => {
+                        updateActionButtons([]);
+                        if (c.action === 'bodyguard_attack') {
+                            const validTargets = state.players.filter(p => p.isAlive && p.id !== bodyguard.id);
+                            await promptHumanAction(bodyguard, validTargets, { actionText: 'chém', roleAction: c.action });
+                        } else {
+                            recordAction(bodyguard.id, bodyguard.id, c.action);
+                        }
+                        resolve();
                     }
                 }));
+                buttons.push({ text: 'Bỏ qua', onClick: () => { updateActionButtons([]); resolve(); }});
                 updateActionButtons(buttons);
-            } else { // AI
-                setTimeout(() => {
-                    let choice = 'skip';
-                    if (choices.find(c => c.action === 'heal')) choice = 'heal'; // AI always heals if possible
-                    else if (choices.find(c => c.action === 'attack')) choice = 'attack'; // Then attacks
-                    
-                    if(choice !== 'skip') {
-                        const targetId = getAiChoice(bodyguard, gameState.players.filter(p => p.isAlive && p.id !== bodyguard.id).map(p => p.id));
-                        if(targetId !== null) {
-                            if(choice === 'attack') {
-                                gameState.nightActions.attacks.push({ actorId: bodyguard.id, targetId, type: 'guard_attack' });
-                            } else {
-                                bodyguard.status.push('HEALING');
-                            }
-                        }
-                    }
-                    resolve();
-                }, 1500);
-            }
-        });
-    }
-
-    function handleBodyguardChoice(bodyguard, action) {
-        return new Promise(resolve => {
-            updateActionButtons([]);
-            if (action === 'heal') {
-                bodyguard.status.push('HEALING');
-                logMessage('Bạn đã chọn Hồi Sức.', 'action');
-                resolve();
-            } else if (action === 'attack') {
-                logMessage('Chọn mục tiêu để Chém.');
-                let validTargets = gameState.players.filter(p => p.isAlive && p.id !== bodyguard.id).map(p => p.id);
-                highlightSelectablePlayers(validTargets, false);
-                const button = {
-                    text: 'Xác nhận Chém',
-                    onClick: () => {
-                        if (selectedPlayerId !== null) {
-                            gameState.nightActions.attacks.push({ actorId: bodyguard.id, targetId: selectedPlayerId, type: 'guard_attack' });
-                            highlightSelectablePlayers([], false);
-                            updateActionButtons([]);
-                            resolve();
-                        } else {
-                            logMessage('Bạn phải chọn mục tiêu.');
-                        }
-                    }
-                };
-                updateActionButtons([button]);
-            } else { // skip
-                resolve();
-            }
-        });
-    }
-    
-    async function processNight() {
-        return new Promise(resolve => {
-            gameState.phase = 'Màn đêm buông xuống';
-            roundCounter.textContent = `Đêm thứ ${gameState.round} - ${gameState.phase}`;
-            logMessage('Bình minh sắp lên, các hành động trong đêm được xử lý...');
-            
-            // Reset protection status
-            gameState.players.forEach(p => p.status = p.status.filter(s => s !== 'PROTECTED'));
-
-            // Apply protections
-            gameState.nightActions.protections.forEach(({ actorId, targetId }) => {
-                const target = getPlayer(targetId);
-                if (target && target.isAlive) {
-                    target.status.push('PROTECTED');
-                    getPlayer(actorId).status.push('GUARDING'); // Mark who is guarding
-                }
             });
-
-            // Process attacks
-            let deaths = [];
-            gameState.nightActions.attacks.forEach(({ actorId, targetId, type }) => {
-                const attacker = getPlayer(actorId);
-                const target = getPlayer(targetId);
-
-                if (!target.isAlive) return;
-
-                logMessage(`${attacker.name} tấn công ${target.name}.`);
-
-                if (target.status.includes('PROTECTED')) {
-                    // Find a protector
-                    const protector = gameState.players.find(p => 
-                        p.status.includes('GUARDING') &&
-                        gameState.nightActions.protections.some(prot => prot.actorId === p.id && prot.targetId === target.id)
-                    );
-
-                    if (protector) {
-                        logMessage(`${target.name} đã được ${protector.name} bảo vệ!`);
-                        if (protector.status.includes('INJURED')) {
-                            logMessage(`${protector.name} đã hy sinh để bảo vệ mục tiêu!`, 'death');
-                            deaths.push({ player: protector, reason: `hy sinh bảo vệ ${target.name}` });
-                        } else {
-                            logMessage(`${protector.name} bị trọng thương!`);
-                            protector.status.push('INJURED');
-                            protector.abilities.guardCooldown = 1; // Cooldown for 1 round
-                        }
-                        // Attack is blocked
-                        if(type === 'assassination') attacker.abilities.assassinationCooldown = 1;
-                    }
-                } else {
-                    // Direct hit
-                    if(target.role === 'CANVE' && target.isAlive && !target.status.includes('INJURED')) {
-                         logMessage(`${target.name} bị trọng thương!`);
-                         target.status.push('INJURED');
-                         if(type === 'assassination') {
-                            logMessage(`${attacker.name} đã bị Cận Vệ hạ gục!`, 'death');
-                            deaths.push({ player: attacker, reason: 'ám sát Cận Vệ thất bại'});
-                         }
-                    } else {
-                        logMessage(`${target.name} đã bị hạ gục!`, 'death');
-                        deaths.push({ player: target, reason: `bị ${attacker.trueRole.name} ám sát` });
-                        if(target.role === 'NHAVUA') {
-                            endGame('ASSASSIN_WIN');
-                        }
-                    }
-                }
-            });
-
-            deaths.forEach(({player}) => player.isAlive = false);
-            
-            // Reset guarding status
-            gameState.players.forEach(p => {
-                p.status = p.status.filter(s => s !== 'GUARDING');
-                if(p.abilities.guardCooldown > 0) p.abilities.guardCooldown--;
-                if(p.abilities.assassinationCooldown > 0) p.abilities.assassinationCooldown--;
-            });
-
-            // Update board and statuses
-            renderGameBoard();
-            
-            setTimeout(resolve, 3000);
-        });
-    }
-    
-    async function runDayPhase() {
-        return new Promise(resolve => {
-            gameState.phase = 'Thảo luận';
-            roundCounter.textContent = `Ngày thứ ${gameState.round} - ${gameState.phase}`;
-            logMessage('Mọi người tập trung tại sảnh chính. Hãy thảo luận để tìm ra kẻ địch.');
-            
-            // Allow 30 seconds for "discussion"
-            let countdown = 15;
-            const interval = setInterval(() => {
-                roundCounter.textContent = `Thảo luận - còn ${countdown--}s`;
-                if(countdown < 0) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 1000);
-        });
-    }
-    
-    function endGame(reason) {
-        if(gameState.gameOver) return;
-        gameState.gameOver = true;
-        
-        const kingTeam = gameState.players.filter(p => p.team === 'King' && p.isAlive).length;
-        const assassinTeam = gameState.players.filter(p => p.team === 'Assassin' && p.isAlive).length;
-
-        if (reason === 'ASSASSIN_WIN') {
-            gameState.winner = 'Sát Thủ';
-        } else if (reason === 'KING_WIN' || (reason === 'TIME_UP' && kingTeam > 0)) {
-            gameState.winner = 'Nhà Vua';
-        } else if (assassinTeam === 0) {
-            gameState.winner = 'Nhà Vua';
-        } else if (kingTeam === 0 && assassinTeam > 0) {
-             gameState.winner = 'Sát Thủ';
         } else {
-            gameState.winner = 'Hòa'; // Should not happen often
+            // AI bodyguard logic
+            const choice = bodyguard.status.includes('INJURED') ? 'bodyguard_heal' : 'bodyguard_attack';
+            if (choice === 'bodyguard_attack') {
+                const targets = state.players.filter(p => p.isAlive && p.id !== bodyguard.id);
+                const targetId = targets[Math.floor(Math.random() * targets.length)]?.id;
+                if(targetId !== undefined) recordAction(bodyguard.id, targetId, choice);
+            } else {
+                 recordAction(bodyguard.id, bodyguard.id, choice);
+            }
         }
     }
-    
-    function announceWinner() {
-        let title = "Trò chơi kết thúc!";
-        let body = `<h3>Phe ${gameState.winner} chiến thắng!</h3><hr class="my-2 border-gray-600">`;
+
+    async function resolveNight() {
+        logMessage("Màn đêm kết thúc. Các hành động đang được xử lý...", 'system');
+        // Clear previous protections
+        state.players.forEach(p => p.status = p.status.filter(s => !s.startsWith('PROTECTED')));
+
+        // Apply new protections (Bodyguard is stronger)
+        const bodyguard = findPlayersByRole('CANVE')[0];
+        if (bodyguard && bodyguard.isAlive) {
+            const king = findPlayersByRole('NHAVUA')[0];
+            if (king && king.isAlive) {
+                king.status.push('PROTECTED_BODYGUARD');
+            }
+        }
+        state.nightActions.protections.forEach(({ actorId, targetId }) => {
+            const target = getPlayer(targetId);
+            if (target && target.isAlive) target.status.push('PROTECTED_GUARD');
+        });
+
+        // Resolve attacks
+        const deaths = new Set();
+        for (const { actorId, targetId, type } of state.nightActions.attacks) {
+            const attacker = getPlayer(actorId);
+            let target = getPlayer(targetId);
+            if (!target.isAlive) continue;
+
+            logMessage(`<b>${attacker.name}</b> tấn công <b>${target.name}</b>...`);
+            await sleep(500);
+
+            if (target.status.includes('PROTECTED_BODYGUARD')) {
+                 const bodyguard = findPlayersByRole('CANVE')[0];
+                 logMessage(`Đòn tấn công bị <b>Cận Vệ</b> chặn lại!`);
+                 if (bodyguard.status.includes('INJURED')) {
+                     logMessage(`<b>Cận Vệ</b> đã hy sinh để bảo vệ mục tiêu!`, 'death');
+                     deaths.add(bodyguard.id);
+                 } else {
+                     logMessage(`<b>Cận Vệ</b> bị trọng thương!`);
+                     bodyguard.status.push('INJURED');
+                 }
+                 continue; // Attack is fully blocked
+            }
+
+            if (target.status.includes('PROTECTED_GUARD')) {
+                 const protector = state.players.find(p => p.role === 'CANHVE' && state.nightActions.protections.some(pr => pr.actorId === p.id && pr.targetId === target.id));
+                 if (protector) {
+                     logMessage(`Đòn tấn công bị <b>${protector.name}</b> chặn lại!`);
+                     if (protector.status.includes('INJURED')) {
+                         logMessage(`<b>${protector.name}</b> đã hy sinh để bảo vệ mục tiêu!`, 'death');
+                         deaths.add(protector.id);
+                     } else {
+                         logMessage(`<b>${protector.name}</b> bị trọng thương!`);
+                         protector.status.push('INJURED');
+                     }
+                      if (type === 'ASSASSINATION') attacker.abilities.assassinationCooldown = 2; // Penalty
+                     continue; // Attack blocked
+                 }
+            }
+            
+            // Direct hit
+            if (type === 'ASSASSINATION' && target.role === 'CANVE' && !target.status.includes('INJURED')) {
+                logMessage(`Ám sát thất bại! <b>${attacker.name}</b> đã bị <b>Cận Vệ</b> hạ gục!`, 'death');
+                deaths.add(attacker.id);
+                target.status.push('INJURED');
+                logMessage(`<b>Cận Vệ</b> bị trọng thương!`);
+            } else {
+                logMessage(`<b>${target.name}</b> (${target.trueRole.name}) đã bị ám sát!`, 'death');
+                deaths.add(target.id);
+            }
+        }
         
-        gameState.players.forEach(p => {
-            const card = playersContainer.querySelector(`.card[data-id="${p.id}"]`);
-            if(card && !card.classList.contains('is-flipped')) {
+        deaths.forEach(id => getPlayer(id).isAlive = false);
+        renderGameBoard();
+        await sleep(2000);
+        checkWinCondition();
+    }
+
+    function checkWinCondition() {
+        const king = findPlayersByRole('NHAVUA')[0];
+        const assassins = state.players.filter(p => p.team === 'Assassin' && p.isAlive);
+        
+        if (!king.isAlive) {
+            endGame('ASSASSIN_WIN');
+        } else if (assassins.length === 0) {
+            endGame('KING_WIN');
+        }
+    }
+
+    function endGame(reason) {
+        if (state.gameOver) return;
+        state.gameOver = true;
+        if (reason === 'ASSASSIN_WIN') state.winner = 'Sát Thủ';
+        else if (reason === 'KING_WIN') state.winner = 'Nhà Vua';
+        else if (reason === 'TIME_UP') {
+            const king = findPlayersByRole('NHAVUA')[0];
+            state.winner = king.isAlive ? 'Nhà Vua' : 'Sát Thủ';
+        }
+    }
+
+    function announceWinner() {
+        dom.roundCounter.textContent = 'Trò chơi kết thúc';
+        let title = "Trò chơi kết thúc!";
+        let body = `<h3 class="text-xl text-amber-300">Phe ${state.winner} chiến thắng!</h3><hr class="my-3 border-zinc-600">`;
+
+        state.players.forEach(p => {
+            const card = dom.playersContainer.querySelector(`.card[data-id="${p.id}"]`);
+            if (card && !card.classList.contains('is-flipped')) {
                 card.classList.add('is-flipped');
             }
-            body += `<p><b>${p.name}</b> là <b>${p.trueRole.name}</b> (${p.team})</p>`;
+            body += `<p class="text-left"><span class="font-bold w-28 inline-block">${p.name}:</span><span>${p.trueRole.name}</span></p>`;
         });
-        
         showModal(title, body, false);
-        
         updateActionButtons([{ text: 'Chơi lại', onClick: initGame }]);
     }
     
     // --- Initial Setup ---
-    modalCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
-    
     window.onload = () => {
-        updateActionButtons();
+        updateActionButtons([{
+            text: 'Bắt đầu trò chơi',
+            onClick: initGame
+        }]);
+        dom.modalCloseBtn.onclick = hideModal;
     };
 
 </script>
