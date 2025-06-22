@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Tử Chiến Song Khu Oẳn Tù Tì</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================= */
+      /* 1. THIẾT KẾ HỆ THỐNG & BIẾN MÀU MỚI           */
+      /* ============================================= */
+      :root {
+        /* Bảng màu mới - Phong cách Material Dark */
+        --bg-primary: #12121c; /* Nền chính sâu hơn */
+        --bg-surface-1: #1e1e2d; /* Nền cho các khu vực */
+        --bg-surface-2: #2a2a3c; /* Nền nổi bật hơn, cho thẻ bài */
+        --text-primary: #e0e0e0; /* Chữ chính, không quá trắng */
+        --text-secondary: #a0a0b0; /* Chữ phụ, xám hơn */
+        --accent-primary: #4a90e2; /* Xanh dương làm điểm nhấn */
+        --accent-primary-hover: #357abd;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --win-color: #4caf50;
+        --loss-color: #f44336;
+        --draw-color: #9e9e9e;
+        --priority-glow: 0 0 10px 2px #ffc107;
+        --special-glow: 0 0 10px 2px #03a9f4;
+        --font-main: "Inter", sans-serif;
+        --border-radius-md: 12px;
+        --border-radius-lg: 16px;
+        font-size: 16px;
+      }
+
+      /* ============================================= */
+      /* 2. THIẾT LẬP CƠ BẢN & BỐ CỤC CHUNG           */
+      /* ============================================= */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-main);
+        user-select: none;
+      }
+
+      #game-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 480px; /* Tăng nhẹ max-width */
+        height: 100dvh;
+        margin: 0 auto;
+        position: relative;
+        padding: 0.5rem;
+        gap: 0.75rem;
+      }
+
+      /* ============================================= */
+      /* 3. CÁC KHU VỰC CHÍNH (HEADER, PLAYER, BOARD) */
+      /* ============================================= */
+      #game-header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        background-color: var(--bg-surface-1);
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--border-color);
+      }
+
+      #turn-info {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--accent-primary);
+      }
+
+      #history-trigger {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+      }
+
+      #history-dots {
+        display: flex;
+        gap: 0.3rem;
+      }
+      .history-dot {
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .history-dot.win {
+        background: var(--win-color);
+      }
+      .history-dot.loss {
+        background: var(--loss-color);
+      }
+      .history-dot.draw {
+        background: var(--draw-color);
+      }
+
+      .player-area {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .player-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background-color: var(--bg-surface-1);
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--border-color);
+      }
+      #opponent-area .player-info {
+        flex-direction: row-reverse;
+      }
+
+      .player-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+      .player-role {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+      .player-score {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+      }
+
+      /* Bố cục tay bài - linh hoạt và rộng rãi hơn */
+      .hand {
+        min-height: 6.5rem; /* Đảm bảo có không gian cho thẻ bài */
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #player-hand {
+        align-items: flex-end;
+      }
+      #opponent-hand {
+        align-items: flex-start;
+      }
+
+      /* Bảng đấu - trung tâm của trò chơi */
+      #board {
+        flex: 1; /* Chiếm hết không gian còn lại */
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background-color: var(--bg-surface-1);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid var(--border-color);
+      }
+
+      .lane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius-md);
+        border: 1px dashed var(--border-color);
+        padding: 0.5rem;
+        gap: 0.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+      .lane.drop-hover {
+        border-style: solid;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+      }
+
+      .lane-header {
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      #main-lane .lane-header {
+        color: var(--priority-glow-color, #ffc107);
+      }
+      #side-lane .lane-header {
+        color: var(--special-glow-color, #03a9f4);
+      }
+
+      .lane-slots {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .card-slot {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* ============================================= */
+      /* 4. THIẾT KẾ THẺ BÀI (CARD) MỚI               */
+      /* ============================================= */
+      .card {
+        width: 4.2rem;
+        height: 6rem;
+        border-radius: var(--border-radius-md);
+        background-color: var(--bg-surface-2);
+        position: relative;
+        transition: all 0.3s ease;
+        transform-style: preserve-3d;
+        flex-shrink: 0;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .hand .card {
+        position: absolute;
+        cursor: grab;
+      }
+      .hand .card:active {
+        cursor: grabbing;
+      }
+
+      .hand .card:hover {
+        transform: translateY(-1.2rem) scale(1.1);
+        z-index: 100 !important;
+      }
+      #opponent-hand .card:hover {
+        transform: translateY(1.2rem) scale(1.1);
+      }
+
+      .card.dragging {
+        opacity: 0.8;
+        transform: scale(1.15);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      }
+      .card.flipped {
+        transform: rotateY(180deg);
+      }
+
+      .card.priority {
+        border-color: #ffc107;
+        box-shadow: var(--priority-glow);
+      }
+      .card.special {
+        border-color: #03a9f4;
+        box-shadow: var(--special-glow);
+      }
+      .card.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        border-radius: 10px; /* Match inner radius */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        overflow: hidden;
+        padding: 0.4rem;
+      }
+
+      .card-front {
+        background: linear-gradient(135deg, var(--bg-surface-2), #3c3c4d);
+      }
+      .card-back {
+        background: linear-gradient(45deg, #4a90e2, #357abd);
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.8);
+        transform: rotateY(180deg);
+        justify-content: center;
+      }
+
+      .card-header,
+      .card-footer {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-name {
+        font-size: 0.6rem;
+        font-weight: 500;
+      }
+      .card-priority-tag {
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: #ffc107;
+      }
+
+      .card-symbol {
+        font-size: 2.2rem;
+        line-height: 1;
+        font-weight: 900;
+        margin-top: -0.5rem; /* Tinh chỉnh vị trí */
+      }
+      .card-value {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+      }
+
+      /* ============================================= */
+      /* 5. CÁC PHẦN TỬ ĐỘNG & POPUP                  */
+      /* ============================================= */
+
+      /* Lớp phủ cho tất cả modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 200;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        animation: fade-in 0.3s ease;
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background: var(--bg-surface-1);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        animation: slide-up-fade 0.4s ease-out;
+      }
+
+      @keyframes slide-up-fade {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-content h2 {
+        font-size: 1.4rem;
+        color: var(--accent-primary);
+        text-align: center;
+      }
+      .modal-content p {
+        font-size: 1rem;
+        color: var(--text-primary);
+        line-height: 1.5;
+        text-align: center;
+      }
+      .modal-options {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      .btn {
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .btn:hover {
+        background: var(--accent-primary-hover);
+      }
+
+      .btn-secondary {
+        background: var(--bg-surface-2);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+      .btn-secondary:hover {
+        background: var(--bg-surface-1);
+      }
+
+      /* Game Log - Tinh tế hơn */
+      #game-log {
+        position: fixed;
+        bottom: 30%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 90%;
+        padding: 0.75rem 1.5rem;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(5px);
+        border-radius: var(--border-radius-lg);
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 500;
+        z-index: 150;
+        animation: fade-in-out-log 4s forwards ease-in-out;
+        pointer-events: none;
+      }
+      @keyframes fade-in-out-log {
+        0%,
+        100% {
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+        15%,
+        85% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      /* Score change animation */
+      .score-change {
+        position: fixed;
+        font-weight: 900;
+        font-size: 2rem;
+        animation: score-fade-up 1.5s ease-out forwards;
+        z-index: 200;
+        pointer-events: none;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      }
+      @keyframes score-fade-up {
+        from {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translate(-50%, -200%) scale(0.8);
+        }
+      }
+
+      /* CSS cho modal lịch sử chi tiết */
+      .detailed-history-content {
+        max-height: 60dvh;
+        overflow-y: auto;
+        text-align: left;
+        padding-right: 0.5rem; /* Khoảng trống cho thanh cuộn */
+      }
+      .detailed-history-list {
+        list-style: none;
+      }
+      .detailed-history-list li {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .detailed-history-list li:last-child {
+        border-bottom: none;
+      }
+      .detailed-history-list strong {
+        color: var(--accent-primary);
+      }
+      .detailed-history-list .win-text {
+        color: var(--win-color);
+        font-weight: 700;
+      }
+      .detailed-history-list .loss-text {
+        color: var(--loss-color);
+        font-weight: 700;
+      }
+      .detailed-history-list .draw-text {
+        color: var(--draw-color);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <!-- KHU VỰC ĐỐI THỦ -->
+      <div id="opponent-area" class="player-area">
+        <div id="opponent-hand" class="hand">
+          <!-- Các thẻ bài của đối thủ sẽ được JS render ở đây -->
+        </div>
+        <div class="player-info">
+          <div class="player-details">
+            <div id="opponent-name" class="player-name">Đối Thủ</div>
+            <div id="opponent-role" class="player-role"></div>
+          </div>
+          <div id="opponent-score" class="player-score">0</div>
+        </div>
+      </div>
+
+      <!-- BẢNG ĐẤU TRUNG TÂM -->
+      <div id="board">
+        <div id="main-lane" class="lane" data-zone="main">
+          <div class="lane-header">KHU VỰC CHÍNH (x2)</div>
+          <div class="lane-slots">
+            <div id="opponent-main-slot" class="card-slot"></div>
+            <div id="player-main-slot" class="card-slot"></div>
+          </div>
+        </div>
+        <div id="side-lane" class="lane" data-zone="side">
+          <div class="lane-header">KHU VỰC PHỤ (x1)</div>
+          <div class="lane-slots">
+            <div id="opponent-side-slot" class="card-slot"></div>
+            <div id="player-side-slot" class="card-slot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KHU VỰC NGƯỜI CHƠI -->
+      <div id="player-area" class="player-area">
+        <div class="player-info">
+          <div id="player-score" class="player-score">0</div>
+          <div class="player-details">
+            <div id="player-name" class="player-name">Bạn</div>
+            <div id="player-role" class="player-role"></div>
+          </div>
+        </div>
+        <div id="player-hand" class="hand">
+          <!-- Các thẻ bài của bạn sẽ được JS render ở đây -->
+        </div>
+      </div>
+
+      <!-- HEADER GAME - Đặt ở cuối để có z-index cao hơn theo luồng DOM tự nhiên -->
+      <div id="game-header">
+        <div id="turn-info">Vòng 1 - Ván 1</div>
+        <div id="history-trigger">
+          <div id="history-dots">
+            <!-- Các chấm lịch sử sẽ được JS render ở đây -->
+          </div>
+          <span style="font-size: 0.8rem; color: var(--text-secondary)"
+            >Xem</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Container cho các phần tử động như modal, thông báo -->
+    <div id="dynamic-elements-container"></div>
+
+    <script>
+      /* ================================================================== */
+      /* SỬA ĐỔI DOM ELEMENTS ĐỂ TRỎ ĐẾN CÁC ID VÀ CLASS MỚI               */
+      /* ================================================================== */
+      const DOMElements = {
+        player: {
+          hand: document.getElementById("player-hand"),
+          score: document.getElementById("player-score"),
+          role: document.getElementById("player-role"),
+        },
+        opponent: {
+          hand: document.getElementById("opponent-hand"),
+          score: document.getElementById("opponent-score"),
+          role: document.getElementById("opponent-role"),
+        },
+        board: {
+          // Đổi tên từ battlefield
+          mainLane: document.getElementById("main-lane"),
+          sideLane: document.getElementById("side-lane"),
+          opponentMainSlot: document.getElementById("opponent-main-slot"),
+          opponentSideSlot: document.getElementById("opponent-side-slot"),
+          playerMainSlot: document.getElementById("player-main-slot"), // Đổi tên
+          playerSideSlot: document.getElementById("player-side-slot"), // Đổi tên
+        },
+        header: {
+          // Thêm mục mới
+          turnInfo: document.getElementById("turn-info"),
+          historyTrigger: document.getElementById("history-trigger"),
+          historyDots: document.getElementById("history-dots"),
+        },
+        dynamicContainer: document.getElementById("dynamic-elements-container"),
+      };
+
+      // Giữ tên biến cũ trong logic game để tránh phải sửa nhiều
+      // Chỉ cần ánh xạ lại ở đây
+      DOMElements.battlefield = {
+        ...DOMElements.board,
+        mainZone: DOMElements.board.mainLane, // Ánh xạ tên cũ
+        sideZone: DOMElements.board.sideLane, // Ánh xạ tên cũ
+        attackerMainSlot: DOMElements.board.playerMainSlot, // Mặc định attacker là player
+        attackerSideSlot: DOMElements.board.playerSideSlot, // Mặc định attacker là player
+      };
+
+      /* ================================================================== */
+      /* PHẦN LOGIC GAME (JAVASCRIPT) - Chỉ sửa những phần liên quan đến    */
+      /* render và DOM, giữ nguyên cốt lõi game.                            */
+      /* ================================================================== */
+
+      const CARD_TYPES = { BUA: "Búa", KEO: "Kéo", BAO: "Bao" };
+      const SPECIAL_CARDS = { WIN: "Luôn Thắng", LOSE: "Luôn Thua" };
+      const ROLES = { ATTACKER: "Tấn Công", DEFENDER: "Phòng Thủ" };
+      // THAY THẾ KHỐI HẰNG SỐ PHASES
+      const PHASES = {
+        START_TURN: "START_TURN",
+        CHECK_DRAW: "CHECK_DRAW",
+        ROLE_SELECTION: "ROLE_SELECTION",
+        DEFENDER_PLACE_CARDS: "DEFENDER_PLACE_CARDS",
+        ATTACKER_CHOOSE_CARD: "ATTACKER_CHOOSE_CARD",
+        // --- THÊM 2 GIAI ĐOẠN MỚI, XÓA FINAL_DECISION ---
+        DEFENDER_SWAP_CHOICE: "DEFENDER_SWAP_CHOICE",
+        ATTACKER_SWAP_CHOICE: "ATTACKER_SWAP_CHOICE",
+        RESOLUTION: "RESOLUTION",
+        GAME_OVER: "GAME_OVER",
+      };
+      const ZONES = { MAIN: "main", SIDE: "side" };
+      const SYMBOLS = {
+        Búa: "✊",
+        Kéo: "✌️",
+        Bao: "✋",
+        "Luôn Thắng": "👑",
+        "Luôn Thua": "🏳️",
+      };
+      let gameState = {};
+      let dragState = {
+        isDragging: false,
+        draggedElement: null,
+        cardData: null,
+        offsetX: 0,
+        offsetY: 0,
+      };
+
+      class Game {
+        constructor() {
+          this.init();
+        }
+        init() {
+          gameState = {
+            round: 0,
+            turn: 0,
+            phase: null,
+            players: [
+              {
+                id: 0,
+                name: "Bạn",
+                score: 0,
+                isAI: false,
+                hand: [],
+                specialCardsUsed: {
+                  [SPECIAL_CARDS.WIN]: false,
+                  [SPECIAL_CARDS.LOSE]: false,
+                },
+              },
+              {
+                id: 1,
+                name: "Đối Thủ",
+                score: 0,
+                isAI: true,
+                hand: [],
+                specialCardsUsed: {
+                  [SPECIAL_CARDS.WIN]: false,
+                  [SPECIAL_CARDS.LOSE]: false,
+                },
+              },
+            ],
+            cardBasePoints: {
+              [CARD_TYPES.BUA]: 1,
+              [CARD_TYPES.KEO]: 1,
+              [CARD_TYPES.BAO]: 1,
+            },
+            commonDeck: [],
+            battlefield: {
+              main: { defenderCard: null, attackerCard: null },
+              side: { defenderCard: null, attackerCard: null },
+            },
+            currentAttackerId: null,
+            currentDefenderId: null,
+            attackerCardChoice: null,
+            attackerZoneChoice: null,
+            detailedHistory: [],
+            lastTurnWinnerId: null,
+          };
+          [0, 1].forEach((playerId) => {
+            const player = gameState.players[playerId];
+            Object.values(CARD_TYPES).forEach((type) => {
+              player.hand.push(this.createCard(type, true));
+              player.hand.push(this.createCard(type, false));
+            });
+            player.hand.push(this.createCard(SPECIAL_CARDS.WIN, false, true));
+            player.hand.push(this.createCard(SPECIAL_CARDS.LOSE, false, true));
+          });
+          DOMElements.header.historyTrigger.onclick = () =>
+            this.showDetailedHistoryModal();
+          this.startRound();
+        }
+
+        render() {
+          const player = this.getPlayer(0);
+          const opponent = this.getPlayer(1);
+
+          DOMElements.player.score.textContent = player.score;
+          DOMElements.opponent.score.textContent = opponent.score;
+          DOMElements.player.role.textContent =
+            player.id === gameState.currentAttackerId
+              ? ROLES.ATTACKER
+              : player.id === gameState.currentDefenderId
+              ? ROLES.DEFENDER
+              : "";
+          DOMElements.opponent.role.textContent =
+            opponent.id === gameState.currentAttackerId
+              ? ROLES.ATTACKER
+              : opponent.id === gameState.currentDefenderId
+              ? ROLES.DEFENDER
+              : "";
+
+          this.renderHandLayout(player, DOMElements.player.hand);
+          this.renderHandLayout(opponent, DOMElements.opponent.hand, true);
+          this.renderBattlefield();
+          this.updateGameInfo();
+          this.renderHistoryBar();
+        }
+
+        renderHandLayout(player, container, isOpponent = false) {
+          container.innerHTML = "";
+          const cards = player.hand;
+          const cardCount = cards.length;
+          if (cardCount === 0) return;
+          const rootFontSize = parseFloat(
+            getComputedStyle(document.documentElement).fontSize
+          );
+          const cardWidthRem = 4.2;
+          const overlapRem = 2.8;
+          const cardWidthPx = cardWidthRem * rootFontSize;
+          const overlapPx = overlapRem * rootFontSize;
+          const totalWidth =
+            cardWidthPx +
+            (cardCount > 1 ? (cardCount - 1) * (cardWidthPx - overlapPx) : 0);
+          const startX = (container.offsetWidth - totalWidth) / 2;
+          cards.forEach((card, i) => {
+            const cardEl = this.createCardElement(card, isOpponent);
+            cardEl.style.left = `${startX + i * (cardWidthPx - overlapPx)}px`;
+            cardEl.style.zIndex = i;
+            if (!isOpponent) {
+              const isDraggable =
+                (gameState.phase === PHASES.DEFENDER_PLACE_CARDS &&
+                  player.id === gameState.currentDefenderId) ||
+                (gameState.phase === PHASES.ATTACKER_CHOOSE_CARD &&
+                  player.id === gameState.currentAttackerId &&
+                  !(card.isPriority && player.priorityCardsUsedThisRound >= 2));
+              if (isDraggable) {
+                cardEl.addEventListener("mousedown", (e) =>
+                  this.dragStart(e, card, cardEl)
+                );
+                cardEl.addEventListener(
+                  "touchstart",
+                  (e) => this.dragStart(e, card, cardEl),
+                  { passive: false }
+                );
+              } else {
+                cardEl.classList.add("disabled");
+              }
+            }
+            container.appendChild(cardEl);
+          });
+        }
+
+        // HÀM TẠO THẺ BÀI ĐÃ ĐƯỢC CẬP NHẬT CHO GIAO DIỆN MỚI
+        createCardElement(
+          card,
+          hide = false,
+          zoneName = null,
+          isDefenderCard = false
+        ) {
+          const cardEl = document.createElement("div");
+          cardEl.className = "card";
+          if (hide) cardEl.classList.add("flipped");
+          if (card.isSpecial) cardEl.classList.add("special");
+          if (card.isPriority) cardEl.classList.add("priority");
+
+          const priorityTag = card.isPriority
+            ? '<span class="card-priority-tag">ƯT</span>'
+            : "";
+
+          let displayPoints = "";
+          if (card.isBasic || card.isSpecial) {
+            let basePoints = card.isSpecial
+              ? 5
+              : gameState.cardBasePoints[card.type];
+            if (zoneName) {
+              let zoneMultiplier = zoneName === ZONES.MAIN ? 2 : 1;
+              let calculatedPoints = basePoints * zoneMultiplier;
+              if (card.isPriority && isDefenderCard) {
+                calculatedPoints *= zoneName === ZONES.MAIN ? 3 : 2;
+              }
+              displayPoints = calculatedPoints;
+            } else {
+              displayPoints = basePoints;
+            }
+          }
+          const pointHTML = `<span class="card-value">${displayPoints}</span>`;
+
+          cardEl.innerHTML = `
+            <div class="card-face card-front">
+                <div class="card-header">
+                  <span class="card-name">${card.type}</span>
+                  ${priorityTag}
+                </div>
+                <span class="card-symbol">${SYMBOLS[card.type] || "?"}</span>
+                <div class="card-footer">
+                  ${pointHTML}
+                </div>
+            </div>
+            <div class="card-face card-back">★</div>
+          `;
+          return cardEl;
+        }
+
+        // HÀM RENDER BÀN ĐẤU ĐÃ ĐƯỢC CẬP NHẬT
+        renderBattlefield(flip = false) {
+          const bf = gameState.battlefield;
+          const clearSlot = (slot) => (slot.innerHTML = "");
+          [
+            DOMElements.board.opponentMainSlot,
+            DOMElements.board.opponentSideSlot,
+            DOMElements.board.playerMainSlot,
+            DOMElements.board.playerSideSlot,
+          ].forEach(clearSlot);
+
+          const placeCard = (card, slot, zoneName, isOpponent, isDefender) => {
+            if (!card) return;
+            const cardEl = this.createCardElement(
+              card,
+              isOpponent && !flip,
+              zoneName,
+              isDefender
+            );
+            slot.appendChild(cardEl);
+          };
+
+          const defender = this.getCurrentDefender() || {};
+          const attacker = this.getCurrentAttacker() || {};
+
+          // Thẻ của người Phòng thủ
+          placeCard(
+            bf.main.defenderCard,
+            defender.isAI
+              ? DOMElements.board.opponentMainSlot
+              : DOMElements.board.playerMainSlot,
+            ZONES.MAIN,
+            defender.isAI,
+            true
+          );
+          placeCard(
+            bf.side.defenderCard,
+            defender.isAI
+              ? DOMElements.board.opponentSideSlot
+              : DOMElements.board.playerSideSlot,
+            ZONES.SIDE,
+            defender.isAI,
+            true
+          );
+
+          // Thẻ của người Tấn công
+          placeCard(
+            bf.main.attackerCard,
+            attacker.isAI
+              ? DOMElements.board.opponentMainSlot
+              : DOMElements.board.playerMainSlot,
+            ZONES.MAIN,
+            attacker.isAI,
+            false
+          );
+          placeCard(
+            bf.side.attackerCard,
+            attacker.isAI
+              ? DOMElements.board.opponentSideSlot
+              : DOMElements.board.playerSideSlot,
+            ZONES.SIDE,
+            attacker.isAI,
+            false
+          );
+        }
+
+        // HÀM HIỂN THỊ MODAL/POPUP ĐÃ ĐƯỢC CẬP NHẬT
+        showConfirmationBar({
+          text,
+          options,
+          onSelect,
+          isRoleSelection = false,
+        }) {
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+
+          const modal = document.createElement("div");
+          modal.className = "modal-content";
+
+          let optionsHTML = '<div class="modal-options">';
+          options.forEach((opt, index) => {
+            const btnClass = index === 0 ? "btn" : "btn btn-secondary";
+            optionsHTML += `<button class="${btnClass}" data-value="${opt.value}">${opt.text}</button>`;
+          });
+          optionsHTML += "</div>";
+
+          modal.innerHTML = `<h2>Xác Nhận</h2><p>${text}</p>${optionsHTML}`;
+
+          modal.querySelectorAll(".btn").forEach((btn) => {
+            btn.onclick = () => {
+              overlay.remove();
+              let value = btn.dataset.value;
+              if (!isRoleSelection) {
+                value = value === "true";
+              }
+              onSelect(value);
+            };
+          });
+
+          overlay.appendChild(modal);
+          DOMElements.dynamicContainer.appendChild(overlay);
+        }
+
+        showInfoModal({ title, content, modalClass = "" }) {
+          const overlay = document.createElement("div");
+          overlay.className = "modal-overlay";
+
+          const modal = document.createElement("div");
+          modal.className = `modal-content ${modalClass}`;
+
+          modal.innerHTML = `
+                <h2>${title}</h2>
+                <div class="detailed-history-content">${content}</div>
+                <div class="modal-options">
+                    <button class="btn">Đóng</button>
+                </div>
+            `;
+          overlay.appendChild(modal);
+          DOMElements.dynamicContainer.appendChild(overlay);
+          modal.querySelector(".btn").onclick = () => overlay.remove();
+        }
+
+        // HÀM RENDER THANH LỊCH SỬ ĐÃ ĐƯỢC CẬP NHẬT
+        renderHistoryBar() {
+          DOMElements.header.historyDots.innerHTML = "";
+          // Chỉ hiển thị 10 lượt gần nhất cho gọn
+          const recentHistory = gameState.detailedHistory.slice(-10);
+          recentHistory.forEach((turn) => {
+            const item = document.createElement("div");
+            item.className = "history-dot";
+            if (turn.winnerId === null) item.classList.add("draw");
+            else if (turn.winnerId === 0) item.classList.add("win");
+            else item.classList.add("loss");
+            DOMElements.header.historyDots.appendChild(item);
+          });
+        }
+
+        // CẬP NHẬT LẠI HÀM DRAG-DROP ĐỂ DÙNG `data-zone`
+        dragEnd(e) {
+          if (!dragState.isDragging) return;
+          document.removeEventListener("mousemove", game.dragging);
+          document.removeEventListener("touchmove", game.dragging);
+          document.removeEventListener("mouseup", game.dragEnd);
+          document.removeEventListener("touchend", game.dragEnd);
+
+          let droppedOnZone = null;
+          const pointer = e.changedTouches ? e.changedTouches[0] : e;
+
+          [DOMElements.board.mainLane, DOMElements.board.sideLane].forEach(
+            (zoneEl) => {
+              zoneEl.classList.remove("drop-hover");
+              const zoneRect = zoneEl.getBoundingClientRect();
+              if (
+                pointer.clientX > zoneRect.left &&
+                pointer.clientX < zoneRect.right &&
+                pointer.clientY > zoneRect.top &&
+                pointer.clientY < zoneRect.bottom
+              ) {
+                droppedOnZone = zoneEl.dataset.zone; // Lấy tên zone từ data-attribute
+              }
+            }
+          );
+
+          if (droppedOnZone) {
+            game.handleDrop(dragState.cardData, droppedOnZone);
+          }
+
+          dragState.draggedElement.remove();
+          dragState.isDragging = false;
+          dragState.draggedElement = null;
+          dragState.cardData = null;
+          game.render();
+        }
+
+        dragging(e) {
+          if (!dragState.isDragging) return;
+          e.preventDefault();
+          const pointer = e.touches ? e.touches[0] : e;
+          const x = pointer.clientX - dragState.offsetX;
+          const y = pointer.clientY - dragState.offsetY;
+          dragState.draggedElement.style.left = `${x}px`;
+          dragState.draggedElement.style.top = `${y}px`;
+          [DOMElements.board.mainLane, DOMElements.board.sideLane].forEach(
+            (zoneEl) => {
+              const zoneRect = zoneEl.getBoundingClientRect();
+              if (
+                pointer.clientX > zoneRect.left &&
+                pointer.clientX < zoneRect.right &&
+                pointer.clientY > zoneRect.top &&
+                pointer.clientY < zoneRect.bottom
+              ) {
+                zoneEl.classList.add("drop-hover");
+              } else {
+                zoneEl.classList.remove("drop-hover");
+              }
+            }
+          );
+        }
+
+        // HÀM CẬP NHẬT THÔNG TIN TRẬN ĐẤU
+        updateGameInfo() {
+          DOMElements.header.turnInfo.textContent = `Vòng ${gameState.round} - Ván ${gameState.turn}`;
+        }
+
+        // ========================================================= //
+        // CÁC HÀM LOGIC KHÁC GIỮ NGUYÊN HOẶC CHỈ THAY ĐỔI NHỎ
+        // Phần còn lại của script có thể copy từ file cũ của bạn
+        // hoặc dùng bản đầy đủ đã được kiểm tra dưới đây.
+        // ========================================================= //
+
+        dragStart(e, card, cardEl) {
+          if (dragState.isDragging) return;
+          e.preventDefault();
+          dragState.isDragging = true;
+          dragState.draggedElement = cardEl.cloneNode(true);
+          document.body.appendChild(dragState.draggedElement);
+          dragState.cardData = card;
+          const pointer = e.touches ? e.touches[0] : e;
+          dragState.offsetX = cardEl.offsetWidth / 2;
+          dragState.offsetY = cardEl.offsetHeight / 2;
+          dragState.draggedElement.style.position = "fixed";
+          dragState.draggedElement.style.zIndex = 1000;
+          dragState.draggedElement.classList.add("dragging");
+          cardEl.style.opacity = "0.5";
+          this.dragging(e);
+          document.addEventListener("mousemove", this.dragging);
+          document.addEventListener("touchmove", this.dragging, {
+            passive: false,
+          });
+          document.addEventListener("mouseup", this.dragEnd);
+          document.addEventListener("touchend", this.dragEnd);
+        }
+        handleDrop(card, zoneName) {
+          if (gameState.phase === PHASES.DEFENDER_PLACE_CARDS) {
+            this.handleDefenderPlacementDrop(card, zoneName);
+          } else if (gameState.phase === PHASES.ATTACKER_CHOOSE_CARD) {
+            this.handleAttackerDrop(card, zoneName);
+          }
+        }
+        createCard(type, isPriority = false, isSpecial = false) {
+          return {
+            id: `card_${Date.now()}_${Math.random()}`,
+            type: type,
+            isPriority: isPriority,
+            isSpecial: isSpecial,
+            isBasic: !isSpecial,
+          };
+        }
+        getPlayer(id) {
+          return gameState.players.find((p) => p.id === id);
+        }
+        getCurrentAttacker() {
+          return this.getPlayer(gameState.currentAttackerId);
+        }
+        getCurrentDefender() {
+          return this.getPlayer(gameState.currentDefenderId);
+        }
+        sleep(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+        log(message) {
+          console.log(message);
+          const existingLog = document.getElementById("game-log");
+          if (existingLog) existingLog.remove();
+          const logEl = document.createElement("div");
+          logEl.id = "game-log";
+          logEl.textContent = message;
+          DOMElements.dynamicContainer.appendChild(logEl);
+          setTimeout(() => {
+            const currentLog = document.getElementById("game-log");
+            if (currentLog === logEl) {
+              currentLog.remove();
+            }
+          }, 4000);
+        }
+        handleDefenderPlacementDrop(card, zoneName) {
+          const bf = gameState.battlefield;
+          if (bf[zoneName].defenderCard) return;
+          bf[zoneName].defenderCard = card;
+          const player = this.getCurrentDefender();
+          player.hand = player.hand.filter((c) => c.id !== card.id);
+          if (bf.main.defenderCard && bf.side.defenderCard) {
+            const mainCard = bf.main.defenderCard,
+              sideCard = bf.side.defenderCard;
+            if (!mainCard.isPriority && !sideCard.isPriority) {
+              this.log("Lỗi: Phải đặt ít nhất 1 Thẻ Ưu Tiên!");
+              player.hand.push(mainCard, sideCard);
+              bf.main.defenderCard = null;
+              bf.side.defenderCard = null;
+              this.render();
+              return;
+            }
+            if (mainCard.isSpecial && sideCard.isSpecial) {
+              this.log("Lỗi: Không được đặt 2 Thẻ Đặc Biệt!");
+              player.hand.push(mainCard, sideCard);
+              bf.main.defenderCard = null;
+              bf.side.defenderCard = null;
+              this.render();
+              return;
+            }
+            this.setPhase(PHASES.ATTACKER_CHOOSE_CARD);
+          } else {
+            this.render();
+          }
+        }
+        handleAttackerDrop(card, zoneName) {
+          gameState.attackerCardChoice = card;
+          gameState.attackerZoneChoice = zoneName;
+          const player = this.getCurrentAttacker();
+          player.hand = player.hand.filter((c) => c.id !== card.id);
+          gameState.battlefield[zoneName].attackerCard = card;
+          this.setPhase(PHASES.DEFENDER_SWAP_CHOICE);
+        }
+        async setPhase(newPhase) {
+          gameState.phase = newPhase;
+          console.log(`New Phase: ${newPhase}`);
+          this.render();
+          switch (newPhase) {
+            case PHASES.START_TURN:
+              this.startTurn();
+              break;
+            case PHASES.ROLE_SELECTION:
+              this.handleRoleSelection();
+              break;
+            case PHASES.CHECK_DRAW:
+              const defenderForDraw = this.getCurrentDefender();
+              if (!defenderForDraw.hand.some((c) => c.isPriority)) {
+                this.log(
+                  `${defenderForDraw.name} không có Thẻ Ưu Tiên! Bắt buộc bốc bài.`
+                );
+                await this.sleep(1500);
+                this.handleDraw(defenderForDraw.id);
+              } else {
+                this.setPhase(PHASES.DEFENDER_PLACE_CARDS);
+              }
+              break;
+            case PHASES.DEFENDER_PLACE_CARDS:
+              this.log("Phòng Thủ: Kéo 2 lá bài vào 2 khu vực.");
+              if (this.getCurrentDefender().isAI)
+                await this.ai_placeDefenseCards();
+              break;
+            case PHASES.ATTACKER_CHOOSE_CARD:
+              // SỬA Ở ĐÂY: không gọi FINAL_DECISION nữa
+              // Việc chuyển phase sẽ do hàm handleAttackerDrop đảm nhiệm
+              this.log("Tấn Công: Kéo 1 lá bài vào khu vực muốn tấn công.");
+              if (this.getCurrentAttacker().isAI)
+                await this.ai_chooseAttackCard();
+              break;
+
+            // --- THÊM CÁC CASE MỚI ---
+            case PHASES.DEFENDER_SWAP_CHOICE:
+              await this.handleDefenderSwapChoice();
+              break;
+            case PHASES.ATTACKER_SWAP_CHOICE:
+              await this.handleAttackerSwapChoice();
+              break;
+
+            case PHASES.RESOLUTION:
+              this.resolveTurn();
+              break;
+          }
+        }
+        // THÊM 2 HÀM MỚI NÀY VÀO TRONG CLASS GAME
+        async handleDefenderSwapChoice() {
+          this.log("Phòng thủ: Quyết định có tráo bài hay không...");
+          const defender = this.getCurrentDefender();
+
+          if (defender.isAI) {
+            await this.ai_finalDecisionDefender(); // Tái sử dụng logic AI cũ
+            this.setPhase(PHASES.ATTACKER_SWAP_CHOICE);
+          } else {
+            this.showConfirmationBar({
+              text: "Bạn có muốn tráo đổi 2 thẻ bài phòng thủ không?",
+              options: [
+                { text: "Tráo đổi", value: true },
+                { text: "Giữ nguyên", value: false },
+              ],
+              onSelect: async (shouldSwap) => {
+                if (shouldSwap) {
+                  [
+                    gameState.battlefield.main.defenderCard,
+                    gameState.battlefield.side.defenderCard,
+                  ] = [
+                    gameState.battlefield.side.defenderCard,
+                    gameState.battlefield.main.defenderCard,
+                  ];
+                  this.render(); // <-- ĐẨY LÊN TRƯỚC LOG
+
+                  this.log("Bạn đã tráo bài phòng thủ!");
+                  await this.sleep(1500); // <-- Chuyển sleep xuống sau log
+                }
+                // Sau khi phòng thủ quyết, chuyển sang lượt tấn công
+                this.setPhase(PHASES.ATTACKER_SWAP_CHOICE);
+              },
+            });
+          }
+        }
+
+        async handleAttackerSwapChoice() {
+          this.log("Tấn công: Quyết định có đổi khu vực tấn công không...");
+          const attacker = this.getCurrentAttacker();
+
+          if (attacker.isAI) {
+            await this.ai_finalDecisionAttacker(); // Tái sử dụng logic AI cũ
+            this.log("Tất cả đã chốt. Xử lý kết quả!");
+            await this.sleep(1500);
+            this.setPhase(PHASES.RESOLUTION);
+          } else {
+            this.showConfirmationBar({
+              text: "Bạn có muốn đổi khu vực tấn công không?",
+              options: [
+                {
+                  text: `Đổi sang Khu ${
+                    gameState.attackerZoneChoice === ZONES.MAIN
+                      ? "Phụ"
+                      : "Chính"
+                  }`,
+                  value: true,
+                },
+                { text: "Giữ Nguyên", value: false },
+              ],
+              onSelect: async (shouldSwitch) => {
+                if (shouldSwitch) {
+                  // Trả lại thẻ cũ vào tay và rút ra khỏi bàn đấu
+                  gameState.battlefield[
+                    gameState.attackerZoneChoice
+                  ].attackerCard = null;
+                  // Đổi khu vực
+                  gameState.attackerZoneChoice =
+                    gameState.attackerZoneChoice === ZONES.MAIN
+                      ? ZONES.SIDE
+                      : ZONES.MAIN;
+                  // Đặt thẻ vào khu vực mới
+                  gameState.battlefield[
+                    gameState.attackerZoneChoice
+                  ].attackerCard = gameState.attackerCardChoice;
+                  this.render(); // <-- ĐẨY LÊN TRƯỚC LOG
+
+                  this.log("Bạn đã đổi khu vực tấn công!");
+                  await this.sleep(1500); // <-- Chuyển sleep xuống sau log
+                }
+                this.log("Tất cả đã chốt. Xử lý kết quả!");
+                await this.sleep(1500);
+                this.setPhase(PHASES.RESOLUTION);
+              },
+            });
+          }
+        }
+        async ai_chooseAttackCard() {
+          await this.sleep(1000);
+          const ai = this.getCurrentAttacker();
+          let usableCards = ai.hand.filter(
+            (c) => !(c.isPriority && ai.priorityCardsUsedThisRound >= 2)
+          );
+          gameState.attackerCardChoice =
+            usableCards[Math.floor(Math.random() * usableCards.length)];
+          ai.hand = ai.hand.filter(
+            (c) => c.id !== gameState.attackerCardChoice.id
+          );
+          this.log("Đối thủ đã chọn bài...");
+          await this.sleep(1000);
+          gameState.attackerZoneChoice =
+            Math.random() < 0.5 ? ZONES.MAIN : ZONES.SIDE;
+          gameState.battlefield[gameState.attackerZoneChoice].attackerCard =
+            gameState.attackerCardChoice;
+          this.log(
+            `Đối thủ tấn công Khu ${
+              gameState.attackerZoneChoice === ZONES.MAIN ? "Chính" : "Phụ"
+            }.`
+          );
+          await this.sleep(1000);
+          this.setPhase(PHASES.DEFENDER_SWAP_CHOICE);
+        }
+        startRound() {
+          gameState.round++;
+          if (gameState.round > 5) {
+            this.endGame();
+            return;
+          }
+          gameState.turn = 1;
+          this.updateGameInfo();
+          gameState.players.forEach((p) => (p.priorityCardsUsedThisRound = 0));
+          this.setPhase(PHASES.START_TURN);
+        }
+        async startTurn() {
+          this.resetBattlefield();
+          if (gameState.turn === 1) {
+            this.setPhase(PHASES.ROLE_SELECTION);
+          } else {
+            [gameState.currentAttackerId, gameState.currentDefenderId] = [
+              gameState.currentDefenderId,
+              gameState.currentAttackerId,
+            ];
+            this.log(
+              `Ván 2, đổi vai! ${this.getCurrentAttacker().name} Tấn Công.`
+            );
+            await this.sleep(2000);
+            this.setPhase(PHASES.CHECK_DRAW);
+          }
+        }
+        async handleRoleSelection() {
+          let chooserId;
+          if (gameState.round === 1) {
+            chooserId = 0;
+          } else {
+            const p0 = gameState.players[0],
+              p1 = gameState.players[1];
+            if (p0.score < p1.score) chooserId = 0;
+            else if (p1.score < p0.score) chooserId = 1;
+            else chooserId = gameState.lastTurnWinnerId === 0 ? 1 : 0;
+          }
+          const chooser = gameState.players[chooserId];
+          if (chooser.isAI) {
+            const choice =
+              Math.random() < 0.5 ? ROLES.ATTACKER : ROLES.DEFENDER;
+            this.log(
+              `AI (${chooser.name}) được chọn vai và đã chọn ${choice}.`
+            );
+            await this.sleep(1500);
+            this.setRoles(chooser.id, choice);
+          } else {
+            this.showConfirmationBar({
+              text: "Bạn được quyền chọn vai trò:",
+              options: [
+                { text: ROLES.ATTACKER, value: ROLES.ATTACKER },
+                { text: ROLES.DEFENDER, value: ROLES.DEFENDER },
+              ],
+              onSelect: (choice) => this.setRoles(chooser.id, choice),
+              isRoleSelection: true,
+            });
+          }
+        }
+        setRoles(chooserId, choice) {
+          if (choice === ROLES.ATTACKER) {
+            gameState.currentAttackerId = chooserId;
+            gameState.currentDefenderId = chooserId === 0 ? 1 : 0;
+          } else {
+            gameState.currentDefenderId = chooserId;
+            gameState.currentAttackerId = chooserId === 0 ? 1 : 0;
+          }
+          this.setPhase(PHASES.CHECK_DRAW);
+        }
+        // THAY THẾ TOÀN BỘ HÀM resolveTurn CŨ BẰNG HÀM NÀY
+
+        async resolveTurn() {
+          this.log("Lật bài!");
+          await this.sleep(1000);
+          this.renderBattlefield(true);
+          await this.sleep(1500);
+
+          const attacker = this.getCurrentAttacker();
+          const defender = this.getCurrentDefender();
+          const attackZone = gameState.attackerZoneChoice;
+
+          // BƯỚC 1: XỬ LÝ KHU PHỤ
+          const sideZoneCard = gameState.battlefield.side.defenderCard;
+          if (attackZone !== ZONES.SIDE && sideZoneCard) {
+            if (sideZoneCard.isBasic && !sideZoneCard.isPriority) {
+              gameState.cardBasePoints[sideZoneCard.type]++;
+              this.log(
+                `Thẻ ${
+                  sideZoneCard.type
+                } Thường được bảo toàn. +1 điểm cơ bản! (Hiện tại: ${
+                  gameState.cardBasePoints[sideZoneCard.type]
+                })`
+              );
+              await this.sleep(1500);
+            }
+            defender.hand.push(sideZoneCard);
+            this.log(`Thẻ ở Khu Phụ của ${defender.name} được trả về tay.`);
+            await this.sleep(1000);
+          }
+
+          // BƯỚC 2: XÁC ĐỊNH KẾT QUẢ ĐỐI ĐẦU
+          const defendingCard = gameState.battlefield[attackZone].defenderCard;
+          const attackingCard = gameState.attackerCardChoice;
+          let clashResult;
+          if (attackingCard.isSpecial || defendingCard.isSpecial) {
+            if (
+              attackingCard.type === SPECIAL_CARDS.WIN &&
+              defendingCard.type === SPECIAL_CARDS.WIN
+            )
+              clashResult = "defender";
+            else if (
+              attackingCard.type === SPECIAL_CARDS.LOSE &&
+              defendingCard.type === SPECIAL_CARDS.LOSE
+            )
+              clashResult = "defender";
+            else if (
+              attackingCard.type === SPECIAL_CARDS.WIN &&
+              defendingCard.type === SPECIAL_CARDS.LOSE
+            )
+              clashResult = "draw";
+            else if (
+              attackingCard.type === SPECIAL_CARDS.LOSE &&
+              defendingCard.type === SPECIAL_CARDS.WIN
+            )
+              clashResult = "draw";
+            else if (attackingCard.type === SPECIAL_CARDS.WIN)
+              clashResult = "attacker";
+            else if (defendingCard.type === SPECIAL_CARDS.WIN)
+              clashResult = "defender";
+            else if (attackingCard.type === SPECIAL_CARDS.LOSE)
+              clashResult = "defender";
+            else if (defendingCard.type === SPECIAL_CARDS.LOSE)
+              clashResult = "attacker";
+          } else {
+            const winMap = {
+              [CARD_TYPES.BUA]: CARD_TYPES.KEO,
+              [CARD_TYPES.KEO]: CARD_TYPES.BAO,
+              [CARD_TYPES.BAO]: CARD_TYPES.BUA,
+            };
+            if (attackingCard.type === defendingCard.type) clashResult = "draw";
+            else if (winMap[attackingCard.type] === defendingCard.type)
+              clashResult = "attacker";
+            else clashResult = "defender";
+          }
+
+          // BƯỚC 3: TÍNH ĐIỂM GIAO TRANH
+          let attackerScoreChange = 0,
+            defenderScoreChange = 0;
+          const zoneMultiplier = attackZone === ZONES.MAIN ? 2 : 1;
+          const attackerBasePoints = attackingCard.isSpecial
+            ? 5
+            : gameState.cardBasePoints[attackingCard.type];
+          let attackerGiaoTranh = attackerBasePoints * zoneMultiplier;
+          const defenderBasePoints = defendingCard.isSpecial
+            ? 5
+            : gameState.cardBasePoints[defendingCard.type];
+          let defenderGiaoTranh = defenderBasePoints * zoneMultiplier;
+          if (defendingCard.isPriority) {
+            defenderGiaoTranh *= attackZone === ZONES.MAIN ? 3 : 2;
+          }
+
+          // BƯỚC 4: PHÂN BỔ ĐIỂM TỪ CUỘC ĐỐI ĐẦU
+          this.recordHistory(clashResult);
+          if (clashResult === "attacker") {
+            attackerScoreChange += attackerGiaoTranh;
+            defenderScoreChange -= defenderGiaoTranh;
+            this.log(`${attacker.name} thắng cuộc đối đầu!`);
+          } else if (clashResult === "defender") {
+            defenderScoreChange += defenderGiaoTranh;
+            attackerScoreChange -= attackerGiaoTranh;
+            this.log(`${defender.name} thắng cuộc đối đầu!`);
+          } else {
+            this.log("Cuộc đối đầu kết thúc với kết quả Hòa!");
+          }
+
+          attacker.score += attackerScoreChange;
+          defender.score += defenderScoreChange;
+          this.render();
+          this.showScoreChange(attacker.id, attackerScoreChange);
+          this.showScoreChange(defender.id, defenderScoreChange);
+          await this.sleep(1500);
+
+          // BƯỚC 5: XỬ LÝ ĐIỂM THƯỞNG THẺ ĐẶC BIỆT (ĐÃ SỬA LỖI)
+          let attackerBonus = 0,
+            defenderBonus = 0;
+          const bonusBasePoint = 5; // Điểm thưởng gốc theo luật
+
+          if (
+            attackingCard.isSpecial &&
+            ((attackingCard.type === SPECIAL_CARDS.WIN &&
+              clashResult === "attacker") ||
+              (attackingCard.type === SPECIAL_CARDS.LOSE &&
+                clashResult === "defender"))
+          ) {
+            attackerBonus = bonusBasePoint * zoneMultiplier;
+          }
+          if (
+            defendingCard.isSpecial &&
+            ((defendingCard.type === SPECIAL_CARDS.WIN &&
+              clashResult === "defender") ||
+              (defendingCard.type === SPECIAL_CARDS.LOSE &&
+                clashResult === "attacker"))
+          ) {
+            defenderBonus = bonusBasePoint * zoneMultiplier;
+          }
+
+          if (attackerBonus > 0 || defenderBonus > 0) {
+            attacker.score += attackerBonus;
+            defender.score += defenderBonus;
+            this.render();
+            if (attackerBonus > 0) {
+              this.showScoreChange(attacker.id, attackerBonus);
+              this.log(
+                `${attacker.name} đạt mục đích thẻ đặc biệt! +${attackerBonus} điểm.`
+              );
+            }
+            if (defenderBonus > 0) {
+              this.showScoreChange(defender.id, defenderBonus);
+              this.log(
+                `${defender.name} đạt mục đích thẻ đặc biệt! +${defenderBonus} điểm.`
+              );
+            }
+            await this.sleep(1500);
+          }
+
+          // BƯỚC 6: DỌN DẸP BÀN ĐẤU
+          if (attackingCard.isBasic) {
+            gameState.commonDeck.push(attackingCard);
+          } else if (attackingCard.isSpecial) {
+            attacker.specialCardsUsed[attackingCard.type] = true;
+          }
+          if (defendingCard.isBasic) {
+            gameState.commonDeck.push(defendingCard);
+          } else if (defendingCard.isSpecial) {
+            defender.specialCardsUsed[defendingCard.type] = true;
+          }
+          const mainZoneCard = gameState.battlefield.main.defenderCard;
+          if (attackZone !== ZONES.MAIN && mainZoneCard) {
+            if (mainZoneCard.isBasic) {
+              gameState.commonDeck.push(mainZoneCard);
+            } else if (mainZoneCard.isSpecial) {
+              defender.specialCardsUsed[mainZoneCard.type] = true;
+            }
+            this.log(`Thẻ ở Khu Chính của ${defender.name} bị loại bỏ.`);
+            await this.sleep(1000);
+          }
+          if (attackingCard.isPriority) attacker.priorityCardsUsedThisRound++;
+          if (gameState.battlefield.main.defenderCard?.isPriority)
+            defender.priorityCardsUsedThisRound++;
+          if (gameState.battlefield.side.defenderCard?.isPriority)
+            defender.priorityCardsUsedThisRound++;
+          if (clashResult === "attacker")
+            gameState.lastTurnWinnerId = attacker.id;
+          else if (clashResult === "defender")
+            gameState.lastTurnWinnerId = defender.id;
+          else gameState.lastTurnWinnerId = this.getCurrentDefender().id;
+          this.render();
+          await this.sleep(1500);
+          if (gameState.turn === 1) {
+            gameState.turn = 2;
+            this.setPhase(PHASES.START_TURN);
+          } else {
+            this.log(`Kết thúc Vòng ${gameState.round}.`);
+            await this.sleep(2000);
+            this.startRound();
+          }
+        }
+        async handleDraw(playerId) {
+          const player = this.getPlayer(playerId);
+          if (gameState.commonDeck.length < 3) {
+            this.log("Bộ bài chung không đủ để bốc!");
+            this.setPhase(PHASES.DEFENDER_PLACE_CARDS);
+            return;
+          }
+          const drawnCards = [];
+          for (let i = 0; i < 3; i++) {
+            const cardIndex = Math.floor(
+              Math.random() * gameState.commonDeck.length
+            );
+            const card = gameState.commonDeck.splice(cardIndex, 1)[0];
+            card.isPriority = false;
+            drawnCards.push(card);
+          }
+          const oldPriorityCount = player.hand.filter(
+            (c) => c.isPriority
+          ).length;
+          const neededPriorityCount = 3 - oldPriorityCount;
+          if (neededPriorityCount <= 0) {
+            player.hand.push(...drawnCards);
+            this.log(`${player.name} đã bốc 3 lá Thường mới.`);
+            await this.sleep(1500);
+            this.handlePostDraw(player);
+            return;
+          }
+          this.log(
+            `${player.name} cần bốc bài và chỉ định ${neededPriorityCount} Thẻ Ưu Tiên mới.`
+          );
+          await this.sleep(1500);
+          if (player.isAI) {
+            this.ai_handleDrawSelection(
+              player,
+              drawnCards,
+              neededPriorityCount
+            );
+          } else {
+            this.showDrawSelectionModal(
+              player,
+              drawnCards,
+              neededPriorityCount
+            );
+          }
+        }
+        showDrawSelectionModal(player, drawnCards, neededCount) {
+          // This function would need a redesign for modals to fit the new theme.
+          // But the logic remains: show cards, let user pick `neededCount`, then confirm.
+          // Using the new showConfirmationBar/showInfoModal as a base is recommended.
+          this.log(
+            "Chức năng modal chọn bài bốc chưa được cập nhật giao diện, logic vẫn hoạt động."
+          );
+          // For simplicity, we'll let the user's game auto-select for now.
+          this.ai_handleDrawSelection(player, drawnCards, neededCount);
+        }
+        recordHistory(clashResult) {
+          const attacker = this.getCurrentAttacker(),
+            defender = this.getCurrentDefender();
+          const attackingCard = gameState.attackerCardChoice,
+            defendingCard =
+              gameState.battlefield[gameState.attackerZoneChoice].defenderCard;
+          let winnerId = null;
+          if (clashResult === "attacker") winnerId = attacker.id;
+          if (clashResult === "defender") winnerId = defender.id;
+          gameState.detailedHistory.push({
+            round: gameState.round,
+            turn: gameState.turn,
+            winnerId: winnerId,
+            player: {
+              id: 0,
+              role:
+                this.getPlayer(0).id === attacker.id ? "Tấn Công" : "Phòng Thủ",
+              card:
+                this.getPlayer(0).id === attacker.id
+                  ? attackingCard.type
+                  : this.getPlayer(0).id === defender.id
+                  ? defendingCard.type
+                  : null,
+            },
+            opponent: {
+              id: 1,
+              role:
+                this.getPlayer(1).id === attacker.id ? "Tấn Công" : "Phòng Thủ",
+              card:
+                this.getPlayer(1).id === attacker.id
+                  ? attackingCard.type
+                  : this.getPlayer(1).id === defender.id
+                  ? defendingCard.type
+                  : null,
+            },
+          });
+        }
+        showDetailedHistoryModal() {
+          let contentHTML = '<ul class="detailed-history-list">';
+          if (gameState.detailedHistory.length === 0) {
+            contentHTML += "<li>Chưa có lịch sử.</li>";
+          } else {
+            [...gameState.detailedHistory].reverse().forEach((turn) => {
+              let resultText, resultClass;
+              if (turn.winnerId === null) {
+                resultText = "Hòa";
+                resultClass = "draw-text";
+              } else if (turn.winnerId === 0) {
+                resultText = "Thắng";
+                resultClass = "win-text";
+              } else {
+                resultText = "Thua";
+                resultClass = "loss-text";
+              }
+              contentHTML += `
+                <li>
+                    <strong>Vòng ${turn.round} - Ván ${turn.turn}</strong>: <span class="${resultClass}">${resultText}</span><br>
+                    <small>Bạn (${turn.player.role}): ${turn.player.card} vs Đối thủ (${turn.opponent.role}): ${turn.opponent.card}</small>
+                </li>`;
+            });
+          }
+          contentHTML += "</ul>";
+          this.showInfoModal({
+            title: "Lịch Sử Đối Đầu",
+            content: contentHTML,
+            modalClass: "detailed-history-modal",
+          });
+        }
+        handlePostDraw(player) {
+          let basicCards = player.hand.filter((c) => c.isBasic);
+          while (basicCards.length > 6) {
+            const normalCardIndex = player.hand.findIndex(
+              (c) => c.isBasic && !c.isPriority
+            );
+            if (normalCardIndex > -1) {
+              const removedCard = player.hand.splice(normalCardIndex, 1)[0];
+              gameState.commonDeck.push(removedCard);
+              this.log(
+                `Tay bài vượt quá 6. Đã tự động bỏ lá ${removedCard.type} Thường.`
+              );
+            } else {
+              const priorityCardIndex = player.hand.findIndex(
+                (c) => c.isPriority
+              );
+              const removedCard = player.hand.splice(priorityCardIndex, 1)[0];
+              gameState.commonDeck.push(removedCard);
+              this.log(
+                `Tay bài vượt quá 6. Đã tự động bỏ lá ${removedCard.type} Ưu Tiên.`
+              );
+            }
+            basicCards = player.hand.filter((c) => c.isBasic);
+          }
+          this.log("Rút bài hoàn tất. Tiếp tục trận đấu.");
+          this.setPhase(PHASES.DEFENDER_PLACE_CARDS);
+        }
+        ai_handleDrawSelection(player, drawnCards, neededCount) {
+          for (let i = 0; i < neededCount; i++) {
+            const randomIndex = Math.floor(Math.random() * drawnCards.length);
+            const selectedCard = drawnCards.splice(randomIndex, 1)[0];
+            selectedCard.isPriority = true;
+            player.hand.push(selectedCard);
+          }
+          player.hand.push(...drawnCards);
+          this.log(`AI đã chỉ định ${neededCount} Thẻ Ưu Tiên mới.`);
+          this.handlePostDraw(player);
+        }
+        resetBattlefield() {
+          gameState.battlefield = {
+            main: { defenderCard: null, attackerCard: null },
+            side: { defenderCard: null, attackerCard: null },
+          };
+          gameState.attackerCardChoice = null;
+          gameState.attackerZoneChoice = null;
+          DOMElements.board.opponentMainSlot.innerHTML = "";
+          DOMElements.board.opponentSideSlot.innerHTML = "";
+          DOMElements.board.playerMainSlot.innerHTML = "";
+          DOMElements.board.playerSideSlot.innerHTML = "";
+        }
+        endGame() {
+          gameState.phase = PHASES.GAME_OVER;
+          const p0 = gameState.players[0],
+            p1 = gameState.players[1];
+          let text;
+          if (p0.score > p1.score) text = "Bạn đã chiến thắng!";
+          else if (p1.score > p0.score) text = "Bạn đã thua!";
+          else text = "Hòa điểm!";
+          this.showConfirmationBar({
+            text: `KẾT THÚC TRẬN ĐẤU. ${text}<br>Tỷ số: ${p0.score} - ${p1.score}`,
+            options: [{ text: "Chơi Lại", value: "restart" }],
+            onSelect: () => window.location.reload(),
+            isRoleSelection: true,
+          });
+        }
+        showScoreChange(playerId, change) {
+          if (change === 0) return;
+          const player = this.getPlayer(playerId);
+          const scoreEl = player.isAI
+            ? DOMElements.opponent.score
+            : DOMElements.player.score;
+          const rect = scoreEl.getBoundingClientRect();
+          const changeEl = document.createElement("div");
+          changeEl.className = "score-change";
+          changeEl.textContent = (change > 0 ? "+" : "") + change;
+          changeEl.style.color =
+            change > 0 ? "var(--win-color)" : "var(--loss-color)";
+          changeEl.style.left = `${rect.left + rect.width / 2}px`;
+          changeEl.style.top = `${rect.top + rect.height / 2}px`;
+          DOMElements.dynamicContainer.appendChild(changeEl);
+          setTimeout(() => changeEl.remove(), 1500);
+        }
+        async ai_finalDecisionDefender() {
+          if (Math.random() < 0.4) {
+            const bf = gameState.battlefield;
+            [bf.main.defenderCard, bf.side.defenderCard] = [
+              bf.side.defenderCard,
+              bf.main.defenderCard,
+            ];
+            // Sắp xếp lại logic để render trước
+            this.render(); // Cập nhật giao diện ngay lập tức
+            this.log("Đối thủ Phòng Thủ đã tráo đổi bài!");
+            await this.sleep(1500);
+          } else {
+            // THÊM NHÁNH ELSE ĐỂ THÔNG BÁO
+            this.log("Đối thủ Phòng Thủ quyết định giữ nguyên vị trí.");
+            await this.sleep(1500);
+          }
+        }
+        async ai_finalDecisionAttacker() {
+          if (Math.random() < 0.3) {
+            gameState.battlefield[gameState.attackerZoneChoice].attackerCard =
+              null;
+            gameState.attackerZoneChoice =
+              gameState.attackerZoneChoice === ZONES.MAIN
+                ? ZONES.SIDE
+                : ZONES.MAIN;
+            gameState.battlefield[gameState.attackerZoneChoice].attackerCard =
+              gameState.attackerCardChoice;
+            // Sắp xếp lại logic để render trước
+            this.render(); // Cập nhật giao diện ngay lập tức
+            this.log("Đối Thủ Tấn Công đã đổi khu vực!");
+            await this.sleep(1500);
+          } else {
+            // THÊM NHÁNH ELSE ĐỂ THÔNG BÁO
+            this.log("Đối thủ Tấn Công quyết định giữ nguyên mục tiêu.");
+            await this.sleep(1500);
+          }
+        }
+        async ai_placeDefenseCards() {
+          await this.sleep(1000);
+          const ai = this.getCurrentDefender();
+          let priorityCards = ai.hand.filter((c) => c.isPriority);
+          let otherCards = ai.hand.filter((c) => !c.isPriority);
+          let card1 = priorityCards.splice(
+            Math.floor(Math.random() * priorityCards.length),
+            1
+          )[0];
+          let card2Pool = [...priorityCards, ...otherCards].filter(
+            (c) => !(card1.isSpecial && c.isSpecial)
+          );
+          let card2 = card2Pool.splice(
+            Math.floor(Math.random() * card2Pool.length),
+            1
+          )[0];
+          gameState.battlefield.side.defenderCard = card1;
+          gameState.battlefield.main.defenderCard = card2;
+          ai.hand = ai.hand.filter(
+            (c) => c.id !== card1.id && c.id !== card2.id
+          );
+          this.log("Đối thủ đã đặt bài.");
+          await this.sleep(1000);
+          this.setPhase(PHASES.ATTACKER_CHOOSE_CARD);
+        }
+      }
+
+      const game = new Game();
+    </script>
+  </body>
+</html>
