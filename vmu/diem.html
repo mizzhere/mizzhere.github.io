@@ -832,8 +832,12 @@ function saveStateToLocalStorage() {
     }
 }
 
+// Thay thế toàn bộ hàm loadStateFromLocalStorage cũ bằng hàm này
 function loadStateFromLocalStorage() {
-    // Tải các cài đặt khác trước
+    const OLD_GRADES_KEY = "studentGrades";
+    const NEW_DATA_KEY = "studentGrades_v2"; // Sử dụng key mới
+    
+    // Tải các cài đặt giao diện trước
     const savedTargetRank = localStorage.getItem(LOCAL_STORAGE_TARGET_RANK_KEY);
     if (targetRankSelect && savedTargetRank) {
         targetRankSelect.value = savedTargetRank;
@@ -848,10 +852,61 @@ function loadStateFromLocalStorage() {
             if (semArrow) semArrow.classList.add("expanded");
         });
     }
-    // Gọi hàm nâng cấp sau khi giao diện đã sẵn sàng
-    upgradeAndLoadSavedData();
-}
 
+    // Xử lý tải dữ liệu môn học (điểm và hình thức thi)
+    const savedNewData = localStorage.getItem(NEW_DATA_KEY);
+    if (savedNewData) {
+        // --- TRƯỜNG HỢP 1: ĐÃ CÓ DỮ LIỆU MỚI ---
+        try {
+            const parsedData = JSON.parse(savedNewData);
+            subjects.forEach(subject => {
+                const savedSubject = parsedData[subject.id];
+                if (savedSubject) {
+                    // Cập nhật cả hình thức thi VÀO MẢNG JS
+                    subject.finalExamType = savedSubject.finalExamType;
+                    subject.practiceExamType = savedSubject.practiceExamType;
+
+                    // Cập nhật điểm VÀO GIAO DIỆN
+                    const gradeSelect = document.getElementById(subject.id);
+                    if (gradeSelect) {
+                        gradeSelect.value = savedSubject.grade || "";
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Lỗi khi đọc dữ liệu v2:", e);
+            localStorage.removeItem(NEW_DATA_KEY);
+        }
+    } else {
+        // --- TRƯỜNG HỢP 2: CHỈ CÓ DỮ LIỆU ĐIỂM CŨ ---
+        const savedOldGrades = localStorage.getItem(OLD_GRADES_KEY);
+        if (savedOldGrades) {
+            try {
+                const parsedOldGrades = JSON.parse(savedOldGrades);
+                // Chỉ điền điểm vào giao diện, hình thức thi giữ nguyên là null
+                Object.keys(parsedOldGrades).forEach(oldId => {
+                    const gradeSelect = document.getElementById(oldId);
+                    if (gradeSelect) {
+                        gradeSelect.value = parsedOldGrades[oldId] || "";
+                    }
+                });
+                showToast("Đã tải điểm từ phiên bản cũ. Hãy nhập hình thức thi và lưu lại.");
+            } catch(e) {
+                console.error("Lỗi khi đọc dữ liệu cũ:", e);
+            }
+        }
+    }
+    subjects.forEach(subject => {
+        const subjectDiv = document.querySelector(`.subject-item[data-id="${subject.id}"]`);
+        if (subjectDiv) {
+            const tagsContainer = subjectDiv.querySelector('.subject-tags-container');
+            const finalExamTypeDataAttribute = subjectDiv.querySelector('.subject-name-wrapper');
+            if(tagsContainer) tagsContainer.innerHTML = createTagsHTML(subject);
+            // Cập nhật cả data-attribute để bộ lọc hoạt động đúng
+            subjectDiv.dataset.finalExamType = subject.finalExamType || '';
+        }
+    });
+}
 // 7. HIỂN THỊ GIAO DIỆN & TÍNH TOÁN
 // ===================================
 //==============================================================
