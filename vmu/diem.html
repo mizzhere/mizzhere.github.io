@@ -62,12 +62,26 @@ select:focus, button:focus {
     gap: 1rem;
     margin-bottom: 1rem;
 }
+/* Sửa lại rule này */
+.stat-value {
+    font-size: 1rem; /* Có thể giảm xuống từ 1.125rem nếu muốn */
+    font-weight: 600;
+    color: #334155;
+}
+.target-item-value {
+    font-size: 1.25rem; /* Có thể giảm xuống từ 1.5rem nếu muốn */
+    font-weight: 700;
+    color: #15803d;
+}
 .stat-card {
     padding: 1rem;
     text-align: center;
     border-radius: 0.75rem;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
+    display: flex; /* THÊM DÒNG NÀY */
+    flex-direction: column; /* THÊM DÒNG NÀY */
+    justify-content: center; /* THÊM DÒNG NÀY */
 }
 .stat-card-label {
     font-size: 0.875rem;
@@ -79,7 +93,12 @@ select:focus, button:focus {
     line-height: 1;
 }
 .gpa-highlight { font-size: 2.75rem; }
-.rank-highlight { font-size: 1.75rem; padding-top: 1rem; }
+/* Sửa lại rule này */
+.rank-highlight {
+    font-size: 1.75rem; 
+    /* padding-top: 1rem; */ /* XÓA HOẶC CHÚ THÍCH DÒNG NÀY */
+    /* Các màu sắc giữ nguyên */
+}
 .rank-highlight.text-purple { color: #7e22ce; } .rank-highlight.text-blue { color: #1d4ed8; } .rank-highlight.text-green { color: #15803d; } .rank-highlight.text-yellow { color: #a16207; } .rank-highlight.text-orange { color: #c2410c; } .rank-highlight.text-red { color: #b91c1c; } .rank-highlight.text-slate { color: #475569; }
 
 .secondary-stats-bar {
@@ -296,6 +315,12 @@ select:focus, button:focus {
     font-size: 1.25rem;
     font-weight: 600;
     color: #1e3a8a; /* text-blue-800 */
+}
+.result-value {
+    font-weight: 700; /* Sử dụng font-weight cụ thể, ví dụ 700 cho bold */
+    line-height: 1.1;
+    font-size: 1.25rem; /* Kích thước chữ chung cho các giá trị phụ */
+    color: #1e293b; /* Màu chữ mặc định */
 }
 /* === Công cụ cho nhà phát triển === */
 #rawDataOutput { max-height: 400px; }
