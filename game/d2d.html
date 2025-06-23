@@ -1392,202 +1392,203 @@
         }
         // THAY THẾ TOÀN BỘ HÀM resolveTurn CŨ BẰNG HÀM NÀY
 
-        async resolveTurn() {
-          this.log("Lật bài!");
-          await this.sleep(1000);
-          this.renderBattlefield(true);
-          await this.sleep(1500);
+      // THAY THẾ TOÀN BỘ HÀM resolveTurn CŨ BẰNG HÀM NÀY
+async resolveTurn() {
+    this.log("Lật bài!");
+    await this.sleep(1000);
+    this.renderBattlefield(true); // Lật bài để lộ các thẻ
+    await this.sleep(1500);
 
-          const attacker = this.getCurrentAttacker();
-          const defender = this.getCurrentDefender();
-          const attackZone = gameState.attackerZoneChoice;
+    const attacker = this.getCurrentAttacker();
+    const defender = this.getCurrentDefender();
+    const attackZone = gameState.attackerZoneChoice;
 
-          // BƯỚC 1: XỬ LÝ KHU PHỤ
-          const sideZoneCard = gameState.battlefield.side.defenderCard;
-          if (attackZone !== ZONES.SIDE && sideZoneCard) {
-            if (sideZoneCard.isBasic && !sideZoneCard.isPriority) {
-              gameState.cardBasePoints[sideZoneCard.type]++;
-              this.log(
-                `Thẻ ${
-                  sideZoneCard.type
-                } Thường được bảo toàn. +1 điểm cơ bản! (Hiện tại: ${
-                  gameState.cardBasePoints[sideZoneCard.type]
-                })`
-              );
-              await this.sleep(1500);
-            }
-            defender.hand.push(sideZoneCard);
-            this.log(`Thẻ ở Khu Phụ của ${defender.name} được trả về tay.`);
-            await this.sleep(1000);
-          }
+    const attackingCard = gameState.attackerCardChoice;
+    const defendingCardInAttackedZone = gameState.battlefield[attackZone].defenderCard; // Thẻ phòng thủ ở khu vực bị tấn công
 
-          // BƯỚC 2: XÁC ĐỊNH KẾT QUẢ ĐỐI ĐẦU
-          const defendingCard = gameState.battlefield[attackZone].defenderCard;
-          const attackingCard = gameState.attackerCardChoice;
-          let clashResult;
-          if (attackingCard.isSpecial || defendingCard.isSpecial) {
-            if (
-              attackingCard.type === SPECIAL_CARDS.WIN &&
-              defendingCard.type === SPECIAL_CARDS.WIN
-            )
-              clashResult = "defender";
-            else if (
-              attackingCard.type === SPECIAL_CARDS.LOSE &&
-              defendingCard.type === SPECIAL_CARDS.LOSE
-            )
-              clashResult = "defender";
-            else if (
-              attackingCard.type === SPECIAL_CARDS.WIN &&
-              defendingCard.type === SPECIAL_CARDS.LOSE
-            )
-              clashResult = "draw";
-            else if (
-              attackingCard.type === SPECIAL_CARDS.LOSE &&
-              defendingCard.type === SPECIAL_CARDS.WIN
-            )
-              clashResult = "draw";
-            else if (attackingCard.type === SPECIAL_CARDS.WIN)
-              clashResult = "attacker";
-            else if (defendingCard.type === SPECIAL_CARDS.WIN)
-              clashResult = "defender";
-            else if (attackingCard.type === SPECIAL_CARDS.LOSE)
-              clashResult = "defender";
-            else if (defendingCard.type === SPECIAL_CARDS.LOSE)
-              clashResult = "attacker";
-          } else {
-            const winMap = {
-              [CARD_TYPES.BUA]: CARD_TYPES.KEO,
-              [CARD_TYPES.KEO]: CARD_TYPES.BAO,
-              [CARD_TYPES.BAO]: CARD_TYPES.BUA,
-            };
-            if (attackingCard.type === defendingCard.type) clashResult = "draw";
-            else if (winMap[attackingCard.type] === defendingCard.type)
-              clashResult = "attacker";
-            else clashResult = "defender";
-          }
+    // BƯỚC 1: Xử lý thẻ phòng thủ ở khu vực KHÔNG bị tấn công
+    // Xác định thẻ của người phòng thủ ở khu vực còn lại
+    let otherZoneDefenderCard = null;
+    if (attackZone === ZONES.MAIN) {
+        otherZoneDefenderCard = gameState.battlefield.side.defenderCard;
+    } else { // attackZone === ZONES.SIDE
+        otherZoneDefenderCard = gameState.battlefield.main.defenderCard;
+    }
 
-          // BƯỚC 3: TÍNH ĐIỂM GIAO TRANH
-          let attackerScoreChange = 0,
-            defenderScoreChange = 0;
-          const zoneMultiplier = attackZone === ZONES.MAIN ? 2 : 1;
-          const attackerBasePoints = attackingCard.isSpecial
-            ? 5
-            : gameState.cardBasePoints[attackingCard.type];
-          let attackerGiaoTranh = attackerBasePoints * zoneMultiplier;
-          const defenderBasePoints = defendingCard.isSpecial
-            ? 5
-            : gameState.cardBasePoints[defendingCard.type];
-          let defenderGiaoTranh = defenderBasePoints * zoneMultiplier;
-          if (defendingCard.isPriority) {
-            defenderGiaoTranh *= attackZone === ZONES.MAIN ? 3 : 2;
-          }
-
-          // BƯỚC 4: PHÂN BỔ ĐIỂM TỪ CUỘC ĐỐI ĐẦU
-          this.recordHistory(clashResult);
-          if (clashResult === "attacker") {
-            attackerScoreChange += attackerGiaoTranh;
-            defenderScoreChange -= defenderGiaoTranh;
-            this.log(`${attacker.name} thắng cuộc đối đầu!`);
-          } else if (clashResult === "defender") {
-            defenderScoreChange += defenderGiaoTranh;
-            attackerScoreChange -= attackerGiaoTranh;
-            this.log(`${defender.name} thắng cuộc đối đầu!`);
-          } else {
-            this.log("Cuộc đối đầu kết thúc với kết quả Hòa!");
-          }
-
-          attacker.score += attackerScoreChange;
-          defender.score += defenderScoreChange;
-          this.render();
-          this.showScoreChange(attacker.id, attackerScoreChange);
-          this.showScoreChange(defender.id, defenderScoreChange);
-          await this.sleep(1500);
-
-          // BƯỚC 5: XỬ LÝ ĐIỂM THƯỞNG THẺ ĐẶC BIỆT (ĐÃ SỬA LỖI)
-          let attackerBonus = 0,
-            defenderBonus = 0;
-          const bonusBasePoint = 5; // Điểm thưởng gốc theo luật
-
-          if (
-            attackingCard.isSpecial &&
-            ((attackingCard.type === SPECIAL_CARDS.WIN &&
-              clashResult === "attacker") ||
-              (attackingCard.type === SPECIAL_CARDS.LOSE &&
-                clashResult === "defender"))
-          ) {
-            attackerBonus = bonusBasePoint * zoneMultiplier;
-          }
-          if (
-            defendingCard.isSpecial &&
-            ((defendingCard.type === SPECIAL_CARDS.WIN &&
-              clashResult === "defender") ||
-              (defendingCard.type === SPECIAL_CARDS.LOSE &&
-                clashResult === "attacker"))
-          ) {
-            defenderBonus = bonusBasePoint * zoneMultiplier;
-          }
-
-          if (attackerBonus > 0 || defenderBonus > 0) {
-            attacker.score += attackerBonus;
-            defender.score += defenderBonus;
-            this.render();
-            if (attackerBonus > 0) {
-              this.showScoreChange(attacker.id, attackerBonus);
-              this.log(
-                `${attacker.name} đạt mục đích thẻ đặc biệt! +${attackerBonus} điểm.`
-              );
-            }
-            if (defenderBonus > 0) {
-              this.showScoreChange(defender.id, defenderBonus);
-              this.log(
-                `${defender.name} đạt mục đích thẻ đặc biệt! +${defenderBonus} điểm.`
-              );
-            }
-            await this.sleep(1500);
-          }
-
-          // BƯỚC 6: DỌN DẸP BÀN ĐẤU
-          if (attackingCard.isBasic) {
-            gameState.commonDeck.push(attackingCard);
-          } else if (attackingCard.isSpecial) {
-            attacker.specialCardsUsed[attackingCard.type] = true;
-          }
-          if (defendingCard.isBasic) {
-            gameState.commonDeck.push(defendingCard);
-          } else if (defendingCard.isSpecial) {
-            defender.specialCardsUsed[defendingCard.type] = true;
-          }
-          const mainZoneCard = gameState.battlefield.main.defenderCard;
-          if (attackZone !== ZONES.MAIN && mainZoneCard) {
-            if (mainZoneCard.isBasic) {
-              gameState.commonDeck.push(mainZoneCard);
-            } else if (mainZoneCard.isSpecial) {
-              defender.specialCardsUsed[mainZoneCard.type] = true;
-            }
-            this.log(`Thẻ ở Khu Chính của ${defender.name} bị loại bỏ.`);
-            await this.sleep(1000);
-          }
-          if (attackingCard.isPriority) attacker.priorityCardsUsedThisRound++;
-          if (gameState.battlefield.main.defenderCard?.isPriority)
-            defender.priorityCardsUsedThisRound++;
-          if (gameState.battlefield.side.defenderCard?.isPriority)
-            defender.priorityCardsUsedThisRound++;
-          if (clashResult === "attacker")
-            gameState.lastTurnWinnerId = attacker.id;
-          else if (clashResult === "defender")
-            gameState.lastTurnWinnerId = defender.id;
-          else gameState.lastTurnWinnerId = this.getCurrentDefender().id;
-          this.render();
-          await this.sleep(1500);
-          if (gameState.turn === 1) {
-            gameState.turn = 2;
-            this.setPhase(PHASES.START_TURN);
-          } else {
-            this.log(`Kết thúc Vòng ${gameState.round}.`);
-            await this.sleep(2000);
-            this.startRound();
-          }
+    if (otherZoneDefenderCard) {
+        // Nếu thẻ ở khu vực không bị tấn công là thẻ cơ bản KHÔNG ưu tiên, nó được bảo toàn và trả về tay
+        if (otherZoneDefenderCard.isBasic && !otherZoneDefenderCard.isPriority) {
+            gameState.cardBasePoints[otherZoneDefenderCard.type]++;
+            this.log(`Thẻ ${otherZoneDefenderCard.type} Thường của ${defender.name} ở khu vực không bị tấn công được bảo toàn. +1 điểm cơ bản! (Hiện tại: ${gameState.cardBasePoints[otherZoneDefenderCard.type]})`);
+            defender.hand.push(otherZoneDefenderCard);
+        } else {
+            // Các thẻ còn lại ở khu vực không bị tấn công (là thẻ Ưu Tiên Cơ Bản HOẶC thẻ Đặc Biệt): bị loại bỏ
+            this.discardCard(defender, otherZoneDefenderCard);
         }
+        await this.sleep(1000);
+    }
+
+    // BƯỚC 2: XÁC ĐỊNH KẾT QUẢ ĐỐI ĐẦU
+    let clashResult;
+    if (attackingCard.isSpecial || defendingCardInAttackedZone.isSpecial) {
+        // Logic so sánh thẻ đặc biệt và thẻ thường
+        if (
+            attackingCard.type === SPECIAL_CARDS.WIN &&
+            defendingCardInAttackedZone.type === SPECIAL_CARDS.WIN
+        )
+            clashResult = "defender"; // 2 Thắng đấu nhau, Defender thắng (theo quy tắc mới)
+        else if (
+            attackingCard.type === SPECIAL_CARDS.LOSE &&
+            defendingCardInAttackedZone.type === SPECIAL_CARDS.LOSE
+        )
+            clashResult = "defender"; // 2 Thua đấu nhau, Defender thắng (theo quy tắc mới)
+        else if (
+            attackingCard.type === SPECIAL_CARDS.WIN &&
+            defendingCardInAttackedZone.type === SPECIAL_CARDS.LOSE
+        )
+            clashResult = "draw"; // Thắng đấu Thua = Hòa
+        else if (
+            attackingCard.type === SPECIAL_CARDS.LOSE &&
+            defendingCardInAttackedZone.type === SPECIAL_CARDS.WIN
+        )
+            clashResult = "draw"; // Thua đấu Thắng = Hòa
+        else if (attackingCard.type === SPECIAL_CARDS.WIN)
+            clashResult = "attacker"; // Tấn công là Thắng, Defender không phải Thắng/Thua
+        else if (defendingCardInAttackedZone.type === SPECIAL_CARDS.WIN)
+            clashResult = "defender"; // Phòng thủ là Thắng, Attacker không phải Thắng/Thua
+        else if (attackingCard.type === SPECIAL_CARDS.LOSE)
+            clashResult = "defender"; // Tấn công là Thua, Phòng thủ thắng (dù là thẻ thường)
+        else if (defendingCardInAttackedZone.type === SPECIAL_CARDS.LOSE)
+            clashResult = "attacker"; // Phòng thủ là Thua, Tấn công thắng (dù là thẻ thường)
+    } else {
+        // Logic oẳn tù tì cơ bản
+        const winMap = {
+            [CARD_TYPES.BUA]: CARD_TYPES.KEO,
+            [CARD_TYPES.KEO]: CARD_TYPES.BAO,
+            [CARD_TYPES.BAO]: CARD_TYPES.BUA,
+        };
+        if (attackingCard.type === defendingCardInAttackedZone.type) clashResult = "draw";
+        else if (winMap[attackingCard.type] === defendingCardInAttackedZone.type)
+            clashResult = "attacker";
+        else clashResult = "defender";
+    }
+
+    // BƯỚC 3: TÍNH ĐIỂM GIAO TRANH
+    let attackerScoreChange = 0,
+        defenderScoreChange = 0;
+    const zoneMultiplier = attackZone === ZONES.MAIN ? 2 : 1;
+    const attackerBasePoints = attackingCard.isSpecial
+        ? 5
+        : gameState.cardBasePoints[attackingCard.type];
+    let attackerGiaoTranh = attackerBasePoints * zoneMultiplier;
+    const defenderBasePoints = defendingCardInAttackedZone.isSpecial
+        ? 5
+        : gameState.cardBasePoints[defendingCardInAttackedZone.type];
+    let defenderGiaoTranh = defenderBasePoints * zoneMultiplier;
+    if (defendingCardInAttackedZone.isPriority) {
+        defenderGiaoTranh *= attackZone === ZONES.MAIN ? 3 : 2;
+    }
+
+    // BƯỚC 4: PHÂN BỔ ĐIỂM TỪ CUỘC ĐỐI ĐẦU
+    this.recordHistory(clashResult);
+    if (clashResult === "attacker") {
+        attackerScoreChange += attackerGiaoTranh;
+        defenderScoreChange -= defenderGiaoTranh;
+        this.log(`${attacker.name} thắng cuộc đối đầu!`);
+    } else if (clashResult === "defender") {
+        defenderScoreChange += defenderGiaoTranh;
+        attackerScoreChange -= attackerGiaoTranh;
+        this.log(`${defender.name} thắng cuộc đối đầu!`);
+    } else {
+        this.log("Cuộc đối đầu kết thúc với kết quả Hòa!");
+    }
+
+    attacker.score += attackerScoreChange;
+    defender.score += defenderScoreChange;
+    this.render();
+    this.showScoreChange(attacker.id, attackerScoreChange);
+    this.showScoreChange(defender.id, defenderScoreChange);
+    await this.sleep(1500);
+
+    // BƯỚC 5: XỬ LÝ ĐIỂM THƯỞNG THẺ ĐẶC BIỆT (Đã điều chỉnh để đảm bảo logic đúng)
+    let attackerBonus = 0,
+        defenderBonus = 0;
+    const bonusBasePoint = 5; // Điểm thưởng gốc theo luật
+
+    if (
+        attackingCard.isSpecial &&
+        ((attackingCard.type === SPECIAL_CARDS.WIN && clashResult === "attacker") ||
+            (attackingCard.type === SPECIAL_CARDS.LOSE && clashResult === "defender")) // LOSE cũng cho bonus nếu đạt mục đích
+    ) {
+        attackerBonus = bonusBasePoint * zoneMultiplier;
+    }
+    if (
+        defendingCardInAttackedZone.isSpecial &&
+        ((defendingCardInAttackedZone.type === SPECIAL_CARDS.WIN && clashResult === "defender") ||
+            (defendingCardInAttackedZone.type === SPECIAL_CARDS.LOSE && clashResult === "attacker")) // LOSE cũng cho bonus nếu đạt mục đích
+    ) {
+        defenderBonus = bonusBasePoint * zoneMultiplier;
+    }
+
+    if (attackerBonus > 0 || defenderBonus > 0) {
+        attacker.score += attackerBonus;
+        defender.score += defenderBonus;
+        this.render();
+        if (attackerBonus > 0) {
+            this.showScoreChange(attacker.id, attackerBonus);
+            this.log(
+                `${attacker.name} đạt mục đích thẻ đặc biệt! +${attackerBonus} điểm.`
+            );
+        }
+        if (defenderBonus > 0) {
+            this.showScoreChange(defender.id, defenderBonus);
+            this.log(
+                `${defender.name} đạt mục đích thẻ đặc biệt! +${defenderBonus} điểm.`
+            );
+        }
+        await this.sleep(1500);
+    }
+
+    // BƯỚC 6: Dọn dẹp thẻ tấn công và thẻ phòng thủ ở khu vực bị tấn công
+    // Sử dụng hàm discardCard mới để xử lý đúng cách cho thẻ cơ bản và đặc biệt
+    this.discardCard(attacker, attackingCard);
+    await this.sleep(500); // Thêm sleep nhỏ để log không bị chồng chéo
+    this.discardCard(defender, defendingCardInAttackedZone);
+    await this.sleep(500);
+
+    // Cập nhật số lượng thẻ ưu tiên đã dùng trong vòng
+    // Các thẻ đã được đặt, không phân biệt bị tấn công hay không, đều được tính.
+    if (attackingCard.isPriority) attacker.priorityCardsUsedThisRound++;
+    // Lưu ý: otherZoneDefenderCard đã được xử lý ở BƯỚC 1.
+    // Nếu nó là ưu tiên và bị loại bỏ, nó sẽ được tính ở đây.
+    // Nếu nó được trả về tay (không phải ưu tiên), thì không tính.
+    // Cách tính cũ (dùng `gameState.battlefield.main.defenderCard?.isPriority` và `gameState.battlefield.side.defenderCard?.isPriority`)
+    // là ĐÚNG, vì nó kiểm tra thẻ *ban đầu* được đặt, không phải thẻ sau khi được xử lý.
+    if (gameState.battlefield.main.defenderCard?.isPriority)
+        defender.priorityCardsUsedThisRound++;
+    if (gameState.battlefield.side.defenderCard?.isPriority)
+        defender.priorityCardsUsedThisRound++;
+
+
+    // Xác định người thắng lượt cuối cùng và chuẩn bị cho lượt/vòng tiếp theo
+    if (clashResult === "attacker")
+        gameState.lastTurnWinnerId = attacker.id;
+    else if (clashResult === "defender")
+        gameState.lastTurnWinnerId = defender.id;
+    else
+        gameState.lastTurnWinnerId = this.getCurrentDefender().id; // Hòa thì người phòng thủ lượt này được quyền ưu tiên chọn vai trò lượt sau
+
+    this.render();
+    await this.sleep(1500);
+    if (gameState.turn === 1) {
+        gameState.turn = 2;
+        this.setPhase(PHASES.START_TURN);
+    } else {
+        this.log(`Kết thúc Vòng ${gameState.round}.`);
+        await this.sleep(2000);
+        this.startRound();
+    }
+}
         async handleDraw(playerId) {
           const player = this.getPlayer(playerId);
           if (gameState.commonDeck.length < 3) {
@@ -1776,6 +1777,17 @@
             isRoleSelection: true,
           });
         }
+        // THÊM HÀM NÀY VÀO TRONG CLASS Game
+discardCard(player, card) {
+    if (!card) return; // Đảm bảo thẻ tồn tại
+    if (card.isBasic) {
+        gameState.commonDeck.push(card);
+        this.log(`Thẻ ${card.type} của ${player.name} được đưa vào bộ bài chung.`);
+    } else if (card.isSpecial) {
+        player.specialCardsUsed[card.type] = true;
+        this.log(`Thẻ đặc biệt ${card.type} của ${player.name} đã được dùng.`);
+    }
+}
         showScoreChange(playerId, change) {
           if (change === 0) return;
           const player = this.getPlayer(playerId);
