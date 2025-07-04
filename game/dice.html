@@ -80,7 +80,7 @@
         
         <!-- Header: Visible during gameplay -->
         <header id="game-header" class="w-full flex justify-between items-center hidden z-20">
-            <button id="home-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm">
+            <button id="home-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm transition-opacity">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             </button>
             <div class="text-center">
@@ -91,7 +91,7 @@
                 <div class="text-sm text-slate-500 dark:text-slate-400">Thời gian</div>
                 <div id="timer" class="text-2xl font-bold text-blue-600 dark:text-blue-400">01:30</div>
             </div>
-            <button id="pause-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm">
+            <button id="pause-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm transition-opacity">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" /></svg>
             </button>
         </header>
@@ -190,8 +190,43 @@
         let currentStreak = 0, longestStreak = 0, memorizeStartTime = 0, isPerfectAttempt = false, perfectRounds = 0, correctAnswers = 0, totalAnswers = 0;
         const HIGH_SCORE_KEY = 'diceMemoryHighScore';
         const DARK_MODE_KEY = 'diceMemoryDarkMode';
+        
+        const CUBE_VIEWS = [
+            { transform: 'rotateX(-30deg) rotateY(-45deg)', visibleFaces: ['top', 'front', 'left'] },
+            { transform: 'rotateX(-30deg) rotateY(45deg)',  visibleFaces: ['top', 'front', 'right'] },
+            { transform: 'rotateX(-30deg) rotateY(135deg)', visibleFaces: ['top', 'back', 'right'] },
+            { transform: 'rotateX(30deg) rotateY(-45deg)',  visibleFaces: ['bottom', 'front', 'left'] },
+            { transform: 'rotateX(30deg) rotateY(135deg)', visibleFaces: ['bottom', 'back', 'right'] },
+            { transform: 'rotateX(-120deg) rotateY(45deg)', visibleFaces: ['bottom', 'back', 'left'] }
+        ];
 
-        const netTemplates = [ { cols: 3, layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null] ] }, { cols: 4, layout: [ [null, 'top', null, null], ['left', 'front', 'right', 'back'], [null, 'bottom', null, null] ] }, { cols: 3, layout: [ ['left', 'top', null], [null, 'front', 'back'], [null, 'right', null], [null, 'bottom', null] ] } ];
+        // NÂNG CẤP CUỐI CÙNG: Thư viện layout 2D được chọn từ 11 HÌNH DẠNG CHUẨN, đảm bảo hợp lệ.
+        const netTemplates = [
+            { // Mẫu 1: Hình chữ thập cổ điển (1-4-1)
+                cols: 3, 
+                layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null] ] 
+            },
+            { // Mẫu 2: Dải 4 ô có 2 nhánh
+                cols: 4, 
+                layout: [ [null, 'top', null, null], ['left', 'front', 'right', 'back'], [null, 'bottom', null, null] ] 
+            },
+            { // Mẫu 3: Hình chữ T
+                cols: 3,
+                layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null] ]
+            },
+            { // Mẫu 4: Hình Ziczac
+                cols: 3,
+                layout: [ ['top', 'front', null], [null, 'left', 'right'], [null, 'bottom', 'back'] ]
+            },
+            { // Mẫu 5: Bậc thang
+                cols: 3,
+                layout: [ [null, 'top', null], ['left', 'front', null], [null, 'right', 'bottom'], [null, null, 'back'] ]
+            },
+            { // Mẫu 6: Hình dạng chữ C kỳ lạ
+                cols: 3,
+                layout: [ ['top', 'front', null], ['left', 'bottom', null], ['right', 'back', null] ]
+            }
+        ];
 
         // --- Core Functions ---
         const showScreen = (name) => {
@@ -232,6 +267,9 @@
         
         // --- Game Flow ---
         const renderMemorizeView = () => {
+            pauseButton.disabled = false;
+            pauseButton.classList.remove('opacity-50');
+            
             generateDie();
             const template = netTemplates[Math.floor(Math.random() * netTemplates.length)];
             const grid = document.createElement('div'); grid.className = `grid grid-cols-${template.cols} gap-1`;
@@ -258,17 +296,20 @@
 
         const generateQuestion = () => {
             showScreen('question');
-            pauseButton.classList.remove('hidden'); // <<< LỖI ĐÃ ĐƯỢC SỬA TẠI ĐÂY
+            pauseButton.classList.remove('hidden');
             feedbackEl.textContent = ''; streakInfoEl.textContent = ''; nextRoundInfoEl.textContent = '';
             renderAnswerButtons();
 
             const allFaceNames = ['top', 'bottom', 'front', 'back', 'left', 'right'];
             const viewClasses = { top: 'top', bottom: 'bottom', front: 'front', back: 'back', left: 'left', right: 'right' };
-            const visibleCornerFaces = ['top', 'front', 'left'];
-            const hiddenFaceName = visibleCornerFaces[Math.floor(Math.random() * 3)];
+            
+            const randomView = CUBE_VIEWS[Math.floor(Math.random() * CUBE_VIEWS.length)];
+            const visibleCornerFaces = randomView.visibleFaces;
+            
+            const hiddenFaceName = visibleCornerFaces[Math.floor(Math.random() * visibleCornerFaces.length)];
             currentQuestion.answer = currentDie[hiddenFaceName].value;
             currentQuestion.hiddenFaceName = hiddenFaceName;
-
+            
             const facesHTML = allFaceNames.map(name => `<div class="cube-face-wrapper face-${viewClasses[name]}-view" id="face-wrapper-${name}">${createBlankFaceHTML()}</div>`).join('');
             dice3DContainer.innerHTML = `<div class="scene"><div class="cube">${facesHTML}</div></div>`;
 
@@ -285,7 +326,7 @@
                     startMainTimer();
                 }, { once: true });
 
-                setTimeout(() => { cubeEl.style.transform = 'translateZ(-100px) rotateX(-30deg) rotateY(-45deg)'; }, 50);
+                setTimeout(() => { cubeEl.style.transform = `translateZ(-100px) ${randomView.transform}`; }, 50);
             }
         };
         
@@ -301,7 +342,9 @@
 
         const handleAnswer = (userAnswer) => {
             stopAllTimers();
-            pauseButton.classList.add('hidden');
+            pauseButton.disabled = true;
+            pauseButton.classList.add('opacity-50');
+
             totalAnswers++;
             answerButtonsContainer.childNodes.forEach(btn => btn.disabled = true);
 
@@ -386,6 +429,19 @@
 
         const pauseGame = () => { clearInterval(mainTimer); pauseOverlay.style.display = 'flex'; };
         const resumeGame = () => { pauseOverlay.style.display = 'none'; startMainTimer(); };
+
+        // Tự động tạm dừng game khi người dùng chuyển tab
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                const isGameActive = screens.home.classList.contains('hidden') && screens.gameOver.classList.contains('hidden');
+                const isAlreadyPaused = pauseOverlay.style.display === 'flex';
+
+                if (isGameActive && !isAlreadyPaused) {
+                    pauseGame();
+                }
+            }
+        };
+
         const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0');
         const setHighScore = (newScore) => localStorage.setItem(HIGH_SCORE_KEY, newScore);
         const updateHighScoreDisplay = () => highScoreEl.textContent = getHighScore();
@@ -427,6 +483,7 @@
         resumeButton.addEventListener('click', resumeGame);
         darkModeToggle.addEventListener('click', toggleDarkMode);
         answerButtonsContainer.addEventListener('click', (e) => { if(e.target.matches('button[data-answer]')) { handleAnswer(parseInt(e.target.dataset.answer)); } });
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         // --- Initial Setup ---
         initDarkMode();
