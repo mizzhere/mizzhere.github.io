@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi" class=""> <!-- class="dark" sẽ được thêm bằng JS -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Trí Nhớ Xúc Xắc Pro</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        // Cấu hình Tailwind cho Dark Mode
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
+    <style>
+        /* --- Base Styles --- */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            touch-action: manipulation; /* Prevents double-tap to zoom */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+        }
+
+        /* --- 3D Dice Styles --- */
+        .scene { width: 200px; height: 200px; perspective: 800px; }
+        .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transform: translateZ(-100px) rotateX(-30deg) rotateY(-45deg); transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1); }
+        .cube-face-wrapper { position: absolute; width: 100px; height: 100px; top: 50%; left: 50%; margin-top: -50px; margin-left: -50px; backface-visibility: hidden; }
+        .face-top-view    { transform: rotateX(90deg) translateZ(50px); }
+        .face-bottom-view { transform: rotateX(-90deg) translateZ(50px); }
+        .face-front-view  { transform: rotateY(0deg) translateZ(50px); }
+        .face-back-view   { transform: rotateY(180deg) translateZ(50px); }
+        .face-left-view   { transform: rotateY(90deg) translateZ(50px); }
+        .face-right-view  { transform: rotateY(-90deg) translateZ(50px); }
+        
+        /* --- Dice Face Base Styles --- */
+        .dice-face { display: grid; align-items: center; justify-items: center; transition: background-color 0.3s, border-color 0.3s, transform 0.5s; box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 0 10px rgba(0,0,0,0.05); }
+        .dice-face-2d { width: 60px; height: 60px; border-radius: 8px; padding: 5px; border: 1px solid #cbd5e1; background-color: white; }
+        .dice-face-3d { width: 100px; height: 100px; border-radius: 10px; padding: 8px; border: 1px solid #999; background-color: white; }
+        .dot { border-radius: 50%; background-color: #1e293b; }
+        .dice-face-2d .dot { width: 10px; height: 10px; }
+        .dice-face-3d .dot { width: 14px; height: 14px; }
+
+        /* --- Dark Mode Dice Styles --- */
+        .dark .dice-face-2d, .dark .dice-face-3d { background-color: #334155; border-color: #64748b; }
+        .dark .dot { background-color: #cbd5e1; }
+        .dark .btn-correct { background-color: #22c55e !important; border-color: #16a34a !important; }
+        .dark .btn-incorrect { background-color: #ef4444 !important; border-color: #dc2626 !important; }
+
+        /* --- Animations & Effects --- */
+        @keyframes flash-green-border { 50% { border-color: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.7); } }
+        .animate-flash-green-border { animation: flash-green-border 0.8s ease-out; }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        @keyframes pop-out { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop-out { animation: pop-out 0.5s ease-out forwards; }
+
+        /* --- Button Feedback States --- */
+        .btn-correct { background-color: #22c55e !important; color: white !important; border-color: #16a34a !important; }
+        .btn-incorrect { background-color: #ef4444 !important; color: white !important; border-color: #dc2626 !important; }
+
+        /* --- Dice Dot Patterns --- */
+        .face-1 { grid-template-areas: ". . ." ". a ." ". . ."; } .face-2 { grid-template-areas: "a . ." ". . ." ". . b"; } .face-3 { grid-template-areas: "a . ." ". b ." ". . c"; } .face-4 { grid-template-areas: "a . b" ". . ." "c . d"; } .face-5 { grid-template-areas: "a . b" ". c ." "d . e"; } .face-6 { grid-template-areas: "a . b" "c . d" "e . f"; }
+        .face-1 .dot:nth-child(1) { grid-area: a; } .face-2 .dot:nth-child(1) { grid-area: a; } .face-2 .dot:nth-child(2) { grid-area: b; } .face-3 .dot:nth-child(1) { grid-area: a; } .face-3 .dot:nth-child(2) { grid-area: b; } .face-3 .dot:nth-child(3) { grid-area: c; } .face-4 .dot:nth-child(1) { grid-area: a; } .face-4 .dot:nth-child(2) { grid-area: b; } .face-4 .dot:nth-child(3) { grid-area: c; } .face-4 .dot:nth-child(4) { grid-area: d; } .face-5 .dot:nth-child(1) { grid-area: a; } .face-5 .dot:nth-child(2) { grid-area: b; } .face-5 .dot:nth-child(3) { grid-area: c; } .face-5 .dot:nth-child(4) { grid-area: d; } .face-5 .dot:nth-child(5) { grid-area: e; } .face-6 .dot:nth-child(1) { grid-area: a; } .face-6 .dot:nth-child(2) { grid-area: b; } .face-6 .dot:nth-child(3) { grid-area: c; } .face-6 .dot:nth-child(4) { grid-area: d; } .face-6 .dot:nth-child(5) { grid-area: e; } .face-6 .dot:nth-child(6) { grid-area: f; }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 select-none">
+
+    <div id="app-container" class="relative w-screen h-full flex flex-col items-center justify-between p-4 sm:p-6 transition-opacity duration-500">
+        
+        <!-- Header: Visible during gameplay -->
+        <header id="game-header" class="w-full flex justify-between items-center hidden z-20">
+            <button id="home-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            </button>
+            <div class="text-center">
+                <div class="text-sm text-slate-500 dark:text-slate-400">Điểm</div>
+                <div id="score" class="text-2xl font-bold text-blue-600 dark:text-blue-400">0</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm text-slate-500 dark:text-slate-400">Thời gian</div>
+                <div id="timer" class="text-2xl font-bold text-blue-600 dark:text-blue-400">01:30</div>
+            </div>
+            <button id="pause-button" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" /></svg>
+            </button>
+        </header>
+
+        <main id="main-content" class="w-full flex-grow flex flex-col items-center justify-center">
+            <!-- Home Screen -->
+            <div id="home-screen" class="w-full max-w-sm text-center space-y-8 flex flex-col items-center justify-center">
+                <div class="flex-grow flex flex-col items-center justify-center space-y-4">
+                    <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400">Trí Nhớ Xúc Xắc Pro</h1>
+                    <p class="text-slate-600 dark:text-slate-400">Ghi nhớ 6 mặt, đoán mặt bị che. Đúng sẽ được cộng thêm thời gian!</p>
+                </div>
+                <div class="w-full space-y-4">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm">
+                        <div class="text-sm text-slate-500 dark:text-slate-400">ĐIỂM CAO NHẤT</div>
+                        <div id="high-score" class="text-3xl font-bold text-slate-800 dark:text-slate-200">0</div>
+                    </div>
+                    <button id="play-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">Bắt đầu Chơi</button>
+                    <button id="dark-mode-toggle" class="w-16 h-16 mx-auto flex items-center justify-center bg-white dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm">
+                        <!-- Sun Icon -->
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        <!-- Moon Icon -->
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-indigo-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Memorize View -->
+            <div id="memorize-view" class="w-full text-center hidden">
+                <h2 class="text-2xl font-bold mb-6 animate-fade-in-up">Ghi nhớ vị trí các mặt!</h2>
+                <div id="dice-net-container" class="flex justify-center items-center mb-8"></div>
+                <button id="confirm-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-md">Tôi đã nhớ</button>
+            </div>
+
+            <!-- Transition View -->
+            <div id="transition-view" class="text-center hidden">
+                <p class="text-xl mb-4 text-slate-600 dark:text-slate-400">Chuẩn bị trả lời sau...</p>
+                <div id="transition-timer" class="text-7xl font-bold text-blue-500 dark:text-blue-400 animate-pop">3</div>
+            </div>
+
+            <!-- Question View -->
+            <div id="question-view" class="w-full hidden">
+                <h2 id="question-title" class="text-xl sm:text-2xl font-bold mb-4 text-center">Mặt bị che là số mấy?</h2>
+                <div id="dice-3d-container" class="relative mx-auto mb-6"></div>
+                <div id="answer-buttons-container" class="grid grid-cols-3 gap-3 max-w-xs mx-auto"></div>
+                <div id="feedback-container" class="mt-4 h-12 flex flex-col items-center justify-center">
+                    <p id="feedback" class="h-6 text-xl font-medium"></p>
+                    <p id="streak-info" class="h-6 text-lg font-bold"></p>
+                </div>
+                <p id="next-round-info" class="mt-2 h-6 text-sm text-slate-500 dark:text-slate-400 text-center"></p>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="game-over-screen" class="text-center hidden">
+                <h2 class="text-3xl font-bold mb-2">Hết giờ!</h2>
+                <p class="text-lg mb-4 text-slate-600 dark:text-slate-400">Điểm cuối cùng của bạn:</p>
+                <div id="final-score" class="text-7xl font-bold text-blue-600 dark:text-blue-400 mb-4 animate-bounce">0</div>
+                <div id="new-high-score-info" class="text-2xl font-bold text-yellow-500 h-8 mb-4"></div>
+                
+                <div id="stats-container" class="my-6 text-left w-full max-w-xs mx-auto bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm opacity-0">
+                    <h4 class="text-lg font-bold text-center mb-3">Thống Kê Vòng Chơi</h4>
+                    <div class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                        <p class="flex justify-between"><span>Chuỗi đúng dài nhất:</span> <span id="stat-longest-streak" class="font-bold">0</span></p>
+                        <p class="flex justify-between"><span>Tỷ lệ đúng:</span> <span id="stat-accuracy" class="font-bold">0%</span></p>
+                        <p class="flex justify-between"><span>Vòng hoàn hảo:</span> <span id="stat-perfect-rounds" class="font-bold">0</span></p>
+                    </div>
+                </div>
+
+                <button id="play-again-button" class="w-full max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">Chơi lại</button>
+            </div>
+        </main>
+        
+        <!-- Pause Overlay -->
+        <div id="pause-overlay" class="absolute inset-0 bg-black/70 flex-col items-center justify-center z-50 hidden">
+            <h2 class="text-4xl font-bold text-white mb-8">Tạm Dừng</h2>
+            <button id="resume-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg">Tiếp Tục</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const mainContent = document.getElementById('main-content');
+        const screens = { home: document.getElementById('home-screen'), gameOver: document.getElementById('game-over-screen'), memorize: document.getElementById('memorize-view'), transition: document.getElementById('transition-view'), question: document.getElementById('question-view') };
+        const gameHeader = document.getElementById('game-header'), scoreEl = document.getElementById('score'), timerEl = document.getElementById('timer'), transitionTimerEl = document.getElementById('transition-timer');
+        const finalScoreEl = document.getElementById('final-score'), highScoreEl = document.getElementById('high-score'), newHighScoreInfoEl = document.getElementById('new-high-score-info');
+        const playButton = document.getElementById('play-button'), confirmButton = document.getElementById('confirm-button'), playAgainButton = document.getElementById('play-again-button'), homeButton = document.getElementById('home-button');
+        const feedbackEl = document.getElementById('feedback'), streakInfoEl = document.getElementById('streak-info'), nextRoundInfoEl = document.getElementById('next-round-info');
+        const diceNetContainer = document.getElementById('dice-net-container'), dice3DContainer = document.getElementById('dice-3d-container'), answerButtonsContainer = document.getElementById('answer-buttons-container');
+        const pauseButton = document.getElementById('pause-button'), pauseOverlay = document.getElementById('pause-overlay'), resumeButton = document.getElementById('resume-button');
+        const statsContainer = document.getElementById('stats-container'), statLongestStreak = document.getElementById('stat-longest-streak'), statAccuracy = document.getElementById('stat-accuracy'), statPerfectRounds = document.getElementById('stat-perfect-rounds');
+        const darkModeToggle = document.getElementById('dark-mode-toggle'), sunIcon = document.getElementById('sun-icon'), moonIcon = document.getElementById('moon-icon');
+
+        // --- Game State ---
+        let score = 0, mainTimer, timeLeft = 90, transitionInterval, nextRoundTimeout;
+        let currentDie = {}, currentQuestion = { answer: null, hiddenFaceName: null };
+        let currentStreak = 0, longestStreak = 0, memorizeStartTime = 0, isPerfectAttempt = false, perfectRounds = 0, correctAnswers = 0, totalAnswers = 0;
+        const HIGH_SCORE_KEY = 'diceMemoryHighScore';
+        const DARK_MODE_KEY = 'diceMemoryDarkMode';
+
+        const netTemplates = [ { cols: 3, layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null] ] }, { cols: 4, layout: [ [null, 'top', null, null], ['left', 'front', 'right', 'back'], [null, 'bottom', null, null] ] }, { cols: 3, layout: [ ['left', 'top', null], [null, 'front', 'back'], [null, 'right', null], [null, 'bottom', null] ] } ];
+
+        // --- Core Functions ---
+        const showScreen = (name) => {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            if (screens[name]) {
+                screens[name].classList.remove('hidden');
+                screens[name].classList.add('flex', 'flex-col', 'items-center', 'justify-center');
+            }
+            const isGameActive = (name === 'memorize' || name === 'question' || name === 'transition');
+            gameHeader.classList.toggle('hidden', !isGameActive);
+        };
+        
+        const createFaceHTML = (faceData, options = {}) => {
+            const { is3D = false } = options; const value = typeof faceData === 'object' ? faceData.value : faceData; const rotation = typeof faceData === 'object' ? faceData.rotation : 0;
+            const faceClass = is3D ? 'dice-face-3d' : 'dice-face-2d'; const rotationStyle = !is3D ? `style="transform: rotate(${rotation}deg)"` : '';
+            let dotsHTML = Array(value).fill('<div class="dot"></div>').join('');
+            return `<div class="dice-face ${faceClass} grid grid-cols-3 grid-rows-3 face-${value}" ${rotationStyle}>${dotsHTML}</div>`;
+        };
+        const createBlankFaceHTML = () => `<div class="dice-face dice-face-3d"></div>`;
+        const createQuestionMarkHTML = () => `<div class="dice-face dice-face-3d flex items-center justify-center text-6xl font-bold text-slate-400 dark:text-slate-500">?</div>`;
+
+        const generateDie = () => {
+            let numbers = [1, 2, 3, 4, 5, 6]; for (let i = numbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [numbers[i], numbers[j]] = [numbers[j], numbers[i]]; }
+            const rotations = [0, 90, 180, 270]; const randomRotation = () => rotations[Math.floor(Math.random() * 4)];
+            currentDie = { top: { value: numbers[0], rotation: randomRotation() }, bottom: { value: numbers[1], rotation: randomRotation() }, front: { value: numbers[2], rotation: randomRotation() }, back: { value: numbers[3], rotation: randomRotation() }, left: { value: numbers[4], rotation: randomRotation() }, right: { value: numbers[5], rotation: randomRotation() } };
+        };
+        
+        const updateTimerDisplay = () => { timerEl.textContent = `${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(timeLeft % 60).padStart(2, '0')}`; };
+        
+        const startMainTimer = () => {
+            clearInterval(mainTimer);
+            mainTimer = setInterval(() => { if (timeLeft > 0) { timeLeft--; updateTimerDisplay(); } else { endGame(); } }, 1000);
+        };
+
+        const stopAllTimers = () => {
+             [mainTimer, transitionInterval, nextRoundTimeout].forEach(t => { clearInterval(t); clearTimeout(t); });
+        };
+        
+        // --- Game Flow ---
+        const renderMemorizeView = () => {
+            generateDie();
+            const template = netTemplates[Math.floor(Math.random() * netTemplates.length)];
+            const grid = document.createElement('div'); grid.className = `grid grid-cols-${template.cols} gap-1`;
+            grid.innerHTML = template.layout.flat().map(faceName => faceName ? createFaceHTML(currentDie[faceName]) : '<div></div>').join('');
+            diceNetContainer.innerHTML = ''; diceNetContainer.appendChild(grid);
+            showScreen('memorize');
+            memorizeStartTime = Date.now();
+            isPerfectAttempt = false;
+            startMainTimer();
+        };
+        
+        const startTransition = () => {
+            stopAllTimers();
+            if (Date.now() - memorizeStartTime <= 3500) { isPerfectAttempt = true; }
+            showScreen('transition'); let count = 3; transitionTimerEl.textContent = count;
+            const tick = () => { transitionTimerEl.classList.remove('animate-pop'); void transitionTimerEl.offsetWidth; transitionTimerEl.classList.add('animate-pop'); };
+            tick();
+            transitionInterval = setInterval(() => {
+                count--;
+                if (count > 0) { transitionTimerEl.textContent = count; tick(); } 
+                else { clearInterval(transitionInterval); generateQuestion(); }
+            }, 1000);
+        };
+
+        const generateQuestion = () => {
+            showScreen('question');
+            feedbackEl.textContent = ''; streakInfoEl.textContent = ''; nextRoundInfoEl.textContent = '';
+            renderAnswerButtons();
+
+            const allFaceNames = ['top', 'bottom', 'front', 'back', 'left', 'right'];
+            const viewClasses = { top: 'top', bottom: 'bottom', front: 'front', back: 'back', left: 'left', right: 'right' };
+            const visibleCornerFaces = ['top', 'front', 'left'];
+            const hiddenFaceName = visibleCornerFaces[Math.floor(Math.random() * 3)];
+            currentQuestion.answer = currentDie[hiddenFaceName].value;
+            currentQuestion.hiddenFaceName = hiddenFaceName;
+
+            const facesHTML = allFaceNames.map(name => `<div class="cube-face-wrapper face-${viewClasses[name]}-view" id="face-wrapper-${name}">${createBlankFaceHTML()}</div>`).join('');
+            dice3DContainer.innerHTML = `<div class="scene"><div class="cube">${facesHTML}</div></div>`;
+
+            const cubeEl = dice3DContainer.querySelector('.cube');
+            if (cubeEl) {
+                const randomRotX = (Math.random() - 0.5) * 720 + 360; const randomRotY = (Math.random() - 0.5) * 720 + 360;
+                cubeEl.style.transform = `translateZ(-100px) rotateX(${randomRotX}deg) rotateY(${randomRotY}deg)`;
+                
+                cubeEl.addEventListener('transitionend', () => {
+                    visibleCornerFaces.forEach(name => {
+                        const wrapper = document.getElementById(`face-wrapper-${name}`);
+                        if (wrapper) wrapper.innerHTML = (name === hiddenFaceName) ? createQuestionMarkHTML() : createFaceHTML(currentDie[name].value, { is3D: true });
+                    });
+                    startMainTimer();
+                }, { once: true });
+
+                setTimeout(() => { cubeEl.style.transform = 'translateZ(-100px) rotateX(-30deg) rotateY(-45deg)'; }, 50);
+            }
+        };
+        
+        const renderAnswerButtons = () => {
+            answerButtonsContainer.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const button = document.createElement('button');
+                button.className = "w-full h-20 w-20 bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 rounded-lg text-3xl font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-md hover:bg-slate-200 dark:hover:bg-slate-600 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transform active:scale-95 transition-all duration-150";
+                button.textContent = i; button.dataset.answer = i;
+                answerButtonsContainer.appendChild(button);
+            }
+        };
+
+        const handleAnswer = (userAnswer) => {
+            stopAllTimers();
+            pauseButton.classList.add('hidden');
+            totalAnswers++;
+            answerButtonsContainer.childNodes.forEach(btn => btn.disabled = true);
+
+            const clickedButton = answerButtonsContainer.querySelector(`[data-answer="${userAnswer}"]`);
+            const hiddenFaceWrapper = document.getElementById(`face-wrapper-${currentQuestion.hiddenFaceName}`);
+            if(hiddenFaceWrapper) {
+                hiddenFaceWrapper.innerHTML = createFaceHTML(currentQuestion.answer, { is3D: true });
+                hiddenFaceWrapper.firstElementChild.classList.add('animate-flash-green-border');
+            }
+
+            if (userAnswer === currentQuestion.answer) {
+                correctAnswers++; currentStreak++; longestStreak = Math.max(longestStreak, currentStreak);
+                let pointsGained, timeGained;
+                if (isPerfectAttempt) {
+                    perfectRounds++; pointsGained = 15; timeGained = 7;
+                    feedbackEl.textContent = `HOÀN HẢO!`; feedbackEl.className = 'h-6 text-xl font-bold text-yellow-400 animate-pop-out';
+                } else {
+                    pointsGained = 10; timeGained = 5;
+                    feedbackEl.textContent = 'Chính xác!'; feedbackEl.className = 'h-6 text-xl font-medium text-green-500 dark:text-green-400 animate-fade-in-up';
+                }
+                score += pointsGained; timeLeft += timeGained;
+                
+                if (currentStreak >= 2) {
+                    streakInfoEl.textContent = `Chuỗi x${currentStreak}!`; streakInfoEl.className = 'h-6 text-lg font-bold text-orange-500 dark:text-orange-400 animate-pop-out';
+                }
+                if(clickedButton) clickedButton.classList.add('btn-correct');
+                scoreEl.textContent = score; scoreEl.classList.add('animate-pop');
+                setTimeout(() => scoreEl.classList.remove('animate-pop'), 700);
+
+            } else {
+                if (currentStreak >= 2) {
+                    streakInfoEl.textContent = `Chuỗi bị phá vỡ!`; streakInfoEl.className = 'h-6 text-lg font-bold text-red-500 dark:text-red-400 animate-fade-in-up';
+                }
+                currentStreak = 0;
+                feedbackEl.textContent = `Sai rồi! Đáp án là ${currentQuestion.answer}`; feedbackEl.className = 'h-6 text-xl font-medium text-red-600 dark:text-red-500 animate-fade-in-up';
+                if(clickedButton) clickedButton.classList.add('btn-incorrect');
+                const correctButton = answerButtonsContainer.querySelector(`[data-answer="${currentQuestion.answer}"]`);
+                if(correctButton) correctButton.classList.add('btn-correct');
+            }
+            isPerfectAttempt = false;
+            updateTimerDisplay();
+            
+            let countdown = 3; nextRoundInfoEl.textContent = `Vòng tiếp theo sau ${countdown}s...`;
+            nextRoundTimeout = setInterval(() => {
+                countdown--;
+                if(countdown > 0) nextRoundInfoEl.textContent = `Vòng tiếp theo sau ${countdown}s...`;
+                else { clearInterval(nextRoundTimeout); if(timeLeft > 0) renderMemorizeView(); else endGame(); }
+            }, 1000);
+        };
+        
+        const startGame = () => {
+            score = 0; timeLeft = 90; currentStreak = 0; longestStreak = 0; isPerfectAttempt = false; perfectRounds = 0; correctAnswers = 0; totalAnswers = 0;
+            scoreEl.textContent = '0';
+            updateTimerDisplay(); updateHighScoreDisplay();
+            statsContainer.classList.add('opacity-0');
+            stopAllTimers();
+            renderMemorizeView();
+        };
+
+        const endGame = () => {
+            stopAllTimers();
+            finalScoreEl.textContent = score;
+            const highScore = getHighScore();
+            if (score > highScore) { setHighScore(score); newHighScoreInfoEl.textContent = 'Điểm cao mới!'; } 
+            else { newHighScoreInfoEl.textContent = ''; }
+            
+            const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+            statLongestStreak.textContent = longestStreak;
+            statAccuracy.textContent = `${accuracy}% (${correctAnswers}/${totalAnswers})`;
+            statPerfectRounds.textContent = perfectRounds;
+            statsContainer.classList.remove('opacity-0');
+            statsContainer.classList.add('animate-fade-in-up');
+
+            showScreen('gameOver');
+        };
+
+        const goHome = () => {
+            stopAllTimers();
+            updateHighScoreDisplay();
+            showScreen('home');
+        }
+
+        const pauseGame = () => { clearInterval(mainTimer); pauseOverlay.style.display = 'flex'; };
+        const resumeGame = () => { pauseOverlay.style.display = 'none'; startMainTimer(); };
+        const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0');
+        const setHighScore = (newScore) => localStorage.setItem(HIGH_SCORE_KEY, newScore);
+        const updateHighScoreDisplay = () => highScoreEl.textContent = getHighScore();
+
+        // --- Dark Mode Logic ---
+        const updateDarkModeVisuals = (isDark) => {
+            sunIcon.classList.toggle('hidden', isDark);
+            moonIcon.classList.toggle('hidden', !isDark);
+        };
+        
+        const toggleDarkMode = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem(DARK_MODE_KEY, isDark ? '1' : '0');
+            updateDarkModeVisuals(isDark);
+        };
+
+        const initDarkMode = () => {
+            const savedMode = localStorage.getItem(DARK_MODE_KEY);
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let isDark;
+            if (savedMode) {
+                isDark = savedMode === '1';
+            } else {
+                isDark = systemPrefersDark;
+            }
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+            updateDarkModeVisuals(isDark);
+        };
+
+
+        // --- Event Listeners ---
+        playButton.addEventListener('click', startGame);
+        playAgainButton.addEventListener('click', startGame);
+        homeButton.addEventListener('click', goHome);
+        confirmButton.addEventListener('click', startTransition);
+        pauseButton.addEventListener('click', pauseGame);
+        resumeButton.addEventListener('click', resumeGame);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+        answerButtonsContainer.addEventListener('click', (e) => { if(e.target.matches('button[data-answer]')) { handleAnswer(parseInt(e.target.dataset.answer)); } });
+
+        // --- Initial Setup ---
+        initDarkMode();
+        updateHighScoreDisplay();
+        showScreen('home');
+    });
+    </script>
+</body>
+</html>
