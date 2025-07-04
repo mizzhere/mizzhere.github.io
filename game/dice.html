@@ -258,6 +258,7 @@
 
         const generateQuestion = () => {
             showScreen('question');
+            pauseButton.classList.remove('hidden'); // <<< LỖI ĐÃ ĐƯỢC SỬA TẠI ĐÂY
             feedbackEl.textContent = ''; streakInfoEl.textContent = ''; nextRoundInfoEl.textContent = '';
             renderAnswerButtons();
 
