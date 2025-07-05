@@ -158,7 +158,7 @@
     <div id="notification-area"></div>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // DOM Elements
+// DOM Elements
 const doc = document;
 const setupContainer = doc.getElementById('setup-container');
 const libraryList = doc.getElementById('library-list');
@@ -217,10 +217,9 @@ function onYouTubeIframeAPIReady() {
  */
 async function initializeLibrary() {
     try {
-        // Add a cache-busting query parameter to always get the latest version
-        const response = await fetch('library.json?t=' + Date.now());
+        const response = await fetch('library.json?t=' + Date.now()); // Cache-bust
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        libraryData = await response.json(); // Store data globally
+        libraryData = await response.json();
         renderLibrary(libraryData);
     } catch (error) {
         console.error("Could not load or parse library.json:", error);
@@ -243,16 +242,20 @@ function renderLibrary(videos) {
         li.className = 'library-item';
         li.dataset.videoId = video.videoId;
 
+        // --- FIX: Logic to handle different title keys ---
+        // Prioritize 'userTitle', then 'title', finally 'originalTitle' as a fallback.
+        const displayTitle = video.userTitle || video.title || video.originalTitle;
+
         li.innerHTML = `
-            <img data-src="${video.thumbnailUrl}" alt="Thumbnail for ${video.userTitle}" class="library-thumbnail lazy-load">
+            <img data-src="${video.thumbnailUrl}" alt="Thumbnail for ${displayTitle}" class="library-thumbnail lazy-load">
             <div class="library-info">
-                <span class="library-title" title="${video.originalTitle}">${video.userTitle}</span>
+                <span class="library-title" title="${video.originalTitle}">${displayTitle}</span>
                 <span class="library-author">${video.authorName}</span>
             </div>
         `;
         libraryList.appendChild(li);
     });
-    setupLazyLoading(); // Activate lazy loading for thumbnails
+    setupLazyLoading();
 }
 
 /**
@@ -278,6 +281,10 @@ function setupLazyLoading() {
  * @param {string} url - The URL of the .srt file.
  */
 async function loadRemoteSubtitle(url) {
+    if (!url) {
+        console.error("Subtitle URL is undefined. Cannot load.");
+        return;
+    }
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Could not fetch SRT file at ${url}`);
@@ -290,6 +297,7 @@ async function loadRemoteSubtitle(url) {
             showNotification("File phụ đề trong thư viện bị lỗi.", "error");
         }
     } catch (error) {
+        console.error("Error loading remote subtitle:", error);
         showNotification("Không thể tải file phụ đề.", "error");
     }
 }
@@ -308,17 +316,13 @@ function displayVideoInfo(info) {
  * Sets up all event listeners for the application.
  */
 function setupEventListeners() {
-    // Global paste listener
     doc.addEventListener("paste", handleUrlPaste);
-
-    // Drag and Drop listeners
     const body = doc.body;
     body.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
     body.addEventListener('dragenter', (e) => { e.preventDefault(); body.classList.add('dragging'); });
     body.addEventListener('dragleave', (e) => { if (e.target === dragOverlay) body.classList.remove('dragging'); });
     body.addEventListener('drop', (e) => { e.preventDefault(); body.classList.remove('dragging'); handleFileDrop(e); });
 
-    // Library item click
     libraryList.addEventListener('click', (e) => {
         const item = e.target.closest('.library-item');
         if (item && item.dataset.videoId) {
@@ -330,18 +334,16 @@ function setupEventListeners() {
         }
     });
 
-    // Custom video form submission
     customVideoForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const videoId = extractVideoID(urlInput.value);
         if (videoId) {
-            launchPlayer({ videoId: videoId }); // Launch with only the ID
+            launchPlayer({ videoId: videoId });
         } else {
             showNotification("Link YouTube không hợp lệ.", "error");
         }
     });
     
-    // Player controls listeners
     homeBtn.addEventListener('click', goHome);
     playPauseBtn.addEventListener('click', togglePlayPause);
     progressBar.addEventListener('input', handleSeek);
@@ -352,7 +354,6 @@ function setupEventListeners() {
     fullscreenBtn.addEventListener('click', toggleFullscreen);
     playerContainer.addEventListener('mousemove', showControlsAndSetHideTimeout);
     
-    // Settings menu listeners
     settingsBtn.addEventListener('click', toggleSettingsMenu);
     doc.addEventListener('click', (e) => {
         if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
@@ -364,7 +365,6 @@ function setupEventListeners() {
     bgColorPicker.addEventListener('input', () => { subtitleSettings.bgColor = bgColorPicker.value; applyAndSaveStyles(); });
     bgOpacitySlider.addEventListener('input', () => { subtitleSettings.bgOpacity = bgOpacitySlider.value; applyAndSaveStyles(); });
     
-    // Keyboard shortcuts
     doc.addEventListener('keydown', handleKeyboardShortcuts);
 }
 
@@ -376,21 +376,20 @@ function launchPlayer(videoData) {
     setupContainer.classList.add('hidden');
     playerWrapper.classList.remove('hidden');
 
-    // If data comes from the library, display it immediately
-    if (videoData.userTitle) {
-        displayVideoInfo({ title: videoData.userTitle, author: videoData.authorName });
+    const displayTitle = videoData.userTitle || videoData.title || videoData.originalTitle;
+    
+    if (displayTitle) {
+        displayVideoInfo({ title: displayTitle, author: videoData.authorName });
     } else {
-        // For custom videos, hide the info until it's loaded from the player API
         videoInfoContainer.style.display = 'none';
     }
     
-    // Load subtitles if available from library
     if (videoData.subtitleUrl) {
         loadRemoteSubtitle(videoData.subtitleUrl);
     }
 
     if (player) {
-        subtitles = []; // Always reset subtitles for a new video
+        subtitles = [];
         player.loadVideoById(videoData.videoId);
     } else {
         player = new YT.Player("youtube-player", {
@@ -407,10 +406,10 @@ function launchPlayer(videoData) {
 function goHome() {
     if (player) {
         player.stopVideo();
-        // Destroying and nullifying the player frees up memory and prevents background playback
         player.destroy();
         player = null;
     }
+    subtitles = [];
     playerWrapper.classList.add('hidden');
     setupContainer.classList.remove('hidden');
 }
@@ -419,9 +418,9 @@ function goHome() {
  * Called by YouTube API when the player is ready.
  */
 function onPlayerReady(event) {
-    // Only fetch from YT if info isn't already displayed (i.e., for custom videos)
     if (videoInfoContainer.style.display === 'none') {
-        displayVideoInfo(event.target.getVideoData());
+        const videoDataFromApi = event.target.getVideoData();
+        displayVideoInfo({ title: videoDataFromApi.title, author: videoDataFromApi.author });
     }
     updateVolumeUI(event.target.getVolume(), event.target.isMuted());
     showControlsAndSetHideTimeout();
@@ -439,7 +438,7 @@ function onPlayerStateChange(event) {
     } else {
         stopSubtitleSync();
         stopProgressSync();
-        showControlsAndSetHideTimeout(); // Keep controls visible when paused
+        showControlsAndSetHideTimeout();
     }
 }
 
@@ -465,11 +464,7 @@ function handleSeek() { player.seekTo(progressBar.value, true); }
 function handleVolumeChange(e) { player.setVolume(e.target.value); player.unMute(); updateVolumeUI(e.target.value, false); }
 function toggleMute() { player.isMuted() ? player.unMute() : player.mute(); updateVolumeUI(player.getVolume(), player.isMuted()); }
 function toggleFullscreen() {
-    if (doc.fullscreenElement) {
-        doc.exitFullscreen();
-    } else {
-        playerContainer.requestFullscreen();
-    }
+    if (doc.fullscreenElement) { doc.exitFullscreen(); } else { playerContainer.requestFullscreen(); }
 }
 function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.toggle('visible'); }
 
@@ -477,9 +472,11 @@ function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.tog
  * Shows controls and sets a timeout to hide them again.
  */
 function showControlsAndSetHideTimeout() {
+    // --- FIX: Add a guard clause to prevent error before player is ready ---
+    if (!player || typeof player.getPlayerState !== 'function') return;
+
     clearTimeout(controlsTimeout);
     playerContainer.classList.add('controls-active');
-    // Don't hide controls if the video is not playing
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) return;
     controlsTimeout = setTimeout(() => {
         playerContainer.classList.remove('controls-active');
@@ -505,7 +502,7 @@ function startProgressSync() {
     progressInterval = setInterval(() => {
         const duration = player.getDuration();
         const currentTime = player.getCurrentTime();
-        if (isNaN(duration)) return; // Don't update if duration isn't ready
+        if (isNaN(duration)) return;
         progressBar.max = duration;
         progressBar.value = currentTime;
         timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
@@ -548,6 +545,7 @@ function loadSettings() {
 function startSubtitleSync() {
     stopSubtitleSync();
     subtitleCheckInterval = setInterval(() => {
+        if (!player || typeof player.getCurrentTime !== 'function') return;
         const currentTime = player.getCurrentTime();
         const currentSub = subtitles.find(sub => currentTime >= sub.start && sub.end >= currentTime);
         subtitleDisplay.style.opacity = currentSub ? '1' : '0';
@@ -564,10 +562,9 @@ function handleUrlPaste(e) {
     const videoId = extractVideoID(pastedText);
     if (videoId) {
         e.preventDefault();
-        // If pasting anywhere on the page (not in an input)
         if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
             launchPlayer({ videoId: videoId });
-        } else if (e.target === urlInput) { // Paste into the input field
+        } else if (e.target === urlInput) {
             urlInput.value = pastedText;
         }
     }
