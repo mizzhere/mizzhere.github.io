@@ -60,7 +60,7 @@
         #video-title-display { margin: 0; font-size: 1.5rem; font-weight: 600; }
         #video-author-display { margin: 5px 0 0 0; color: #ccc; }
         
-        #player-container {
+#player-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -73,13 +73,13 @@
   overflow: hidden;
   z-index: 999;
 }
+
 #player-container.no-cursor { cursor: none; }
-        #youtube-player {
-  width: 100%;
-  height: auto;
+#youtube-player {
+  height: 100vh;
   aspect-ratio: 16 / 9;
+  width: auto;
   max-width: 100vw;
-  max-height: 100vh;
   object-fit: contain;
   background-color: #000;
   border: none;
