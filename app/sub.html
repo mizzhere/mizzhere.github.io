@@ -60,9 +60,30 @@
         #video-title-display { margin: 0; font-size: 1.5rem; font-weight: 600; }
         #video-author-display { margin: 5px 0 0 0; color: #ccc; }
         
-        #player-container { position: relative; width: 100%; padding-top: 56.25%; background-color: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #player-container.no-cursor { cursor: none; }
-        #youtube-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        #player-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 999;
+}
+#player-container.no-cursor { cursor: none; }
+        #youtube-player {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  background-color: #000;
+  border: none;
+}
         #subtitle-display { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 15px; text-align: center; border-radius: 6px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); line-height: 1.4; transition: opacity 0.2s; pointer-events: none; opacity: 0; }
         #custom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); z-index: 21; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; }
         #player-container.controls-active #custom-controls { opacity: 1; visibility: visible; }
@@ -574,15 +595,20 @@ function stopSubtitleSync() { clearInterval(subtitleCheckInterval); }
 function handleUrlPaste(e) {
     const pastedText = (e.clipboardData || window.clipboardData).getData('text');
     const videoId = extractVideoID(pastedText);
-    if (videoId) {
+    if (!videoId) return;
+
+    // Ngăn chặn hành vi paste mặc định nếu đang ở trang chính
+    if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
         e.preventDefault();
-        if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
-            launchPlayer({ videoId: videoId });
-        } else if (e.target === urlInput) {
-            urlInput.value = pastedText;
-        }
+        loadVideo(videoId);
+    }
+
+    // Nếu đang paste vào input thì gán giá trị
+    else if (e.target.id === 'youtube-url-input') {
+        e.target.value = pastedText;
     }
 }
+
 function extractVideoID(url) {
     const regex = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;
     return url.match(regex) ? url.match(regex)[1] : null;
