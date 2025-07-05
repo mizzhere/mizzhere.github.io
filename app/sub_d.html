@@ -53,10 +53,26 @@
         #video-title-display { margin: 0; font-size: 1.5rem; font-weight: 600; }
         #video-author-display { margin: 5px 0 0 0; color: #ccc; }
         
-        #player-container { position: relative; width: 100%; padding-top: 56.25%; background-color: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #player-container.no-cursor { cursor: none; }
-        #youtube-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        
+       #player-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* The classic 16:9 aspect ratio trick */
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#player-container.no-cursor { cursor: none; }
+
+#youtube-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
         /* NEW: Touch/Click Overlay */
         #click-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; }
         
@@ -100,13 +116,41 @@
         
         /* ... Other styles are largely unchanged ... */
         @media (orientation: landscape) and (max-width: 900px) {
-            body:has(#player-wrapper:not(.hidden)) { padding: 0; }
-            body:has(#player-wrapper:not(.hidden)) #setup-container { display: none; }
-            body:has(#player-wrapper:not(.hidden)) #player-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999; }
-            body:has(#player-wrapper:not(.hidden)) #video-info-container, body:has(#player-wrapper:not(.hidden)) #home-btn { display: none; }
-            #player-container { border-radius: 0; width: 100%; height: 100%; padding-top: 0; display: flex; justify-content: center; align-items: center; }
-            #youtube-player { position: relative; width: 100%; height: 100%; object-fit: contain; }
-        }
+    body:has(#player-wrapper:not(.hidden)) { padding: 0; }
+    body:has(#player-wrapper:not(.hidden)) #setup-container { display: none; }
+    
+    /* This now fully controls the mobile landscape view */
+    body:has(#player-wrapper:not(.hidden)) #player-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 999;
+    }
+    body:has(#player-wrapper:not(.hidden)) #video-info-container, 
+    body:has(#player-wrapper:not(.hidden)) #home-btn { 
+        display: none; 
+    }
+
+    /* This is the key fix for the player container itself */
+    #player-container {
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+        padding-top: 0; /* Remove padding trick on mobile fullscreen */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #youtube-player {
+        position: relative; /* No longer absolute */
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Ensure video is not cropped */
+    }
+}
     </style>
 </head>
 <body>
