@@ -290,17 +290,21 @@
                 (libraryList.innerHTML = ""),
                     e && 0 !== e.length
                         ? e.forEach((e) => {
-                              const t = doc.createElement("li");
-                              (t.className = "library-item"),
-                                  (t.dataset.videoId = e.videoId),
-                                  (t.dataset.subtitleUrl = e.subtitleUrl),
-                                  t.innerHTML = `
+                              // TRONG HÀM renderLibrary
+const t = doc.createElement("li");
+t.className = "library-item";
+// Gán innerHTML trước để tạo cấu trúc bên trong
+t.innerHTML = `
     <img src="${e.thumbnailUrl}" alt="Thumbnail for ${e.title}" class="library-thumbnail" loading="lazy">
     <div class="library-info">
         <span class="library-title" title="${e.originalTitle}">${e.title}</span>
         <span class="library-author">${e.authorName}</span>
     </div>
 `;
+// Bây giờ mới gán data vào thẻ <li>, sẽ không bị mất
+t.dataset.videoId = e.videoId;
+t.dataset.subtitleUrl = e.subtitleUrl;
+
 libraryList.appendChild(t);
                           })
                         : (libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Thư viện hiện đang trống.</li>');
