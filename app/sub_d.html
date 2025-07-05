@@ -140,11 +140,43 @@
                 <div id="click-overlay"></div>
                 <div id="subtitle-display"></div>
                 <div id="custom-controls">
-                    <!-- Controls HTML is unchanged -->
-                </div>
+  <div class="progress-container">
+      <div id="seek-tooltip">00:00</div>
+      <input type="range" id="progress-bar" value="0" min="0">
+  </div>
+  <div class="controls-row">
+      <button id="play-pause-btn">...</button>
+      <div class="volume-container">
+          <button id="volume-btn">...</button>
+          <input type="range" id="volume-slider" min="0" max="100" value="100">
+      </div>
+      <div id="time-display">00:00 / 00:00</div>
+      <div style="margin-left: auto;"></div>
+      <button id="settings-btn">...</button>
+      <button id="fullscreen-btn">...</button>
+  </div>
+</div>
+
                 <div id="settings-menu">
-                    <!-- Settings Menu HTML is unchanged -->
-                </div>
+    <h3>Tùy chỉnh Phụ đề</h3>
+    <div class="control-group">
+        <label for="font-size-slider">Kích thước chữ</label>
+        <input type="range" id="font-size-slider" min="12" max="48" step="1">
+    </div>
+    <div class="control-group">
+        <label for="font-color-picker">Màu chữ</label>
+        <input type="color" id="font-color-picker">
+    </div>
+    <div class="control-group">
+        <label for="bg-color-picker">Màu nền</label>
+        <input type="color" id="bg-color-picker">
+    </div>
+    <div class="control-group">
+        <label for="bg-opacity-slider">Độ mờ nền</label>
+        <input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05">
+    </div>
+</div>
+
             </div>
         </div>
         <div id="side-library-panel">
