@@ -216,16 +216,18 @@ function onYouTubeIframeAPIReady() {
  * Fetches the library.json file and renders the video list.
  */
 async function initializeLibrary() {
-    try {
-        const response = await fetch('library.json?t=' + Date.now()); // Cache-bust
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        libraryData = await response.json();
-        renderLibrary(libraryData);
-    } catch (error) {
-        console.error("Could not load or parse library.json:", error);
-        libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Lỗi: Không thể tải thư viện.</li>';
-    }
+  try {
+    const res = await fetch('library.json');
+    if (!res.ok) throw new Error("Không thể tải thư viện.");
+    const data = await res.json();
+    libraryData = data;
+    renderLibrary(data);
+  } catch (e) {
+    console.error(e);
+    libraryList.innerHTML = '<li style="color:#888; text-align:center;">Không thể tải thư viện.</li>';
+  }
 }
+
 
 /**
  * Renders the video library list from the fetched data.
@@ -463,9 +465,21 @@ function togglePlayPause() { player.getPlayerState() === YT.PlayerState.PLAYING 
 function handleSeek() { player.seekTo(progressBar.value, true); }
 function handleVolumeChange(e) { player.setVolume(e.target.value); player.unMute(); updateVolumeUI(e.target.value, false); }
 function toggleMute() { player.isMuted() ? player.unMute() : player.mute(); updateVolumeUI(player.getVolume(), player.isMuted()); }
-function toggleFullscreen() {
-    if (doc.fullscreenElement) { doc.exitFullscreen(); } else { playerContainer.requestFullscreen(); }
+async function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+  } else {
+    await playerContainer.requestFullscreen();
+    if (screen.orientation && screen.orientation.lock) {
+      try {
+        await screen.orientation.lock('landscape');
+      } catch (e) {
+        console.warn('Không thể khoá xoay màn hình:', e);
+      }
+    }
+  }
 }
+
 function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.toggle('visible'); }
 
 /**
