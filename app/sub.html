@@ -2,9 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trình xem YouTube Chuyên nghiệp</title>
     <style>
         :root {
@@ -19,12 +17,7 @@
             padding: 10px; box-sizing: border-box;
         }
         main { width: 100%; max-width: 960px; text-align: center; }
-        html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overscroll-behavior: none;
-}
+        
         #setup-container h1, #setup-container h2 { font-weight: 300; color: var(--accent-color); border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
         #library-list {
             list-style-type: none; padding: 0; margin: 0 0 20px 0; max-height: 60vh; overflow-y: auto; text-align: left;
@@ -68,19 +61,29 @@
         #video-author-display { margin: 5px 0 0 0; color: #ccc; }
         
 #player-container {
-  height: 100svh; /* dùng svh để tránh bị cắt ở thiết bị có notch/navigation */
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
-}
-
-#youtube-player {
-  height: 100svh;
-  width: auto;
-  max-width: 100vw;
-  object-fit: contain;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 999;
 }
 
 #player-container.no-cursor { cursor: none; }
-
+#youtube-player {
+  height: 100vh;
+  aspect-ratio: 16 / 9;
+  width: auto;
+  max-width: 100vw;
+  object-fit: contain;
+  background-color: #000;
+  border: none;
+}
         #subtitle-display { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 15px; text-align: center; border-radius: 6px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); line-height: 1.4; transition: opacity 0.2s; pointer-events: none; opacity: 0; }
         #custom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); z-index: 21; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; }
         #player-container.controls-active #custom-controls { opacity: 1; visibility: visible; }
@@ -413,27 +416,10 @@ function launchPlayer(videoData) {
         player.loadVideoById(videoData.videoId);
     } else {
         player = new YT.Player("youtube-player", {
-  height: '100%',
-  width: '100%',
-  videoId: videoData.videoId,
-  playerVars: {
-    autoplay: 1,         // ✅ bật autoplay
-    playsinline: 1,
-    rel: 0,
-    modestbranding: 1,
-    controls: 0,
-    showinfo: 0,
-    iv_load_policy: 3
-  },
-  events: {
-    onReady: (e) => {
-      onPlayerReady(e);
-      e.target.playVideo(); // ✅ phát ngay sau khi ready
-    },
-    onStateChange: onPlayerStateChange
-  }
-});
-
+            height: '100%', width: '100%', videoId: videoData.videoId,
+            playerVars: { 'playsinline': 1, 'rel': 0, 'modestbranding': 1, 'controls': 0, 'showinfo': 0, 'iv_load_policy': 3 },
+            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+        });
     }
 }
 
@@ -507,8 +493,7 @@ async function toggleFullscreen() {
     await playerContainer.requestFullscreen();
     if (screen.orientation && screen.orientation.lock) {
       try {
-        await screen.orientation.lock('landscape').catch(() => {});
-
+        await screen.orientation.lock('landscape');
       } catch (e) {
         console.warn('Không thể khoá xoay màn hình:', e);
       }
