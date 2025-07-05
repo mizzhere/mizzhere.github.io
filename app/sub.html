@@ -372,7 +372,220 @@ function onPlayerReady(event) {
 
 // ... the rest of the JS functions (onPlayerStateChange, handleKeyboardShortcuts, etc.) are exactly the same as the previous full version.
 // You can copy them from there to ensure completeness. For this response, I'm omitting them for brevity.
-function onPlayerStateChange(e){updatePlayPauseUI(e.data),e.data===YT.PlayerState.PLAYING?(subtitles.length>0&&startSubtitleSync(),startProgressSync(),showControlsAndSetHideTimeout()):(stopSubtitleSync(),stopProgressSync(),showControlsAndSetHideTimeout())}function handleKeyboardShortcuts(e){if(!player||"INPUT"===e.target.tagName)return;switch(e.code){case"Space":e.preventDefault(),togglePlayPause();break;case"ArrowLeft":e.preventDefault(),player.seekTo(player.getCurrentTime()-5,!0);break;case"ArrowRight":e.preventDefault(),player.seekTo(player.getCurrentTime()+5,!0);break;case"KeyM":e.preventDefault(),toggleMute();break;case"KeyF":e.preventDefault(),toggleFullscreen();break}}function togglePlayPause(){player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()}function handleSeek(){player.seekTo(progressBar.value,!0)}function handleVolumeChange(e){player.setVolume(e.target.value),player.unMute(),updateVolumeUI(e.target.value,!1)}function toggleMute(){player.isMuted()?player.unMute():player.mute(),updateVolumeUI(player.getVolume(),player.isMuted())}function toggleFullscreen(){doc.fullscreenElement?doc.exitFullscreen():playerContainer.requestFullscreen()}function toggleSettingsMenu(e){e.stopPropagation(),settingsMenu.classList.toggle("visible")}function showControlsAndSetHideTimeout(){if(!player||"function"!=typeof player.getPlayerState)return;clearTimeout(controlsTimeout),playerContainer.classList.add("controls-active"),player.getPlayerState()!==YT.PlayerState.PLAYING||(controlsTimeout=setTimeout(()=>{playerContainer.classList.remove("controls-active")},3e3))}function updatePlayPauseUI(e){playPauseBtn.innerHTML=e===YT.PlayerState.PLAYING?pauseIcon:playIcon}function updateVolumeUI(e,t){volumeSlider.value=t?0:e;volumeBtn.innerHTML=t||0==e?volumeMuteIcon:volumeHighIcon}function formatTime(e){const t=Math.round(e),o=Math.floor(t/60);return`${String(o).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`}function startProgressSync(){stopProgressSync(),progressInterval=setInterval(()=>{const e=player.getDuration(),t=player.getCurrentTime();if(isNaN(e))return;progressBar.max=e,progressBar.value=t,timeDisplay.textContent=`${formatTime(t)} / ${formatTime(e)}`;const o=e>0?t/e*100:0;progressBar.style.setProperty("--progress-percent",`${o}%`)},250)}function stopProgressSync(){clearInterval(progressInterval)}function handleProgressBarHover(e){if(!player||isNaN(player.getDuration()))return;const t=progressBar.getBoundingClientRect(),o=(e.clientX-t.left)/t.width,n=o*player.getDuration();seekTooltip.style.left=`${o*100}%`,seekTooltip.textContent=formatTime(n),seekTooltip.style.display="block"}function applyAndSaveStyles(){applySubtitleStyles(),saveSettings()}function applySubtitleStyles(){function e(e,t){let o="0x"+e[1]+e[2],n="0x"+e[3]+e[4],r="0x"+e[5]+e[6];return`rgba(${+o},${+n},${+r},${t})`}subtitleDisplay.style.fontSize=`${subtitleSettings.fontSize}px`,subtitleDisplay.style.color=subtitleSettings.fontColor,subtitleDisplay.style.backgroundColor=e(subtitleSettings.bgColor,subtitleSettings.bgOpacity)}function saveSettings(){localStorage.setItem("youtubeSrtPlayerSettings",JSON.stringify(subtitleSettings))}function loadSettings(){const e=localStorage.getItem("youtubeSrtPlayerSettings");subtitleSettings=e?JSON.parse(e):{...DEFAULT_SETTINGS},fontSizeSlider.value=subtitleSettings.fontSize,fontColorPicker.value=subtitleSettings.fontColor,bgColorPicker.value=subtitleSettings.bgColor,bgOpacitySlider.value=subtitleSettings.bgOpacity,applySubtitleStyles()}function startSubtitleSync(){stopSubtitleSync(),subtitleCheckInterval=setInterval(()=>{if(!player||"function"!=typeof player.getCurrentTime)return;const e=player.getCurrentTime(),t=subtitles.find(t=>e>=t.start&&e>=t.end);subtitleDisplay.style.opacity=t?"1":"0",t&&(subtitleDisplay.innerHTML=t.text)},100)}function stopSubtitleSync(){clearInterval(subtitleCheckInterval)}function handleUrlPaste(e){const t=(e.clipboardData||window.clipboardData).getData("text"),o=extractVideoID(t);o&&(e.preventDefault(),"BODY"===e.target.tagName&&null!==setupContainer.offsetParent?launchPlayer({videoId:o}):e.target===urlInput&&(urlInput.value=t))}function extractVideoID(e){const t=/(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;return e.match(t)?e.match(t)[1]:null}function handleFileDrop(e){if(!player)return void showNotification("Vui lòng tải một video trước khi thả phụ đề.","error");const t=e.dataTransfer.files[0];t&&t.name.endsWith(".srt")?(()=>{const e=new FileReader;e.onload=e=>{subtitles=parseSRT(e.target.result),subtitles.length>0?(showNotification(`Đã tải thành công ${subtitles.length} dòng phụ đề.`,"success"),player.getPlayerState()===YT.PlayerState.PLAYING&&startSubtitleSync()):showNotification("Không thể phân tích file .srt.","error")},e.readAsText(t)})():showNotification("Vui lòng chỉ thả file có định dạng .srt","error")}function showNotification(e,t="success"){const o=doc.createElement("div");o.className=`notification ${t}`,o.textContent=e,notificationArea.appendChild(o),setTimeout(()=>o.remove(),4e3)}function parseSRT(e){const t=[];for(const r of e.trim().replace(/\r/g,"").split("\n\n")){const e=r.split("\n"),o=e.findIndex(e=>e.includes("-->"));if(-1!==o){const n=e.slice(o+1).join("<br>"),a=e[o].match(/(.*) --> (.*)/);a&&n&&t.push({start:srtTimeToSeconds(a[1].trim()),end:srtTimeToSeconds(a[2].trim()),text:n})}}return t}function srtTimeToSeconds(e){const t=e.split(/[:,]/),o=t.reverse(),n=parseInt(o[0],10)||0,r=parseInt(o[1],10)||0,a=parseInt(o[2],10)||0,i=parseInt(o[3],10)||0;return 3600*i+60*a+r+n/1e3}
+function onPlayerStateChange(event) {
+    updatePlayPauseUI(event.data);
+    if (event.data === YT.PlayerState.PLAYING) {
+        if (subtitles.length > 0) startSubtitleSync();
+        startProgressSync();
+        showControlsAndSetHideTimeout();
+    } else {
+        stopSubtitleSync();
+        stopProgressSync();
+        showControlsAndSetHideTimeout();
+    }
+}
+
+/**
+ * Handles keyboard shortcuts for player control.
+ */
+function handleKeyboardShortcuts(e) {
+    if (!player || e.target.tagName === 'INPUT') return;
+    switch (e.code) {
+        case 'Space': e.preventDefault(); togglePlayPause(); break;
+        case 'ArrowLeft': e.preventDefault(); player.seekTo(player.getCurrentTime() - 5, true); break;
+        case 'ArrowRight': e.preventDefault(); player.seekTo(player.getCurrentTime() + 5, true); break;
+        case 'KeyM': e.preventDefault(); toggleMute(); break;
+        case 'KeyF': e.preventDefault(); toggleFullscreen(); break;
+    }
+}
+
+/**
+ * Player control functions.
+ */
+function togglePlayPause() { player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); }
+function handleSeek() { player.seekTo(progressBar.value, true); }
+function handleVolumeChange(e) { player.setVolume(e.target.value); player.unMute(); updateVolumeUI(e.target.value, false); }
+function toggleMute() { player.isMuted() ? player.unMute() : player.mute(); updateVolumeUI(player.getVolume(), player.isMuted()); }
+async function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+  } else {
+    await playerContainer.requestFullscreen();
+    if (screen.orientation && screen.orientation.lock) {
+      try {
+        await screen.orientation.lock('landscape');
+      } catch (e) {
+        console.warn('Không thể khoá xoay màn hình:', e);
+      }
+    }
+  }
+}
+
+function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.toggle('visible'); }
+
+/**
+ * Shows controls and sets a timeout to hide them again.
+ */
+function showControlsAndSetHideTimeout() {
+    // --- FIX: Add a guard clause to prevent error before player is ready ---
+    if (!player || typeof player.getPlayerState !== 'function') return;
+
+    clearTimeout(controlsTimeout);
+    playerContainer.classList.add('controls-active');
+    if (player.getPlayerState() !== YT.PlayerState.PLAYING) return;
+    controlsTimeout = setTimeout(() => {
+        playerContainer.classList.remove('controls-active');
+    }, 3000);
+}
+
+/**
+ * Updates the UI of player controls.
+ */
+function updatePlayPauseUI(state) { playPauseBtn.innerHTML = state === YT.PlayerState.PLAYING ? pauseIcon : playIcon; }
+function updateVolumeUI(volume, isMuted) {
+    volumeSlider.value = isMuted ? 0 : volume;
+    volumeBtn.innerHTML = (isMuted || volume == 0) ? volumeMuteIcon : volumeHighIcon;
+}
+function formatTime(timeInSeconds) {
+    const time = Math.round(timeInSeconds);
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+function startProgressSync() {
+    stopProgressSync();
+    progressInterval = setInterval(() => {
+        const duration = player.getDuration();
+        const currentTime = player.getCurrentTime();
+        if (isNaN(duration)) return;
+        progressBar.max = duration;
+        progressBar.value = currentTime;
+        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+        progressBar.style.setProperty('--progress-percent', `${progressPercent}%`);
+    }, 250);
+}
+function stopProgressSync() { clearInterval(progressInterval); }
+
+function handleProgressBarHover(e) {
+    if (!player || isNaN(player.getDuration())) return;
+    const rect = progressBar.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const seekTime = percent * player.getDuration();
+    seekTooltip.style.left = `${percent * 100}%`;
+    seekTooltip.textContent = formatTime(seekTime);
+    seekTooltip.style.display = 'block';
+}
+
+/**
+ * Subtitle settings functions.
+ */
+function applyAndSaveStyles() { applySubtitleStyles(); saveSettings(); }
+function applySubtitleStyles() {
+    function hexToRgba(hex, op) { let r = "0x" + hex[1] + hex[2], g = "0x" + hex[3] + hex[4], b = "0x" + hex[5] + hex[6]; return `rgba(${+r},${+g},${+b},${op})`; }
+    subtitleDisplay.style.fontSize = `${subtitleSettings.fontSize}px`;
+    subtitleDisplay.style.color = subtitleSettings.fontColor;
+    subtitleDisplay.style.backgroundColor = hexToRgba(subtitleSettings.bgColor, subtitleSettings.bgOpacity);
+}
+function saveSettings() { localStorage.setItem('youtubeSrtPlayerSettings', JSON.stringify(subtitleSettings)); }
+function loadSettings() {
+    const saved = localStorage.getItem('youtubeSrtPlayerSettings');
+    subtitleSettings = saved ? JSON.parse(saved) : { ...DEFAULT_SETTINGS };
+    fontSizeSlider.value = subtitleSettings.fontSize;
+    fontColorPicker.value = subtitleSettings.fontColor;
+    bgColorPicker.value = subtitleSettings.bgColor;
+    bgOpacitySlider.value = subtitleSettings.bgOpacity;
+    applySubtitleStyles();
+}
+function startSubtitleSync() {
+    stopSubtitleSync();
+    subtitleCheckInterval = setInterval(() => {
+        if (!player || typeof player.getCurrentTime !== 'function') return;
+        const currentTime = player.getCurrentTime();
+        const currentSub = subtitles.find(sub => currentTime >= sub.start && sub.end >= currentTime);
+        subtitleDisplay.style.opacity = currentSub ? '1' : '0';
+        if (currentSub) subtitleDisplay.innerHTML = currentSub.text;
+    }, 100);
+}
+function stopSubtitleSync() { clearInterval(subtitleCheckInterval); }
+
+/**
+ * Handlers for custom video input.
+ */
+function handleUrlPaste(e) {
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    const videoId = extractVideoID(pastedText);
+    if (!videoId) return;
+
+    // Ngăn chặn hành vi paste mặc định nếu đang ở trang chính
+    if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
+        e.preventDefault();
+        loadVideo(videoId);
+    }
+
+    // Nếu đang paste vào input thì gán giá trị
+    else if (e.target.id === 'youtube-url-input') {
+        e.target.value = pastedText;
+    }
+}
+
+function extractVideoID(url) {
+    const regex = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;
+    return url.match(regex) ? url.match(regex)[1] : null;
+}
+function handleFileDrop(e) {
+    if (!player) {
+        showNotification("Vui lòng tải một video trước khi thả phụ đề.", "error");
+        return;
+    }
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.srt')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            subtitles = parseSRT(event.target.result);
+            if (subtitles.length > 0) {
+                showNotification(`Đã tải thành công ${subtitles.length} dòng phụ đề.`, 'success');
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) startSubtitleSync();
+            } else showNotification('Không thể phân tích file .srt.', 'error');
+        };
+        reader.readAsText(file);
+    } else {
+        showNotification('Vui lòng chỉ thả file có định dạng .srt', 'error');
+    }
+}
+
+/**
+ * Utility functions.
+ */
+function showNotification(message, type = "success") {
+    const notif = doc.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.textContent = message;
+    notificationArea.appendChild(notif);
+    setTimeout(() => notif.remove(), 4000);
+}
+function parseSRT(srtText) {
+    const subs = [];
+    const blocks = srtText.trim().replace(/\r/g, "").split("\n\n");
+    for (const block of blocks) {
+        const lines = block.split("\n");
+        const timeLineIndex = lines.findIndex(line => line.includes('-->'));
+        if (timeLineIndex !== -1) {
+            const textLines = lines.slice(timeLineIndex + 1).join('<br>');
+            const timeMatch = lines[timeLineIndex].match(/(.*) --> (.*)/);
+            if (timeMatch && textLines) {
+                subs.push({ start: srtTimeToSeconds(timeMatch[1].trim()), end: srtTimeToSeconds(timeMatch[2].trim()), text: textLines });
+            }
+        }
+    }
+    return subs;
+}
+function srtTimeToSeconds(timeString) {
+    const parts = timeString.split(/[:,]/); const rev = parts.reverse();
+    const ms = parseInt(rev[0], 10) || 0, s = parseInt(rev[1], 10) || 0;
+    const m = parseInt(rev[2], 10) || 0, h = parseInt(rev[3], 10) || 0;
+    return h * 3600 + m * 60 + s + ms / 1000;
+}
     </script>
 </body>
 </html>
