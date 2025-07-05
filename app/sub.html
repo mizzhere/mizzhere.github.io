@@ -158,241 +158,477 @@
     <div id="notification-area"></div>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        const doc = document;
-        const setupContainer = doc.getElementById('setup-container');
-        const libraryList = doc.getElementById('library-list');
-        const customVideoForm = doc.getElementById('custom-video-form');
-        const urlInput = doc.getElementById('youtube-url-input');
-        const playerWrapper = doc.getElementById('player-wrapper');
-        const homeBtn = doc.getElementById('home-btn');
-        const videoInfoContainer = doc.getElementById('video-info-container');
-        const videoTitleDisplay = doc.getElementById('video-title-display');
-        const videoAuthorDisplay = doc.getElementById('video-author-display');
-        const playerContainer = doc.getElementById('player-container');
-        const subtitleDisplay = doc.getElementById('subtitle-display');
-        const playPauseBtn = doc.getElementById('play-pause-btn');
-        const progressBar = doc.getElementById('progress-bar');
-        const seekTooltip = doc.getElementById('seek-tooltip');
-        const timeDisplay = doc.getElementById('time-display');
-        const volumeBtn = doc.getElementById('volume-btn');
-        const volumeSlider = doc.getElementById('volume-slider');
-        const settingsBtn = doc.getElementById('settings-btn');
-        const fullscreenBtn = doc.getElementById('fullscreen-btn');
-        const settingsMenu = doc.getElementById('settings-menu');
-        const fontSizeSlider = doc.getElementById('font-size-slider');
-        const fontColorPicker = doc.getElementById('font-color-picker');
-        const bgColorPicker = doc.getElementById('bg-color-picker');
-        const bgOpacitySlider = doc.getElementById('bg-opacity-slider');
-        const notificationArea = doc.getElementById('notification-area');
-        const dragOverlay = doc.getElementById('drag-overlay');
-        const playIcon = `<svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>`;
-        const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>`;
-        const volumeHighIcon = `<svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"></path></svg>`;
-        const volumeMuteIcon = `<svg viewBox="0 0 24 24"><path d="M12,4L7,9H3V15H7L12,20V4M14,3.23V5.29C15.06,5.82 15.9,6.57 16.5,7.42L17.93,6C17.15,5.1 16.2,4.32 15.14,3.72L14,3.23M19,12C19,13.82 18.2,15.44 16.97,16.5L18.4,17.93C19.97,16.45 21,14.38 21,12C21,7.72 18,4.14 14,3.23V3.72L18.06,7.78C18.68,8.91 19,10.36 19,12M16.5,12C16.5,12.22 16.47,12.43 16.44,12.64L14,10.2V7.97C15.5,8.71 16.5,10.23 16.5,12Z"></path></svg>`;
-        let player, subtitles = [], libraryData = [], subtitleCheckInterval = null, progressInterval = null, controlsTimeout = null;
-        let subtitleSettings = {}, DEFAULT_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.75" };
-        
-        async function initializeLibrary() {
-            try {
-                const response = await fetch('library.json?t=' + Date.now());
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                libraryData = await response.json(); // Store data globally
-                renderLibrary(libraryData);
-            } catch (error) {
-                console.error("Could not load or parse library.json:", error);
-                libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Lỗi: Không thể tải thư viện.</li>';
+        // DOM Elements
+const doc = document;
+const setupContainer = doc.getElementById('setup-container');
+const libraryList = doc.getElementById('library-list');
+const customVideoForm = doc.getElementById('custom-video-form');
+const urlInput = doc.getElementById('youtube-url-input');
+const playerWrapper = doc.getElementById('player-wrapper');
+const homeBtn = doc.getElementById('home-btn');
+const videoInfoContainer = doc.getElementById('video-info-container');
+const videoTitleDisplay = doc.getElementById('video-title-display');
+const videoAuthorDisplay = doc.getElementById('video-author-display');
+const playerContainer = doc.getElementById('player-container');
+const subtitleDisplay = doc.getElementById('subtitle-display');
+const playPauseBtn = doc.getElementById('play-pause-btn');
+const progressBar = doc.getElementById('progress-bar');
+const seekTooltip = doc.getElementById('seek-tooltip');
+const timeDisplay = doc.getElementById('time-display');
+const volumeBtn = doc.getElementById('volume-btn');
+const volumeSlider = doc.getElementById('volume-slider');
+const settingsBtn = doc.getElementById('settings-btn');
+const fullscreenBtn = doc.getElementById('fullscreen-btn');
+const settingsMenu = doc.getElementById('settings-menu');
+const fontSizeSlider = doc.getElementById('font-size-slider');
+const fontColorPicker = doc.getElementById('font-color-picker');
+const bgColorPicker = doc.getElementById('bg-color-picker');
+const bgOpacitySlider = doc.getElementById('bg-opacity-slider');
+const notificationArea = doc.getElementById('notification-area');
+const dragOverlay = doc.getElementById('drag-overlay');
+
+// SVG Icons for player controls
+const playIcon = `<svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>`;
+const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>`;
+const volumeHighIcon = `<svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"></path></svg>`;
+const volumeMuteIcon = `<svg viewBox="0 0 24 24"><path d="M12,4L7,9H3V15H7L12,20V4M14,3.23V5.29C15.06,5.82 15.9,6.57 16.5,7.42L17.93,6C17.15,5.1 16.2,4.32 15.14,3.72L14,3.23M19,12C19,13.82 18.2,15.44 16.97,16.5L18.4,17.93C19.97,16.45 21,14.38 21,12C21,7.72 18,4.14 14,3.23V3.72L18.06,7.78C18.68,8.91 19,10.36 19,12M16.5,12C16.5,12.22 16.47,12.43 16.44,12.64L14,10.2V7.97C15.5,8.71 16.5,10.23 16.5,12Z"></path></svg>`;
+
+// Application State
+let player;
+let subtitles = [];
+let libraryData = []; // Store library data for later use
+let subtitleCheckInterval = null;
+let progressInterval = null;
+let controlsTimeout = null;
+let subtitleSettings = {};
+const DEFAULT_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.75" };
+
+/**
+ * Entry point, called by the YouTube IFrame API script.
+ */
+function onYouTubeIframeAPIReady() {
+    initializeLibrary();
+    loadSettings();
+    setupEventListeners();
+}
+
+/**
+ * Fetches the library.json file and renders the video list.
+ */
+async function initializeLibrary() {
+    try {
+        // Add a cache-busting query parameter to always get the latest version
+        const response = await fetch('library.json?t=' + Date.now());
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        libraryData = await response.json(); // Store data globally
+        renderLibrary(libraryData);
+    } catch (error) {
+        console.error("Could not load or parse library.json:", error);
+        libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Lỗi: Không thể tải thư viện.</li>';
+    }
+}
+
+/**
+ * Renders the video library list from the fetched data.
+ * @param {Array} videos - The array of video objects.
+ */
+function renderLibrary(videos) {
+    libraryList.innerHTML = ''; // Clear skeleton loaders
+    if (!videos || videos.length === 0) {
+        libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Thư viện hiện đang trống.</li>';
+        return;
+    }
+    videos.forEach(video => {
+        const li = doc.createElement('li');
+        li.className = 'library-item';
+        li.dataset.videoId = video.videoId;
+
+        li.innerHTML = `
+            <img data-src="${video.thumbnailUrl}" alt="Thumbnail for ${video.userTitle}" class="library-thumbnail lazy-load">
+            <div class="library-info">
+                <span class="library-title" title="${video.originalTitle}">${video.userTitle}</span>
+                <span class="library-author">${video.authorName}</span>
+            </div>
+        `;
+        libraryList.appendChild(li);
+    });
+    setupLazyLoading(); // Activate lazy loading for thumbnails
+}
+
+/**
+ * Sets up IntersectionObserver to lazy-load images.
+ */
+function setupLazyLoading() {
+    const lazyImages = doc.querySelectorAll('.lazy-load');
+    const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.classList.remove('lazy-load');
+                observer.unobserve(img);
+            }
+        });
+    });
+    lazyImages.forEach(img => lazyImageObserver.observe(img));
+}
+
+/**
+ * Fetches and parses an SRT file from a remote URL.
+ * @param {string} url - The URL of the .srt file.
+ */
+async function loadRemoteSubtitle(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Could not fetch SRT file at ${url}`);
+        const srtText = await response.text();
+        subtitles = parseSRT(srtText);
+        if (subtitles.length > 0) {
+            showNotification("Đã tải phụ đề từ thư viện.", "success");
+            if (player && player.getPlayerState() === YT.PlayerState.PLAYING) startSubtitleSync();
+        } else {
+            showNotification("File phụ đề trong thư viện bị lỗi.", "error");
+        }
+    } catch (error) {
+        showNotification("Không thể tải file phụ đề.", "error");
+    }
+}
+
+/**
+ * Displays video information above the player.
+ * @param {object} info - An object with {title, author}.
+ */
+function displayVideoInfo(info) {
+    videoTitleDisplay.textContent = info.title;
+    videoAuthorDisplay.textContent = info.author;
+    videoInfoContainer.style.display = 'block';
+}
+
+/**
+ * Sets up all event listeners for the application.
+ */
+function setupEventListeners() {
+    // Global paste listener
+    doc.addEventListener("paste", handleUrlPaste);
+
+    // Drag and Drop listeners
+    const body = doc.body;
+    body.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    body.addEventListener('dragenter', (e) => { e.preventDefault(); body.classList.add('dragging'); });
+    body.addEventListener('dragleave', (e) => { if (e.target === dragOverlay) body.classList.remove('dragging'); });
+    body.addEventListener('drop', (e) => { e.preventDefault(); body.classList.remove('dragging'); handleFileDrop(e); });
+
+    // Library item click
+    libraryList.addEventListener('click', (e) => {
+        const item = e.target.closest('.library-item');
+        if (item && item.dataset.videoId) {
+            const videoId = item.dataset.videoId;
+            const videoData = libraryData.find(v => v.videoId === videoId);
+            if (videoData) {
+                launchPlayer(videoData);
             }
         }
+    });
 
-        function renderLibrary(videos) {
-            libraryList.innerHTML = '';
-            if (!videos || videos.length === 0) {
-                libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Thư viện hiện đang trống.</li>';
-                return;
+    // Custom video form submission
+    customVideoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const videoId = extractVideoID(urlInput.value);
+        if (videoId) {
+            launchPlayer({ videoId: videoId }); // Launch with only the ID
+        } else {
+            showNotification("Link YouTube không hợp lệ.", "error");
+        }
+    });
+    
+    // Player controls listeners
+    homeBtn.addEventListener('click', goHome);
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    progressBar.addEventListener('input', handleSeek);
+    progressBar.addEventListener('mousemove', handleProgressBarHover);
+    progressBar.addEventListener('mouseleave', () => seekTooltip.style.display = 'none');
+    volumeSlider.addEventListener('input', handleVolumeChange);
+    volumeBtn.addEventListener('click', toggleMute);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    playerContainer.addEventListener('mousemove', showControlsAndSetHideTimeout);
+    
+    // Settings menu listeners
+    settingsBtn.addEventListener('click', toggleSettingsMenu);
+    doc.addEventListener('click', (e) => {
+        if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsMenu.classList.remove('visible');
+        }
+    });
+    fontSizeSlider.addEventListener('input', () => { subtitleSettings.fontSize = fontSizeSlider.value; applyAndSaveStyles(); });
+    fontColorPicker.addEventListener('input', () => { subtitleSettings.fontColor = fontColorPicker.value; applyAndSaveStyles(); });
+    bgColorPicker.addEventListener('input', () => { subtitleSettings.bgColor = bgColorPicker.value; applyAndSaveStyles(); });
+    bgOpacitySlider.addEventListener('input', () => { subtitleSettings.bgOpacity = bgOpacitySlider.value; applyAndSaveStyles(); });
+    
+    // Keyboard shortcuts
+    doc.addEventListener('keydown', handleKeyboardShortcuts);
+}
+
+/**
+ * The main function to initialize the player view.
+ * @param {object} videoData - Data object for the video.
+ */
+function launchPlayer(videoData) {
+    setupContainer.classList.add('hidden');
+    playerWrapper.classList.remove('hidden');
+
+    // If data comes from the library, display it immediately
+    if (videoData.userTitle) {
+        displayVideoInfo({ title: videoData.userTitle, author: videoData.authorName });
+    } else {
+        // For custom videos, hide the info until it's loaded from the player API
+        videoInfoContainer.style.display = 'none';
+    }
+    
+    // Load subtitles if available from library
+    if (videoData.subtitleUrl) {
+        loadRemoteSubtitle(videoData.subtitleUrl);
+    }
+
+    if (player) {
+        subtitles = []; // Always reset subtitles for a new video
+        player.loadVideoById(videoData.videoId);
+    } else {
+        player = new YT.Player("youtube-player", {
+            height: '100%', width: '100%', videoId: videoData.videoId,
+            playerVars: { 'playsinline': 1, 'rel': 0, 'modestbranding': 1, 'controls': 0, 'showinfo': 0, 'iv_load_policy': 3 },
+            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+        });
+    }
+}
+
+/**
+ * Returns to the home/library view from the player.
+ */
+function goHome() {
+    if (player) {
+        player.stopVideo();
+        // Destroying and nullifying the player frees up memory and prevents background playback
+        player.destroy();
+        player = null;
+    }
+    playerWrapper.classList.add('hidden');
+    setupContainer.classList.remove('hidden');
+}
+
+/**
+ * Called by YouTube API when the player is ready.
+ */
+function onPlayerReady(event) {
+    // Only fetch from YT if info isn't already displayed (i.e., for custom videos)
+    if (videoInfoContainer.style.display === 'none') {
+        displayVideoInfo(event.target.getVideoData());
+    }
+    updateVolumeUI(event.target.getVolume(), event.target.isMuted());
+    showControlsAndSetHideTimeout();
+}
+
+/**
+ * Called by YouTube API when the player's state changes.
+ */
+function onPlayerStateChange(event) {
+    updatePlayPauseUI(event.data);
+    if (event.data === YT.PlayerState.PLAYING) {
+        if (subtitles.length > 0) startSubtitleSync();
+        startProgressSync();
+        showControlsAndSetHideTimeout();
+    } else {
+        stopSubtitleSync();
+        stopProgressSync();
+        showControlsAndSetHideTimeout(); // Keep controls visible when paused
+    }
+}
+
+/**
+ * Handles keyboard shortcuts for player control.
+ */
+function handleKeyboardShortcuts(e) {
+    if (!player || e.target.tagName === 'INPUT') return;
+    switch (e.code) {
+        case 'Space': e.preventDefault(); togglePlayPause(); break;
+        case 'ArrowLeft': e.preventDefault(); player.seekTo(player.getCurrentTime() - 5, true); break;
+        case 'ArrowRight': e.preventDefault(); player.seekTo(player.getCurrentTime() + 5, true); break;
+        case 'KeyM': e.preventDefault(); toggleMute(); break;
+        case 'KeyF': e.preventDefault(); toggleFullscreen(); break;
+    }
+}
+
+/**
+ * Player control functions.
+ */
+function togglePlayPause() { player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); }
+function handleSeek() { player.seekTo(progressBar.value, true); }
+function handleVolumeChange(e) { player.setVolume(e.target.value); player.unMute(); updateVolumeUI(e.target.value, false); }
+function toggleMute() { player.isMuted() ? player.unMute() : player.mute(); updateVolumeUI(player.getVolume(), player.isMuted()); }
+function toggleFullscreen() {
+    if (doc.fullscreenElement) {
+        doc.exitFullscreen();
+    } else {
+        playerContainer.requestFullscreen();
+    }
+}
+function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.toggle('visible'); }
+
+/**
+ * Shows controls and sets a timeout to hide them again.
+ */
+function showControlsAndSetHideTimeout() {
+    clearTimeout(controlsTimeout);
+    playerContainer.classList.add('controls-active');
+    // Don't hide controls if the video is not playing
+    if (player.getPlayerState() !== YT.PlayerState.PLAYING) return;
+    controlsTimeout = setTimeout(() => {
+        playerContainer.classList.remove('controls-active');
+    }, 3000);
+}
+
+/**
+ * Updates the UI of player controls.
+ */
+function updatePlayPauseUI(state) { playPauseBtn.innerHTML = state === YT.PlayerState.PLAYING ? pauseIcon : playIcon; }
+function updateVolumeUI(volume, isMuted) {
+    volumeSlider.value = isMuted ? 0 : volume;
+    volumeBtn.innerHTML = (isMuted || volume == 0) ? volumeMuteIcon : volumeHighIcon;
+}
+function formatTime(timeInSeconds) {
+    const time = Math.round(timeInSeconds);
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+function startProgressSync() {
+    stopProgressSync();
+    progressInterval = setInterval(() => {
+        const duration = player.getDuration();
+        const currentTime = player.getCurrentTime();
+        if (isNaN(duration)) return; // Don't update if duration isn't ready
+        progressBar.max = duration;
+        progressBar.value = currentTime;
+        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+        progressBar.style.setProperty('--progress-percent', `${progressPercent}%`);
+    }, 250);
+}
+function stopProgressSync() { clearInterval(progressInterval); }
+
+function handleProgressBarHover(e) {
+    if (!player || isNaN(player.getDuration())) return;
+    const rect = progressBar.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const seekTime = percent * player.getDuration();
+    seekTooltip.style.left = `${percent * 100}%`;
+    seekTooltip.textContent = formatTime(seekTime);
+    seekTooltip.style.display = 'block';
+}
+
+/**
+ * Subtitle settings functions.
+ */
+function applyAndSaveStyles() { applySubtitleStyles(); saveSettings(); }
+function applySubtitleStyles() {
+    function hexToRgba(hex, op) { let r = "0x" + hex[1] + hex[2], g = "0x" + hex[3] + hex[4], b = "0x" + hex[5] + hex[6]; return `rgba(${+r},${+g},${+b},${op})`; }
+    subtitleDisplay.style.fontSize = `${subtitleSettings.fontSize}px`;
+    subtitleDisplay.style.color = subtitleSettings.fontColor;
+    subtitleDisplay.style.backgroundColor = hexToRgba(subtitleSettings.bgColor, subtitleSettings.bgOpacity);
+}
+function saveSettings() { localStorage.setItem('youtubeSrtPlayerSettings', JSON.stringify(subtitleSettings)); }
+function loadSettings() {
+    const saved = localStorage.getItem('youtubeSrtPlayerSettings');
+    subtitleSettings = saved ? JSON.parse(saved) : { ...DEFAULT_SETTINGS };
+    fontSizeSlider.value = subtitleSettings.fontSize;
+    fontColorPicker.value = subtitleSettings.fontColor;
+    bgColorPicker.value = subtitleSettings.bgColor;
+    bgOpacitySlider.value = subtitleSettings.bgOpacity;
+    applySubtitleStyles();
+}
+function startSubtitleSync() {
+    stopSubtitleSync();
+    subtitleCheckInterval = setInterval(() => {
+        const currentTime = player.getCurrentTime();
+        const currentSub = subtitles.find(sub => currentTime >= sub.start && sub.end >= currentTime);
+        subtitleDisplay.style.opacity = currentSub ? '1' : '0';
+        if (currentSub) subtitleDisplay.innerHTML = currentSub.text;
+    }, 100);
+}
+function stopSubtitleSync() { clearInterval(subtitleCheckInterval); }
+
+/**
+ * Handlers for custom video input.
+ */
+function handleUrlPaste(e) {
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    const videoId = extractVideoID(pastedText);
+    if (videoId) {
+        e.preventDefault();
+        // If pasting anywhere on the page (not in an input)
+        if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
+            launchPlayer({ videoId: videoId });
+        } else if (e.target === urlInput) { // Paste into the input field
+            urlInput.value = pastedText;
+        }
+    }
+}
+function extractVideoID(url) {
+    const regex = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;
+    return url.match(regex) ? url.match(regex)[1] : null;
+}
+function handleFileDrop(e) {
+    if (!player) {
+        showNotification("Vui lòng tải một video trước khi thả phụ đề.", "error");
+        return;
+    }
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.srt')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            subtitles = parseSRT(event.target.result);
+            if (subtitles.length > 0) {
+                showNotification(`Đã tải thành công ${subtitles.length} dòng phụ đề.`, 'success');
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) startSubtitleSync();
+            } else showNotification('Không thể phân tích file .srt.', 'error');
+        };
+        reader.readAsText(file);
+    } else {
+        showNotification('Vui lòng chỉ thả file có định dạng .srt', 'error');
+    }
+}
+
+/**
+ * Utility functions.
+ */
+function showNotification(message, type = "success") {
+    const notif = doc.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.textContent = message;
+    notificationArea.appendChild(notif);
+    setTimeout(() => notif.remove(), 4000);
+}
+function parseSRT(srtText) {
+    const subs = [];
+    const blocks = srtText.trim().replace(/\r/g, "").split("\n\n");
+    for (const block of blocks) {
+        const lines = block.split("\n");
+        const timeLineIndex = lines.findIndex(line => line.includes('-->'));
+        if (timeLineIndex !== -1) {
+            const textLines = lines.slice(timeLineIndex + 1).join('<br>');
+            const timeMatch = lines[timeLineIndex].match(/(.*) --> (.*)/);
+            if (timeMatch && textLines) {
+                subs.push({ start: srtTimeToSeconds(timeMatch[1].trim()), end: srtTimeToSeconds(timeMatch[2].trim()), text: textLines });
             }
-            videos.forEach(video => {
-                const li = doc.createElement('li');
-                li.className = 'library-item';
-                li.dataset.videoId = video.videoId;
-                li.innerHTML = `
-                    <img data-src="${video.thumbnailUrl}" alt="Thumbnail for ${video.userTitle}" class="library-thumbnail lazy-load">
-                    <div class="library-info">
-                        <span class="library-title" title="${video.originalTitle}">${video.userTitle}</span>
-                        <span class="library-author">${video.authorName}</span>
-                    </div>`;
-                libraryList.appendChild(li);
-            });
-            setupLazyLoading(); // Activate lazy loading
         }
-
-        function setupLazyLoading() {
-            const lazyImages = doc.querySelectorAll('.lazy-load');
-            const lazyImageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.classList.remove('lazy-load');
-                        observer.unobserve(img);
-                    }
-                });
-            });
-            lazyImages.forEach(img => lazyImageObserver.observe(img));
-        }
-        
-        async function loadRemoteSubtitle(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Could not fetch SRT file at ${url}`);
-                const srtText = await response.text();
-                subtitles = parseSRT(srtText);
-                if (subtitles.length > 0) {
-                    showNotification("Đã tải phụ đề từ thư viện.", "success");
-                    if (player && player.getPlayerState() === YT.PlayerState.PLAYING) startSubtitleSync();
-                } else showNotification("File phụ đề trong thư viện bị lỗi.", "error");
-            } catch (error) { showNotification("Không thể tải file phụ đề.", "error"); }
-        }
-
-        function displayVideoInfo(info) {
-            videoTitleDisplay.textContent = info.title;
-            videoAuthorDisplay.textContent = info.author;
-            videoInfoContainer.style.display = 'block';
-        }
-
-        function onYouTubeIframeAPIReady() { initializeLibrary(); loadSettings(); setupEventListeners(); }
-
-        function setupEventListeners() {
-            doc.addEventListener("paste", handleUrlPaste);
-            const body = doc.body;
-            body.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
-            body.addEventListener('dragenter', (e) => { e.preventDefault(); body.classList.add('dragging'); });
-            body.addEventListener('dragleave', (e) => { if (e.target === dragOverlay) body.classList.remove('dragging'); });
-            body.addEventListener('drop', (e) => { e.preventDefault(); body.classList.remove('dragging'); handleFileDrop(e); });
-
-            libraryList.addEventListener('click', (e) => {
-                const item = e.target.closest('.library-item');
-                if (item && item.dataset.videoId) {
-                    const videoId = item.dataset.videoId;
-                    const videoData = libraryData.find(v => v.videoId === videoId);
-                    if (videoData) {
-                        launchPlayer(videoData);
-                    }
-                }
-            });
-
-            customVideoForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const videoId = extractVideoID(urlInput.value);
-                if (videoId) {
-                    launchPlayer({ videoId: videoId }); // Launch with only ID
-                } else { showNotification("Link YouTube không hợp lệ.", "error"); }
-            });
-            
-            homeBtn.addEventListener('click', goHome);
-            // ... all other listeners remain the same
-        }
-
-        function launchPlayer(videoData) {
-            // This is the new central function to start the player
-            setupContainer.classList.add('hidden');
-            playerWrapper.classList.remove('hidden');
-
-            // If data comes from the library, display it immediately
-            if (videoData.userTitle) {
-                displayVideoInfo({ title: videoData.userTitle, author: videoData.authorName });
-            } else {
-                // For custom videos, hide the info until it's loaded
-                videoInfoContainer.style.display = 'none';
-            }
-            
-            // Load subtitles if available from library
-            if (videoData.subtitleUrl) {
-                loadRemoteSubtitle(videoData.subtitleUrl);
-            }
-
-            if (player) {
-                subtitles = []; // Always reset subtitles
-                player.loadVideoById(videoData.videoId);
-            } else {
-                player = new YT.Player("youtube-player", {
-                    height: '100%', width: '100%', videoId: videoData.videoId,
-                    playerVars: { 'playsinline': 1, 'rel': 0, 'modestbranding': 1, 'controls': 0, 'showinfo': 0, 'iv_load_policy': 3 },
-                    events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
-                });
-            }
-        }
-        
-        function goHome() {
-            if (player) {
-                player.stopVideo();
-                player.destroy(); // Properly destroy the player
-                player = null;
-            }
-            playerWrapper.classList.add('hidden');
-            setupContainer.classList.remove('hidden');
-        }
-
-        function onPlayerReady(event) {
-            // Only fetch from YT if info isn't already displayed
-            if (videoInfoContainer.style.display === 'none') {
-                displayVideoInfo(event.target.getVideoData());
-            }
-            updateVolumeUI(event.target.getVolume(), event.target.isMuted());
-            showControlsAndSetHideTimeout();
-        }
-
-        function onPlayerStateChange(event) {
-            updatePlayPauseUI(event.data);
-            if (event.data === YT.PlayerState.PLAYING) {
-                if (subtitles.length > 0) startSubtitleSync();
-                startProgressSync();
-                showControlsAndSetHideTimeout();
-            } else {
-                stopSubtitleSync();
-                stopProgressSync();
-                showControlsAndSetHideTimeout();
-            }
-        }
-
-        function handleKeyboardShortcuts(e) { /* Unchanged */ }
-        function togglePlayPause() { /* Unchanged */ }
-        function handleSeek() { /* Unchanged */ }
-        function handleVolumeChange(e) { /* Unchanged */ }
-        function toggleMute() { /* Unchanged */ }
-        function toggleFullscreen() { /* Unchanged */ }
-        function toggleSettingsMenu(e) { /* Unchanged */ }
-        function showControlsAndSetHideTimeout() { /* Unchanged */ }
-        function updatePlayPauseUI(state) { /* Unchanged */ }
-        function updateVolumeUI(volume, isMuted) { /* Unchanged */ }
-        function formatTime(timeInSeconds) { /* Unchanged */ }
-        function startProgressSync() { /* Unchanged */ }
-        function stopProgressSync() { /* Unchanged */ }
-        function handleProgressBarHover(e) { /* Unchanged */ }
-        function applyAndSaveStyles() { /* Unchanged */ }
-        function applySubtitleStyles() { /* Unchanged */ }
-        function saveSettings() { /* Unchanged */ }
-        function loadSettings() { /* Unchanged */ }
-        function startSubtitleSync() { /* Unchanged */ }
-        function stopSubtitleSync() { /* Unchanged */ }
-
-        function handleUrlPaste(e) {
-            // This now applies to the whole document
-            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-            const videoId = extractVideoID(pastedText);
-            if (videoId) {
-                e.preventDefault();
-                if (e.target.tagName === 'BODY') { // Paste anywhere but an input
-                    launchPlayer({ videoId: videoId });
-                } else if (e.target === urlInput) { // Paste into the input field
-                    urlInput.value = pastedText;
-                }
-            }
-        }
-        function extractVideoID(url) { /* Unchanged */ }
-        function handleFileDrop(e) { /* Unchanged */ }
-        function showNotification(message, type = "success") { /* Unchanged */ }
-        function parseSRT(srtText) { /* Unchanged */ }
-        function srtTimeToSeconds(timeString) { /* Unchanged */ }
+    }
+    return subs;
+}
+function srtTimeToSeconds(timeString) {
+    const parts = timeString.split(/[:,]/); const rev = parts.reverse();
+    const ms = parseInt(rev[0], 10) || 0, s = parseInt(rev[1], 10) || 0;
+    const m = parseInt(rev[2], 10) || 0, h = parseInt(rev[3], 10) || 0;
+    return h * 3600 + m * 60 + s + ms / 1000;
+}
     </script>
 </body>
 </html>
