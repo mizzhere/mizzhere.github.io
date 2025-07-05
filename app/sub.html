@@ -1,72 +1,558 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trình xem YouTube Chuyên nghiệp</title>
-    <style>
-        :root {
-            --primary-bg: #121212; --secondary-bg: #1e1e1e; --text-color: #e0e0e0;
-            --accent-color: #03dac6; --success-color: #4caf50; --error-color: #f44336;
-            --controls-bg: rgba(20, 20, 20, 0.85); --progress-percent: 0%;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--primary-bg); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; box-sizing: border-box; }
-        main { width: 100%; max-width: 960px; text-align: center; }
-        #setup-container h1, #setup-container h2 { font-weight: 300; color: var(--accent-color); border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
-        #library-list {
-            list-style-type: none; padding: 0; margin: 0 0 20px 0; max-height: 60vh; overflow-y: auto; text-align: left;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
-        }
-        .library-item { background-color: var(--secondary-bg); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .library-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
-        .library-thumbnail { width: 100%; height: 160px; object-fit: cover; display: block; background-color: #000; }
-        .library-info { padding: 15px; }
-        .library-title { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .library-author { display: block; font-size: 0.85rem; color: #aaa; margin-top: 5px; }
-        .divider { margin: 40px 0; border: 0; height: 1px; background-image: linear-gradient(to right, transparent, #444, transparent); }
-        #youtube-url-input { width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--secondary-bg); color: var(--text-color); box-sizing: border-box; margin-bottom: 15px; outline: none; transition: border-color 0.3s; }
-        #youtube-url-input:focus { border-color: var(--accent-color); }
-        .instructions { color: #aaa; font-size: 1rem; margin-top: 0; line-height: 1.6; } /* Remove margin top */
-        #player-wrapper { width: 100%; }
-        #video-info-container { text-align: left; margin-bottom: 15px; display: none; }
-        #video-title-display { margin: 0; font-size: 1.5rem; font-weight: 600; }
-        #video-author-display { margin: 5px 0 0 0; color: #ccc; }
-        #player-container { position: relative; width: 100%; padding-top: 56.25%; background-color: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #player-container.no-cursor { cursor: none; }
-        #youtube-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        #subtitle-display { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 15px; text-align: center; border-radius: 6px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); line-height: 1.4; transition: opacity 0.2s; pointer-events: none; opacity: 0; }
-        #custom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); z-index: 21; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; }
-        #player-container.controls-active #custom-controls { opacity: 1; visibility: visible; }
-        .controls-row { display: flex; align-items: center; gap: 15px; }
-        .controls-row button { background: none; border: none; cursor: pointer; padding: 5px; fill: white; color: white; }
-        /* ... All other CSS is unchanged ... */
-        @media (orientation: landscape) and (max-height: 500px) { body:has(#player-wrapper:not(.hidden)) #setup-container { display: none; } body:has(#player-wrapper:not(.hidden)) #player-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999; } body:has(#player-wrapper:not(.hidden)) #video-info-container { display: none; } }
-    </style>
-</head>
-<body>
-    <main>
-        <div id="setup-container">
-            <h1>Thư viện Video</h1>
-            <ul id="library-list"><li>Đang tải thư viện...</li></ul>
-            <hr class="divider">
-            <h2>Hoặc xem video tùy chỉnh</h2>
-            <input type="text" id="youtube-url-input" placeholder="Dán link YouTube vào đây...">
-            <p class="instructions">Sau khi video tải, <strong>kéo và thả file phụ đề (.srt)</strong> vào trang.</p>
-        </div>
-        <div id="player-wrapper" class="hidden">
-            <div id="video-info-container">
-                <h2 id="video-title-display"></h2>
-                <p id="video-author-display"></p>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Trình xem YouTube Chuyên nghiệp</title>
+        <style>
+            :root {
+                --primary-bg: #121212;
+                --secondary-bg: #1e1e1e;
+                --text-color: #e0e0e0;
+                --accent-color: #03dac6;
+                --success-color: #4caf50;
+                --error-color: #f44336;
+                --controls-bg: rgba(20, 20, 20, 0.85);
+                --progress-percent: 0%;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                margin: 0;
+                background-color: var(--primary-bg);
+                color: var(--text-color);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+            main {
+                width: 100%;
+                max-width: 960px;
+                text-align: center;
+            }
+            #setup-container h1,
+            #setup-container h2 {
+                font-weight: 300;
+                color: var(--accent-color);
+                border-bottom: 1px solid #333;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            #library-list {
+                list-style-type: none;
+                padding: 0;
+                margin: 0 0 20px 0;
+                max-height: 60vh;
+                overflow-y: auto;
+                text-align: left;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+            .library-item {
+                background-color: var(--secondary-bg);
+                border-radius: 8px;
+                overflow: hidden;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .library-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            }
+            .library-thumbnail {
+                width: 100%;
+                height: 160px;
+                object-fit: cover;
+                display: block;
+                background-color: #000;
+            }
+            .library-info {
+                padding: 15px;
+            }
+            .library-title {
+                display: block;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .library-author {
+                display: block;
+                font-size: 0.85rem;
+                color: #aaa;
+                margin-top: 5px;
+            }
+            .divider {
+                margin: 40px 0;
+                border: 0;
+                height: 1px;
+                background-image: linear-gradient(to right, transparent, #444, transparent);
+            }
+            #youtube-url-input {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background-color: var(--secondary-bg);
+                color: var(--text-color);
+                box-sizing: border-box;
+                margin-bottom: 15px;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+            #youtube-url-input:focus {
+                border-color: var(--accent-color);
+            }
+            .instructions {
+                color: #aaa;
+                font-size: 1rem;
+                margin-top: 0;
+                line-height: 1.6;
+            } /* Remove margin top */
+            #player-wrapper {
+                width: 100%;
+            }
+            #video-info-container {
+                text-align: left;
+                margin-bottom: 15px;
+                display: none;
+            }
+            #video-title-display {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+            #video-author-display {
+                margin: 5px 0 0 0;
+                color: #ccc;
+            }
+            #player-container {
+                position: relative;
+                width: 100%;
+                padding-top: 56.25%;
+                background-color: #000;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+            #player-container.no-cursor {
+                cursor: none;
+            }
+            #youtube-player {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+            #subtitle-display {
+                position: absolute;
+                bottom: 12%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: max-content;
+                max-width: 90%;
+                padding: 5px 15px;
+                text-align: center;
+                border-radius: 6px;
+                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+                line-height: 1.4;
+                transition: opacity 0.2s;
+                pointer-events: none;
+                opacity: 0;
+            }
+            #custom-controls {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 10px;
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+                z-index: 21;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            }
+            #player-container.controls-active #custom-controls {
+                opacity: 1;
+                visibility: visible;
+            }
+            .controls-row {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .controls-row button {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 5px;
+                fill: white;
+                color: white;
+            }
+            /* ... All other CSS is unchanged ... */
+            @media (orientation: landscape) and (max-height: 500px) {
+                body:has(#player-wrapper:not(.hidden)) #setup-container {
+                    display: none;
+                }
+                body:has(#player-wrapper:not(.hidden)) #player-wrapper {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    z-index: 999;
+                }
+                body:has(#player-wrapper:not(.hidden)) #video-info-container {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div id="setup-container">
+                <h1>Thư viện Video</h1>
+                <ul id="library-list">
+                    <li>Đang tải thư viện...</li>
+                </ul>
+                <hr class="divider" />
+                <h2>Hoặc xem video tùy chỉnh</h2>
+                <input type="text" id="youtube-url-input" placeholder="Dán link YouTube vào đây..." />
+                <p class="instructions">Sau khi video tải, <strong>kéo và thả file phụ đề (.srt)</strong> vào trang.</p>
             </div>
-            <!-- Player and controls HTML are unchanged -->
-            <div id="player-container">...</div>
-        </div>
-    </main>
-    <div id="notification-area"></div>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        // All JS code here
-        const doc=document,setupContainer=doc.getElementById("setup-container"),libraryList=doc.getElementById("library-list"),playerWrapper=doc.getElementById("player-wrapper"),videoInfoContainer=doc.getElementById("video-info-container"),videoTitleDisplay=doc.getElementById("video-title-display"),videoAuthorDisplay=doc.getElementById("video-author-display"),playerContainer=doc.getElementById("player-container"),subtitleDisplay=doc.getElementById("subtitle-display"),playPauseBtn=doc.getElementById("play-pause-btn"),progressBar=doc.getElementById("progress-bar"),seekTooltip=doc.getElementById("seek-tooltip"),timeDisplay=doc.getElementById("time-display"),volumeBtn=doc.getElementById("volume-btn"),volumeSlider=doc.getElementById("volume-slider"),settingsBtn=doc.getElementById("settings-btn"),fullscreenBtn=doc.getElementById("fullscreen-btn"),settingsMenu=doc.getElementById("settings-menu"),fontSizeSlider=doc.getElementById("font-size-slider"),fontColorPicker=doc.getElementById("font-color-picker"),bgColorPicker=doc.getElementById("bg-color-picker"),bgOpacitySlider=doc.getElementById("bg-opacity-slider"),notificationArea=doc.getElementById("notification-area"),urlInput=doc.getElementById("youtube-url-input");const playIcon='<svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>',pauseIcon='<svg viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>',volumeHighIcon='<svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"></path></svg>',volumeMuteIcon='<svg viewBox="0 0 24 24"><path d="M12,4L7,9H3V15H7L12,20V4M14,3.23V5.29C15.06,5.82 15.9,6.57 16.5,7.42L17.93,6C17.15,5.1 16.2,4.32 15.14,3.72L14,3.23M19,12C19,13.82 18.2,15.44 16.97,16.5L18.4,17.93C19.97,16.45 21,14.38 21,12C21,7.72 18,4.14 14,3.23V3.72L18.06,7.78C18.68,8.91 19,10.36 19,12M16.5,12C16.5,12.22 16.47,12.43 16.44,12.64L14,10.2V7.97C15.5,8.71 16.5,10.23 16.5,12Z"></path></svg>';let player,subtitles=[],subtitleCheckInterval=null,progressInterval=null,controlsTimeout=null;let subtitleSettings={},DEFAULT_SETTINGS={fontSize:"24",fontColor:"#FFFFFF",bgColor:"#000000",bgOpacity:"0.75"};async function initializeLibrary(){try{const e=await fetch("library.json?t="+Date.now());if(!e.ok)throw new Error(`HTTP error! status: ${e.status}`);const t=await e.json();renderLibrary(t)}catch(e){console.error("Could not load or parse library.json:",e),libraryList.innerHTML='<li style="background:none; text-align:center; color:#888;">Lỗi: Không thể tải thư viện.</li>'}}function renderLibrary(e){libraryList.innerHTML="",e&&0!==e.length?e.forEach(e=>{const t=doc.createElement("li");t.className="library-item",t.dataset.videoId=e.videoId,t.dataset.subtitleUrl=e.subtitleUrl,t.innerHTML=`\n                    <img src="${e.thumbnailUrl}" alt="Thumbnail for ${e.userTitle}" class="library-thumbnail" loading="lazy">\n                    <div class="library-info">\n                        <span class="library-title" title="${e.originalTitle}">${e.userTitle}</span>\n                        <span class="library-author">${e.authorName}</span>\n                    </div>\n                `,libraryList.appendChild(t)}):libraryList.innerHTML='<li style="background:none; text-align:center; color:#888;">Thư viện hiện đang trống.</li>'}async function loadRemoteSubtitle(e){try{const t=await fetch(e);if(!t.ok)throw new Error(`Could not fetch SRT file at ${e}`);const o=await t.text();subtitles=parseSRT(o),subtitles.length>0?(showNotification("Đã tải phụ đề từ thư viện.","success"),player&&player.getPlayerState()===YT.PlayerState.PLAYING&&startSubtitleSync()):showNotification("File phụ đề trong thư viện bị lỗi.","error")}catch(e){showNotification("Không thể tải file phụ đề.","error")}}function displayVideoInfo(e){const t=e.getVideoData();videoTitleDisplay.textContent=t.title,videoAuthorDisplay.textContent=t.author,videoInfoContainer.style.display="block"}function onYouTubeIframeAPIReady(){initializeLibrary(),loadSettings(),setupEventListeners()}function setupEventListeners(){doc.addEventListener("paste",handleUrlPaste);const e=doc.body;e.addEventListener("dragenter",e=>{e.preventDefault(),e.stopPropagation(),e.dataTransfer.dropEffect="copy",e.target.closest("#player-container")&&body.classList.add("dragging")}),e.addEventListener("dragover",e=>{e.preventDefault()}),e.addEventListener("dragleave",e=>{body.classList.remove("dragging")}),e.addEventListener("drop",handleFileDrop),libraryList.addEventListener("click",e=>{const t=e.target.closest(".library-item");t&&t.dataset.videoId&&(loadVideo(t.dataset.videoId),loadRemoteSubtitle(t.dataset.subtitleUrl))}),playPauseBtn.addEventListener("click",togglePlayPause),progressBar.addEventListener("input",handleSeek),progressBar.addEventListener("mousemove",handleProgressBarHover),progressBar.addEventListener("mouseleave",()=>seekTooltip.style.display="none"),volumeSlider.addEventListener("input",handleVolumeChange),volumeBtn.addEventListener("click",toggleMute),fullscreenBtn.addEventListener("click",toggleFullscreen),playerContainer.addEventListener("mousemove",showControlsAndSetHideTimeout),settingsBtn.addEventListener("click",toggleSettingsMenu),doc.addEventListener("click",e=>{!settingsMenu.contains(e.target)&&e.target!==settingsBtn&&!settingsBtn.contains(e.target)&&settingsMenu.classList.remove("visible")}),fontSizeSlider.addEventListener("input",()=>{subtitleSettings.fontSize=fontSizeSlider.value,applyAndSaveStyles()}),fontColorPicker.addEventListener("input",()=>{subtitleSettings.fontColor=fontColorPicker.value,applyAndSaveStyles()}),bgColorPicker.addEventListener("input",()=>{subtitleSettings.bgColor=bgColorPicker.value,applyAndSaveStyles()}),bgOpacitySlider.addEventListener("input",()=>{subtitleSettings.bgOpacity=bgOpacitySlider.value,applyAndSaveStyles()}),doc.addEventListener("keydown",handleKeyboardShortcuts)}function loadVideo(e){setupContainer.classList.add("hidden"),playerWrapper.classList.remove("hidden"),player?(subtitles=[],player.loadVideoById(e)):player=new YT.Player("youtube-player",{height:"100%",width:"100%",videoId:e,playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,showinfo:0,iv_load_policy:3},events:{onReady:onPlayerReady,onStateChange:onPlayerStateChange}})}function onPlayerReady(e){displayVideoInfo(e.target),updateVolumeUI(e.target.getVolume(),e.target.isMuted()),showControlsAndSetHideTimeout()}function onPlayerStateChange(e){event.data===YT.PlayerState.PLAYING&&displayVideoInfo(player),updatePlayPauseUI(e.data),e.data===YT.PlayerState.PLAYING?(subtitles.length>0&&startSubtitleSync(),startProgressSync(),showControlsAndSetHideTimeout()):(stopSubtitleSync(),stopProgressSync(),showControlsAndSetHideTimeout())}function handleKeyboardShortcuts(e){if(!player||"INPUT"===e.target.tagName)return;switch(e.code){case"Space":e.preventDefault(),togglePlayPause();break;case"ArrowLeft":e.preventDefault(),player.seekTo(player.getCurrentTime()-5,!0);break;case"ArrowRight":e.preventDefault(),player.seekTo(player.getCurrentTime()+5,!0);break;case"KeyM":e.preventDefault(),toggleMute();break;case"KeyF":e.preventDefault(),toggleFullscreen();break}}function togglePlayPause(){player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()}function handleSeek(){player.seekTo(progressBar.value,!0)}function handleVolumeChange(e){player.setVolume(e.target.value),player.unMute(),updateVolumeUI(e.target.value,!1)}function toggleMute(){player.isMuted()?player.unMute():player.mute(),updateVolumeUI(player.getVolume(),player.isMuted())}function toggleFullscreen(){doc.fullscreenElement?doc.exitFullscreen():playerContainer.requestFullscreen()}function toggleSettingsMenu(e){e.stopPropagation(),settingsMenu.classList.toggle("visible")}function showControlsAndSetHideTimeout(){clearTimeout(controlsTimeout),playerContainer.classList.add("controls-active"),player.getPlayerState()!==YT.PlayerState.PLAYING||(controlsTimeout=setTimeout(()=>{playerContainer.classList.remove("controls-active")},3e3))}function updatePlayPauseUI(e){playPauseBtn.innerHTML=e===YT.PlayerState.PLAYING?pauseIcon:playIcon}function updateVolumeUI(e,t){volumeSlider.value=t?0:e;volumeBtn.innerHTML=t||0==e?volumeMuteIcon:volumeHighIcon}function formatTime(e){const t=Math.round(e),o=Math.floor(t/60);return`${String(o).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`}function startProgressSync(){stopProgressSync(),progressInterval=setInterval(()=>{const e=player.getDuration(),t=player.getCurrentTime();progressBar.max=e,progressBar.value=t,timeDisplay.textContent=`${formatTime(t)} / ${formatTime(e)}`;const o=e>0?t/e*100:0;progressBar.style.setProperty("--progress-percent",`${o}%`)},250)}function stopProgressSync(){clearInterval(progressInterval)}function handleProgressBarHover(e){if(!player||!player.getDuration())return;const t=progressBar.getBoundingClientRect(),o=(e.clientX-t.left)/t.width,n=o*player.getDuration();seekTooltip.style.left=`${o*100}%`,seekTooltip.textContent=formatTime(n),seekTooltip.style.display="block"}function applyAndSaveStyles(){applySubtitleStyles(),saveSettings()}function applySubtitleStyles(){function e(e,t){let o="0x"+e[1]+e[2],n="0x"+e[3]+e[4],r="0x"+e[5]+e[6];return`rgba(${+o},${+n},${+r},${t})`}subtitleDisplay.style.fontSize=`${subtitleSettings.fontSize}px`,subtitleDisplay.style.color=subtitleSettings.fontColor,subtitleDisplay.style.backgroundColor=e(subtitleSettings.bgColor,subtitleSettings.bgOpacity)}function saveSettings(){localStorage.setItem("youtubeSrtPlayerSettings",JSON.stringify(subtitleSettings))}function loadSettings(){const e=localStorage.getItem("youtubeSrtPlayerSettings");subtitleSettings=e?JSON.parse(e):{...DEFAULT_SETTINGS},fontSizeSlider.value=subtitleSettings.fontSize,fontColorPicker.value=subtitleSettings.fontColor,bgColorPicker.value=subtitleSettings.bgColor,bgOpacitySlider.value=subtitleSettings.bgOpacity,applySubtitleStyles()}function startSubtitleSync(){stopSubtitleSync(),subtitleCheckInterval=setInterval(()=>{const e=player.getCurrentTime(),t=subtitles.find(t=>e>=t.start&&e<=t.end);subtitleDisplay.style.opacity=t?"1":"0",t&&(subtitleDisplay.innerHTML=t.text)},100)}function stopSubtitleSync(){clearInterval(subtitleCheckInterval)}function handleUrlPaste(e){const t=(e.clipboardData||window.clipboardData).getData("text"),o=extractVideoID(t);o&&(e.preventDefault(),loadVideo(o))}function extractVideoID(e){const t=/(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;return e.match(t)?e.match(t)[1]:null}function handleFileDrop(e){e.preventDefault(),doc.body.classList.remove("dragging");const t=e.dataTransfer.files[0];if(t&&t.name.endsWith(".srt")){const o=new FileReader;o.onload=e=>{subtitles=parseSRT(e.target.result),subtitles.length>0?(showNotification(`Đã tải thành công ${subtitles.length} dòng phụ đề.`,"success"),player&&player.getPlayerState()===YT.PlayerState.PLAYING&&startSubtitleSync()):showNotification("Không thể phân tích file .srt.","error")},o.readAsText(t)}else showNotification("Vui lòng chỉ thả file có định dạng .srt","error")}function showNotification(e,t="success"){const o=doc.createElement("div");o.className=`notification ${t}`,o.textContent=e,notificationArea.appendChild(o),setTimeout(()=>o.remove(),4e3)}function parseSRT(e){const t=[];for(const r of e.trim().replace(/\r/g,"").split("\n\n")){const e=r.split("\n"),o=e.findIndex(e=>e.includes("-->"));if(-1!==o){const n=e.slice(o+1).join("<br>"),a=e[o].match(/(.*) --> (.*)/);a&&n&&t.push({start:srtTimeToSeconds(a[1].trim()),end:srtTimeToSeconds(a[2].trim()),text:n})}}return t}function srtTimeToSeconds(e){const t=e.split(/[:,]/),o=t.reverse(),n=parseInt(o[0],10)||0,r=parseInt(o[1],10)||0,a=parseInt(o[2],10)||0,i=parseInt(o[3],10)||0;return 3600*i+60*a+r+n/1e3}
-    </script>
-</body>
+            <div id="player-wrapper" class="hidden">
+                <div id="video-info-container">
+                    <h2 id="video-title-display"></h2>
+                    <p id="video-author-display"></p>
+                </div>
+                <!-- Player and controls HTML are unchanged -->
+                <div id="player-container">...</div>
+            </div>
+        </main>
+        <div id="notification-area"></div>
+        <script src="https://www.youtube.com/iframe_api"></script>
+        <script>
+            // All JS code here
+            const doc = document,
+                setupContainer = doc.getElementById("setup-container"),
+                libraryList = doc.getElementById("library-list"),
+                playerWrapper = doc.getElementById("player-wrapper"),
+                videoInfoContainer = doc.getElementById("video-info-container"),
+                videoTitleDisplay = doc.getElementById("video-title-display"),
+                videoAuthorDisplay = doc.getElementById("video-author-display"),
+                playerContainer = doc.getElementById("player-container"),
+                subtitleDisplay = doc.getElementById("subtitle-display"),
+                playPauseBtn = doc.getElementById("play-pause-btn"),
+                progressBar = doc.getElementById("progress-bar"),
+                seekTooltip = doc.getElementById("seek-tooltip"),
+                timeDisplay = doc.getElementById("time-display"),
+                volumeBtn = doc.getElementById("volume-btn"),
+                volumeSlider = doc.getElementById("volume-slider"),
+                settingsBtn = doc.getElementById("settings-btn"),
+                fullscreenBtn = doc.getElementById("fullscreen-btn"),
+                settingsMenu = doc.getElementById("settings-menu"),
+                fontSizeSlider = doc.getElementById("font-size-slider"),
+                fontColorPicker = doc.getElementById("font-color-picker"),
+                bgColorPicker = doc.getElementById("bg-color-picker"),
+                bgOpacitySlider = doc.getElementById("bg-opacity-slider"),
+                notificationArea = doc.getElementById("notification-area"),
+                urlInput = doc.getElementById("youtube-url-input");
+            const playIcon = '<svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>',
+                pauseIcon = '<svg viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>',
+                volumeHighIcon =
+                    '<svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"></path></svg>',
+                volumeMuteIcon =
+                    '<svg viewBox="0 0 24 24"><path d="M12,4L7,9H3V15H7L12,20V4M14,3.23V5.29C15.06,5.82 15.9,6.57 16.5,7.42L17.93,6C17.15,5.1 16.2,4.32 15.14,3.72L14,3.23M19,12C19,13.82 18.2,15.44 16.97,16.5L18.4,17.93C19.97,16.45 21,14.38 21,12C21,7.72 18,4.14 14,3.23V3.72L18.06,7.78C18.68,8.91 19,10.36 19,12M16.5,12C16.5,12.22 16.47,12.43 16.44,12.64L14,10.2V7.97C15.5,8.71 16.5,10.23 16.5,12Z"></path></svg>';
+            let player,
+                subtitles = [],
+                subtitleCheckInterval = null,
+                progressInterval = null,
+                controlsTimeout = null;
+            let subtitleSettings = {},
+                DEFAULT_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.75" };
+            async function initializeLibrary() {
+                try {
+                    const e = await fetch("library.json?t=" + Date.now());
+                    if (!e.ok) throw new Error(`HTTP error! status: ${e.status}`);
+                    const t = await e.json();
+                    renderLibrary(t);
+                } catch (e) {
+                    console.error("Could not load or parse library.json:", e), (libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Lỗi: Không thể tải thư viện.</li>');
+                }
+            }
+            function renderLibrary(e) {
+                (libraryList.innerHTML = ""),
+                    e && 0 !== e.length
+                        ? e.forEach((e) => {
+                              const t = doc.createElement("li");
+                              (t.className = "library-item"),
+                                  (t.dataset.videoId = e.videoId),
+                                  (t.dataset.subtitleUrl = e.subtitleUrl),
+                                  t.innerHTML = `
+    <img src="${e.thumbnailUrl}" alt="Thumbnail for ${e.title}" class="library-thumbnail" loading="lazy">
+    <div class="library-info">
+        <span class="library-title" title="${e.originalTitle}">${e.title}</span>
+        <span class="library-author">${e.authorName}</span>
+    </div>
+`;
+libraryList.appendChild(t);
+                          })
+                        : (libraryList.innerHTML = '<li style="background:none; text-align:center; color:#888;">Thư viện hiện đang trống.</li>');
+            }
+            async function loadRemoteSubtitle(e) {
+                try {
+                    const t = await fetch(e);
+                    if (!t.ok) throw new Error(`Could not fetch SRT file at ${e}`);
+                    const o = await t.text();
+                    (subtitles = parseSRT(o)),
+                        subtitles.length > 0
+                            ? (showNotification("Đã tải phụ đề từ thư viện.", "success"), player && player.getPlayerState() === YT.PlayerState.PLAYING && startSubtitleSync())
+                            : showNotification("File phụ đề trong thư viện bị lỗi.", "error");
+                } catch (e) {
+                    showNotification("Không thể tải file phụ đề.", "error");
+                }
+            }
+            function displayVideoInfo(e) {
+                const t = e.getVideoData();
+                (videoTitleDisplay.textContent = t.title), (videoAuthorDisplay.textContent = t.author), (videoInfoContainer.style.display = "block");
+            }
+            function onYouTubeIframeAPIReady() {
+                initializeLibrary(), loadSettings(), setupEventListeners();
+            }
+            function setupEventListeners() {
+                doc.addEventListener("paste", handleUrlPaste);
+                const e = doc.body;
+                e.addEventListener("dragenter", (e) => {
+                    e.preventDefault(), e.stopPropagation(), (e.dataTransfer.dropEffect = "copy"), e.target.closest("#player-container") && body.classList.add("dragging");
+                }),
+                    e.addEventListener("dragover", (e) => {
+                        e.preventDefault();
+                    }),
+                    e.addEventListener("dragleave", (e) => {
+                        body.classList.remove("dragging");
+                    }),
+                    e.addEventListener("drop", handleFileDrop),
+                    libraryList.addEventListener("click", (e) => {
+                        const t = e.target.closest(".library-item");
+                        t && t.dataset.videoId && (loadVideo(t.dataset.videoId), loadRemoteSubtitle(t.dataset.subtitleUrl));
+                    }),
+                    playPauseBtn.addEventListener("click", togglePlayPause),
+                    progressBar.addEventListener("input", handleSeek),
+                    progressBar.addEventListener("mousemove", handleProgressBarHover),
+                    progressBar.addEventListener("mouseleave", () => (seekTooltip.style.display = "none")),
+                    volumeSlider.addEventListener("input", handleVolumeChange),
+                    volumeBtn.addEventListener("click", toggleMute),
+                    fullscreenBtn.addEventListener("click", toggleFullscreen),
+                    playerContainer.addEventListener("mousemove", showControlsAndSetHideTimeout),
+                    settingsBtn.addEventListener("click", toggleSettingsMenu),
+                    doc.addEventListener("click", (e) => {
+                        !settingsMenu.contains(e.target) && e.target !== settingsBtn && !settingsBtn.contains(e.target) && settingsMenu.classList.remove("visible");
+                    }),
+                    fontSizeSlider.addEventListener("input", () => {
+                        (subtitleSettings.fontSize = fontSizeSlider.value), applyAndSaveStyles();
+                    }),
+                    fontColorPicker.addEventListener("input", () => {
+                        (subtitleSettings.fontColor = fontColorPicker.value), applyAndSaveStyles();
+                    }),
+                    bgColorPicker.addEventListener("input", () => {
+                        (subtitleSettings.bgColor = bgColorPicker.value), applyAndSaveStyles();
+                    }),
+                    bgOpacitySlider.addEventListener("input", () => {
+                        (subtitleSettings.bgOpacity = bgOpacitySlider.value), applyAndSaveStyles();
+                    }),
+                    doc.addEventListener("keydown", handleKeyboardShortcuts);
+            }
+            function loadVideo(e) {
+                setupContainer.classList.add("hidden"),
+                    playerWrapper.classList.remove("hidden"),
+                    player
+                        ? ((subtitles = []), player.loadVideoById(e))
+                        : (player = new YT.Player("youtube-player", {
+                              height: "100%",
+                              width: "100%",
+                              videoId: e,
+                              playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 0, showinfo: 0, iv_load_policy: 3 },
+                              events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
+                          }));
+            }
+            function onPlayerReady(e) {
+                displayVideoInfo(e.target), updateVolumeUI(e.target.getVolume(), e.target.isMuted()), showControlsAndSetHideTimeout();
+            }
+            function onPlayerStateChange(e) {
+                event.data === YT.PlayerState.PLAYING && displayVideoInfo(player),
+                    updatePlayPauseUI(e.data),
+                    e.data === YT.PlayerState.PLAYING ? (subtitles.length > 0 && startSubtitleSync(), startProgressSync(), showControlsAndSetHideTimeout()) : (stopSubtitleSync(), stopProgressSync(), showControlsAndSetHideTimeout());
+            }
+            function handleKeyboardShortcuts(e) {
+                if (!player || "INPUT" === e.target.tagName) return;
+                switch (e.code) {
+                    case "Space":
+                        e.preventDefault(), togglePlayPause();
+                        break;
+                    case "ArrowLeft":
+                        e.preventDefault(), player.seekTo(player.getCurrentTime() - 5, !0);
+                        break;
+                    case "ArrowRight":
+                        e.preventDefault(), player.seekTo(player.getCurrentTime() + 5, !0);
+                        break;
+                    case "KeyM":
+                        e.preventDefault(), toggleMute();
+                        break;
+                    case "KeyF":
+                        e.preventDefault(), toggleFullscreen();
+                        break;
+                }
+            }
+            function togglePlayPause() {
+                player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
+            }
+            function handleSeek() {
+                player.seekTo(progressBar.value, !0);
+            }
+            function handleVolumeChange(e) {
+                player.setVolume(e.target.value), player.unMute(), updateVolumeUI(e.target.value, !1);
+            }
+            function toggleMute() {
+                player.isMuted() ? player.unMute() : player.mute(), updateVolumeUI(player.getVolume(), player.isMuted());
+            }
+            function toggleFullscreen() {
+                doc.fullscreenElement ? doc.exitFullscreen() : playerContainer.requestFullscreen();
+            }
+            function toggleSettingsMenu(e) {
+                e.stopPropagation(), settingsMenu.classList.toggle("visible");
+            }
+            function showControlsAndSetHideTimeout() {
+                clearTimeout(controlsTimeout),
+                    playerContainer.classList.add("controls-active"),
+                    player.getPlayerState() !== YT.PlayerState.PLAYING ||
+                        (controlsTimeout = setTimeout(() => {
+                            playerContainer.classList.remove("controls-active");
+                        }, 3e3));
+            }
+            function updatePlayPauseUI(e) {
+                playPauseBtn.innerHTML = e === YT.PlayerState.PLAYING ? pauseIcon : playIcon;
+            }
+            function updateVolumeUI(e, t) {
+                volumeSlider.value = t ? 0 : e;
+                volumeBtn.innerHTML = t || 0 == e ? volumeMuteIcon : volumeHighIcon;
+            }
+            function formatTime(e) {
+                const t = Math.round(e),
+                    o = Math.floor(t / 60);
+                return `${String(o).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+            }
+            function startProgressSync() {
+                stopProgressSync(),
+                    (progressInterval = setInterval(() => {
+                        const e = player.getDuration(),
+                            t = player.getCurrentTime();
+                        (progressBar.max = e), (progressBar.value = t), (timeDisplay.textContent = `${formatTime(t)} / ${formatTime(e)}`);
+                        const o = e > 0 ? (t / e) * 100 : 0;
+                        progressBar.style.setProperty("--progress-percent", `${o}%`);
+                    }, 250));
+            }
+            function stopProgressSync() {
+                clearInterval(progressInterval);
+            }
+            function handleProgressBarHover(e) {
+                if (!player || !player.getDuration()) return;
+                const t = progressBar.getBoundingClientRect(),
+                    o = (e.clientX - t.left) / t.width,
+                    n = o * player.getDuration();
+                (seekTooltip.style.left = `${o * 100}%`), (seekTooltip.textContent = formatTime(n)), (seekTooltip.style.display = "block");
+            }
+            function applyAndSaveStyles() {
+                applySubtitleStyles(), saveSettings();
+            }
+            function applySubtitleStyles() {
+                function e(e, t) {
+                    let o = "0x" + e[1] + e[2],
+                        n = "0x" + e[3] + e[4],
+                        r = "0x" + e[5] + e[6];
+                    return `rgba(${+o},${+n},${+r},${t})`;
+                }
+                (subtitleDisplay.style.fontSize = `${subtitleSettings.fontSize}px`),
+                    (subtitleDisplay.style.color = subtitleSettings.fontColor),
+                    (subtitleDisplay.style.backgroundColor = e(subtitleSettings.bgColor, subtitleSettings.bgOpacity));
+            }
+            function saveSettings() {
+                localStorage.setItem("youtubeSrtPlayerSettings", JSON.stringify(subtitleSettings));
+            }
+            function loadSettings() {
+                const e = localStorage.getItem("youtubeSrtPlayerSettings");
+                (subtitleSettings = e ? JSON.parse(e) : { ...DEFAULT_SETTINGS }),
+                    (fontSizeSlider.value = subtitleSettings.fontSize),
+                    (fontColorPicker.value = subtitleSettings.fontColor),
+                    (bgColorPicker.value = subtitleSettings.bgColor),
+                    (bgOpacitySlider.value = subtitleSettings.bgOpacity),
+                    applySubtitleStyles();
+            }
+            function startSubtitleSync() {
+                stopSubtitleSync(),
+                    (subtitleCheckInterval = setInterval(() => {
+                        const e = player.getCurrentTime(),
+                            t = subtitles.find((t) => e >= t.start && e <= t.end);
+                        (subtitleDisplay.style.opacity = t ? "1" : "0"), t && (subtitleDisplay.innerHTML = t.text);
+                    }, 100));
+            }
+            function stopSubtitleSync() {
+                clearInterval(subtitleCheckInterval);
+            }
+            function handleUrlPaste(e) {
+                const t = (e.clipboardData || window.clipboardData).getData("text"),
+                    o = extractVideoID(t);
+                o && (e.preventDefault(), loadVideo(o));
+            }
+            function extractVideoID(e) {
+                const t = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/)([a-zA-Z0-9_-]{11})/;
+                return e.match(t) ? e.match(t)[1] : null;
+            }
+            function handleFileDrop(e) {
+                e.preventDefault(), doc.body.classList.remove("dragging");
+                const t = e.dataTransfer.files[0];
+                if (t && t.name.endsWith(".srt")) {
+                    const o = new FileReader();
+                    (o.onload = (e) => {
+                        (subtitles = parseSRT(e.target.result)),
+                            subtitles.length > 0
+                                ? (showNotification(`Đã tải thành công ${subtitles.length} dòng phụ đề.`, "success"), player && player.getPlayerState() === YT.PlayerState.PLAYING && startSubtitleSync())
+                                : showNotification("Không thể phân tích file .srt.", "error");
+                    }),
+                        o.readAsText(t);
+                } else showNotification("Vui lòng chỉ thả file có định dạng .srt", "error");
+            }
+            function showNotification(e, t = "success") {
+                const o = doc.createElement("div");
+                (o.className = `notification ${t}`), (o.textContent = e), notificationArea.appendChild(o), setTimeout(() => o.remove(), 4e3);
+            }
+            function parseSRT(e) {
+                const t = [];
+                for (const r of e.trim().replace(/\r/g, "").split("\n\n")) {
+                    const e = r.split("\n"),
+                        o = e.findIndex((e) => e.includes("-->"));
+                    if (-1 !== o) {
+                        const n = e.slice(o + 1).join("<br>"),
+                            a = e[o].match(/(.*) --> (.*)/);
+                        a && n && t.push({ start: srtTimeToSeconds(a[1].trim()), end: srtTimeToSeconds(a[2].trim()), text: n });
+                    }
+                }
+                return t;
+            }
+            function srtTimeToSeconds(e) {
+                const t = e.split(/[:,]/),
+                    o = t.reverse(),
+                    n = parseInt(o[0], 10) || 0,
+                    r = parseInt(o[1], 10) || 0,
+                    a = parseInt(o[2], 10) || 0,
+                    i = parseInt(o[3], 10) || 0;
+                return 3600 * i + 60 * a + r + n / 1e3;
+            }
+        </script>
+    </body>
 </html>
