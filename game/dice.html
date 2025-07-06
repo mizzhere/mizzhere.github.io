@@ -201,30 +201,79 @@
         ];
 
         // NÂNG CẤP CUỐI CÙNG: Thư viện layout 2D được chọn từ 11 HÌNH DẠNG CHUẨN, đảm bảo hợp lệ.
+                // NÂNG CẤP: Bộ 4 hình trải mặt xúc xắc hợp lệ và các biến thể xoay của chúng.
+        // Điều này đảm bảo tính đa dạng nhưng vẫn giữ các layout quen thuộc, dễ nhận biết.
         const netTemplates = [
-            { // Mẫu 1: Hình chữ thập cổ điển (1-4-1)
-                cols: 3, 
-                layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null] ] 
+            // --- HÌNH DẠNG 1: "Gậy gập" / L-Shape (Tương ứng "Gậy gập trái/phải") ---
+            { // 0 độ
+                cols: 2,
+                layout: [['top', 'bottom'], [null, 'front'], [null, 'back'], [null, 'left'], [null, 'right']]
             },
-            { // Mẫu 2: Dải 4 ô có 2 nhánh
-                cols: 4, 
-                layout: [ [null, 'top', null, null], ['left', 'front', 'right', 'back'], [null, 'bottom', null, null] ] 
+            { // 90 độ
+                cols: 5,
+                layout: [[null, null, null, null, 'top'], ['right', 'left', 'back', 'front', 'bottom']]
             },
-            { // Mẫu 3: Hình chữ T
+            { // 180 độ
+                cols: 2,
+                layout: [[null, 'right'], [null, 'left'], [null, 'back'], [null, 'front'], ['bottom', 'top']]
+            },
+            { // 270 độ
+                cols: 5,
+                layout: [['bottom', 'front', 'back', 'left', 'right'], ['top', null, null, null, null]]
+            },
+
+            // --- HÌNH DẠNG 2: "Chữ Thập" / Cross-Shape (Tương ứng "Chữ thập") ---
+            { // 0 độ
                 cols: 3,
-                layout: [ [null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null] ]
+                layout: [[null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null]]
             },
-            { // Mẫu 4: Hình Ziczac
-                cols: 3,
-                layout: [ ['top', 'front', null], [null, 'left', 'right'], [null, 'bottom', 'back'] ]
+            { // 90 độ
+                cols: 4,
+                layout: [[null, 'left', null, null], ['bottom', 'front', 'top', 'back'], [null, 'right', null, null]]
             },
-            { // Mẫu 5: Bậc thang
+            { // 180 độ
                 cols: 3,
-                layout: [ [null, 'top', null], ['left', 'front', null], [null, 'right', 'bottom'], [null, null, 'back'] ]
+                layout: [[null, 'back', null], [null, 'bottom', null], ['right', 'front', 'left'], [null, 'top', null]]
             },
-            { // Mẫu 6: Hình dạng chữ C kỳ lạ
+            { // 270 độ
+                cols: 4,
+                layout: [[null, 'right', null, null], ['back', 'top', 'front', 'bottom'], [null, 'left', null, null]]
+            },
+
+            // --- HÌNH DẠNG 3: "Ziczac" / S-Shape ---
+            { // 0 độ
                 cols: 3,
-                layout: [ ['top', 'front', null], ['left', 'bottom', null], ['right', 'back', null] ]
+                layout: [['top', 'front', null], [null, 'bottom', 'left'], [null, null, 'right', 'back']]
+            },
+            { // 90 độ
+                cols: 3,
+                layout: [[null, null, 'top'], [null, 'bottom', 'front'], ['right', 'left', null], ['back', null, null]]
+            },
+            { // 180 độ
+                cols: 3,
+                layout: [['back', 'right', null], [null, 'left', 'bottom'], [null, null, 'front', 'top']]
+            },
+            { // 270 độ
+                cols: 3,
+                layout: [[null, null, 'back'], [null, 'left', 'right'], ['front', 'bottom', null], ['top', null, null]]
+            },
+
+            // --- HÌNH DẠNG 4: "Tháp lệch" / Offset Tower (Tương ứng "Móc L") ---
+            { // 0 độ
+                cols: 3,
+                layout: [[null, 'top', null], ['left', 'front', null], [null, 'bottom', 'right'], [null, 'back', null]]
+            },
+            { // 90 độ
+                cols: 4,
+                layout: [[null, 'left', 'bottom', 'back'], [null, 'front', 'top', null], [null, 'right', null, null]]
+            },
+            { // 180 độ
+                cols: 3,
+                layout: [[null, 'back', null], ['right', 'bottom', null], [null, 'front', 'left'], [null, 'top', null]]
+            },
+            { // 270 độ
+                cols: 4,
+                layout: [[null, null, 'right'], [null, 'top', 'front', null], ['back', 'bottom', 'left', null]]
             }
         ];
 
