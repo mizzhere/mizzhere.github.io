@@ -268,7 +268,7 @@
         for (const programName of programOrder) {
             const section = doc.createElement('section');
             section.className = 'program-row';
-            section.innerHTML = `<h2 class="program-title">${programName}</h2><div class="video-list">${groupedByProgram[programName].map(video => `<div class="video-card" data-video-id="${video.videoId}"><img src="${video.thumbnailUrl}" alt="${video.userTitle || video.title}" class="video-thumbnail" loading="lazy"></div>`).join('')}</div>`;
+            section.innerHTML = `<h2 class="program-title">${programName}</h2><div class="video-list">${groupedByProgram[programName].map(video => `<div class="video-card" data-video-id="${video.videoId}"><img src="${video.thumbnailUrl || video.thumbnailUrl_auto}" alt="${video.userTitle || video.title}" class="video-thumbnail" loading="lazy"></div>`).join('')}</div>`;
             libraryContainer.appendChild(section);
         }
     }
