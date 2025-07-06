@@ -38,8 +38,9 @@
         .face-bottom-view { transform: rotateX(-90deg) translateZ(50px); }
         .face-front-view  { transform: rotateY(0deg) translateZ(50px); }
         .face-back-view   { transform: rotateY(180deg) translateZ(50px); }
-        .face-left-view   { transform: rotateY(90deg) translateZ(50px); }
-        .face-right-view  { transform: rotateY(-90deg) translateZ(50px); }
+/* Đoạn code mới đã SỬA LỖI */
+.face-left-view   { transform: rotateY(-90deg) translateZ(50px); } /* Sửa: Phải là -90deg */
+.face-right-view  { transform: rotateY(90deg) translateZ(50px); }  /* Sửa: Phải là 90deg */
         
         /* --- Dice Face Base Styles --- */
         .dice-face { display: grid; align-items: center; justify-items: center; transition: background-color 0.3s, border-color 0.3s, transform 0.5s; box-shadow: 0 2px 4px rgba(0,0,0,0.05), inset 0 0 10px rgba(0,0,0,0.05); }
