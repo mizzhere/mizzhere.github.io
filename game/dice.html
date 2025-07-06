@@ -191,13 +191,14 @@
         const HIGH_SCORE_KEY = 'diceMemoryHighScore';
         const DARK_MODE_KEY = 'diceMemoryDarkMode';
         
-        const CUBE_VIEWS = [
+                const CUBE_VIEWS = [
             { transform: 'rotateX(-30deg) rotateY(-45deg)', visibleFaces: ['top', 'front', 'left'] },
             { transform: 'rotateX(-30deg) rotateY(45deg)',  visibleFaces: ['top', 'front', 'right'] },
             { transform: 'rotateX(-30deg) rotateY(135deg)', visibleFaces: ['top', 'back', 'right'] },
             { transform: 'rotateX(30deg) rotateY(-45deg)',  visibleFaces: ['bottom', 'front', 'left'] },
             { transform: 'rotateX(30deg) rotateY(135deg)', visibleFaces: ['bottom', 'back', 'right'] },
-            { transform: 'rotateX(-120deg) rotateY(45deg)', visibleFaces: ['bottom', 'back', 'left'] }
+            // SỬA LỖI Ở ĐÂY: 'left' đã được đổi thành 'right' cho đúng với góc quay
+            { transform: 'rotateX(-120deg) rotateY(45deg)', visibleFaces: ['bottom', 'back', 'right'] } 
         ];
 
         // ========================================================================
