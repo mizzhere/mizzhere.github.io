@@ -60,30 +60,27 @@
         #video-title-display { margin: 0; font-size: 1.5rem; font-weight: 600; }
         #video-author-display { margin: 5px 0 0 0; color: #ccc; }
         
-#player-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  z-index: 999;
-}
-
-#player-container.no-cursor { cursor: none; }
-#youtube-player {
-  height: 100vh;
-  aspect-ratio: 16 / 9;
-  width: auto;
-  max-width: 100vw;
-  object-fit: contain;
-  background-color: #000;
-  border: none;
-}
+        #player-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #player-container.no-cursor { cursor: none; }
+        #youtube-player {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+        /* --- FIX: Added a clickable overlay to catch events --- */
+        #click-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10; /* Above iframe, below controls */
+        }
         #subtitle-display { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 5px 15px; text-align: center; border-radius: 6px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); line-height: 1.4; transition: opacity 0.2s; pointer-events: none; opacity: 0; }
         #custom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); z-index: 21; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; }
         #player-container.controls-active #custom-controls { opacity: 1; visibility: visible; }
@@ -115,13 +112,21 @@
         #drag-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(3, 218, 198, 0.7); z-index: 9999; display: none; justify-content: center; align-items: center; font-size: 2rem; color: white; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         body.dragging #drag-overlay { display: flex; pointer-events: all; }
         
+        /* --- FIX: Improved mobile fullscreen experience --- */
         @media (orientation: landscape) and (max-width: 900px) {
             body:has(#player-wrapper:not(.hidden)) { padding: 0; }
             body:has(#player-wrapper:not(.hidden)) #setup-container { display: none; }
-            body:has(#player-wrapper:not(.hidden)) #player-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999; }
-            body:has(#player-wrapper:not(.hidden)) #video-info-container, body:has(#player-wrapper:not(.hidden)) #home-btn { display: none; }
-            #player-container { border-radius: 0; }
-            #youtube-player { object-fit: contain; }
+            body:has(#player-wrapper:not(.hidden)) #player-wrapper {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999;
+            }
+            body:has(#player-wrapper:not(.hidden)) #video-info-container,
+            body:has(#player-wrapper:not(.hidden)) #home-btn {
+                display: none;
+            }
+            #player-container {
+                width: 100%; height: 100%;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
@@ -150,6 +155,8 @@
             </div>
             <div id="player-container">
                 <div id="youtube-player"></div>
+                <!-- --- FIX: Added clickable overlay --- -->
+                <div id="click-overlay"></div>
                 <div id="subtitle-display"></div>
                 <div id="custom-controls">
                     <div class="progress-container">
@@ -191,6 +198,7 @@ const videoInfoContainer = doc.getElementById('video-info-container');
 const videoTitleDisplay = doc.getElementById('video-title-display');
 const videoAuthorDisplay = doc.getElementById('video-author-display');
 const playerContainer = doc.getElementById('player-container');
+const clickOverlay = doc.getElementById('click-overlay'); // --- FIX: Get the new overlay element
 const subtitleDisplay = doc.getElementById('subtitle-display');
 const playPauseBtn = doc.getElementById('play-pause-btn');
 const progressBar = doc.getElementById('progress-bar');
@@ -249,7 +257,6 @@ async function initializeLibrary() {
   }
 }
 
-
 /**
  * Renders the video library list from the fetched data.
  * @param {Array} videos - The array of video objects.
@@ -264,9 +271,6 @@ function renderLibrary(videos) {
         const li = doc.createElement('li');
         li.className = 'library-item';
         li.dataset.videoId = video.videoId;
-
-        // --- FIX: Logic to handle different title keys ---
-        // Prioritize 'userTitle', then 'title', finally 'originalTitle' as a fallback.
         const displayTitle = video.userTitle || video.title || video.originalTitle;
 
         li.innerHTML = `
@@ -375,8 +379,15 @@ function setupEventListeners() {
     volumeSlider.addEventListener('input', handleVolumeChange);
     volumeBtn.addEventListener('click', toggleMute);
     fullscreenBtn.addEventListener('click', toggleFullscreen);
-    playerContainer.addEventListener('mousemove', showControlsAndSetHideTimeout);
     
+    // --- FIX: Events moved to the clickable overlay for robust interaction ---
+    clickOverlay.addEventListener('mousemove', showControlsAndSetHideTimeout);
+    clickOverlay.addEventListener('click', () => {
+        if (!player) return;
+        togglePlayPause();
+        showControlsAndSetHideTimeout(); // Also show controls on click
+    });
+
     settingsBtn.addEventListener('click', toggleSettingsMenu);
     doc.addEventListener('click', (e) => {
         if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
@@ -415,28 +426,24 @@ function launchPlayer(videoData) {
         subtitles = [];
         player.loadVideoById(videoData.videoId);
     } else {
-       player = new YT.Player("youtube-player", {
-  height: '100%',
-  width: '100%',
-  videoId: videoData.videoId,
-  playerVars: {
-    autoplay: 1,         // ✅ bật autoplay
-    playsinline: 1,
-    rel: 0,
-    modestbranding: 1,
-    controls: 0,
-    showinfo: 0,
-    iv_load_policy: 3
-  },
-  events: {
-    onReady: (e) => {
-      onPlayerReady(e);
-      e.target.playVideo(); // ✅ phát ngay sau khi ready
-    },
-    onStateChange: onPlayerStateChange
-  }
-});
-
+        player = new YT.Player("youtube-player", {
+            height: '100%',
+            width: '100%',
+            videoId: videoData.videoId,
+            playerVars: {
+                autoplay: 1,
+                playsinline: 1,
+                rel: 0,
+                modestbranding: 1,
+                controls: 0,
+                showinfo: 0,
+                iv_load_policy: 3
+            },
+            events: {
+                onReady: onPlayerReady,
+                onStateChange: onPlayerStateChange
+            }
+        });
     }
 }
 
@@ -452,6 +459,10 @@ function goHome() {
     subtitles = [];
     playerWrapper.classList.add('hidden');
     setupContainer.classList.remove('hidden');
+    // Exit fullscreen if active
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    }
 }
 
 /**
@@ -464,6 +475,8 @@ function onPlayerReady(event) {
     }
     updateVolumeUI(event.target.getVolume(), event.target.isMuted());
     showControlsAndSetHideTimeout();
+    // Play video explicitly here to ensure autoplay works on most platforms
+    event.target.playVideo();
 }
 
 /**
@@ -474,11 +487,14 @@ function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
         if (subtitles.length > 0) startSubtitleSync();
         startProgressSync();
+        playerContainer.classList.add('no-cursor');
         showControlsAndSetHideTimeout();
     } else {
         stopSubtitleSync();
         stopProgressSync();
-        showControlsAndSetHideTimeout();
+        playerContainer.classList.remove('no-cursor');
+        clearTimeout(controlsTimeout); // Keep controls visible when paused
+        playerContainer.classList.add('controls-active');
     }
 }
 
@@ -499,22 +515,25 @@ function handleKeyboardShortcuts(e) {
 /**
  * Player control functions.
  */
-function togglePlayPause() { player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); }
+function togglePlayPause() { if (player) player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); }
 function handleSeek() { player.seekTo(progressBar.value, true); }
 function handleVolumeChange(e) { player.setVolume(e.target.value); player.unMute(); updateVolumeUI(e.target.value, false); }
 function toggleMute() { player.isMuted() ? player.unMute() : player.mute(); updateVolumeUI(player.getVolume(), player.isMuted()); }
+
+// --- FIX: Updated function to be async and handle screen orientation ---
 async function toggleFullscreen() {
-  if (document.fullscreenElement) {
-    await document.exitFullscreen();
-  } else {
+  if (!document.fullscreenElement) {
     await playerContainer.requestFullscreen();
+    // On mobile, try to lock orientation to landscape for better viewing
     if (screen.orientation && screen.orientation.lock) {
       try {
         await screen.orientation.lock('landscape');
-      } catch (e) {
-        console.warn('Không thể khoá xoay màn hình:', e);
+      } catch (err) {
+        console.warn("Không thể khóa xoay màn hình:", err);
       }
     }
+  } else {
+    await document.exitFullscreen();
   }
 }
 
@@ -524,15 +543,16 @@ function toggleSettingsMenu(e) { e.stopPropagation(); settingsMenu.classList.tog
  * Shows controls and sets a timeout to hide them again.
  */
 function showControlsAndSetHideTimeout() {
-    // --- FIX: Add a guard clause to prevent error before player is ready ---
     if (!player || typeof player.getPlayerState !== 'function') return;
-
     clearTimeout(controlsTimeout);
     playerContainer.classList.add('controls-active');
-    if (player.getPlayerState() !== YT.PlayerState.PLAYING) return;
-    controlsTimeout = setTimeout(() => {
-        playerContainer.classList.remove('controls-active');
-    }, 3000);
+    
+    // Only hide controls if the video is playing
+    if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        controlsTimeout = setTimeout(() => {
+            playerContainer.classList.remove('controls-active');
+        }, 3000);
+    }
 }
 
 /**
@@ -552,6 +572,7 @@ function formatTime(timeInSeconds) {
 function startProgressSync() {
     stopProgressSync();
     progressInterval = setInterval(() => {
+        if (!player || typeof player.getDuration !== 'function') return;
         const duration = player.getDuration();
         const currentTime = player.getCurrentTime();
         if (isNaN(duration)) return;
@@ -609,21 +630,19 @@ function stopSubtitleSync() { clearInterval(subtitleCheckInterval); }
 /**
  * Handlers for custom video input.
  */
+// --- FIX: Simplified and corrected paste logic ---
 function handleUrlPaste(e) {
     const pastedText = (e.clipboardData || window.clipboardData).getData('text');
     const videoId = extractVideoID(pastedText);
     if (!videoId) return;
 
-    // Ngăn chặn hành vi paste mặc định nếu đang ở trang chính
-    if (e.target.tagName === 'BODY' && setupContainer.offsetParent !== null) {
-        e.preventDefault();
-        loadVideo(videoId);
+    // Only act if we are on the setup screen and not pasting into an input field.
+    if (e.target.tagName !== 'INPUT' && !setupContainer.classList.contains('hidden')) {
+        e.preventDefault(); // Stop the text from being pasted into the page body.
+        urlInput.value = pastedText; // Populate the input field for user feedback.
+        launchPlayer({ videoId: videoId });
     }
-
-    // Nếu đang paste vào input thì gán giá trị
-    else if (e.target.id === 'youtube-url-input') {
-        e.target.value = pastedText;
-    }
+    // If the target is the input field, default paste behavior is fine, and the user will click "Tải".
 }
 
 function extractVideoID(url) {
