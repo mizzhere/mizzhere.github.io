@@ -8,6 +8,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <style>
+            
             :root {
                 --primary-bg: #141414;
                 --secondary-bg: #1e1e1e;
@@ -30,6 +31,7 @@
                 display: none !important;
             }
 
+            /* --- Giao diện chính --- */
             #page-header {
                 display: flex;
                 flex-wrap: wrap;
@@ -159,33 +161,21 @@
                 animation: pulse 1.5s infinite ease-in-out;
             }
             @keyframes pulse {
-                0% {
-                    background-color: #2a2a2a;
-                }
-                50% {
-                    background-color: #3a3a3a;
-                }
-                100% {
-                    background-color: #2a2a2a;
-                }
+                0% { background-color: #2a2a2a; }
+                50% { background-color: #3a3a3a; }
+                100% { background-color: #2a2a2a; }
             }
 
+            /* --- Modals --- */
             .modal-overlay {
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
+                top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(0, 0, 0, 0.7);
                 backdrop-filter: blur(5px);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 20px;
-                box-sizing: border-box;
+                display: flex; justify-content: center; align-items: center;
+                padding: 20px; box-sizing: border-box;
                 z-index: 2000;
-                opacity: 0;
-                pointer-events: none;
+                opacity: 0; pointer-events: none;
                 transition: opacity 0.3s ease;
             }
             .modal-overlay.visible {
@@ -199,194 +189,87 @@
                 transform: scale(0.95);
                 transition: transform 0.3s ease;
                 position: relative;
-                display: flex;
-                flex-direction: column;
+                display: flex; flex-direction: column;
                 max-height: 90vh;
             }
-            .modal-overlay.visible .modal-content {
-                transform: scale(1);
-            }
+            .modal-overlay.visible .modal-content { transform: scale(1); }
             .modal-close-btn {
                 position: absolute;
-                top: 15px;
-                right: 15px;
+                top: 15px; right: 15px;
                 background: rgba(20, 20, 20, 0.7);
-                border: none;
-                border-radius: 50%;
-                width: 36px;
-                height: 36px;
+                border: none; border-radius: 50%;
+                width: 36px; height: 36px;
                 cursor: pointer;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                display: flex; justify-content: center; align-items: center;
                 fill: white;
                 z-index: 10;
             }
-
-            #detail-modal-content {
-                width: 100%;
-                max-width: 800px;
-            }
+            #detail-modal-content { width: 100%; max-width: 800px; }
             #modal-header {
                 position: relative;
                 aspect-ratio: 16 / 9;
                 flex-shrink: 0;
             }
             #modal-thumbnail {
-                width: 100%;
-                height: 100%;
+                width: 100%; height: 100%;
                 object-fit: cover;
                 border-radius: 8px 8px 0 0;
             }
             #modal-header::after {
                 content: "";
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
+                position: absolute; bottom: 0; left: 0; right: 0;
                 height: 50%;
                 background: linear-gradient(to top, var(--primary-bg) 20%, transparent 100%);
                 pointer-events: none;
             }
             #modal-play-btn {
                 position: absolute;
-                top: 50%;
-                left: 50%;
+                top: 50%; left: 50%;
                 transform: translate(-50%, -50%);
                 background: rgba(255, 255, 255, 0.9);
                 color: #000;
-                border: none;
-                border-radius: 5px;
+                border: none; border-radius: 5px;
                 padding: 10px 25px;
-                font-size: 1.2rem;
-                font-weight: 600;
+                font-size: 1.2rem; font-weight: 600;
                 cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 10px;
+                display: flex; align-items: center; gap: 10px;
                 z-index: 5;
             }
-            #modal-play-btn svg {
-                width: 24px;
-                height: 24px;
-            }
+            #modal-play-btn svg { width: 24px; height: 24px; }
             #modal-body {
                 padding: 20px 30px 30px 30px;
                 overflow-y: auto;
             }
-            #modal-title {
-                font-size: clamp(1.5rem, 4vw, 2.2rem);
-                font-weight: 700;
-                margin: 0 0 15px 0;
-            }
-            #modal-meta {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                margin-bottom: 20px;
-                color: #aaa;
-            }
-            #modal-participants-title {
-                font-size: 1.1rem;
-                font-weight: 600;
-                margin-bottom: 10px;
-            }
-            #modal-participants-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                list-style: none;
-                padding: 0;
-            }
-            .participant-tag {
-                background-color: var(--secondary-bg);
-                padding: 5px 12px;
-                border-radius: 4px;
-                font-size: 0.9rem;
-            }
-            /* CSS cho các thẻ thể loại mới */
-            #modal-genres-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                list-style: none;
-                padding: 0;
-                margin: 0 0 20px 0;
-            }
-            .genre-tag {
-                background-color: #333;
-                padding: 4px 10px;
-                border-radius: 4px;
-                font-size: 0.85rem;
-                color: #ccc;
-            }
-            #modal-description {
-                color: #bbb;
-                line-height: 1.6;
-                margin-bottom: 25px;
-                font-size: 0.95rem;
-            }
-            #add-video-modal-content {
-                width: 90%;
-                max-width: 500px;
-                padding: 30px;
-            }
-            #youtube-url-input {
-                width: 100%;
-                box-sizing: border-box;
-                background-color: var(--secondary-bg);
-                color: var(--text-color);
-                border: 1px solid #444;
-                border-radius: 4px;
-                padding: 15px;
-                font-size: 1.1rem;
-                margin-bottom: 15px;
-            }
-            #srt-file-label {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-                background-color: var(--secondary-bg);
-                border: 1px dashed #555;
-                border-radius: 4px;
-                padding: 15px;
-                font-size: 1rem;
-                margin-bottom: 20px;
-                text-align: center;
-                cursor: pointer;
-            }
-            #srt-file-input {
-                display: none;
-            }
-            #srt-file-name {
-                color: #aaa;
-                font-style: italic;
-                display: block;
-                margin-top: 5px;
-            }
-            #load-video-btn {
-                width: 100%;
-                padding: 15px;
-                font-size: 1.1rem;
-                font-weight: 600;
-                background-color: var(--accent-color);
-                color: var(--text-light);
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
+            #modal-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; margin: 0 0 15px 0; }
+            #modal-meta { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; color: #aaa; }
+            #modal-participants-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; }
+            #modal-participants-list { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; }
+            .participant-tag { background-color: var(--secondary-bg); padding: 5px 12px; border-radius: 4px; font-size: 0.9rem; }
+            #modal-genres-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0 0 20px 0; }
+            .genre-tag { background-color: #333; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; color: #ccc; }
+            #modal-description { color: #bbb; line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+            #add-video-modal-content { width: 90%; max-width: 500px; padding: 30px; }
+            #youtube-url-input { width: 100%; box-sizing: border-box; background-color: var(--secondary-bg); color: var(--text-color); border: 1px solid #444; border-radius: 4px; padding: 15px; font-size: 1.1rem; margin-bottom: 15px; }
+            #srt-file-label { display: block; width: 100%; box-sizing: border-box; background-color: var(--secondary-bg); border: 1px dashed #555; border-radius: 4px; padding: 15px; font-size: 1rem; margin-bottom: 20px; text-align: center; cursor: pointer; }
+            #srt-file-input { display: none; }
+            #srt-file-name { color: #aaa; font-style: italic; display: block; margin-top: 5px; }
+            #load-video-btn { width: 100%; padding: 15px; font-size: 1.1rem; font-weight: 600; background-color: var(--accent-color); color: var(--text-light); border: none; border-radius: 4px; cursor: pointer; }
 
-                        /* ================================================= */
-            /* START: CSS CHO PLAYER V5 - THAY THẾ TOÀN BỘ CSS CŨ */
+            /* ================================================= */
+            /* START: CSS CHO PLAYER V5 - PHIÊN BẢN HOÀN CHỈNH    */
             /* ================================================= */
 
             #player-container {
-                position: fixed; /* Đổi từ inline style */
+                position: fixed;
                 top: 0; left: 0; width: 100vw; height: 100vh;
                 background-color: #000;
                 display: flex; justify-content: center; align-items: center;
                 z-index: 3000;
-                color: white; /* Màu chữ mặc định cho các control */
+                color: white;
+                cursor: default; /* Con trỏ mặc định */
+            }
+            #player-container.no-cursor {
+                cursor: none; /* Ẩn con trỏ khi đang phát và control ẩn */
             }
             #youtube-player {
                 position: absolute;
@@ -406,13 +289,13 @@
             }
 
             /* --- Trạng thái hiển thị controls --- */
-            #player-container.controls-active #video-header-overlay,
-            #player-container.controls-active #custom-controls,
-            #player-container.controls-active #center-play-pause-btn {
+            #player-container.controls-active > #video-header-overlay,
+            #player-container.controls-active > #custom-controls,
+            #player-container.controls-active > #center-play-pause-btn {
                 opacity: 1;
                 pointer-events: auto; /* Kích hoạt khi control hiện */
             }
-            #player-container.playing.controls-active #center-play-pause-btn {
+            #player-container.playing.controls-active > #center-play-pause-btn {
                 opacity: 0; /* Ẩn nút giữa khi đang phát và control hiện */
             }
 
@@ -422,13 +305,28 @@
                 padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
                 background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
                 z-index: 12;
+                display: flex; align-items: center; gap: 20px;
             }
+            #video-title-container { overflow: hidden; }
+            #video-title-display { font-size: clamp(1.2rem, 2.5vw, 1.8rem); font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #back-btn { background: none; border: none; fill: white; cursor: pointer; width: 44px; height: 44px; padding: 0; flex-shrink: 0; }
+            
             #custom-controls {
                 bottom: 0;
                 padding: 10px clamp(20px, 5vw, 60px);
                 background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
                 z-index: 12;
             }
+            .progress-container { position: relative; width: 100%; margin-bottom: 8px; }
+            #progress-bar { -webkit-appearance: none; width: 100%; height: 4px; cursor: pointer; border-radius: 5px; transition: height 0.2s; background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) 100%); }
+            #progress-bar:hover { height: 8px; }
+            .controls-row { display: flex; align-items: center; gap: 20px; }
+            .controls-row button { background: transparent; border: none; cursor: pointer; padding: 5px; }
+            .controls-row button svg { fill: white; width: 28px; height: 28px; display: block; }
+            #time-display { font-size: 1rem; white-space: nowrap; }
+            #video-program-display { margin: 0 15px; font-size: 0.9rem; color: #ccc; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+            .spacer { flex-grow: 1; }
+            
             #center-play-pause-btn {
                 top: 50%; left: 50%;
                 transform: translate(-50%, -50%);
@@ -440,10 +338,7 @@
                 cursor: pointer; padding: 0;
                 z-index: 15;
             }
-            #center-play-pause-btn svg {
-                fill: white;
-                width: 40px; height: 40px;
-            }
+            #center-play-pause-btn svg { fill: white; width: 40px; height: 40px; }
 
             /* --- Lớp phủ tương tác (luôn trong suốt) --- */
             #interaction-overlay {
@@ -460,7 +355,7 @@
             /* --- Phụ đề, Settings, Up Next --- */
             #subtitle-display {
                 position: absolute;
-                bottom: 12%; /* Nâng lên một chút */
+                bottom: 12%;
                 left: 50%; transform: translateX(-50%);
                 z-index: 20;
                 max-width: 90%;
@@ -490,7 +385,10 @@
                 transition: opacity 0.2s, transform 0.2s;
             }
             #settings-menu.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
+            .control-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
+            .control-group input[type="range"] { width: 100%; }
+            .control-group input[type="color"] { width: 100%; height: 35px; border: none; padding: 0; background: none; cursor: pointer; }
+            
             #up-next-overlay {
                 position: absolute;
                 top: 0; left: 0; width: 100%; height: 100%;
@@ -505,10 +403,12 @@
             #up-next-thumbnail { width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px; }
             #up-next-title { margin: 10px 0 0 0; font-size: 1.4rem; }
             #up-next-cancel-btn { background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer; }
+            
             /* ========================================= */
             /* END: CSS CHO PLAYER V5                    */
             /* ========================================= */
         </style>
+
     </head>
     <body>
         <main>
