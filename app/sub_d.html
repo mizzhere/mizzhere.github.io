@@ -488,9 +488,8 @@
 
     <div id="notification-area"></div>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        // JavaScript logic will be added here in the next step.
-		// --- DOM Elements ---
+	<script>
+    // --- DOM Elements ---
 const doc = document;
 const libraryContainer = doc.getElementById('library-container');
 const searchInput = doc.getElementById('search-input');
@@ -506,6 +505,7 @@ const modalTitle = doc.getElementById('modal-title');
 const modalProgram = doc.getElementById('modal-program');
 const modalAuthor = doc.getElementById('modal-author');
 const modalParticipantsList = doc.getElementById('modal-participants-list');
+const modalParticipantsContainer = doc.getElementById('modal-participants-container');
 
 // Add Video Modal Elements
 const addVideoModalOverlay = doc.getElementById('add-video-modal-overlay');
@@ -516,16 +516,24 @@ const urlInput = doc.getElementById('youtube-url-input');
 // Player Elements
 const playerWrapper = doc.getElementById('player-wrapper');
 const playerContainer = doc.getElementById('player-container');
-// Other player elements will be grabbed when needed or assumed to exist from previous HTML
+const clickOverlay = doc.getElementById('click-overlay');
+const backBtn = doc.getElementById('back-btn');
+const videoTitleDisplay = doc.getElementById('video-title-display');
+const videoProgramDisplay = doc.getElementById('video-program-display');
+// Other player controls will be grabbed inside functions where needed
 
 // --- State Variables ---
 let player;
 let libraryData = [];
 let subtitles = [];
 let controlsTimeout;
+let progressInterval;
+let subtitleCheckInterval;
 
 // --- Initialization ---
+// This function is called by the YouTube IFrame API script
 function onYouTubeIframeAPIReady() {
+    // Player will be created on demand, no need to initialize here
     initializeLibrary();
 }
 
@@ -534,6 +542,7 @@ async function initializeLibrary() {
         const res = await fetch('library.json');
         if (!res.ok) throw new Error("Không thể tải thư viện. Vui lòng kiểm tra lại file `library.json`.");
         libraryData = await res.json();
+        
         renderVideoRows(libraryData);
         populateFilterTags();
         setupEventListeners();
@@ -549,12 +558,14 @@ function renderVideoRows(videoArray) {
         libraryContainer.innerHTML = `<p style="text-align: center;">Không tìm thấy video nào phù hợp.</p>`;
         return;
     }
+
     const groupedByProgram = videoArray.reduce((acc, video) => {
         const program = video.program || 'Chương trình khác';
         if (!acc[program]) acc[program] = [];
         acc[program].push(video);
         return acc;
     }, {});
+
     const programOrder = Object.keys(groupedByProgram).sort((a, b) => a === 'Chương trình khác' ? 1 : b === 'Chương trình khác' ? -1 : a.localeCompare(b));
     
     for (const programName of programOrder) {
@@ -606,8 +617,8 @@ function setupEventListeners() {
     addVideoForm.addEventListener('submit', handleAddVideoSubmit);
 
     // Player
-    doc.getElementById('back-btn').addEventListener('click', goHome);
-    doc.getElementById('click-overlay').addEventListener('click', handlePlayerClick);
+    backBtn.addEventListener('click', goHome);
+    clickOverlay.addEventListener('click', handlePlayerClick);
     playerContainer.addEventListener('mousemove', showControlsAndSetHideTimeout);
     playerContainer.addEventListener('mouseleave', hideControls);
     doc.addEventListener('keydown', handleKeyboardShortcuts);
@@ -661,9 +672,8 @@ function handleAddVideoSubmit(e) {
     const videoId = extractVideoID(urlInput.value);
     if (videoId) {
         closeModal(addVideoModalOverlay);
-        // Launch player with a minimal video object
-        launchPlayer({ videoId: videoId });
-        urlInput.value = ''; // Clear input
+        launchPlayer({ videoId: videoId }); // Launch with minimal data
+        urlInput.value = '';
     } else {
         alert("Link YouTube không hợp lệ. Vui lòng kiểm tra lại.");
     }
@@ -688,7 +698,6 @@ function openDetailModal(videoData) {
     modalAuthor.textContent = videoData.authorName || '';
     
     modalParticipantsList.innerHTML = '';
-    const participantsContainer = doc.getElementById('modal-participants-title').parentElement;
     if (videoData.participants && videoData.participants.length > 0) {
         videoData.participants.forEach(name => {
             const li = doc.createElement('li');
@@ -696,9 +705,9 @@ function openDetailModal(videoData) {
             li.textContent = name;
             modalParticipantsList.appendChild(li);
         });
-        participantsContainer.classList.remove('hidden');
+        modalParticipantsContainer.classList.remove('hidden');
     } else {
-        participantsContainer.classList.add('hidden');
+        modalParticipantsContainer.classList.add('hidden');
     }
 
     modalPlayBtn.dataset.videoId = videoData.videoId;
@@ -709,13 +718,12 @@ function openDetailModal(videoData) {
 async function launchPlayer(videoData) {
     if (!videoData || !videoData.videoId) return;
 
-    // Reset state for new video
     subtitles = [];
     doc.getElementById('subtitle-display').innerHTML = '';
 
-    playerWrapper.style.display = 'block';
-    doc.getElementById('video-title-display').textContent = videoData.userTitle || videoData.title || 'Đang tải...';
-    doc.getElementById('video-program-display').textContent = videoData.program || '';
+    playerWrapper.classList.remove('hidden');
+    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || 'Đang tải...';
+    videoProgramDisplay.textContent = videoData.program || '';
 
     await enterCinematicMode();
     
@@ -743,18 +751,19 @@ async function enterCinematicMode() {
 
 function goHome() {
     if (player) player.stopVideo();
-    playerWrapper.style.display = 'none';
+    playerWrapper.classList.add('hidden');
     if (document.fullscreenElement) document.exitFullscreen();
 }
 
 function onPlayerReady(event) {
     const apiData = event.target.getVideoData();
-    doc.getElementById('video-title-display').textContent = apiData.title;
+    videoTitleDisplay.textContent = apiData.title;
     event.target.playVideo();
 }
 
 function onPlayerStateChange(event) {
-    const playBtn = doc.getElementById('play-pause-btn');
+    // This assumes the custom-controls HTML is present inside the player-wrapper
+    const playBtn = doc.querySelector('#custom-controls #play-pause-btn'); 
     if (playBtn) {
         playBtn.innerHTML = event.data === YT.PlayerState.PLAYING 
             ? `<svg viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>` 
@@ -795,34 +804,89 @@ function hideControls() {
 }
 
 function handleKeyboardShortcuts(e) {
-    if (!player || doc.activeElement === searchInput || doc.activeElement === urlInput) return;
-    if (playerWrapper.style.display !== 'block') return;
+    if (doc.activeElement === searchInput || doc.activeElement === urlInput) return;
+    if (playerWrapper.classList.contains('hidden')) return;
     
     switch (e.code) {
-        case 'Space': e.preventDefault(); player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); break;
+        case 'Space': e.preventDefault(); if (player && player.getPlayerState) { player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); } break;
         case 'Escape': e.preventDefault(); goHome(); break;
     }
 }
 
 // --- Utility & Sync Functions ---
-let progressInterval, subtitleCheckInterval;
 function startSyncing() { startProgressSync(); if(subtitles.length > 0) startSubtitleSync(); }
 function stopSyncing() { stopProgressSync(); stopSubtitleSync(); }
-function startProgressSync() { /* ... function unchanged ... */ }
-function startSubtitleSync() { /* ... function unchanged ... */ }
 function stopProgressSync() { clearInterval(progressInterval); }
 function stopSubtitleSync() { clearInterval(subtitleCheckInterval); }
-async function loadRemoteSubtitle(url) { /* ... function unchanged ... */ }
-function parseSRT(text) { /* ... function unchanged ... */ }
-function srtTimeToSeconds(t) { /* ... function unchanged ... */ }
-function extractVideoID(url) { const r = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/|shorts\/)([a-zA-Z0-9_-]{11})/; return url.match(r) ? url.match(r)[1] : null; }
 
-// Re-implementing unchanged utility functions for completeness
-startProgressSync = () => { stopProgressSync(); progressInterval = setInterval(() => { if (!player || typeof player.getDuration !== 'function') return; const d = player.getDuration(), c = player.getCurrentTime(); if (isNaN(d)) return; const pBar = doc.getElementById('progress-bar'); if(pBar) {pBar.max = d; pBar.value = c; pBar.style.setProperty('--progress-percent', `${d > 0 ? (c / d) * 100 : 0}%`);} const tDisplay = doc.getElementById('time-display'); if(tDisplay) { const formatTime = s => { const t = Math.round(s); return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; }; tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`; } }, 250); };
-startSubtitleSync = () => { stopSubtitleSync(); subtitleCheckInterval = setInterval(() => { if (!player || typeof player.getCurrentTime !== 'function') return; const c = player.getCurrentTime(); const sub = subtitles.find(s => c >= s.start && s.end >= c); const subDisplay = doc.getElementById('subtitle-display'); if(subDisplay) subDisplay.innerHTML = sub ? sub.text : ''; }, 100); };
-async function loadRemoteSubtitle(url) { if (!url) return; try { const res = await fetch(url); if (!res.ok) throw new Error(`Could not fetch SRT`); const srt = await res.text(); subtitles = parseSRT(srt); if (subtitles.length > 0) startSubtitleSync(); } catch (e) { console.error("Could not load subtitle:", e); } }
-parseSRT = (text) => { const subs = []; const blocks = text.trim().replace(/\r/g, "").split("\n\n"); for (const block of blocks) { const lines = block.split("\n"); const timeIdx = lines.findIndex(l => l.includes('-->')); if (timeIdx !== -1) { const txt = lines.slice(timeIdx + 1).join('<br>'); const match = lines[timeIdx].match(/(.*) --> (.*)/); if (match && txt) subs.push({ start: srtTimeToSeconds(match[1].trim()), end: srtTimeToSeconds(match[2].trim()), text: txt }); } } return subs; };
-srtTimeToSeconds = (t) => { const p = t.split(/[:,]/).reverse(); return (parseInt(p[3],10)||0)*3600+(parseInt(p[2],10)||0)*60+(parseInt(p[1],10)||0)+(parseInt(p[0],10)||0)/1000; };
+function startProgressSync() {
+    stopProgressSync();
+    const pBar = doc.querySelector('#custom-controls #progress-bar');
+    const tDisplay = doc.querySelector('#custom-controls #time-display');
+    if (!pBar || !tDisplay) return;
+
+    progressInterval = setInterval(() => {
+        if (!player || typeof player.getDuration !== 'function') return;
+        const d = player.getDuration(), c = player.getCurrentTime();
+        if (isNaN(d)) return;
+        pBar.max = d;
+        pBar.value = c;
+        pBar.style.setProperty('--progress-percent', `${d > 0 ? (c / d) * 100 : 0}%`);
+        const formatTime = s => { const t = Math.round(s); return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; };
+        tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
+    }, 250);
+}
+
+function startSubtitleSync() {
+    stopSubtitleSync();
+    const subDisplay = doc.getElementById('subtitle-display');
+    if (!subDisplay) return;
+    subtitleCheckInterval = setInterval(() => {
+        if (!player || typeof player.getCurrentTime !== 'function') return;
+        const c = player.getCurrentTime();
+        const sub = subtitles.find(s => c >= s.start && s.end >= c);
+        subDisplay.innerHTML = sub ? sub.text : '';
+    }, 100);
+}
+
+async function loadRemoteSubtitle(url) {
+    if (!url) return;
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Could not fetch SRT`);
+        const srt = await res.text();
+        subtitles = parseSRT(srt);
+        if (subtitles.length > 0) startSubtitleSync();
+    } catch (e) {
+        console.error("Could not load subtitle:", e);
+    }
+}
+
+function parseSRT(text) {
+    const subs = [];
+    const blocks = text.trim().replace(/\r/g, "").split("\n\n");
+    for (const block of blocks) {
+        const lines = block.split("\n");
+        const timeIdx = lines.findIndex(l => l.includes('-->'));
+        if (timeIdx !== -1) {
+            const txt = lines.slice(timeIdx + 1).join('<br>');
+            const match = lines[timeIdx].match(/(.*) --> (.*)/);
+            if (match && txt) subs.push({ start: srtTimeToSeconds(match[1].trim()), end: srtTimeToSeconds(match[2].trim()), text: txt });
+        }
+    }
+    return subs;
+}
+
+function srtTimeToSeconds(t) {
+    const p = t.split(/[:,]/).reverse();
+    return (parseInt(p[3], 10) || 0) * 3600 + (parseInt(p[2], 10) || 0) * 60 + (parseInt(p[1], 10) || 0) + (parseInt(p[0], 10) || 0) / 1000;
+}
+
+function extractVideoID(url) {
+    const regex = /(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/|shorts\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
     </script>
 </body>
 </html>
