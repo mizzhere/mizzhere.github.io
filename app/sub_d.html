@@ -376,130 +376,138 @@
                 cursor: pointer;
             }
 
+                        /* ================================================= */
+            /* START: CSS CHO PLAYER V5 - THAY THẾ TOÀN BỘ CSS CŨ */
+            /* ================================================= */
+
             #player-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
+                position: fixed; /* Đổi từ inline style */
+                top: 0; left: 0; width: 100vw; height: 100vh;
                 background-color: #000;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                display: flex; justify-content: center; align-items: center;
                 z-index: 3000;
+                color: white; /* Màu chữ mặc định cho các control */
             }
-                    #player-container #video-header-overlay,
-        #player-container #custom-controls {
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-            pointer-events: none;
-        }
-
-               /* XÓA KHỐI NÀY ĐI */
-        /*
-        #player-container.controls-active #video-header-overlay,
-        #player-container.controls-active #custom-controls {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        */
             #youtube-player {
-                width: 100%;
-                height: 100%;
+                position: absolute;
+                width: 100%; height: 100%;
                 border: none;
             }
-           
-            
-           
-            #back-btn {
-                background: none;
-                border: none;
-                fill: white;
-                cursor: pointer;
-                width: 44px;
-                height: 44px;
-                padding: 0;
-                pointer-events: auto;
-                flex-shrink: 0;
-            }
-            #video-title-container {
-                overflow: hidden;
-            }
-            #video-title-display {
-                font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-                font-weight: 600;
-                margin: 0;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            
-            /* #custom-controls * { pointer-events: auto; } */ /* << XÓA HOẶC COMMENT DÒNG NÀY */
 
-            .controls-row {
-                display: flex;
-                align-items: center;
-                gap: 20px;
+            /* --- Base styles cho các lớp phủ --- */
+            #video-header-overlay, #custom-controls, #center-play-pause-btn {
+                opacity: 0;
+                transition: opacity 0.25s ease-out;
+                position: absolute;
+                left: 0;
+                width: 100%;
+                box-sizing: border-box;
+                pointer-events: none; /* Mặc định vô hiệu hóa */
             }
-            /* FIX: Buttons should be transparent */
-            .controls-row button {
-                background: transparent;
-                border: none;
-                cursor: pointer;
-                padding: 5px;
+
+            /* --- Trạng thái hiển thị controls --- */
+            #player-container.controls-active #video-header-overlay,
+            #player-container.controls-active #custom-controls,
+            #player-container.controls-active #center-play-pause-btn {
+                opacity: 1;
+                pointer-events: auto; /* Kích hoạt khi control hiện */
             }
-            .controls-row button svg {
+            #player-container.playing.controls-active #center-play-pause-btn {
+                opacity: 0; /* Ẩn nút giữa khi đang phát và control hiện */
+            }
+
+            /* --- Định vị và style cho các lớp phủ --- */
+            #video-header-overlay {
+                top: 0;
+                padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+                z-index: 12;
+            }
+            #custom-controls {
+                bottom: 0;
+                padding: 10px clamp(20px, 5vw, 60px);
+                background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+                z-index: 12;
+            }
+            #center-play-pause-btn {
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+                width: 70px; height: 70px;
+                background: rgba(0,0,0,0.4);
+                border: 2px solid rgba(255,255,255,0.5);
+                border-radius: 50%;
+                display: flex; justify-content: center; align-items: center;
+                cursor: pointer; padding: 0;
+                z-index: 15;
+            }
+            #center-play-pause-btn svg {
                 fill: white;
-                width: 28px;
-                height: 28px;
-                display: block;
+                width: 40px; height: 40px;
             }
-            #time-display {
-                font-size: 1rem;
-                white-space: nowrap;
+
+            /* --- Lớp phủ tương tác (luôn trong suốt) --- */
+            #interaction-overlay {
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                z-index: 10;
+                display: flex;
             }
-            /* FIX: Program name display in controls */
-            #video-program-display {
-                margin: 0 15px;
-                font-size: 0.9rem;
-                color: #ccc;
-                opacity: 0.8;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                flex-shrink: 1;
+            #seek-backward-zone, #play-pause-zone, #seek-forward-zone {
+                flex: 1;
             }
-            .spacer {
-                flex-grow: 1;
+
+            /* --- Phụ đề, Settings, Up Next --- */
+            #subtitle-display {
+                position: absolute;
+                bottom: 12%; /* Nâng lên một chút */
+                left: 50%; transform: translateX(-50%);
+                z-index: 20;
+                max-width: 90%;
+                padding: 8px 20px;
+                text-align: center;
+                border-radius: 6px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+                line-height: 1.5;
+                font-weight: 500;
+                background-color: rgba(0,0,0,0.5);
+                pointer-events: none;
+                opacity: 0;
             }
-            
-            
-            #subtitle-display:not(:empty) {
-                opacity: 1;
+            #subtitle-display:not(:empty) { opacity: 1; }
+
+            #settings-menu {
+                position: absolute;
+                bottom: 80px; right: clamp(20px, 5vw, 60px);
+                z-index: 30;
+                background-color: rgba(20,20,20,0.9);
+                backdrop-filter: blur(5px);
+                padding: 15px; border-radius: 8px;
+                width: 280px; box-sizing: border-box;
+                display: none;
+                flex-direction: column; gap: 15px;
+                opacity: 0; transform: translateY(10px);
+                transition: opacity 0.2s, transform 0.2s;
             }
-            
-            #settings-menu.visible {
-                opacity: 1;
-                transform: translateY(0);
-                pointer-events: auto;
+            #settings-menu.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+            #up-next-overlay {
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 100%;
+                z-index: 40;
+                background-color: rgba(0,0,0,0.85);
+                display: none;
+                flex-direction: column; justify-content: center; align-items: center;
+                text-align: center;
             }
-            .control-group label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 0.9rem;
-                color: #ccc;
-            }
-            .control-group input[type="range"] {
-                width: 100%;
-            }
-            .control-group input[type="color"] {
-                width: 100%;
-                height: 35px;
-                border: none;
-                padding: 0;
-                background: none;
-                cursor: pointer;
-            }
+            #up-next-overlay p { font-size: 1.2rem; color: #aaa; margin: 0; }
+            #up-next-card { cursor: pointer; margin-top: 20px; }
+            #up-next-thumbnail { width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px; }
+            #up-next-title { margin: 10px 0 0 0; font-size: 1.4rem; }
+            #up-next-cancel-btn { background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer; }
+            /* ========================================= */
+            /* END: CSS CHO PLAYER V5                    */
+            /* ========================================= */
         </style>
     </head>
     <body>
@@ -579,61 +587,64 @@
         </div>
 
         <div id="player-wrapper" class="hidden">
-        <!-- START: Cấu trúc Player ĐÃ SỬA LỖI -->
-        <div id="player-container" style="display: flex; justify-content: center; align-items: center;">
+            <!-- START: Cấu trúc Player HOÀN CHỈNH v5 -->
+        <div id="player-container">
             <div id="youtube-player"></div>
 
-            <!-- Lớp phủ điều khiển chính (Z-INDEX 10) -->
-            <div id="controls-overlay" class="player-overlay" style="z-index: 10; position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column;">
-                <!-- Vùng tương tác chính (chia 3 cột) -->
-                <div style="flex-grow: 1; display: flex;">
-                    <div id="seek-backward-zone" style="flex: 1;"></div>
-                    <div id="play-pause-zone" style="flex: 1;"></div>
-                    <div id="seek-forward-zone" style="flex: 1;"></div>
+            <!-- Header -->
+            <div id="video-header-overlay">
+                <button id="back-btn" title="Quay lại"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg></button>
+                <div id="video-title-container"><h2 id="video-title-display"></h2></div>
+            </div>
+
+            <!-- Vùng tương tác chính (nằm ở giữa) -->
+            <div id="interaction-overlay">
+                <div id="seek-backward-zone"></div>
+                <div id="play-pause-zone"></div>
+                <div id="seek-forward-zone"></div>
+            </div>
+
+            <!-- Nút Play/Pause lớn (nằm riêng biệt, ở giữa) -->
+            <button id="center-play-pause-btn">
+                <svg id="center-play-pause-icon" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+            </button>
+            
+            <!-- Phụ đề -->
+            <div id="subtitle-display"></div>
+            
+            <!-- Thanh điều khiển dưới -->
+            <div id="custom-controls">
+                <div class="progress-container">
+                     <input type="range" id="progress-bar" value="0" min="0">
                 </div>
-                <!-- Header và Thanh điều khiển dưới là con của Lớp phủ chính -->
-                <div id="video-header-overlay" style="position: absolute; top: 0; left: 0; right: 0; padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px); background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); display: flex; align-items: center; gap: 20px;">
-                    <button id="back-btn" title="Quay lại"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg></button>
-                    <div id="video-title-container"><h2 id="video-title-display"></h2></div>
-                </div>
-                <div id="custom-controls" style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%); padding: 10px clamp(20px, 5vw, 60px);">
-                    <div class="progress-container" style="position: relative; width: 100%; margin-bottom: 8px;">
-                         <input type="range" id="progress-bar" value="0" min="0" style="-webkit-appearance: none; width: 100%; height: 4px; cursor: pointer; border-radius: 5px; transition: height 0.2s; background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) 100%);">
-                    </div>
-                    <div class="controls-row">
-                        <button id="play-pause-btn"><svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg></button>
-                        <div id="time-display">00:00 / 00:00</div>
-                        <p id="video-program-display"></p>
-                        <div class="spacer"></div>
-                        <button id="settings-btn" title="Cài đặt Phụ đề"><svg><path d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"></path></svg></button>
-                    </div>
+                <div class="controls-row">
+                    <button id="play-pause-btn"><svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg></button>
+                    <div id="time-display">00:00 / 00:00</div>
+                    <p id="video-program-display"></p>
+                    <div class="spacer"></div>
+                    <button id="settings-btn" title="Cài đặt Phụ đề"><svg><path d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"></path></svg></button>
                 </div>
             </div>
 
-            <!-- Nút Play/Pause lớn ở giữa (luôn được căn giữa) -->
-            <button id="center-play-pause-btn" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 15; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;">
-                <svg id="center-play-pause-icon" style="fill: white; width: 40px; height: 40px;" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
-            </button>
-
-            <!-- Phụ đề (Z-INDEX 20) -->
-            <div id="subtitle-display" style="z-index: 20; position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 8px 20px; text-align: center; border-radius: 6px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9); line-height: 1.5; font-weight: 500; background-color: rgba(0,0,0,0.5); pointer-events: none; opacity: 0;"></div>
-
-            <!-- Menu Cài đặt (Z-INDEX 30) -->
-            <div id="settings-menu" style="z-index: 30; position: absolute; bottom: 70px; right: 20px; background-color: rgba(20,20,20,0.9); backdrop-filter: blur(5px); padding: 15px; border-radius: 8px; width: 280px; box-sizing: border-box; display: none; /* Sẽ được điều khiển bằng JS */ flex-direction: column; gap: 15px; pointer-events: none; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;">
-                <div class="control-group"><label for="font-size-slider">Kích thước chữ</label><input type="range" id="font-size-slider" min="12" max="48" step="1"></div><div class="control-group"><label for="font-color-picker">Màu chữ</label><input type="color" id="font-color-picker"></div><div class="control-group"><label for="bg-color-picker">Màu nền</label><input type="color" id="bg-color-picker"></div><div class="control-group"><label for="bg-opacity-slider">Độ mờ nền</label><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05"></div>
+            <!-- Menu Cài đặt -->
+            <div id="settings-menu">
+                <div class="control-group"><label for="font-size-slider">Kích thước chữ</label><input type="range" id="font-size-slider" min="12" max="48" step="1"></div>
+                <div class="control-group"><label for="font-color-picker">Màu chữ</label><input type="color" id="font-color-picker"></div>
+                <div class="control-group"><label for="bg-color-picker">Màu nền</label><input type="color" id="bg-color-picker"></div>
+                <div class="control-group"><label for="bg-opacity-slider">Độ mờ nền</label><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05"></div>
             </div>
             
-            <!-- "Up Next" Overlay (Z-INDEX 40) -->
-            <div id="up-next-overlay" style="z-index: 40; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto;">
-                <p style="font-size: 1.2rem; color: #aaa; margin: 0;">Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
-                <div id="up-next-card" style="cursor: pointer; margin-top: 20px;">
-                    <img id="up-next-thumbnail" src="" style="width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px;">
-                    <h3 id="up-next-title" style="margin: 10px 0 0 0; font-size: 1.4rem;"></h3>
+            <!-- "Up Next" Overlay -->
+            <div id="up-next-overlay">
+                <p>Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
+                <div id="up-next-card">
+                    <img id="up-next-thumbnail" src="">
+                    <h3 id="up-next-title"></h3>
                 </div>
-                <button id="up-next-cancel-btn" style="background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer;">Hủy</button>
+                <button id="up-next-cancel-btn">Hủy</button>
             </div>
         </div>
-        <!-- END: Cấu trúc Player ĐÃ SỬA LỖI -->
+        <!-- END: Cấu trúc Player HOÀN CHỈNH v5 -->
         </div>
         <div id="notification-area"></div>
         <script src="https://www.youtube.com/iframe_api"></script>
@@ -746,61 +757,46 @@
             }
 
             // --- Event Handling ---
-           function setupEventListeners() {
+function setupEventListeners() {
+        // ... các event listener từ đầu đến backBtn giữ nguyên ...
         searchInput.addEventListener("input", handleSearchAndFilter);
         filterTagsContainer.addEventListener("click", handleTagClick);
         libraryContainer.addEventListener("click", handleCardClick);
         detailModalCloseBtn.addEventListener("click", () => closeModal(detailModalOverlay));
-        detailModalOverlay.addEventListener("click", (e) => {
-            if (e.target === detailModalOverlay) closeModal(detailModalOverlay);
-        });
+        detailModalOverlay.addEventListener("click", (e) => { if (e.target === detailModalOverlay) closeModal(detailModalOverlay); });
         modalPlayBtn.addEventListener("click", handleModalPlay);
         addVideoBtn.addEventListener("click", () => openModal(addVideoModalOverlay));
         addVideoCloseBtn.addEventListener("click", () => closeModal(addVideoModalOverlay));
-        addVideoModalOverlay.addEventListener("click", (e) => {
-            if (e.target === addVideoModalOverlay) closeModal(addVideoModalOverlay);
-        });
+        addVideoModalOverlay.addEventListener("click", (e) => { if (e.target === addVideoModalOverlay) closeModal(addVideoModalOverlay); });
         addVideoForm.addEventListener("submit", handleAddVideoSubmit);
-        srtFileInput.addEventListener("change", () => {
-            srtFileName.textContent = srtFileInput.files.length > 0 ? srtFileInput.files[0].name : "";
-        });
+        srtFileInput.addEventListener("change", () => { srtFileName.textContent = srtFileInput.files.length > 0 ? srtFileInput.files[0].name : ""; });
         backBtn.addEventListener("click", goHome);
-        
-        // --- LOGIC TƯƠNG TÁC MỚI ---
-        doc.getElementById('seek-backward-zone').addEventListener('click', handleInteraction);
-        doc.getElementById('play-pause-zone').addEventListener('click', handleInteraction);
-        doc.getElementById('seek-forward-zone').addEventListener('click', handleInteraction);
-        doc.getElementById('center-play-pause-btn').addEventListener('click', togglePlayPause);
-        
-        // Ngăn các nút thật bị ảnh hưởng
-        doc.getElementById('video-header-overlay').addEventListener('click', e => e.stopPropagation());
-        doc.getElementById('custom-controls').addEventListener('click', e => e.stopPropagation());
 
+        // --- LOGIC TƯƠNG TÁC PLAYER MỚI ---
+        doc.getElementById('interaction-overlay').addEventListener('click', handleInteraction);
+        doc.getElementById('center-play-pause-btn').addEventListener('click', (e) => { e.stopPropagation(); togglePlayPause(); });
         playPauseBtn.addEventListener("click", togglePlayPause);
         progressBar.addEventListener("input", handleSeek);
+        
+        // --- CÁC EVENT LISTENER KHÁC ---
         playerContainer.addEventListener("mousemove", showControlsAndSetHideTimeout);
-        // playerContainer.addEventListener("mouseleave", hideControls); // Không cần nữa với logic mới
         doc.addEventListener("keydown", handleKeyboardShortcuts);
-        doc.addEventListener("fullscreenchange", () => {
-            if (!document.fullscreenElement) goHome();
-        });
+        doc.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) goHome(); });
         settingsBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             const menu = doc.getElementById('settings-menu');
             const isVisible = menu.style.display === 'flex';
             menu.style.display = isVisible ? 'none' : 'flex';
-            setTimeout(() => { // Thêm timeout để transition hoạt động
-                 menu.classList.toggle("visible", !isVisible);
-            }, 10);
+            setTimeout(() => { menu.classList.toggle("visible", !isVisible); }, 10);
         });
         doc.addEventListener("click", (e) => {
             const menu = doc.getElementById('settings-menu');
-            if (!menu.contains(e.target) && !settingsBtn.contains(e.target)) {
+            if (menu.classList.contains('visible') && !menu.contains(e.target) && !settingsBtn.contains(e.target)) {
                  menu.classList.remove("visible");
-                 setTimeout(() => { menu.style.display = 'none'; }, 200); // Đợi transition
+                 setTimeout(() => { menu.style.display = 'none'; }, 200);
             }
         });
-        // ... các event listener còn lại giữ nguyên ...
+        // ... các event listener của subtitle settings và drag-drop giữ nguyên ...
         fontSizeSlider.addEventListener("input", () => { subtitleSettings.fontSize = fontSizeSlider.value; applyAndSaveSubtitleStyles(); });
         fontColorPicker.addEventListener("input", () => { subtitleSettings.fontColor = fontColorPicker.value; applyAndSaveSubtitleStyles(); });
         bgColorPicker.addEventListener("input", () => { subtitleSettings.bgColor = bgColorPicker.value; applyAndSaveSubtitleStyles(); });
@@ -1001,17 +997,17 @@
         if (centerIcon) centerIcon.setAttribute('d', playPauseIconPath);
 
         if (event.data === YT.PlayerState.PLAYING) {
+            playerContainer.classList.add('playing');
             startSyncing();
             hideUpNextOverlay();
-            showControlsAndSetHideTimeout(); // Bắt đầu chu trình ẩn/hiện
+            showControlsAndSetHideTimeout();
         } else {
+            playerContainer.classList.remove('playing');
             stopSyncing();
             // Khi pause/end/buffer, hiện controls và nút play giữa vĩnh viễn
             clearTimeout(controlsTimeout);
             playerContainer.classList.add('controls-active');
-            doc.getElementById('center-play-pause-btn').style.opacity = '1';
-            doc.getElementById('video-header-overlay').style.opacity = '1';
-            doc.getElementById('custom-controls').style.opacity = '1';
+            playerContainer.classList.remove('no-cursor');
         }
 
         if (event.data === YT.PlayerState.ENDED && !isEnding) {
@@ -1019,24 +1015,26 @@
         }
     }
 
-         function handleInteraction(e) {
+     function handleInteraction(e) {
         const now = new Date().getTime();
         const timeSinceLastClick = now - lastClickInfo.time;
-        const area = e.currentTarget.id;
+        const area = e.target.id;
 
         // Logic Double Click để tua
-        if (timeSinceLastClick < 350 && area === lastClickInfo.area && area !== 'play-pause-zone') {
+        if (timeSinceLastClick < 350 && area === lastClickInfo.area) {
             const currentTime = player.getCurrentTime();
             const duration = player.getDuration();
             let newTime = currentTime;
 
             if (area === 'seek-backward-zone') {
                 newTime = Math.max(0, currentTime - 5);
+                player.seekTo(newTime, true);
+                updateProgressBarUI(newTime, duration); // Cập nhật UI ngay
             } else if (area === 'seek-forward-zone') {
                 newTime = Math.min(duration, currentTime + 5);
+                player.seekTo(newTime, true);
+                updateProgressBarUI(newTime, duration); // Cập nhật UI ngay
             }
-            player.seekTo(newTime, true);
-            updateProgressBarUI(newTime, duration); // Cập nhật UI ngay
             lastClickInfo = { time: 0, area: null }; // Reset
         } 
         // Logic Single Click để hiện/ẩn controls
@@ -1049,6 +1047,7 @@
         }
         lastClickInfo = { time: now, area: area };
     }
+
             // FIX: Added function to handle seek
            function handleSeek() {
         const seekTime = progressBar.value;
@@ -1061,36 +1060,24 @@
                 if (player && player.getPlayerState) player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
             }
 
-                function showControlsAndSetHideTimeout() {
+             function showControlsAndSetHideTimeout() {
         if (!player) return;
         playerContainer.classList.add('controls-active');
         playerContainer.classList.remove('no-cursor');
         
-        doc.getElementById('video-header-overlay').style.opacity = '1';
-        doc.getElementById('custom-controls').style.opacity = '1';
-        
-        // Chỉ ẩn nút play lớn khi video đang phát và controls hiện
-        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-             doc.getElementById('center-play-pause-btn').style.opacity = '0';
-        }
-
         clearTimeout(controlsTimeout);
         if (player.getPlayerState() === YT.PlayerState.PLAYING) {
             controlsTimeout = setTimeout(hideControls, 3500);
         }
     }
 
-    function hideControls() {
+
+     function hideControls() {
         clearTimeout(controlsTimeout);
         const menu = doc.getElementById('settings-menu');
-        // Không ẩn nếu menu settings đang mở
         if (menu.classList.contains('visible')) return;
 
         playerContainer.classList.remove('controls-active');
-        doc.getElementById('video-header-overlay').style.opacity = '0';
-        doc.getElementById('custom-controls').style.opacity = '0';
-        doc.getElementById('center-play-pause-btn').style.opacity = '0';
-        
         if (player.getPlayerState() === YT.PlayerState.PLAYING) {
             playerContainer.classList.add('no-cursor');
         }
