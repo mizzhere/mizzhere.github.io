@@ -2,8 +2,8 @@
   "programs": [
     "Halmyungsoo",
     "Salon Drip 2",
-    "Đợi chờ người không đến",
-    "TtakDae"
+    "TtakDae",
+    "Đợi chờ người không đến"
   ],
   "participants": [
     "Jang Doyeon",
@@ -12,5 +12,8 @@
     "Ningning",
     "Park Myungsoo",
     "Winter"
+  ],
+  "genres": [
+    "aespa"
   ]
 }
