@@ -388,34 +388,26 @@
                 align-items: center;
                 z-index: 3000;
             }
+                    #player-container #video-header-overlay,
+        #player-container #custom-controls {
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            pointer-events: none;
+        }
+
+        #player-container.controls-active #video-header-overlay,
+        #player-container.controls-active #custom-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
             #youtube-player {
                 width: 100%;
                 height: 100%;
                 border: none;
             }
-            .player-overlay {
-                position: absolute;
-                left: 0;
-                right: 0;
-                z-index: 21;
-                opacity: 0;
-                visibility: hidden; /* Thêm visibility */
-                transition: opacity 0.3s ease-out, visibility 0.3s ease-out; /* Thêm transition cho visibility */
-                pointer-events: none;
-            }
-            #player-container.controls-active .player-overlay {
-                opacity: 1;
-                visibility: visible; /* Thêm visibility */
-                pointer-events: auto; /* Thêm pointer-events */
-            }
-            #video-header-overlay {
-                top: 0;
-                padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-                display: flex;
-                align-items: center;
-                gap: 20px;
-            }
+           
+            
+           
             #back-btn {
                 background: none;
                 border: none;
@@ -438,11 +430,7 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            #custom-controls {
-                bottom: 0;
-                padding: 10px clamp(20px, 5vw, 60px);
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-            }
+            
             /* #custom-controls * { pointer-events: auto; } */ /* << XÓA HOẶC COMMENT DÒNG NÀY */
 
             .controls-row {
@@ -481,53 +469,12 @@
             .spacer {
                 flex-grow: 1;
             }
-            #click-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 10;
-            }
-            #subtitle-display {
-                position: absolute;
-                bottom: 15%;
-                left: 50%;
-                transform: translateX(-50%);
-                width: max-content;
-                max-width: 90%;
-                padding: 8px 20px;
-                text-align: center;
-                border-radius: 6px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-                line-height: 1.5;
-                font-weight: 500;
-                background-color: rgba(0, 0, 0, 0.5);
-                pointer-events: none;
-                opacity: 0;
-            }
+            
+            
             #subtitle-display:not(:empty) {
                 opacity: 1;
             }
-            #settings-menu {
-                position: absolute;
-                bottom: 70px;
-                right: 20px;
-                background-color: rgba(20, 20, 20, 0.9);
-                backdrop-filter: blur(5px);
-                padding: 15px;
-                border-radius: 8px;
-                width: 280px;
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-                z-index: 22;
-                pointer-events: none;
-                opacity: 0;
-                transform: translateY(10px);
-                transition: opacity 0.2s, transform 0.2s;
-            }
+            
             #settings-menu.visible {
                 opacity: 1;
                 transform: translateY(0);
@@ -629,67 +576,62 @@
         </div>
 
         <div id="player-wrapper" class="hidden">
-            <div id="player-container">
-                <div id="youtube-player"></div>
-                <div id="click-overlay"></div>
-                <div id="video-header-overlay" class="player-overlay">
-                    <button id="back-btn" title="Quay lại">
-                        <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
-                    </button>
+                    <!-- START: Cấu trúc Player MỚI -->
+        <div id="player-container" style="display: flex; justify-content: center; align-items: center;">
+            <div id="youtube-player"></div>
+
+            <!-- Lớp phủ điều khiển chính -->
+            <div id="controls-overlay" class="player-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column;">
+
+                <!-- Vùng tương tác chính (chia 3 cột) -->
+                <div style="flex-grow: 1; display: flex;">
+                    <div id="seek-backward-zone" style="flex: 1;"></div>
+                    <div id="play-pause-zone" style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                        <button id="center-play-pause-btn" style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.2s;">
+                            <svg id="center-play-pause-icon" style="fill: white; width: 40px; height: 40px;" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+                        </button>
+                    </div>
+                    <div id="seek-forward-zone" style="flex: 1;"></div>
+                </div>
+
+                <!-- Header -->
+                <div id="video-header-overlay" style="position: absolute; top: 0; left: 0; right: 0; padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px); background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); display: flex; align-items: center; gap: 20px;">
+                    <button id="back-btn" title="Quay lại"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg></button>
                     <div id="video-title-container"><h2 id="video-title-display"></h2></div>
                 </div>
-                <div id="subtitle-display"></div>
-                <div id="custom-controls" class="player-overlay">
+
+                <!-- Thanh điều khiển dưới -->
+                <div id="custom-controls" style="background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%); padding: 10px clamp(20px, 5vw, 60px);">
                     <div class="progress-container" style="position: relative; width: 100%; margin-bottom: 8px;">
-                        <input
-                            type="range"
-                            id="progress-bar"
-                            value="0"
-                            min="0"
-                            style="
-                                -webkit-appearance: none;
-                                width: 100%;
-                                height: 4px;
-                                cursor: pointer;
-                                border-radius: 5px;
-                                transition: height 0.2s;
-                                background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) 100%);
-                            "
-                        />
+                         <input type="range" id="progress-bar" value="0" min="0" style="-webkit-appearance: none; width: 100%; height: 4px; cursor: pointer; border-radius: 5px; transition: height 0.2s; background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) 100%);">
                     </div>
                     <div class="controls-row">
-                        <button id="play-pause-btn">
-                            <svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
-                        </button>
+                        <button id="play-pause-btn"><svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg></button>
                         <div id="time-display">00:00 / 00:00</div>
                         <p id="video-program-display"></p>
                         <div class="spacer"></div>
-                        <button id="settings-btn" title="Cài đặt Phụ đề">
-                            <svg>
-                                <path
-                                    d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
-                                ></path>
-                            </svg>
-                        </button>
+                        <button id="settings-btn" title="Cài đặt Phụ đề"><svg><path d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"></path></svg></button>
                     </div>
                 </div>
-                <div id="settings-menu">
-                    <div class="control-group"><label for="font-size-slider">Kích thước chữ</label><input type="range" id="font-size-slider" min="12" max="48" step="1" /></div>
-                    <div class="control-group"><label for="font-color-picker">Màu chữ</label><input type="color" id="font-color-picker" /></div>
-                    <div class="control-group"><label for="bg-color-picker">Màu nền</label><input type="color" id="bg-color-picker" /></div>
-                    <div class="control-group"><label for="bg-opacity-slider">Độ mờ nền</label><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05" /></div>
-                </div>
-                <!-- START: Thêm mới cho tính năng UP NEXT -->
-                <div id="up-next-overlay" class="player-overlay" style="background-color: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto;">
-                    <p style="font-size: 1.2rem; color: #aaa; margin: 0;">Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
-                    <div id="up-next-card" style="cursor: pointer; margin-top: 20px;">
-                        <img id="up-next-thumbnail" src="" style="width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px;" />
-                        <h3 id="up-next-title" style="margin: 10px 0 0 0; font-size: 1.4rem;"></h3>
-                    </div>
-                    <button id="up-next-cancel-btn" style="background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer;">Hủy</button>
-                </div>
-                <!-- END: Thêm mới cho tính năng UP NEXT -->
             </div>
+
+            <!-- Các lớp phủ khác (settings, up next) -->
+            <div id="settings-menu" style="position: absolute; bottom: 70px; right: 20px; background-color: rgba(20,20,20,0.9); backdrop-filter: blur(5px); padding: 15px; border-radius: 8px; width: 280px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; z-index: 22; pointer-events: none; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;">
+                <div class="control-group"><label for="font-size-slider">Kích thước chữ</label><input type="range" id="font-size-slider" min="12" max="48" step="1"></div><div class="control-group"><label for="font-color-picker">Màu chữ</label><input type="color" id="font-color-picker"></div><div class="control-group"><label for="bg-color-picker">Màu nền</label><input type="color" id="bg-color-picker"></div><div class="control-group"><label for="bg-opacity-slider">Độ mờ nền</label><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05"></div>
+            </div>
+
+            <div id="subtitle-display" style="position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; padding: 8px 20px; text-align: center; border-radius: 6px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9); line-height: 1.5; font-weight: 500; background-color: rgba(0,0,0,0.5); pointer-events: none; opacity: 0;"></div>
+            
+            <div id="up-next-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 25; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto;">
+                <p style="font-size: 1.2rem; color: #aaa; margin: 0;">Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
+                <div id="up-next-card" style="cursor: pointer; margin-top: 20px;">
+                    <img id="up-next-thumbnail" src="" style="width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px;">
+                    <h3 id="up-next-title" style="margin: 10px 0 0 0; font-size: 1.4rem;"></h3>
+                </div>
+                <button id="up-next-cancel-btn" style="background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer;">Hủy</button>
+            </div>
+        </div>
+        <!-- END: Cấu trúc Player MỚI -->
         </div>
         <div id="notification-area"></div>
         <script src="https://www.youtube.com/iframe_api"></script>
@@ -739,7 +681,8 @@
             let subtitleSettings = {};
             let currentVideoData = null; // Lưu thông tin video đang phát
             let upNextTimeout, upNextInterval; // Dùng cho tính năng "Tập tiếp theo"
-            let lastClickInfo = { time: 0, target: null }; // Dùng để phát hiện double-click
+                let lastClickInfo = { time: 0, area: null }; // Dùng để phát hiện double-click THEO VÙNG
+    let isEnding = false; // Cờ để chống lặp khi video kết thúc
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
 
             // --- Initialization ---
@@ -820,7 +763,13 @@
                     srtFileName.textContent = srtFileInput.files.length > 0 ? srtFileInput.files[0].name : "";
                 });
                 backBtn.addEventListener("click", goHome);
-                clickOverlay.addEventListener("click", handlePlayerClick);
+                        // Thay thế clickOverlay bằng các vùng tương tác mới
+        doc.getElementById('seek-backward-zone').addEventListener('click', handleInteraction);
+        doc.getElementById('play-pause-zone').addEventListener('click', handleInteraction);
+        doc.getElementById('seek-forward-zone').addEventListener('click', handleInteraction);
+        // Ngăn các nút điều khiển thật bị ảnh hưởng bởi logic overlay
+        doc.getElementById('video-header-overlay').addEventListener('click', e => e.stopPropagation());
+        doc.getElementById('custom-controls').addEventListener('click', e => e.stopPropagation());
                 // FIX: Add listeners for player controls
                 playPauseBtn.addEventListener("click", togglePlayPause);
                 progressBar.addEventListener("input", handleSeek);
@@ -1010,39 +959,24 @@
                 openModal(detailModalOverlay);
             }
 
-            async function launchPlayer(videoData, preloadedSubtitles = null) {
-                if (!videoData || !videoData.videoId) return;
+                async function launchPlayer(videoData, preloadedSubtitles = null) {
+        if (!videoData || !videoData.videoId) return;
+        currentVideoData = videoData;
+        isEnding = false; // Reset cờ kết thúc
+        hideUpNextOverlay();
 
-                // --- Cập nhật quan trọng ---
-                currentVideoData = videoData; // Lưu lại video data hiện tại
-                hideUpNextOverlay(); // Ẩn màn hình "Up Next" nếu nó đang hiện
-                // --- Hết cập nhật ---
+        subtitles = preloadedSubtitles || [];
+        subtitleDisplay.innerHTML = '';
+        playerWrapper.classList.remove('hidden');
+        videoTitleDisplay.textContent = videoData.userTitle || videoData.title || 'Đang tải...';
+        videoProgramDisplay.textContent = videoData.program || '';
 
-                subtitles = preloadedSubtitles || [];
-                subtitleDisplay.innerHTML = "";
-                playerWrapper.classList.remove("hidden");
-                videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
-                videoProgramDisplay.textContent = videoData.program || "";
-
-                // Tạm thời vô hiệu hóa click overlay để cho phép autoplay gốc
-                clickOverlay.style.pointerEvents = "none";
-
-                await enterCinematicMode();
-                if (videoData.subtitleUrl) {
-                    loadRemoteSubtitle(videoData.subtitleUrl);
-                } else if (subtitles.length > 0) {
-                    startSubtitleSync();
-                }
-                if (player) {
-                    player.loadVideoById(videoData.videoId);
-                } else {
-                    player = new YT.Player("youtube-player", {
-                        videoId: videoData.videoId,
-                        playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0, showinfo: 0, iv_load_policy: 3 },
-                        events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
-                    });
-                }
-            }
+        await enterCinematicMode();
+        if (videoData.subtitleUrl) { loadRemoteSubtitle(videoData.subtitleUrl); } 
+        else if (subtitles.length > 0) { startSubtitleSync(); }
+        if (player) { player.loadVideoById(videoData.videoId); } 
+        else { player = new YT.Player("youtube-player", { videoId: videoData.videoId, playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0, showinfo: 0, iv_load_policy: 3 }, events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange } }); }
+    }
 
             async function enterCinematicMode() {
                 try {
@@ -1065,61 +999,68 @@
                 event.target.playVideo();
             }
 
-            function onPlayerStateChange(event) {
-                const iconPath = event.data === YT.PlayerState.PLAYING ? "M14,19H18V5H14M6,19H10V5H6V19Z" : "M8,5.14V19.14L19,12.14L8,5.14Z";
-                playPauseBtn.querySelector("svg path").setAttribute("d", iconPath);
+                function onPlayerStateChange(event) {
+        const centerIcon = doc.getElementById('center-play-pause-icon');
+        const playPauseIconPath = event.data === YT.PlayerState.PLAYING ? "M14,19H18V5H14M6,19H10V5H6V19Z" : "M8,5.14V19.14L19,12.14L8,5.14Z";
+        
+        playPauseBtn.querySelector('svg path').setAttribute('d', playPauseIconPath);
+        if (centerIcon) centerIcon.setAttribute('d', playPauseIconPath);
 
-                if (event.data === YT.PlayerState.PLAYING) {
-                    // Kích hoạt overlay sau khi video đã bắt đầu phát
-                    clickOverlay.style.pointerEvents = "auto";
-                    startSyncing();
-                    playerContainer.classList.add("no-cursor");
+        if (event.data === YT.PlayerState.PLAYING) {
+            startSyncing();
+            playerContainer.classList.add('no-cursor');
+            showControlsAndSetHideTimeout();
+            hideUpNextOverlay();
+        } else {
+            stopSyncing();
+            playerContainer.classList.remove('no-cursor');
+            // Khi pause, hiện control và nút play giữa màn hình vĩnh viễn
+            clearTimeout(controlsTimeout);
+            playerContainer.classList.add('controls-active');
+            doc.getElementById('center-play-pause-btn').style.opacity = '1';
+        }
+
+        if (event.data === YT.PlayerState.ENDED && !isEnding) {
+            handleVideoEnd();
+        }
+    }
+
+               function handleInteraction(e) {
+        // Ngăn việc click vào nút play giữa màn hình kích hoạt logic này
+        if (e.target.closest('#center-play-pause-btn')) {
+            togglePlayPause();
+            return;
+        }
+
+        const now = new Date().getTime();
+        const timeSinceLastClick = now - lastClickInfo.time;
+        const area = e.currentTarget.id; // 'seek-backward-zone', 'play-pause-zone', 'seek-forward-zone'
+
+        // Logic Double Click
+        if (timeSinceLastClick < 350 && area === lastClickInfo.area && area !== 'play-pause-zone') {
+            const currentTime = player.getCurrentTime();
+            if (area === 'seek-backward-zone') {
+                player.seekTo(Math.max(0, currentTime - 5), true);
+            } else if (area === 'seek-forward-zone') {
+                player.seekTo(currentTime + 5, true);
+            }
+            lastClickInfo = { time: 0, area: null }; // Reset
+        } 
+        // Logic Single Click
+        else {
+            if (area === 'play-pause-zone') {
+                togglePlayPause();
+            } else {
+                // Click vào 2 bên để hiện/ẩn controls
+                if (playerContainer.classList.contains('controls-active')) {
+                    hideControls();
+                } else {
                     showControlsAndSetHideTimeout();
-                    hideUpNextOverlay(); // Ẩn đề xuất nếu người dùng bấm play lại
-                } else {
-                    stopSyncing();
-                    playerContainer.classList.remove("no-cursor");
-                    showControlsAndSetHideTimeout(); // Giữ control hiện khi pause
-                }
-
-                // --- PHẦN MỚI: Xử lý khi video kết thúc ---
-                if (event.data === YT.PlayerState.ENDED) {
-                    handleVideoEnd();
                 }
             }
-
-            // FIX: Corrected player click logic for mobile
-            function handlePlayerClick(e) {
-                const now = new Date().getTime();
-                const timeSinceLastClick = now - lastClickInfo.time;
-                const target = e.target;
-
-                if (timeSinceLastClick < 300 && target === lastClickInfo.target) {
-                    // Double click
-                    const clickX = e.clientX;
-                    const screenThird = window.innerWidth / 3;
-                    const currentTime = player.getCurrentTime();
-
-                    if (clickX < screenThird) {
-                        // Double click left
-                        player.seekTo(Math.max(0, currentTime - 5), true);
-                    } else if (clickX > screenThird * 2) {
-                        // Double click right
-                        player.seekTo(currentTime + 5, true);
-                    }
-                    // Reset click info to prevent triple clicks
-                    lastClickInfo = { time: 0, target: null };
-                } else {
-                    // Single click
-                    if (playerContainer.classList.contains("controls-active")) {
-                        hideControls();
-                    } else {
-                        showControlsAndSetHideTimeout();
-                    }
-                }
-
-                lastClickInfo = { time: now, target: target };
-            }
+        }
+        lastClickInfo = { time: now, area: area };
+    }
             // FIX: Added function to handle seek
             function handleSeek() {
                 player.seekTo(progressBar.value, true);
@@ -1129,21 +1070,24 @@
                 if (player && player.getPlayerState) player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
             }
 
-            function showControlsAndSetHideTimeout() {
-                if (!player) return;
-                clearTimeout(controlsTimeout);
-                playerContainer.classList.add("controls-active");
-                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                    controlsTimeout = setTimeout(hideControls, 3500);
-                }
-            }
-            function hideControls() {
-                clearTimeout(controlsTimeout);
-                // Chỉ ẩn nếu menu settings không mở
-                if (!settingsMenu.classList.contains("visible")) {
-                    playerContainer.classList.remove("controls-active");
-                }
-            }
+                function showControlsAndSetHideTimeout() {
+        if (!player) return;
+        playerContainer.classList.add('controls-active');
+        const centerBtn = doc.getElementById('center-play-pause-btn');
+        if (centerBtn) centerBtn.style.opacity = '0'; // Ẩn nút giữa khi controls hiện
+
+        clearTimeout(controlsTimeout);
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            controlsTimeout = setTimeout(hideControls, 3500);
+        }
+    }
+
+    function hideControls() {
+        clearTimeout(controlsTimeout);
+        if (!settingsMenu.classList.contains('visible')) {
+            playerContainer.classList.remove('controls-active');
+        }
+    }
             function handleKeyboardShortcuts(e) {
                 if (doc.activeElement === searchInput || doc.activeElement === urlInput || playerWrapper.classList.contains("hidden")) return;
                 switch (e.code) {
@@ -1200,24 +1144,24 @@
             function stopSubtitleSync() {
                 clearInterval(subtitleCheckInterval);
             }
-            function startProgressSync() {
-                stopProgressSync();
-                const tDisplay = doc.getElementById("time-display");
-                progressInterval = setInterval(() => {
-                    if (!player || typeof player.getDuration !== "function") return;
-                    const d = player.getDuration(),
-                        c = player.getCurrentTime();
-                    if (isNaN(d)) return;
-                    progressBar.max = d;
-                    progressBar.value = c;
-                    progressBar.style.setProperty("--progress-percent", `${d > 0 ? (c / d) * 100 : 0}%`);
-                    const formatTime = (s) => {
-                        const t = Math.round(s);
-                        return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-                    };
-                    if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
-                }, 250);
+                function startProgressSync() {
+        stopProgressSync();
+        const tDisplay = doc.getElementById('time-display');
+        progressInterval = setInterval(() => {
+            if (!player || typeof player.getDuration !== 'function') return;
+            const d = player.getDuration(), c = player.getCurrentTime();
+            if (isNaN(d) || d === 0) return; // Bỏ qua nếu chưa có duration
+            progressBar.max = d; progressBar.value = c;
+            progressBar.style.setProperty('--progress-percent', `${(c / d) * 100}%`);
+            const formatTime = s => { const t = Math.round(s); return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; };
+            if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
+
+            // --- PHẦN MỚI: Kiểm tra video sắp kết thúc ---
+            if (d - c < 1 && !isEnding) {
+                handleVideoEnd();
             }
+        }, 250);
+    }
             function startSubtitleSync() {
                 stopSubtitleSync();
                 subtitleCheckInterval = setInterval(() => {
@@ -1262,25 +1206,25 @@
                 const match = url.match(regex);
                 return match ? match[1] : null;
             }
-            // START: Các hàm mới cho tính năng UP NEXT
-            function handleVideoEnd() {
-                if (!currentVideoData) return;
+                function handleVideoEnd() {
+        isEnding = true; // Đặt cờ để tránh gọi lại
+        stopSyncing();
 
-                let nextVideo = null;
-                // Tìm tập tiếp theo nếu có thể
-                if (currentVideoData.program && typeof currentVideoData.episode !== "undefined") {
-                    const currentEpisode = Number(currentVideoData.episode);
-                    nextVideo = libraryData.find((v) => v.program === currentVideoData.program && Number(v.episode) === currentEpisode + 1);
-                }
+        if (!currentVideoData) return;
+        let nextVideo = null;
+        if (currentVideoData.program && typeof currentVideoData.episode !== 'undefined') {
+            const currentEpisode = Number(currentVideoData.episode);
+            nextVideo = libraryData.find(v => v.program === currentVideoData.program && Number(v.episode) === currentEpisode + 1);
+        }
 
-                if (nextVideo) {
-                    showUpNextOverlay(nextVideo);
-                } else {
-                    // Có thể thêm logic đề xuất ngẫu nhiên ở đây
-                    // Hiện tại, chỉ hiển thị control để người dùng tự quyết định
-                    showControlsAndSetHideTimeout();
-                }
-            }
+        if (nextVideo) {
+            showUpNextOverlay(nextVideo);
+        } else {
+            playerContainer.classList.remove('no-cursor');
+            playerContainer.classList.add('controls-active');
+            doc.getElementById('center-play-pause-btn').style.opacity = '1';
+        }
+    }
 
             function showUpNextOverlay(videoData) {
                 const overlay = doc.getElementById("up-next-overlay");
