@@ -20,19 +20,22 @@
   {
     "videoId": "-ZZfsK32sJQ",
     "userTitle": "[TtakDae] aespa vs SPAM! NingNing không nhịn được lần này cũng không nhịn trong talkshow | EP40 - NingNing (aespa)",
-    "originalTitle": "에스파 vs 에스피에이엠! 참지 않는 닝닝이 이번에도 참지 않는 토크쇼 | 딱대 EP40 닝닝 from 에스파(aespa)",
-    "authorName": "빠더너스 BDNS",
-    "thumbnailUrl": "https://i.ytimg.com/vi/-ZZfsK32sJQ/maxresdefault.jpg",
-    "subtitleUrl": "subtitles/-ZZfsK32sJQ.srt",
+    "program": "TtakDae",
     "participants": [
       "Moon Sanghoon",
       "Ningning"
     ],
-    "program": "TtakDae",
-    "episode": 40,
+    "genres": [
+      "aespa",
+      "Hài tình huống",
+      "Trò chuyện"
+    ],
+    "description": "",
+    "subtitleUrl": "subtitles/-ZZfsK32sJQ.srt",
     "originalTitle_auto": "에스파 vs 에스피에이엠! 참지 않는 닝닝이 이번에도 참지 않는 토크쇼 | 딱대 EP40 닝닝 from 에스파(aespa)",
     "authorName_auto": "빠더너스 BDNS",
-    "thumbnailUrl_auto": "https://i.ytimg.com/vi/-ZZfsK32sJQ/maxresdefault.jpg"
+    "thumbnailUrl_auto": "https://i.ytimg.com/vi/-ZZfsK32sJQ/maxresdefault.jpg",
+    "episode": 40
   },
   {
     "videoId": "Cg-fqx7D6Fo",
