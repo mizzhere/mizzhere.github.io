@@ -170,7 +170,7 @@
         </div>
     </div>
 
-    <script>
+           <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- DOM Elements ---
         const mainContent = document.getElementById('main-content');
@@ -200,82 +200,97 @@
             { transform: 'rotateX(-120deg) rotateY(45deg)', visibleFaces: ['bottom', 'back', 'left'] }
         ];
 
-        // NÂNG CẤP CUỐI CÙNG: Thư viện layout 2D được chọn từ 11 HÌNH DẠNG CHUẨN, đảm bảo hợp lệ.
-                // NÂNG CẤP: Bộ 4 hình trải mặt xúc xắc hợp lệ và các biến thể xoay của chúng.
-        // Điều này đảm bảo tính đa dạng nhưng vẫn giữ các layout quen thuộc, dễ nhận biết.
-        const netTemplates = [
-            // --- HÌNH DẠNG 1: "Gậy gập" / L-Shape (Tương ứng "Gậy gập trái/phải") ---
-            { // 0 độ
-                cols: 2,
-                layout: [['top', 'bottom'], [null, 'front'], [null, 'back'], [null, 'left'], [null, 'right']]
-            },
-            { // 90 độ
-                cols: 5,
-                layout: [[null, null, null, null, 'top'], ['right', 'left', 'back', 'front', 'bottom']]
-            },
-            { // 180 độ
-                cols: 2,
-                layout: [[null, 'right'], [null, 'left'], [null, 'back'], [null, 'front'], ['bottom', 'top']]
-            },
-            { // 270 độ
-                cols: 5,
-                layout: [['bottom', 'front', 'back', 'left', 'right'], ['top', null, null, null, null]]
-            },
-
-            // --- HÌNH DẠNG 2: "Chữ Thập" / Cross-Shape (Tương ứng "Chữ thập") ---
-            { // 0 độ
-                cols: 3,
-                layout: [[null, 'top', null], ['left', 'front', 'right'], [null, 'bottom', null], [null, 'back', null]]
-            },
-            { // 90 độ
-                cols: 4,
-                layout: [[null, 'left', null, null], ['bottom', 'front', 'top', 'back'], [null, 'right', null, null]]
-            },
-            { // 180 độ
-                cols: 3,
-                layout: [[null, 'back', null], [null, 'bottom', null], ['right', 'front', 'left'], [null, 'top', null]]
-            },
-            { // 270 độ
-                cols: 4,
-                layout: [[null, 'right', null, null], ['back', 'top', 'front', 'bottom'], [null, 'left', null, null]]
-            },
-
-            // --- HÌNH DẠNG 3: "Ziczac" / S-Shape ---
-            { // 0 độ
-                cols: 3,
-                layout: [['top', 'front', null], [null, 'bottom', 'left'], [null, null, 'right', 'back']]
-            },
-            { // 90 độ
-                cols: 3,
-                layout: [[null, null, 'top'], [null, 'bottom', 'front'], ['right', 'left', null], ['back', null, null]]
-            },
-            { // 180 độ
-                cols: 3,
-                layout: [['back', 'right', null], [null, 'left', 'bottom'], [null, null, 'front', 'top']]
-            },
-            { // 270 độ
-                cols: 3,
-                layout: [[null, null, 'back'], [null, 'left', 'right'], ['front', 'bottom', null], ['top', null, null]]
-            },
-
-            // --- HÌNH DẠNG 4: "Tháp lệch" / Offset Tower (Tương ứng "Móc L") ---
-            { // 0 độ
-                cols: 3,
-                layout: [[null, 'top', null], ['left', 'front', null], [null, 'bottom', 'right'], [null, 'back', null]]
-            },
-            { // 90 độ
-                cols: 4,
-                layout: [[null, 'left', 'bottom', 'back'], [null, 'front', 'top', null], [null, 'right', null, null]]
-            },
-            { // 180 độ
-                cols: 3,
-                layout: [[null, 'back', null], ['right', 'bottom', null], [null, 'front', 'left'], [null, 'top', null]]
-            },
-            { // 270 độ
-                cols: 4,
-                layout: [[null, null, 'right'], [null, 'top', 'front', null], ['back', 'bottom', 'left', null]]
+        // ========================================================================
+        // === BẮT ĐẦU LOGIC TẠO MẶT TRẢI 2D MỚI DỰA TRÊN 5 HÌNH DẠNG CƠ BẢN ===
+        // ========================================================================
+        
+        // --- Helper functions để xoay và lật ma trận (layout) ---
+        const rotateMatrix = (matrix) => {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            const newMatrix = Array(cols).fill(0).map(() => Array(rows).fill(null));
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    newMatrix[c][rows - 1 - r] = matrix[r][c];
+                }
             }
+            return newMatrix;
+        };
+
+        const flipMatrix = (matrix) => {
+            return matrix.map(row => [...row].reverse());
+        };
+
+        // --- 5 hình dạng cơ bản bạn cung cấp, được ánh xạ với các mặt hợp lệ để gấp thành khối lập phương ---
+        const baseLayouts = [
+            // 1. Chữ thập (classic cross)
+            [
+                [null, 'top',    null],
+                ['left', 'front', 'right'],
+                [null, 'bottom', null],
+                [null, 'back',   null]
+            ],
+            // 2. Móc L
+            [
+                ['left', 'top',    null],
+                [null,   'front',  'right'],
+                [null,   'bottom', null],
+                [null,   'back',   null]
+            ],
+            // 3. Gậy gập (hình chữ L dài)
+            [
+                ['top',  'front', 'bottom'],
+                ['left', null,    null],
+                ['back', null,    null],
+                ['right',null,    null]
+            ],
+            // 4. Ziczac lệch
+            [
+                [null, 'top',  'left'],
+                ['front','bottom', null],
+                ['right', null,  null],
+                ['back',  null,  null]
+            ],
+            // 5. Hình chữ T biến thể
+             [
+                ['left', 'top', 'right'],
+                [null, 'front', null],
+                [null, 'bottom', null],
+                [null, 'back', null]
+            ]
         ];
+        
+        // --- Hàm tạo ra TẤT CẢ các biến thể có thể có từ 5 hình dạng cơ bản ---
+        const generateAllNetTemplates = () => {
+            const allTemplates = new Map();
+
+            baseLayouts.forEach(layout => {
+                let currentLayout = layout;
+                for (let i = 0; i < 2; i++) { // Lặp 2 lần: 1 cho bản gốc, 1 cho bản lật
+                    for (let j = 0; j < 4; j++) { // Lặp 4 lần cho 4 góc xoay 0, 90, 180, 270
+                        const key = JSON.stringify(currentLayout); // Dùng chuỗi JSON để kiểm tra trùng lặp
+                        if (!allTemplates.has(key)) {
+                            allTemplates.set(key, {
+                                cols: currentLayout[0].length,
+                                layout: currentLayout
+                            });
+                        }
+                        currentLayout = rotateMatrix(currentLayout);
+                    }
+                    currentLayout = flipMatrix(currentLayout); // Lật ma trận để tạo ra các biến thể đối xứng
+                }
+            });
+
+            return Array.from(allTemplates.values());
+        };
+
+        // --- Tạo một lần duy nhất khi game tải ---
+        const ALL_POSSIBLE_NETS = generateAllNetTemplates();
+        
+        // ======================================================================
+        // === KẾT THÚC LOGIC TẠO MẶT TRẢI 2D MỚI ===
+        // ======================================================================
+
 
         // --- Core Functions ---
         const showScreen = (name) => {
@@ -320,10 +335,18 @@
             pauseButton.classList.remove('opacity-50');
             
             generateDie();
-            const template = netTemplates[Math.floor(Math.random() * netTemplates.length)];
-            const grid = document.createElement('div'); grid.className = `grid grid-cols-${template.cols} gap-1`;
+            // *** THAY ĐỔI QUAN TRỌNG: Lấy một template ngẫu nhiên từ thư viện đã được tạo ra ***
+            const template = ALL_POSSIBLE_NETS[Math.floor(Math.random() * ALL_POSSIBLE_NETS.length)];
+            
+            const grid = document.createElement('div');
+            // Căn giữa layout bằng cách thêm `justify-center` vào container grid
+            grid.className = `grid justify-center gap-1`; 
+            grid.style.gridTemplateColumns = `repeat(${template.cols}, auto)`;
+
             grid.innerHTML = template.layout.flat().map(faceName => faceName ? createFaceHTML(currentDie[faceName]) : '<div></div>').join('');
-            diceNetContainer.innerHTML = ''; diceNetContainer.appendChild(grid);
+            
+            diceNetContainer.innerHTML = '';
+            diceNetContainer.appendChild(grid);
             showScreen('memorize');
             memorizeStartTime = Date.now();
             isPerfectAttempt = false;
@@ -539,6 +562,8 @@
         updateHighScoreDisplay();
         showScreen('home');
     });
-    </script>
+    </script>         
+        
+            
 </body>
 </html>
