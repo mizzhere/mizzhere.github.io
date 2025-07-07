@@ -1120,10 +1120,12 @@ function setupEventListeners() {
         }
     }
     function updateProgressBarUI(currentTime, duration) {
-        if (isNaN(duration) || duration === 0) return;
-        progressBar.value = currentTime;
-        progressBar.style.setProperty('--progress-percent', `${(currentTime / duration) * 100}%`);
-    }
+    if (isNaN(duration) || duration === 0) return;
+    progressBar.max = duration; // <<< THÊM DÒNG NÀY
+    progressBar.value = currentTime;
+    progressBar.style.setProperty('--progress-percent', `${(currentTime / duration) * 100}%`);
+}
+
             function showUpNextOverlay(videoData) {
                 const overlay = doc.getElementById("up-next-overlay");
                 const thumbnail = doc.getElementById("up-next-thumbnail");
