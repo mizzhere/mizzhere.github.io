@@ -1310,6 +1310,13 @@
                         e.preventDefault();
                         goHome();
                         break;
+                        case "ArrowLeft":
+    player.seekTo(player.getCurrentTime() - 5, true);
+    break;
+case "ArrowRight":
+    player.seekTo(player.getCurrentTime() + 5, true);
+    break;
+
                 }
             }
 
@@ -1324,7 +1331,7 @@
                         b = "0x" + hex[5] + hex[6];
                     return `rgba(${+r},${+g},${+b},${op})`;
                 }
-                subtitleDisplay.style.fontSize = `${subtitleSettings.fontSize}px`;
+                subtitleDisplay.style.fontSize = `clamp(1.2rem, ${subtitleSettings.fontSize * 0.08}vw, ${subtitleSettings.fontSize}px)`;
                 subtitleDisplay.style.color = subtitleSettings.fontColor;
                 subtitleDisplay.style.backgroundColor = hexToRgba(subtitleSettings.bgColor, subtitleSettings.bgOpacity);
             }
