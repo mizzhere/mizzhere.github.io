@@ -673,7 +673,8 @@ function setupEventListeners() {
         backBtn.addEventListener("click", goHome);
 
         // --- LOGIC TƯƠNG TÁC PLAYER MỚI ---
-        doc.getElementById('interaction-overlay').addEventListener('click', handleInteraction);
+        const interactionOverlay = document.getElementById('interaction-overlay');
+interactionOverlay.addEventListener('pointerup', handleInteraction);
         doc.getElementById('center-play-pause-btn').addEventListener('click', (e) => { e.stopPropagation(); togglePlayPause(); });
         playPauseBtn.addEventListener("click", togglePlayPause);
         progressBar.addEventListener("input", handleSeek);
