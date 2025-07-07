@@ -618,6 +618,15 @@
                 background: none;
                 cursor: pointer;
             }
+.video-title-inline {
+    font-size: 1rem;
+    color: #eee;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 40vw;
+}
 
             #up-next-overlay {
                 position: absolute;
@@ -753,7 +762,7 @@
                     <button id="back-btn" title="Quay lại">
                         <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
                     </button>
-                    <div id="video-title-container"><h2 id="video-title-display"></h2></div>
+                   
                 </div>
 
                 <!-- Vùng tương tác chính (nằm ở giữa) -->
@@ -782,6 +791,7 @@
                         </button>
                         <div id="time-display">00:00 / 00:00</div>
                         <p id="video-program-display"></p>
+                        <p id="video-title-display" class="video-title-inline"></p>
                         <div class="spacer"></div>
                         <button id="settings-btn" title="Cài đặt Phụ đề">
                             <svg>
