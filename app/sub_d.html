@@ -1162,34 +1162,60 @@
                 openModal(detailModalOverlay);
             }
 
-            async function launchPlayer(videoData, preloadedSubtitles = null) {
-                if (!videoData || !videoData.videoId) return;
-                currentVideoData = videoData;
-                isEnding = false; // Reset cờ kết thúc
-                hideUpNextOverlay();
+async function launchPlayer(videoData, preloadedSubtitles = null) {
+    if (!videoData || !videoData.videoId) return;
+    currentVideoData = videoData;
+    isEnding = false;
+    hideUpNextOverlay();
 
-                subtitles = preloadedSubtitles || [];
-                subtitleDisplay.innerHTML = "";
-                playerWrapper.classList.remove("hidden");
-                videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
-                videoProgramDisplay.textContent = videoData.program || "";
+    subtitles = preloadedSubtitles || [];
+    subtitleDisplay.innerHTML = "";
+    playerWrapper.classList.remove("hidden");
+    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
+    videoProgramDisplay.textContent = videoData.program || "";
 
-                await enterCinematicMode();
-                if (videoData.subtitleUrl) {
-                    loadRemoteSubtitle(videoData.subtitleUrl);
-                } else if (subtitles.length > 0) {
-                    startSubtitleSync();
-                }
-                if (player) {
-                    player.loadVideoById(videoData.videoId);
-                } else {
-                    player = new YT.Player("youtube-player", {
-                        videoId: videoData.videoId,
-                        playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0, showinfo: 0, iv_load_policy: 3 },
-                        events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
-                    });
-                }
+    await enterCinematicMode();
+
+    if (videoData.subtitleUrl) {
+        loadRemoteSubtitle(videoData.subtitleUrl);
+    } else if (subtitles.length > 0) {
+        startSubtitleSync();
+    }
+
+    if (player) {
+        // Trick autoplay: load trước, chưa phát
+        player.loadVideoById(videoData.videoId);
+    } else {
+        player = new YT.Player("youtube-player", {
+            videoId: videoData.videoId,
+            playerVars: {
+                autoplay: 0, // KHÔNG autoplay
+                playsinline: 1,
+                rel: 0,
+                modestbranding: 1,
+                controls: 0,
+                showinfo: 0,
+                iv_load_policy: 3
+            },
+            events: {
+                onReady: (e) => {
+                    // Load xong, đợi click để play
+                    console.log("Player sẵn sàng");
+                },
+                onStateChange: onPlayerStateChange
             }
+        });
+    }
+
+    // Trick autoplay: CHỈ phát nếu đã load rồi
+    // Gọi sau launchPlayer → bấm nút play ở modal
+    setTimeout(() => {
+        if (player && typeof player.playVideo === "function") {
+            player.playVideo(); // Phát ngay khi user click → không bị block
+        }
+    }, 300);
+}
+
 
             async function enterCinematicMode() {
                 try {
