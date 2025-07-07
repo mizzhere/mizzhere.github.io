@@ -953,7 +953,8 @@
                     togglePlayPause();
                 });
                 playPauseBtn.addEventListener("click", togglePlayPause);
-                progressBar.addEventListener("input", handleSeek);
+                progressBar.addEventListener("change", handleSeek);
+
 
                 // --- CÁC EVENT LISTENER KHÁC ---
                 playerContainer.addEventListener("mousemove", showControlsAndSetHideTimeout);
@@ -1243,10 +1244,12 @@
                     if (area === "seek-backward-zone") {
                         newTime = Math.max(0, currentTime - 5);
                         player.seekTo(newTime, true);
+                        startSubtitleSync();
                         updateProgressBarUI(newTime, duration); // Cập nhật UI ngay
                     } else if (area === "seek-forward-zone") {
                         newTime = Math.min(duration, currentTime + 5);
                         player.seekTo(newTime, true);
+                        startSubtitleSync();
                         updateProgressBarUI(newTime, duration); // Cập nhật UI ngay
                     }
                     lastClickInfo = { time: 0, area: null }; // Reset
@@ -1264,7 +1267,8 @@
 
             // FIX: Added function to handle seek
             function handleSeek() {
-                const seekTime = progressBar.value;
+                const seekTime = parseFloat(progressBar.value);
+
                 player.seekTo(seekTime, true);
                 // Cập nhật UI ngay lập tức
                 updateProgressBarUI(seekTime, player.getDuration());
