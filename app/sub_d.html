@@ -1209,11 +1209,13 @@
                 if (centerIcon) centerIcon.setAttribute("d", playPauseIconPath);
 
                 if (event.data === YT.PlayerState.PLAYING) {
-                    playerContainer.classList.add("playing");
-                    startSyncing();
-                    hideUpNextOverlay();
-                    showControlsAndSetHideTimeout();
-                } else {
+    playerContainer.classList.add('playing');
+    doc.getElementById('center-play-pause-btn').style.opacity = '0'; // <<< FIX NÀY
+    startSyncing();
+    hideUpNextOverlay();
+    showControlsAndSetHideTimeout();
+}
+ else {
                     playerContainer.classList.remove("playing");
                     stopSyncing();
                     // Khi pause/end/buffer, hiện controls và nút play giữa vĩnh viễn
