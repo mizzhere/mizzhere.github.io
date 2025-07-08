@@ -91,6 +91,13 @@
             #add-video-btn:hover {
                 background-color: #333;
             }
+            #bookmark-overlay button {
+    transition: transform 0.2s ease;
+}
+#bookmark-overlay button:hover {
+    transform: scale(1.1);
+}
+
             #filter-tags {
                 display: flex;
                 gap: 10px;
@@ -1073,12 +1080,57 @@
     const videoData = libraryData.find((v) => v.videoId === videoId);
     if (videoData) {
         closeModal(detailModalOverlay);
+         showEpisodeListOverlay(videoData);
         launchPlayer(videoData).then(() => {
             if (player && typeof player.playVideo === "function") {
                 player.playVideo(); // <-- phát ngay vì là user gesture
             }
         });
+       
+
     }
+}
+function showEpisodeListOverlay(currentVideo) {
+    let listContainer = document.getElementById("episode-list-overlay");
+    if (!listContainer) {
+        listContainer = document.createElement("div");
+        listContainer.id = "episode-list-overlay";
+        listContainer.style.position = "absolute";
+        listContainer.style.top = "60px";
+        listContainer.style.right = "20px";
+        listContainer.style.width = "220px";
+        listContainer.style.maxHeight = "60vh";
+        listContainer.style.overflowY = "auto";
+        listContainer.style.background = "rgba(20,20,20,0.9)";
+        listContainer.style.border = "1px solid #444";
+        listContainer.style.borderRadius = "8px";
+        listContainer.style.padding = "10px";
+        listContainer.style.zIndex = "20";
+        listContainer.style.color = "#fff";
+        listContainer.style.fontSize = "0.9rem";
+        playerContainer.appendChild(listContainer);
+    }
+
+    listContainer.innerHTML = `<div style="font-weight:bold;margin-bottom:10px;">Các tập ${currentVideo.program}:</div>`;
+
+    const episodes = libraryData
+        .filter((v) => v.program === currentVideo.program)
+        .sort((a, b) => (a.episode || 0) - (b.episode || 0));
+
+    episodes.forEach((ep) => {
+        const btn = document.createElement("div");
+        btn.textContent = `Tập ${ep.episode}: ${ep.userTitle || ep.title}`;
+        btn.style.padding = "6px";
+        btn.style.borderRadius = "4px";
+        btn.style.cursor = "pointer";
+        btn.style.marginBottom = "4px";
+        btn.style.background = ep.videoId === currentVideo.videoId ? "#e50914" : "#333";
+        btn.onclick = () => {
+            hideUpNextOverlay();
+            launchPlayer(ep);
+        };
+        listContainer.appendChild(btn);
+    });
 }
 
             function handleAddVideoSubmit(e) {
@@ -1185,6 +1237,63 @@
                 modalPlayBtn.dataset.videoId = videoData.videoId;
                 openModal(detailModalOverlay);
             }
+function renderBookmarksOverlay(bookmarks) {
+    const containerId = "bookmark-overlay";
+    let container = document.getElementById(containerId);
+    if (!container) {
+        container = document.createElement("div");
+        container.id = containerId;
+        container.style.position = "absolute";
+        container.style.bottom = "60px";
+        container.style.left = "0";
+        container.style.width = "100%";
+        container.style.display = "flex";
+        container.style.gap = "4px";
+        container.style.zIndex = "11";
+        container.style.padding = "0 60px";
+        playerContainer.appendChild(container);
+    }
+    container.innerHTML = ""; // reset
+
+    const duration = player.getDuration?.() || 0;
+    if (!duration || bookmarks.length === 0) return;
+
+    bookmarks.forEach((b) => {
+        const percent = (srtTimeToSeconds(b.time) / duration) * 100;
+        const btn = document.createElement("button");
+        btn.textContent = b.label;
+        btn.style.position = "absolute";
+        btn.style.left = `calc(${percent}% - 30px)`;
+        btn.style.bottom = "30px";
+        btn.style.background = "rgba(255,255,255,0.1)";
+        btn.style.color = "#fff";
+        btn.style.border = "1px solid #666";
+        btn.style.borderRadius = "4px";
+        btn.style.padding = "4px 8px";
+        btn.style.fontSize = "0.8rem";
+        btn.style.cursor = "pointer";
+        btn.style.transition = "all 0.2s";
+        btn.onmouseenter = () => btn.style.background = "#e50914";
+        btn.onmouseleave = () => btn.style.background = "rgba(255,255,255,0.1)";
+        btn.onclick = () => {
+            const t = srtTimeToSeconds(b.time);
+            player.seekTo(t, true);
+            startSubtitleSync();
+        };
+
+        container.appendChild(btn);
+    });
+
+    // Tự đổi màu theo thời gian
+    const highlight = () => {
+        const now = player.getCurrentTime?.();
+        for (const btn of container.children) {
+            const time = srtTimeToSeconds(bookmarks[Array.from(container.children).indexOf(btn)].time);
+            btn.style.opacity = now >= time ? "1" : "0.5";
+        }
+    };
+    setInterval(highlight, 500);
+}
 
 async function launchPlayer(videoData, preloadedSubtitles = null) {
     return new Promise((resolve) => {
@@ -1198,6 +1307,8 @@ async function launchPlayer(videoData, preloadedSubtitles = null) {
         subtitleDisplay.innerHTML = "";
         playerWrapper.classList.remove("hidden");
         videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
+        renderBookmarksOverlay(videoData.bookmarks || []);
+
         videoProgramDisplay.textContent = videoData.program || "";
 
         enterCinematicMode().then(() => {
