@@ -981,7 +981,8 @@
                     togglePlayPause();
                 });
                 playPauseBtn.addEventListener("click", togglePlayPause);
-                progressBar.addEventListener("change", handleSeek);
+                progressBar.addEventListener("input", handleSeek); // ✅ Fix chuẩn
+
 
 
                 // --- CÁC EVENT LISTENER KHÁC ---
