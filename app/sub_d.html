@@ -876,9 +876,27 @@
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
 
             // --- Initialization ---
-            function onYouTubeIframeAPIReady() {
-                initializeLibrary();
-            }
+           function onYouTubeIframeAPIReady() {
+    player = new YT.Player("youtube-player", {
+        videoId: "", // chưa có video thực, khởi tạo rỗng
+        playerVars: {
+            autoplay: 0,
+            playsinline: 1,
+            rel: 0,
+            modestbranding: 1,
+            controls: 0,
+            showinfo: 0,
+            iv_load_policy: 3
+        },
+        events: {
+            onReady: () => {
+                initializeLibrary(); // gọi sau khi player đã sẵn sàng
+            },
+            onStateChange: onPlayerStateChange
+        }
+    });
+}
+
 
             async function initializeLibrary() {
                 try {
@@ -1170,6 +1188,7 @@
 async function launchPlayer(videoData, preloadedSubtitles = null) {
     return new Promise((resolve) => {
         if (!videoData || !videoData.videoId) return;
+
         currentVideoData = videoData;
         isEnding = false;
         hideUpNextOverlay();
@@ -1187,30 +1206,13 @@ async function launchPlayer(videoData, preloadedSubtitles = null) {
                 startSubtitleSync();
             }
 
-            if (player) {
-                player.loadVideoById(videoData.videoId);
-                resolve();
-            } else {
-                player = new YT.Player("youtube-player", {
-                    videoId: videoData.videoId,
-                    playerVars: {
-                        autoplay: 0,
-                        playsinline: 1,
-                        rel: 0,
-                        modestbranding: 1,
-                        controls: 0,
-                        showinfo: 0,
-                        iv_load_policy: 3
-                    },
-                    events: {
-                        onReady: () => resolve(),
-                        onStateChange: onPlayerStateChange
-                    }
-                });
-            }
+            // chỉ cần load video mới vào player đã khởi tạo
+            player.loadVideoById(videoData.videoId);
+            resolve();
         });
     });
 }
+
 
 
 
