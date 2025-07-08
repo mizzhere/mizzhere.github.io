@@ -127,6 +127,22 @@
     "originalTitle_auto": "[SUB] 윈터가 들려주는 꼬리에 꼬리를 무는 무서운 이야기... | EP. 97 윈터 | 살롱드립2",
     "authorName_auto": "TEO 테오",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/Z1wIq4X2Ko0/maxresdefault.jpg",
+    "bookmarks": [
+      {
+        "label": "Phần mở đầu",
+        "time": "00:00:00",
+        "skip": true
+      },
+      {
+        "label": "Intro",
+        "time": "00:01:00",
+        "skip": true
+      },
+      {
+        "label": "Cookie",
+        "time": "00:32:01"
+      }
+    ],
     "episode": 97
   }
 ]
