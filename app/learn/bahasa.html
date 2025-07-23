@@ -131,27 +131,23 @@
 
         // --- KHỞI TẠO & TẢI DỮ LIỆU ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Tải dữ liệu từ tệp JSON bên ngoài
             try {
-                const response = await fetch('database.json');
+                const response = await fetch('./database.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const db = await response.json();
                 
-                // Gán dữ liệu đã tải vào các biến toàn cục
                 passages = db.passages;
                 dictionary = db.dictionary;
                 lessons = db.lessons;
                 grammar = db.grammar;
                 quizzes = db.quizzes;
 
-                // Sau khi có dữ liệu, tiến hành khởi tạo giao diện
                 initializeApp();
 
             } catch (error) {
                 console.error("Không thể tải dữ liệu:", error);
-                // Hiển thị thông báo lỗi cho người dùng
                 document.body.innerHTML = `<div class="p-8 text-center text-red-600"><h1>Lỗi tải dữ liệu</h1><p>Không thể tải tệp database.json. Vui lòng đảm bảo tệp tồn tại và bạn đang chạy ứng dụng trên một máy chủ web.</p></div>`;
             }
         });
@@ -193,23 +189,346 @@
             navigateTo(lastScreen, true);
         }
         
-        // ... Các hàm navigateToWordDetail, navigateToGrammar, etc.
-        
+        function navigateToWordDetail(wordKey) {
+            const wordData = dictionary[wordKey];
+            if (!wordData) return;
+
+            document.getElementById('word-title').innerText = wordData.word;
+            document.getElementById('word-pronunciation').innerText = wordData.pronunciation || '';
+            
+            const sectionIcon = (svgPath) => `<div class="bg-green-100 text-green-600 rounded-lg w-10 h-10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg></div>`;
+            
+            let contentHtml = `
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Nghĩa & Cách dùng</h3>
+                    </div>
+                    <div class="mt-4 pl-2 space-y-4">
+                        ${wordData.meanings.map(m => `
+                            <div class="border-l-4 border-green-200 pl-4">
+                                <p class="font-semibold text-gray-900 text-lg">${m.definition}</p>
+                                <p class="text-sm text-gray-500 italic mt-1">${m.usage || ''}</p>
+                                ${m.example ? `
+                                <div class="mt-2 bg-gray-50 p-2 rounded-md">
+                                    <p class="text-gray-800">${m.example.indo}</p>
+                                    <p class="text-xs text-gray-500 italic">${m.example.vn}</p>
+                                </div>` : ''}
+                            </div>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            if (wordData.synonyms?.length > 0 || wordData.antonyms?.length > 0) {
+                contentHtml += `<div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>')}
+                    <div><h3 class="font-bold text-gray-800">Đồng nghĩa & Trái nghĩa</h3>
+                        ${wordData.synonyms?.length > 0 ? `<p class="text-sm text-gray-500 mt-2">Đồng nghĩa: <span class="font-semibold">${wordData.synonyms.join(', ')}</span></p>` : ''}
+                        ${wordData.antonyms?.length > 0 ? `<p class="text-sm text-gray-500 mt-1">Trái nghĩa: <span class="font-semibold">${wordData.antonyms.join(', ')}</span></p>` : ''}
+                    </div></div>`;
+            }
+
+            if (wordData.collocations?.length > 0) {
+                contentHtml += `<div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4 mb-3">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Thường đi kèm</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        ${wordData.collocations.map(c => `<span class="bg-gray-100 text-gray-800 text-sm font-medium px-2.5 py-0.5 rounded-full">${c}</span>`).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (wordData.group) {
+                contentHtml += `<div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>')}
+                    <div><h3 class="font-bold text-gray-800">${wordData.group.name}</h3>
+                    <p class="text-gray-600 mt-1">${wordData.group.description}</p></div></div>`;
+            }
+
+            document.getElementById('word-content').innerHTML = contentHtml;
+            navigateTo('screen-word-detail');
+        }
+
+        function navigateToGrammar(grammarId) {
+            const rule = grammar[grammarId];
+            if (!rule) return;
+
+            document.getElementById('grammar-title').innerText = rule.name;
+            
+            const tagsEl = document.getElementById('grammar-tags');
+            tagsEl.innerHTML = `
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${rule.level}</span>
+                <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${rule.nuance}</span>
+            `;
+
+            const sectionIcon = (svgPath) => `<div class="bg-purple-100 text-purple-600 rounded-lg w-10 h-10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg></div>`;
+
+            let contentHtml = `
+                <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>')}
+                    <div>
+                        <h3 class="font-bold text-gray-800">Cấu trúc</h3>
+                        <p class="text-lg text-purple-800 font-mono bg-purple-50 inline-block px-2 py-1 rounded mt-1">${rule.structure}</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2m8-4H5a2 2 0 00-2 2v10a2 2 0 002 2h11l4 4V7a2 2 0 00-2-2z"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Cách dùng & Ví dụ</h3>
+                    </div>
+                    <div class="mt-4 pl-2 space-y-4">
+                        ${rule.usage.map(u => `
+                            <div class="border-l-4 border-purple-200 pl-4">
+                                <p class="font-semibold text-gray-700">${u.use}</p>
+                                <div class="mt-2 space-y-2">
+                                ${u.examples.map(ex => `
+                                    <div class="bg-gray-50 p-2 rounded-md">
+                                        <p class="text-gray-800">${ex.indo}</p>
+                                        <p class="text-xs text-gray-500 italic">${ex.vn}</p>
+                                    </div>
+                                `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>')}
+                    <div>
+                        <h3 class="font-bold text-gray-800">Lưu ý nhầm lẫn</h3>
+                        <p class="text-gray-600 mt-1">${rule.confusion}</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>')}
+                    <div>
+                        <h3 class="font-bold text-gray-800">Trường hợp đặc biệt</h3>
+                        <p class="text-gray-600 mt-1">${rule.notes}</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4 mb-4">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Luyện tập nhanh</h3>
+                    </div>
+                    <div id="grammar-practice-${grammarId}" class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-700 mb-3">${rule.practice.question}</p>
+                        <div class="space-y-2">
+                            ${rule.practice.options.map(opt => `<button onclick="checkGrammarPractice(this, '${opt === rule.practice.answer}', 'grammar-practice-${grammarId}')" class="w-full text-left bg-white border-2 border-gray-200 p-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition"> ${opt} </button>`).join('')}
+                        </div>
+                        <div class="practice-feedback mt-3 text-sm"></div>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4 mb-3">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Ngữ pháp liên quan</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                    ${rule.related.map(id => `<div class="bg-purple-100 p-3 rounded-lg cursor-pointer hover:bg-purple-200 transition flex-grow text-center" onclick="navigateToGrammar('${id}')"><p class="font-bold text-purple-800">${grammar[id].name}</p></div>`).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('grammar-content').innerHTML = contentHtml;
+            navigateTo('screen-grammar-detail');
+        }
+
         // --- LOGIC BÀI ĐỌC ---
-        function initReadingPassage(passageId) { /* ... */ }
-        function renderPassageExtras(passageId) { /* ... */ }
-        function switchTab(button, tabId) { /* ... */ }
+        function initReadingPassage(passageId) {
+            const passageData = passages[passageId];
+            if (!passageData) return;
+
+            const titleEl = document.getElementById('reading-title');
+            const passageEl = document.getElementById('reading-passage');
+            if (!titleEl || !passageEl) return;
+
+            titleEl.innerText = passageData.title;
+            const originalText = passageData.content;
+            const parts = originalText.split(/([,.\s]+)/);
+            const newHtml = parts.map(part => {
+                const cleanWord = part.trim().toLowerCase();
+                const definition = dictionary[cleanWord];
+                if (definition) {
+                    let tooltipContent = `<strong class="text-blue-300 font-bold">[${definition.type}]</strong><br>${definition.meanings[0].definition}`;
+                    tooltipContent += `<button class="action-button dict-detail-button" onclick="event.stopPropagation(); navigateToWordDetail('${cleanWord}')">Xem chi tiết</button>`;
+                    
+                    return `<span class="tooltip" onclick="toggleTooltip(this)"><span class="text-blue-600 font-semibold cursor-pointer underline decoration-dotted decoration-2 underline-offset-4">${part}</span><span class="tooltip-text">${tooltipContent}</span></span>`;
+                }
+                return part;
+            }).join('');
+            passageEl.innerHTML = newHtml;
+
+            renderPassageExtras(passageId);
+        }
+        
+        function renderPassageExtras(passageId) {
+            const passageData = passages[passageId];
+            const extrasContainer = document.getElementById('passage-extras');
+            if (!passageData || !extrasContainer) return;
+
+            const vocabInPassage = new Map();
+            const grammarInPassage = new Map();
+            const parts = passageData.content.split(/([,.\s]+)/);
+            parts.forEach(part => {
+                const cleanWord = part.trim().toLowerCase();
+                if (dictionary[cleanWord]) {
+                    vocabInPassage.set(cleanWord, dictionary[cleanWord]);
+                    if (dictionary[cleanWord].grammarId && grammar[dictionary[cleanWord].grammarId]) {
+                        grammarInPassage.set(dictionary[cleanWord].grammarId, grammar[dictionary[cleanWord].grammarId]);
+                    }
+                }
+            });
+
+            // Group vocabulary
+            const groupedVocab = {};
+            vocabInPassage.forEach((wordData, key) => {
+                const groupName = wordData.group?.name || "Từ vựng khác";
+                if (!groupedVocab[groupName]) {
+                    groupedVocab[groupName] = [];
+                }
+                groupedVocab[groupName].push({ key, ...wordData });
+            });
+
+            const vocabHtml = Object.entries(groupedVocab).map(([groupName, words]) => {
+                return `
+                    <div class="mb-4">
+                        <h4 class="font-bold text-lg text-gray-700 mb-2">${groupName}</h4>
+                        <div class="space-y-3">
+                            ${words.map(wordData => `
+                                <div class="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToWordDetail('${wordData.key}')">
+                                    <p class="font-bold text-green-800">${wordData.word}</p>
+                                    <p class="text-sm text-gray-600">${wordData.meanings[0].definition}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            extrasContainer.innerHTML = `
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button onclick="switchTab(this, 'tab-translation')" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-purple-500 text-purple-600">Bản dịch</button>
+                        <button onclick="switchTab(this, 'tab-vocab')" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Từ vựng trong bài</button>
+                        <button onclick="switchTab(this, 'tab-grammar')" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Ngữ pháp trong bài</button>
+                    </nav>
+                </div>
+                <div class="py-6">
+                    <div id="tab-translation" class="tab-content active">
+                        <p class="text-gray-600 leading-relaxed">${passageData.translation}</p>
+                    </div>
+                    <div id="tab-vocab" class="tab-content">
+                        ${vocabHtml}
+                    </div>
+                    <div id="tab-grammar" class="tab-content space-y-3">
+                        ${Array.from(grammarInPassage.entries()).map(([id, rule]) => `
+                             <div class="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToGrammar('${id}')">
+                                <p class="font-bold text-purple-800">${rule.name}</p>
+                                <p class="text-sm text-gray-600">${rule.category}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchTab(button, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-purple-500', 'text-purple-600');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            document.getElementById(tabId).classList.add('active');
+            button.classList.add('border-purple-500', 'text-purple-600');
+            button.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        }
 
         // --- LOGIC TỪ ĐIỂN & NGỮ PHÁP ---
-        function renderDictionary() { /* ... */ }
-        function filterDictionary() { /* ... */ }
-        function renderGrammarFilterTags() { /* ... */ }
-        function setActiveTag(activeButton) { /* ... */ }
-        function renderGrammarList(filterTag = null) { /* ... */ }
-        function filterGrammar() { /* ... */ }
-        function toggleTooltip(element) { /* ... */ }
-        document.addEventListener('click', e => { /* ... */ });
-        function checkGrammarPractice(button, isCorrect, containerId) { /* ... */ }
+        function renderDictionary() {
+            const listEl = document.getElementById('dict-list');
+            if (!listEl) return;
+            const sortedWords = Object.keys(dictionary).sort();
+            listEl.innerHTML = sortedWords.map(key => {
+                const wordData = dictionary[key];
+                return `<div class="dict-entry bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToWordDetail('${key}')">
+                            <p class="font-bold text-lg text-green-800">${wordData.word}</p>
+                            <p class="text-gray-600"><span class="text-sm font-semibold text-gray-500">[${wordData.type}]</span> ${wordData.meanings[0].definition}</p>
+                        </div>`;
+            }).join('');
+        }
+        function filterDictionary() {
+            const filter = document.getElementById('dict-search').value.toLowerCase();
+            document.querySelectorAll('#dict-list .dict-entry').forEach(entry => {
+                entry.style.display = entry.innerText.toLowerCase().includes(filter) ? "" : "none";
+            });
+        }
+        function renderGrammarFilterTags() {
+            const container = document.getElementById('grammar-tags-filter');
+            if (!container) return;
+            const allTags = new Set(Object.values(grammar).flatMap(rule => rule.tags || []));
+            let tagsHtml = `<button class="grammar-tag-btn active bg-purple-600 text-white" onclick="setActiveTag(this); renderGrammarList(null);">Tất cả</button>`;
+            allTags.forEach(tag => {
+                tagsHtml += `<button class="grammar-tag-btn bg-white text-gray-700" onclick="setActiveTag(this); renderGrammarList('${tag}');">${tag.replace(/-/g, ' ')}</button>`;
+            });
+            container.innerHTML = tagsHtml.replaceAll('class="grammar-tag-btn', 'class="grammar-tag-btn px-3 py-1 text-sm font-semibold border border-gray-300 rounded-full transition hover:bg-gray-100"');
+        }
+        function setActiveTag(activeButton) {
+            document.querySelectorAll('.grammar-tag-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-purple-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+            activeButton.classList.add('active', 'bg-purple-600', 'text-white');
+            activeButton.classList.remove('bg-white', 'text-gray-700');
+        }
+        function renderGrammarList(filterTag = null) {
+            const listEl = document.getElementById('grammar-list');
+            if (!listEl) return;
+            
+            const grammarEntries = Object.entries(grammar);
+            const filteredEntries = filterTag 
+                ? grammarEntries.filter(([id, rule]) => rule.tags && rule.tags.includes(filterTag))
+                : grammarEntries;
+
+            listEl.innerHTML = filteredEntries.map(([id, rule]) => {
+                return `<div class="grammar-entry bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToGrammar('${id}')"><p class="font-bold text-lg text-purple-800">${rule.name}</p><p class="text-gray-600">${rule.category}</p></div>`;
+            }).join('');
+            filterGrammar(); // Apply search filter on the new list
+        }
+        function filterGrammar() {
+            const filter = document.getElementById('grammar-search').value.toLowerCase();
+            document.querySelectorAll('#grammar-list .grammar-entry').forEach(entry => {
+                entry.style.display = entry.innerText.toLowerCase().includes(filter) ? "" : "none";
+            });
+        }
+        function toggleTooltip(element) { document.querySelectorAll('.tooltip.active').forEach(t => { if (t !== element) t.classList.remove('active'); }); element.classList.toggle('active'); }
+        document.addEventListener('click', e => { if (!e.target.closest('.tooltip')) { document.querySelectorAll('.tooltip.active').forEach(t => t.classList.remove('active')); } });
+        function checkGrammarPractice(button, isCorrect, containerId) {
+            const container = document.getElementById(containerId);
+            if (container.dataset.answered) return;
+            container.dataset.answered = 'true';
+            
+            const feedbackEl = container.querySelector('.practice-feedback');
+            const allOptions = container.querySelectorAll('button');
+            allOptions.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                button.classList.remove('border-gray-200');
+                button.classList.add('bg-green-100', 'border-green-500', 'ring-2', 'ring-green-300');
+                feedbackEl.innerHTML = `<p class="font-semibold text-green-700">Chính xác! Bạn đã nắm vững kiến thức.</p>`;
+            } else {
+                button.classList.remove('border-gray-200');
+                button.classList.add('bg-red-100', 'border-red-500', 'ring-2', 'ring-red-300');
+                feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Chưa đúng rồi, hãy xem lại nhé!</p>`;
+                allOptions.forEach(opt => {
+                    if (opt.innerText.trim() === grammar[containerId.replace('grammar-practice-','')].practice.answer) {
+                        opt.classList.remove('border-gray-200');
+                        opt.classList.add('bg-green-100', 'border-green-500');
+                    }
+                });
+            }
+        }
         
         // --- LOGIC CHO QUIZ (ĐẦY ĐỦ) ---
         let quizState = {};
