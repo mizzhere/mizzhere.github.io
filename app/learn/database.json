@@ -1,0 +1,73 @@
+{
+  "passages": {
+    "daily-activity": {
+      "title": "Kegiatan Saya Sehari-hari",
+      "content": "Halo, nama saya Ayu. Saya tinggal di Jakarta. Setiap hari, saya bangun pagi pada jam lima. Setelah bangun, saya mandi dan salat. Lalu, saya membantu ibu saya memasak untuk sarapan. Kami sarapan nasi goreng dan teh hangat. Rasanya enak sekali. Pada jam tujuh pagi, saya berangkat ke kampus. Di kampus, saya belajar bahasa dan budaya Indonesia. Saya suka belajar dengan teman-teman. Dosen saya juga sangat baik dan ramah. Kami belajar sampai jam dua belas siang. Setelah kuliah selesai, saya dan teman-teman makan siang di kantin kampus. Makanan di kantin murah dan enak. Saya suka sekali soto ayam. Setelah makan siang, saya pulang ke rumah.",
+      "translation": "Xin chào, tên tôi là Ayu. Tôi sống ở Jakarta. Mỗi ngày, tôi thức dậy vào lúc năm giờ sáng. Sau khi thức dậy, tôi tắm và cầu nguyện. Sau đó, tôi giúp mẹ nấu bữa sáng. Chúng tôi ăn sáng với cơm chiên và trà nóng. Vị của nó rất ngon. Vào bảy giờ sáng, tôi đến trường. Ở trường, tôi học ngôn ngữ và văn hóa Indonesia. Tôi thích học cùng bạn bè. Giảng viên của tôi cũng rất tốt và thân thiện. Chúng tôi học đến mười hai giờ trưa. Sau khi tan học, tôi và các bạn ăn trưa ở căng-tin của trường. Đồ ăn ở căng-tin rẻ và ngon. Tôi rất thích món súp gà. Sau khi ăn trưa, tôi trở về nhà."
+    }
+  },
+  "dictionary": {
+    "makan": {
+      "word": "makan",
+      "pronunciation": "/ma.kan/",
+      "type": "Động từ",
+      "meanings": [
+        { "definition": "Ăn, tiêu thụ thức ăn.", "usage": "Dùng trong ngữ cảnh thông thường, hàng ngày.", "example": { "indo": "Saya sedang <span class='font-bold'>makan</span> nasi.", "vn": "Tôi đang ăn cơm." } },
+        { "definition": "(Nghĩa bóng) Tiêu tốn, sử dụng hết.", "usage": "Dùng trong thành ngữ hoặc văn nói.", "example": { "indo": "Proyek itu <span class='font-bold'>makan</span> banyak biaya.", "vn": "Dự án đó tốn rất nhiều chi phí." } }
+      ],
+      "synonyms": ["santap", "lahap"],
+      "antonyms": ["puasa", "minum"],
+      "collocations": ["makan pagi (ăn sáng)", "makan siang (ăn trưa)", "makan malam (ăn tối)"],
+      "group": { "name": "Động từ chỉ hành động cơ bản", "description": "Nhóm các động từ mô tả những hành động thiết yếu trong cuộc sống hàng ngày." }
+    },
+    "di": {
+      "word": "di",
+      "pronunciation": "/di/",
+      "type": "Giới từ",
+      "meanings": [ { "definition": "Ở, tại, trong.", "usage": "Chỉ vị trí, nơi chốn.", "example": { "indo": "Buku saya ada <span class='font-bold'>di</span> atas meja.", "vn": "Sách của tôi ở trên bàn." } } ],
+      "synonyms": [],
+      "antonyms": [],
+      "collocations": ["di sini (ở đây)", "di sana (ở đó)", "di mana (ở đâu)"],
+      "group": { "name": "Giới từ chỉ địa điểm", "description": "Nhóm các giới từ dùng để xác định vị trí của một sự vật, sự việc." },
+      "grammarId": "di"
+    },
+    "membantu": { "word": "membantu", "type": "Động từ", "meanings": [{ "definition": "Giúp đỡ" }], "grammarId": "mekan", "group": { "name": "Động từ chỉ hành động cơ bản" } },
+    "belajar": { "word": "belajar", "type": "Động từ", "meanings": [{ "definition": "Học" }], "grammarId": "ber", "group": { "name": "Động từ chỉ hành động cơ bản" } },
+    "berangkat": { "word": "berangkat", "type": "Động từ", "meanings": [{ "definition": "Khởi hành" }], "grammarId": "ber", "group": { "name": "Động từ chỉ hành động cơ bản" } },
+    "lima": { "word": "lima", "type": "Số từ", "meanings": [{ "definition": "Năm (số 5)" }], "lessonId": "numbers" },
+    "tinggal": { "word": "tinggal", "type": "Động từ", "meanings": [{ "definition": "Sống, ở" }], "group": { "name": "Động từ chỉ trạng thái" } },
+    "bangun": { "word": "bangun", "type": "Động từ", "meanings": [{ "definition": "Thức dậy" }], "group": { "name": "Động từ chỉ hành động cơ bản" } },
+    "pagi": { "word": "pagi", "type": "Danh từ", "meanings": [{ "definition": "Buổi sáng" }], "group": { "name": "Danh từ chỉ thời gian" } },
+    "ibu": { "word": "ibu", "type": "Danh từ", "meanings": [{ "definition": "Mẹ" }], "group": { "name": "Danh từ chỉ người" } },
+    "rumah": { "word": "rumah", "type": "Danh từ", "meanings": [{ "definition": "Nhà" }], "group": { "name": "Danh từ chỉ địa điểm" } },
+    "kampus": { "word": "kampus", "type": "Danh từ", "meanings": [{ "definition": "Khuôn viên trường" }], "group": { "name": "Danh từ chỉ địa điểm" } }
+  },
+  "lessons": {
+    "numbers": { "title": "Bài học về Số đếm", "description": "Dưới đây là cách đếm từ 1 đến 10 trong tiếng Indonesia.", "type": "grid", "content": [ { "num": 1, "word": "satu" }, { "num": 2, "word": "dua" }, { "num": 3, "word": "tiga" }, { "num": 4, "word": "empat" }, { "num": 5, "word": "lima" }, { "num": 6, "word": "enam" }, { "num": 7, "word": "tujuh" }, { "num": 8, "word": "delapan" }, { "num": 9, "word": "sembilan" }, { "num": 10, "word": "sepuluh" } ] }
+  },
+  "grammar": {
+    "mekan": {
+      "name": "Tiền tố Me-kan", "level": "Cơ bản", "category": "Tiền tố tạo động từ ngoại động", "nuance": "Thường dùng trong văn nói và viết, mang tính chủ động.", "tags": ["tiền-tố-động-từ", "chủ-động", "gây-ra"], "structure": "Me- + [Động từ/Tính từ gốc] + -kan", "usage": [ { "use": "Gây ra hành động cho người khác (causative).", "examples": [ { "indo": "Ibu <span class='font-bold'>membangunkan</span> saya.", "vn": "Mẹ đánh thức tôi dậy." }, { "indo": "Guru <span class='font-bold'>mendudukkan</span> murid di kursi.", "vn": "Thầy giáo cho học sinh ngồi vào ghế." } ] }, { "use": "Làm một việc gì đó cho người khác (benefactive).", "examples": [ { "indo": "Saya <span class='font-bold'>membelikan</span> adik buku.", "vn": "Tôi mua sách cho em." }, { "indo": "Dia <span class='font-bold'>mengambilkan</span> saya segelas air.", "vn": "Anh ấy lấy cho tôi một cốc nước." } ] } ], "confusion": "Dễ nhầm lẫn với tiền tố me-i, vốn thường chỉ địa điểm hoặc đối tượng trực tiếp của hành động. `me-i` tập trung vào đối tượng bị tác động, trong khi `me-kan` tập trung vào hành động gây ra.", "notes": "Khi gốc từ bắt đầu bằng k, p, t, s, các chữ cái này thường biến mất. Ví dụ: kirim -> mengirimkan.", "related": ["ber", "di"], "practice": { "question": "Từ 'membaca' (đọc) khi thêm hậu tố '-kan' để diễn tả hành động 'đọc cho ai đó nghe' sẽ trở thành gì?", "options": ["membacakan", "mem-baca-kan", "berbacakan"], "answer": "membacakan" }
+    },
+    "ber": {
+      "name": "Tiền tố Ber-", "level": "Cơ bản", "category": "Tiền tố tạo động từ nội động", "nuance": "Thường dùng để chỉ hành động tự thân, không cần đối tượng.", "tags": ["tiền-tố-động-từ", "chủ-động", "tự-thân"], "structure": "Ber- + [Danh từ/Động từ gốc]", "usage": [ { "use": "Chỉ hành động tự thân, không có tân ngữ.", "examples": [ { "indo": "Saya <span class='font-bold'>belajar</span> bahasa Indonesia.", "vn": "Tôi học tiếng Indonesia." } ] }, { "use": "Chỉ sự sở hữu.", "examples": [ { "indo": "Dia <span class='font-bold'>bernama</span> Budi.", "vn": "Anh ấy tên là Budi." } ] }, { "use": "Chỉ việc sử dụng cái gì đó.", "examples": [ { "indo": "Kami <span class='font-bold'>bersepeda</span> ke sekolah.", "vn": "Chúng tôi đi xe đạp đến trường." } ] } ], "confusion": "Không nên nhầm với 'ter-', mặc dù cả hai đều có thể tạo động từ không cần tân ngữ.", "notes": "Khi gốc từ bắt đầu bằng 'r', tiền tố thường trở thành 'be-'. Ví dụ: renang -> berenang.", "related": ["mekan", "ter"], "practice": { "question": "Để nói 'đi bộ', ta dùng từ nào?", "options": ["berjalan", "menjalankan", "pejalan"], "answer": "berjalan" }
+    },
+    "di": {
+      "name": "Tiền tố Di-", "level": "Cơ bản", "category": "Tiền tố tạo động từ bị động", "nuance": "Thường dùng trong văn nói và viết, đặc biệt là văn trang trọng.", "tags": ["tiền-tố-động-từ", "bị-động"], "structure": "Di- + [Động từ gốc]", "usage": [ { "use": "Biến một động từ chủ động thành bị động.", "examples": [ { "indo": "Buku itu <span class='font-bold'>dibaca</span> oleh saya.", "vn": "Quyển sách đó được đọc bởi tôi." }, { "indo": "Surat itu <span class='font-bold'>ditulis</span> oleh Budi.", "vn": "Bức thư đó được viết bởi Budi." } ] } ], "confusion": "Không nhầm lẫn với giới từ 'di' (ở, tại). Tiền tố 'di-' luôn viết liền với động từ, còn giới từ 'di' viết tách rời. Ví dụ: `dimakan` (được ăn) vs `di rumah` (ở nhà).", "notes": "Là dạng bị động tương ứng của tiền tố 'me-'.", "related": ["mekan"], "practice": { "question": "Dạng bị động của 'membantu' (giúp đỡ) là gì?", "options": ["diberbantu", "dibantu", "terbantu"], "answer": "dibantu" }
+    },
+    "ter": {
+      "name": "Tiền tố Ter-", "level": "Trung cấp", "category": "Tiền tố tạo động từ/tính từ", "nuance": "Chỉ hành động vô ý hoặc trạng thái.", "tags": ["tiền-tố-động-từ", "trạng-thái", "vô-ý"], "structure": "Ter- + [Động từ/Tính từ gốc]", "usage": [ { "use": "Chỉ hành động xảy ra vô tình, không chủ ý.", "examples": [ { "indo": "Saya <span class='font-bold'>tertidur</span> di kelas.", "vn": "Tôi ngủ gật trong lớp." }, { "indo": "Dia <span class='font-bold'>terjatuh</span> dari sepeda.", "vn": "Anh ấy bị ngã xe đạp." } ] }, { "use": "Chỉ khả năng hoặc trạng thái (tương tự tính từ).", "examples": [ { "indo": "Gunung itu <span class='font-bold'>terlihat</span> dari sini.", "vn": "Ngọn núi đó có thể được nhìn thấy từ đây." }, { "indo": "Pintu itu <span class='font-bold'>terkunci</span>.", "vn": "Cánh cửa đó bị khóa." } ] } ], "confusion": "Có thể bị nhầm với dạng so sánh nhất (ví dụ: `terbaik` - tốt nhất), nhưng trong vai trò tiền tố động từ, nó mang nghĩa vô ý hoặc trạng thái.", "notes": "Thường không có dạng chủ động tương ứng rõ ràng như cặp me-/di-.", "related": ["ber"], "practice": { "question": "Nếu bạn vô tình mang nhầm ô của người khác, bạn sẽ nói gì?", "options": ["Saya membawa payung.", "Saya terbawa payung.", "Saya membawa-bawa payung."], "answer": "Saya terbawa payung." }
+    }
+  },
+  "quizzes": {
+    "quiz-daily-activity": {
+      "title": "Bài tập từ vựng: Hoạt động hàng ngày",
+      "passageId": "daily-activity",
+      "questions": [
+        { "type": "multiple-choice-vn", "wordKey": "bangun", "questionText": "Từ 'bangun' có nghĩa là gì?", "options": ["Tắm", "Thức dậy", "Ăn", "Đi ngủ"], "answer": "Thức dậy" },
+        { "type": "multiple-choice-indo", "wordKey": "rumah", "questionText": "Từ nào có nghĩa là 'Nhà'?", "options": ["kampus", "kantin", "rumah", "pasar"], "answer": "rumah" },
+        { "type": "fill-in-blank", "wordKey": "membantu", "questionText": "Điền từ còn thiếu vào chỗ trống:", "context": "Lalu, saya ___ ibu saya memasak untuk sarapan.", "options": ["belajar", "makan", "membantu", "pulang"], "answer": "membantu" }
+      ]
+    }
+  }
+}
