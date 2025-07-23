@@ -162,7 +162,7 @@
                                 <span>Bài đọc: ${currentUnit.passages[passageId].title}</span>
                             </div>
                             <div class="flex items-center gap-4 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToUnitVocab()">
-                                <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18"></path></svg>
+                                <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                                 <span>Từ vựng của Unit</span>
                             </div>
                             <div class="flex items-center gap-4 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToUnitGrammar()">
@@ -292,7 +292,7 @@
         function navigateToUnitVocab() {
             const vocabEl = document.getElementById('screen-unit-vocab');
             vocabEl.innerHTML = `
-                <header class="mb-6 flex justify-between items-center"><h1 class="text-3xl font-bold text-gray-800">Từ vựng Unit 5</h1><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></header>
+                <header class="mb-6 flex justify-between items-center"><h1 class="text-3xl font-bold text-gray-800">Từ vựng ${currentUnit.unitTitle}</h1><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></header>
                 <main class="space-y-3">
                 ${Object.entries(currentUnit.dictionary).map(([key, wordData]) => `
                     <div class="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToWordDetail('${key}')">
@@ -304,19 +304,139 @@
             `;
             navigateTo('screen-unit-vocab');
         }
+        
+        function navigateToWordDetail(wordKey) {
+            const wordData = currentUnit.dictionary[wordKey];
+            if (!wordData) return;
 
-        function navigateToWordDetail(wordKey) { /* Logic for word detail view */ }
-        function navigateToUnitGrammar() { /* Logic for unit grammar list view */ }
-        function navigateToGrammarDetail(grammarId) { /* Logic for grammar detail view */ }
+            const wordDetailEl = document.getElementById('screen-word-detail');
+            const sectionIcon = (svgPath) => `<div class="bg-green-100 text-green-600 rounded-lg w-10 h-10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg></div>`;
+            
+            let contentHtml = `
+                <header class="mb-8 flex justify-between items-center"><div class="flex-grow"><h1 class="text-4xl font-bold text-gray-800">${wordData.word}</h1><p class="text-gray-500">${wordData.pronunciation || ''}</p></div><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 flex-shrink-0"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button></header>
+                <main class="space-y-6">
+                    <div class="bg-white border border-gray-200 rounded-xl p-4">
+                        <div class="flex items-start gap-4">${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18"></path>')}<h3 class="font-bold text-gray-800 mt-2">Nghĩa & Cách dùng</h3></div>
+                        <div class="mt-4 pl-2 space-y-4">${wordData.meanings.map(m => `<div class="border-l-4 border-green-200 pl-4"><p class="font-semibold text-gray-900 text-lg">${m.definition}</p><p class="text-sm text-gray-500 italic mt-1">${m.usage || ''}</p>${m.example ? `<div class="mt-2 bg-gray-50 p-2 rounded-md"><p class="text-gray-800">${m.example.indo}</p><p class="text-xs text-gray-500 italic">${m.example.vn}</p></div>` : ''}</div>`).join('')}</div>
+                    </div>
+                </main>`;
+            wordDetailEl.innerHTML = contentHtml;
+            navigateTo('screen-word-detail');
+        }
+
+        function navigateToUnitGrammar() {
+            const grammarEl = document.getElementById('screen-unit-grammar');
+            grammarEl.innerHTML = `
+                <header class="mb-6 flex justify-between items-center"><h1 class="text-3xl font-bold text-gray-800">Ngữ pháp ${currentUnit.unitTitle}</h1><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></header>
+                <main class="space-y-3">
+                ${Object.entries(currentUnit.grammar).map(([key, rule]) => `
+                    <div class="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToGrammarDetail('${key}')">
+                        <p class="font-bold text-lg text-purple-800">${rule.name}</p>
+                        <p class="text-gray-600">${rule.category}</p>
+                    </div>
+                `).join('')}
+                </main>
+            `;
+            navigateTo('screen-unit-grammar');
+        }
+        
+        function navigateToGrammarDetail(grammarId) {
+            const rule = currentUnit.grammar[grammarId];
+            if (!rule) return;
+
+            const grammarDetailEl = document.getElementById('screen-grammar-detail');
+            const sectionIcon = (svgPath) => `<div class="bg-purple-100 text-purple-600 rounded-lg w-10 h-10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg></div>`;
+
+            grammarDetailEl.innerHTML = `
+                <header class="mb-8 flex justify-between items-center"><div class="flex-grow"><h1 class="text-3xl font-bold text-gray-800">${rule.name}</h1><div class="flex flex-wrap gap-2 mt-2"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${rule.level}</span></div></div><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 flex-shrink-0"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button></header>
+                <main class="space-y-6">${/* Content sections here */}</main>
+            `;
+            navigateTo('screen-grammar-detail');
+        }
         
         // --- LOGIC QUIZ ---
         let quizState = {};
-        function navigateToQuizStart(quizId) { /* Logic to start quiz */ }
-        function startQuiz(unitId, quizId) { /* ... */ }
-        function displayQuestion() { /* ... */ }
-        function checkQuizAnswer(button, isCorrectStr) { /* ... */ }
-        function nextQuestion() { /* ... */ }
-        function showQuizResults() { /* ... */ }
+        function navigateToQuizStart(quizId) {
+            const quizData = currentUnit.quizzes[quizId];
+            if (!quizData) return;
+            
+            const quizStartEl = document.getElementById('screen-quiz-start');
+            quizStartEl.innerHTML = `
+                <header class="flex justify-end"><button onclick="navigateBack()" class="text-gray-400 hover:text-gray-600"><svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></header>
+                <main class="text-center pt-16 pb-8"><div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto"><svg class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><h1 class="text-3xl font-bold text-gray-800 mt-6">${quizData.title}</h1><p class="text-gray-500 mt-2">Kiểm tra kiến thức của bạn về các từ trong bài đọc.</p></main>
+                <footer class="p-4"><button onclick="startQuiz('${quizId}')" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-full shadow-lg transition hover:bg-blue-700 transform hover:scale-105">Bắt đầu</button></footer>
+            `;
+            navigateTo('screen-quiz-start');
+        }
+        function startQuiz(quizId) {
+            const quizData = currentUnit.quizzes[quizId];
+            quizState = { quizData, currentQuestionIndex: 0, score: 0 };
+            displayQuestion();
+            navigateTo('screen-quiz-question');
+        }
+        function displayQuestion() {
+            const question = quizState.quizData.questions[quizState.currentQuestionIndex];
+            const quizQuestionEl = document.getElementById('screen-quiz-question');
+            const progress = ((quizState.currentQuestionIndex + 1) / quizState.quizData.questions.length) * 100;
+
+            quizQuestionEl.innerHTML = `
+                <header class="mb-6"><div class="flex items-center gap-4"><span class="font-bold text-gray-600">${quizState.currentQuestionIndex + 1}/${quizState.quizData.questions.length}</span><div class="w-full bg-gray-200 rounded-full h-4"><div class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: ${progress}%"></div></div></div></header>
+                <main class="py-8"><p class="text-xl font-semibold text-gray-800 text-center">${question.questionText}</p>${question.context ? `<p class="text-center text-gray-500 mt-2 bg-gray-50 p-3 rounded-lg">${question.context.replace('___', '...')}</p>` : ''}<div class="mt-8 space-y-4">${question.options.map(opt => `<button class="quiz-option w-full text-left border-2 border-gray-200 p-4 rounded-xl text-lg font-medium text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition" onclick="checkQuizAnswer(this, '${opt === question.answer}')">${opt}</button>`).join('')}</div></main>
+                <footer id="quiz-footer" class="h-28"></footer>
+            `;
+        }
+        function checkQuizAnswer(button, isCorrectStr) {
+            const isCorrect = isCorrectStr === 'true';
+            if (quizState.answered) return;
+            quizState.answered = true;
+
+            const allOptions = document.querySelectorAll('.quiz-option');
+            allOptions.forEach(b => b.disabled = true);
+            
+            if (isCorrect) {
+                quizState.score++;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('incorrect');
+                allOptions.forEach(opt => {
+                    if (opt.innerText === quizState.quizData.questions[quizState.currentQuestionIndex].answer) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+
+            const footer = document.getElementById('quiz-footer');
+            footer.innerHTML = `<div class="p-4 text-center"><button class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full" onclick="nextQuestion()">Tiếp tục</button></div>`;
+        }
+        function nextQuestion() {
+            quizState.answered = false;
+            if (quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
+                quizState.currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+        function showQuizResults() {
+            const resultsEl = document.getElementById('screen-quiz-results');
+            const total = quizState.quizData.questions.length;
+            const accuracy = total > 0 ? Math.round((quizState.score / total) * 100) : 0;
+            resultsEl.innerHTML = `
+                 <main class="text-center py-16">
+                    <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Hoàn thành!</h1>
+                    <div class="bg-gray-50 rounded-xl p-6 flex items-center justify-around w-full max-w-md mx-auto my-10">
+                        <div><p class="text-3xl font-bold text-blue-600">${quizState.score}/${total}</p><p class="text-sm text-gray-500">Điểm số</p></div>
+                        <div><p class="text-3xl font-bold text-blue-600">${accuracy}%</p><p class="text-sm text-gray-500">Chính xác</p></div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="startQuiz(currentUnit.unitId, Object.keys(currentUnit.quizzes)[0])" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3 px-6 rounded-full transition hover:bg-blue-50">Làm lại</button>
+                        <button onclick="navigateTo('screen-home')" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition hover:bg-blue-700">Về trang chủ</button>
+                    </div>
+                </main>
+            `;
+            navigateTo('screen-quiz-results');
+        }
         
         function toggleTooltip(element) { document.querySelectorAll('.tooltip.active').forEach(t => { if (t !== element) t.classList.remove('active'); }); element.classList.toggle('active'); }
         document.addEventListener('click', e => { if (!e.target.closest('.tooltip')) { document.querySelectorAll('.tooltip.active').forEach(t => t.classList.remove('active')); } });
