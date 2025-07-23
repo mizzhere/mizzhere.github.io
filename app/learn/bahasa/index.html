@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng học ngôn ngữ</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS tùy chỉnh */
+        html, body {
+            height: 100%;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f3f4f6;
+        }
+
+        .screen { display: none; padding: 2rem 1rem; }
+        .screen.active { display: block; }
+        .screen { animation: fadeIn 0.5s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Container chung cho các màn hình -->
+    <div class="max-w-3xl mx-auto bg-white min-h-screen shadow-lg">
+
+        <!-- Màn hình 1: Trang chủ (Danh sách Unit) -->
+        <div id="screen-home" class="screen active">
+            <header class="flex justify-between items-center mb-8">
+                <div><h1 class="text-3xl font-bold text-gray-800">Khóa học BIPA 1</h1><p class="text-gray-500 mt-1">Chọn một bài học để bắt đầu</p></div>
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>
+            </header>
+            <main id="unit-list" class="space-y-4">
+                <!-- Danh sách các Unit sẽ được JS chèn vào đây -->
+            </main>
+        </div>
+
+        <!-- Màn hình 2: Chi tiết Unit -->
+        <div id="screen-unit-detail" class="screen"></div>
+
+        <!-- Các màn hình chức năng khác -->
+        <div id="screen-reading" class="screen"></div>
+        <div id="screen-quiz-start" class="screen"></div>
+        <div id="screen-quiz-question" class="screen"></div>
+        <div id="screen-quiz-results" class="screen"></div>
+        
+    </div>
+
+    <script>
+        // --- KHAI BÁO BIẾN DỮ LIỆU TOÀN CỤC ---
+        let db; // Sẽ chứa toàn bộ dữ liệu từ JSON
+
+        // --- KHỞI TẠO & TẢI DỮ LIỆU ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('./database.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                db = await response.json();
+                initializeApp();
+            } catch (error) {
+                console.error("Không thể tải dữ liệu:", error);
+                document.body.innerHTML = `<div class="p-8 text-center text-red-600"><h1>Lỗi tải dữ liệu</h1><p>Không thể tải tệp database.json. Vui lòng đảm bảo tệp tồn tại và bạn đang chạy ứng dụng trên một máy chủ web.</p></div>`;
+            }
+        });
+
+        function initializeApp() {
+            renderHomeScreen();
+        }
+
+        // --- LOGIC ĐIỀU HƯỚNG ---
+        let currentScreen = 'screen-home';
+        let navigationStack = [];
+
+        function navigateTo(screenId, isBack = false) {
+            if (!isBack && currentScreen !== screenId) {
+                navigationStack.push(currentScreen);
+            }
+            window.scrollTo(0, 0);
+            document.getElementById(currentScreen)?.classList.remove('active');
+            document.getElementById(screenId)?.classList.add('active');
+            currentScreen = screenId;
+        }
+
+        function navigateBack() {
+            const lastScreen = navigationStack.pop() || 'screen-home';
+            navigateTo(lastScreen, true);
+        }
+
+        // --- LOGIC RENDER GIAO DIỆN ---
+
+        function renderHomeScreen() {
+            const unitListEl = document.getElementById('unit-list');
+            unitListEl.innerHTML = db.units.map(unit => `
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center space-x-4 cursor-pointer hover:bg-blue-100 transition" onclick="navigateToUnitDetail('${unit.unitId}')">
+                    <div class="bg-blue-500 text-white rounded-full w-12 h-12 flex-shrink-0 flex items-center justify-center font-bold text-lg">${unit.unitId.split('-')[1]}</div>
+                    <div class="flex-grow">
+                        <p class="font-semibold text-gray-800">${unit.unitTitle}</p>
+                        <p class="text-sm text-gray-500">${unit.unitDescription}</p>
+                    </div>
+                    <div class="w-6 h-6 text-blue-500"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg></div>
+                </div>
+            `).join('');
+        }
+
+        function navigateToUnitDetail(unitId) {
+            const unit = db.units.find(u => u.unitId === unitId);
+            if (!unit) return;
+
+            const unitDetailEl = document.getElementById('screen-unit-detail');
+            
+            const passageId = Object.keys(unit.passages)[0]; // Lấy bài đọc đầu tiên
+            const quizId = Object.keys(unit.quizzes)[0]; // Lấy quiz đầu tiên
+
+            unitDetailEl.innerHTML = `
+                <header class="mb-8 flex items-center gap-4">
+                    <button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">${unit.unitTitle}</h1>
+                        <p class="text-gray-500 mt-1">${unit.unitDescription}</p>
+                    </div>
+                </header>
+                <main class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h2 class="font-bold text-lg mb-3">Hoạt động</h2>
+                        <div class="space-y-3">
+                             <div class="flex items-center gap-4 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToReading('${unitId}', '${passageId}')">
+                                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18"></path></svg>
+                                <span>Bài đọc: ${unit.passages[passageId].title}</span>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 rounded-lg cursor-pointer hover:bg-gray-100" onclick="navigateToQuizStart('${unitId}', '${quizId}')">
+                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>Bài tập từ vựng</span>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            `;
+            navigateTo('screen-unit-detail');
+        }
+
+        function navigateToReading(unitId, passageId) {
+            const unit = db.units.find(u => u.unitId === unitId);
+            const passage = unit.passages[passageId];
+            if (!passage) return;
+
+            const readingEl = document.getElementById('screen-reading');
+            readingEl.innerHTML = `
+                <header class="mb-6 flex justify-between items-center gap-4">
+                    <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-1 rounded-full">${unit.unitTitle}</span>
+                    <button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </header>
+                <main>
+                    <h1 class="text-4xl font-extrabold text-gray-900 mb-6 leading-tight">${passage.title}</h1>
+                    <p class="text-gray-700 text-lg leading-relaxed">${passage.content}</p>
+                </main>
+            `;
+            navigateTo('screen-reading');
+        }
+        
+        function navigateToQuizStart(unitId, quizId) {
+            const unit = db.units.find(u => u.unitId === unitId);
+            const quizData = unit.quizzes[quizId];
+            if (!quizData) return;
+            
+            const quizStartEl = document.getElementById('screen-quiz-start');
+            quizStartEl.innerHTML = `
+                <header class="flex justify-end">
+                    <button onclick="navigateBack()" class="text-gray-400 hover:text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                </header>
+                <main class="text-center pt-16 pb-8">
+                    <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800 mt-6">${quizData.title}</h1>
+                    <p class="text-gray-500 mt-2">Kiểm tra kiến thức của bạn về các từ trong bài đọc.</p>
+                </main>
+                <footer class="p-4">
+                     <button onclick="startQuiz('${unitId}', '${quizId}')" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-full shadow-lg transition hover:bg-blue-700 transform hover:scale-105">
+                        Bắt đầu
+                    </button>
+                </footer>
+            `;
+            navigateTo('screen-quiz-start');
+        }
+
+        // --- LOGIC QUIZ ---
+        let quizState = {};
+
+        function startQuiz(unitId, quizId) {
+            const unit = db.units.find(u => u.unitId === unitId);
+            const quizData = unit.quizzes[quizId];
+            quizState = {
+                unit: unit,
+                quizData: quizData,
+                currentQuestionIndex: 0,
+                score: 0
+            };
+            displayQuestion();
+            navigateTo('screen-quiz-question');
+        }
+
+        function displayQuestion() {
+            const question = quizState.quizData.questions[quizState.currentQuestionIndex];
+            const quizQuestionEl = document.getElementById('screen-quiz-question');
+            const progress = ((quizState.currentQuestionIndex + 1) / quizState.quizData.questions.length) * 100;
+
+            quizQuestionEl.innerHTML = `
+                <header class="mb-6">
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-gray-600">${quizState.currentQuestionIndex + 1}/${quizState.quizData.questions.length}</span>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                </header>
+                <main class="py-8">
+                    <p class="text-xl font-semibold text-gray-800 text-center">${question.questionText}</p>
+                    ${question.context ? `<p class="text-center text-gray-500 mt-2 bg-gray-50 p-3 rounded-lg">${question.context.replace('___', '...')}</p>` : ''}
+                    <div class="mt-8 space-y-4">
+                        ${question.options.map(opt => `
+                            <button class="quiz-option w-full text-left border-2 border-gray-200 p-4 rounded-xl text-lg font-medium text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition" onclick="checkQuizAnswer(this, '${opt === question.answer}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </main>
+                <footer id="quiz-footer" class="h-28"></footer>
+            `;
+        }
+        
+        function checkQuizAnswer(button, isCorrectStr) {
+            const isCorrect = isCorrectStr === 'true';
+            if (quizState.answered) return;
+            quizState.answered = true;
+
+            const allOptions = document.querySelectorAll('.quiz-option');
+            allOptions.forEach(b => b.disabled = true);
+            
+            if (isCorrect) {
+                quizState.score++;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('incorrect');
+                allOptions.forEach(opt => {
+                    if (opt.innerText === quizState.quizData.questions[quizState.currentQuestionIndex].answer) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+
+            const footer = document.getElementById('quiz-footer');
+            footer.innerHTML = `<div class="p-4 text-center"><button class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full" onclick="nextQuestion()">Tiếp tục</button></div>`;
+        }
+
+        function nextQuestion() {
+            quizState.answered = false;
+            if (quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
+                quizState.currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            const resultsEl = document.getElementById('screen-quiz-results');
+            const total = quizState.quizData.questions.length;
+            const accuracy = total > 0 ? Math.round((quizState.score / total) * 100) : 0;
+            resultsEl.innerHTML = `
+                 <main class="text-center py-16">
+                    <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Hoàn thành!</h1>
+                    <div class="bg-gray-50 rounded-xl p-6 flex items-center justify-around w-full max-w-md mx-auto my-10">
+                        <div><p class="text-3xl font-bold text-blue-600">${quizState.score}/${total}</p><p class="text-sm text-gray-500">Điểm số</p></div>
+                        <div><p class="text-3xl font-bold text-blue-600">${accuracy}%</p><p class="text-sm text-gray-500">Chính xác</p></div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="startQuiz('${quizState.unit.unitId}', '${quizState.quizData.passageId}')" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3 px-6 rounded-full transition hover:bg-blue-50">Làm lại</button>
+                        <button onclick="navigateTo('screen-home')" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition hover:bg-blue-700">Về trang chủ</button>
+                    </div>
+                </main>
+            `;
+            navigateTo('screen-quiz-results');
+        }
+
+    </script>
+
+</body>
+</html>
