@@ -1,0 +1,71 @@
+{
+  "units": [
+    {
+      "unitId": "unit-1",
+      "unitTitle": "Unit 1: Perkenalan",
+      "unitDescription": "Giới thiệu bản thân và các hoạt động hàng ngày.",
+      "passages": {
+        "daily-activity": {
+          "title": "Kegiatan Saya Sehari-hari",
+          "content": "Halo, nama saya Ayu. Saya tinggal di Jakarta. Setiap hari, saya bangun pagi pada jam lima. Setelah bangun, saya mandi dan salat. Lalu, saya membantu ibu saya memasak untuk sarapan. Kami sarapan nasi goreng dan teh hangat. Rasanya enak sekali. Pada jam tujuh pagi, saya berangkat ke kampus. Di kampus, saya belajar bahasa dan budaya Indonesia. Saya suka belajar dengan teman-teman. Dosen saya juga sangat baik dan ramah. Kami belajar sampai jam dua belas siang. Setelah kuliah selesai, saya dan teman-teman makan siang di kantin kampus. Makanan di kantin murah dan enak. Saya suka sekali soto ayam. Setelah makan siang, saya pulang ke rumah.",
+          "translation": "Xin chào, tên tôi là Ayu. Tôi sống ở Jakarta. Mỗi ngày, tôi thức dậy vào lúc năm giờ sáng. Sau khi thức dậy, tôi tắm và cầu nguyện. Sau đó, tôi giúp mẹ nấu bữa sáng. Chúng tôi ăn sáng với cơm chiên và trà nóng. Vị của nó rất ngon. Vào bảy giờ sáng, tôi đến trường. Ở trường, tôi học ngôn ngữ và văn hóa Indonesia. Tôi thích học cùng bạn bè. Giảng viên của tôi cũng rất tốt và thân thiện. Chúng tôi học đến mười hai giờ trưa. Sau khi tan học, tôi và các bạn ăn trưa ở căng-tin của trường. Đồ ăn ở căng-tin rẻ và ngon. Tôi rất thích món súp gà. Sau khi ăn trưa, tôi trở về nhà."
+        }
+      },
+      "dictionary": {
+        "makan": { "word": "makan", "type": "Động từ", "meanings": [{ "definition": "Ăn" }], "group": { "name": "Động từ" } },
+        "membantu": { "word": "membantu", "type": "Động từ", "meanings": [{ "definition": "Giúp đỡ" }], "grammarId": "mekan", "group": { "name": "Động từ" } },
+        "belajar": { "word": "belajar", "type": "Động từ", "meanings": [{ "definition": "Học" }], "grammarId": "ber", "group": { "name": "Động từ" } },
+        "rumah": { "word": "rumah", "type": "Danh từ", "meanings": [{ "definition": "Nhà" }], "group": { "name": "Danh từ" } }
+      },
+      "grammar": {
+        "mekan": { "name": "Tiền tố Me-kan", "category": "Tiền tố tạo động từ ngoại động", "tags": ["tiền-tố-động-từ", "chủ-động"] },
+        "ber": { "name": "Tiền tố Ber-", "category": "Tiền tố tạo động từ nội động", "tags": ["tiền-tố-động-từ", "chủ-động"] }
+      },
+      "quizzes": {
+        "quiz-daily-activity": {
+          "title": "Bài tập Unit 1",
+          "passageId": "daily-activity",
+          "questions": [
+             { "type": "multiple-choice-vn", "wordKey": "membantu", "questionText": "Từ 'membantu' có nghĩa là gì?", "options": ["Học", "Giúp đỡ", "Ăn", "Về nhà"], "answer": "Giúp đỡ" }
+          ]
+        }
+      }
+    },
+    {
+      "unitId": "unit-5",
+      "unitTitle": "Unit 5: Liburanku",
+      "unitDescription": "Kể về kỳ nghỉ và các hoạt động du lịch.",
+      "passages": {
+        "berwisata-ke-wae-rebo": {
+          "title": "Berwisata ke Wae Rebo",
+          "content": "Bulan lalu, saya dan Anjani berwisata ke Wae Rebo, Nusa Tenggara Timur. Kami berdua tiba di Nusa Tenggara Timur pada malam hari. Esoknya, kami berjalan kaki menuju desa Wae Rebo selama empat jam. Di sana ada tujuh rumah adat berbentuk kerucut. Kami menginap di rumah adat itu. Hari berikutnya, kami berkeliling di desa Wae Rebo. Desa ini bercuaca dingin. Kami berbaju tebal. Kami juga berfoto dengan penduduk desa Wae Rebo. Sebelum pulang, kami berbelanja oleh-oleh. Kami membeli roti kompiang dan kopi Flores. Roti kompiang bertabur wijen dan berasa gurih. Sementara itu, kopi Flores beraroma sedap dan wangi. Malam harinya, kami pulang ke Jakarta.",
+          "translation": "Tháng trước, tôi và Anjani đi du lịch đến Wae Rebo, Đông Nusa Tenggara. Hai chúng tôi đến Đông Nusa Tenggara vào ban đêm. Ngày hôm sau, chúng tôi đi bộ đến làng Wae Rebo trong bốn giờ. Ở đó có bảy ngôi nhà truyền thống hình nón. Chúng tôi đã ở lại trong ngôi nhà truyền thống đó. Ngày tiếp theo, chúng tôi đi dạo quanh làng Wae Rebo. Ngôi làng này có thời tiết lạnh. Chúng tôi mặc áo dày. Chúng tôi cũng chụp ảnh với người dân làng Wae Rebo. Trước khi về, chúng tôi đã mua quà lưu niệm. Chúng tôi đã mua bánh mì kompiang và cà phê Flores. Bánh mì kompiang được rắc vừng và có vị mặn mà. Trong khi đó, cà phê Flores có hương thơm ngon và quyến rũ. Vào buổi tối, chúng tôi trở về Jakarta."
+        }
+      },
+      "dictionary": {
+        "berwisata": { "word": "berwisata", "type": "Động từ", "meanings": [{ "definition": "đi du lịch" }], "grammarId": "ber", "group": { "name": "Hoạt động du lịch" } },
+        "berdua": { "word": "berdua", "type": "Trạng từ", "meanings": [{ "definition": "cả hai, hai người" }], "grammarId": "ber" },
+        "berjalan kaki": { "word": "berjalan kaki", "type": "Cụm động từ", "meanings": [{ "definition": "đi bộ" }], "group": { "name": "Hoạt động du lịch" } },
+        "rumah adat": { "word": "rumah adat", "type": "Cụm danh từ", "meanings": [{ "definition": "nhà truyền thống" }] },
+        "berbentuk": { "word": "berbentuk", "type": "Động từ", "meanings": [{ "definition": "có hình dạng" }], "grammarId": "ber" },
+        "menginap": { "word": "menginap", "type": "Động từ", "meanings": [{ "definition": "ở lại qua đêm" }], "group": { "name": "Hoạt động du lịch" } },
+        "berkeliling": { "word": "berkeliling", "type": "Động từ", "meanings": [{ "definition": "đi dạo quanh" }], "grammarId": "ber", "group": { "name": "Hoạt động du lịch" } },
+        "berbelanja": { "word": "berbelanja", "type": "Động từ", "meanings": [{ "definition": "mua sắm" }], "grammarId": "ber", "group": { "name": "Hoạt động du lịch" } },
+        "oleh-oleh": { "word": "oleh-oleh", "type": "Danh từ", "meanings": [{ "definition": "quà lưu niệm" }] }
+      },
+      "grammar": {
+        "ber": { "name": "Tiền tố 'ber-' (Nâng cao)", "category": "Tiền tố và Hậu tố", "tags": ["tiền tố", "động từ", "BIPA 1"] }
+      },
+      "quizzes": {
+        "quiz-berwisata-ke-wae-rebo": {
+          "title": "Bài tập Unit 5",
+          "passageId": "berwisata-ke-wae-rebo",
+          "questions": [
+            { "type": "multiple-choice-vn", "wordKey": "berwisata", "questionText": "Từ 'berwisata' có nghĩa là gì?", "options": ["Ở lại", "Đi du lịch", "Đi bộ", "Mua sắm"], "answer": "Đi du lịch" },
+            { "type": "multiple-choice-indo", "wordKey": "oleh-oleh", "questionText": "Từ nào có nghĩa là 'Quà lưu niệm'?", "options": ["rumah adat", "kopi", "penduduk", "oleh-oleh"], "answer": "oleh-oleh" }
+          ]
+        }
+      }
+    }
+  ]
+}
