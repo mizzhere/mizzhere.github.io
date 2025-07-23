@@ -347,9 +347,52 @@
             const grammarDetailEl = document.getElementById('screen-grammar-detail');
             const sectionIcon = (svgPath) => `<div class="bg-purple-100 text-purple-600 rounded-lg w-10 h-10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg></div>`;
 
+            let mainContent = `
+                <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-4">
+                    ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>')}
+                    <div>
+                        <h3 class="font-bold text-gray-800">Cấu trúc</h3>
+                        <p class="text-lg text-purple-800 font-mono bg-purple-50 inline-block px-2 py-1 rounded mt-1">${rule.structure}</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2m8-4H5a2 2 0 00-2 2v10a2 2 0 002 2h11l4 4V7a2 2 0 00-2-2z"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Cách dùng & Ví dụ</h3>
+                    </div>
+                    <div class="mt-4 pl-2 space-y-4">
+                        ${rule.usage.map(u => `
+                            <div class="border-l-4 border-purple-200 pl-4">
+                                <p class="font-semibold text-gray-700">${u.use}</p>
+                                <div class="mt-2 space-y-2">
+                                ${u.examples.map(ex => `
+                                    <div class="bg-gray-50 p-2 rounded-md">
+                                        <p class="text-gray-800">${ex.indo}</p>
+                                        <p class="text-xs text-gray-500 italic">${ex.vn}</p>
+                                    </div>
+                                `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <div class="flex items-start gap-4 mb-4">
+                        ${sectionIcon('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>')}
+                        <h3 class="font-bold text-gray-800 mt-2">Luyện tập nhanh</h3>
+                    </div>
+                    <div id="grammar-practice-${grammarId}" class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-700 mb-3">${rule.practice.question}</p>
+                        <div class="space-y-2">
+                            ${rule.practice.options.map(opt => `<button onclick="checkGrammarPractice(this, '${opt === rule.practice.answer}', 'grammar-practice-${grammarId}')" class="w-full text-left bg-white border-2 border-gray-200 p-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition"> ${opt} </button>`).join('')}
+                        </div>
+                        <div class="practice-feedback mt-3 text-sm"></div>
+                    </div>
+                </div>
+            `;
             grammarDetailEl.innerHTML = `
                 <header class="mb-8 flex justify-between items-center"><div class="flex-grow"><h1 class="text-3xl font-bold text-gray-800">${rule.name}</h1><div class="flex flex-wrap gap-2 mt-2"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${rule.level}</span></div></div><button onclick="navigateBack()" class="text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 flex-shrink-0"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button></header>
-                <main class="space-y-6">${/* Content sections here */}</main>
+                <main class="space-y-6">${mainContent}</main>
             `;
             navigateTo('screen-grammar-detail');
         }
@@ -430,7 +473,7 @@
                         <div><p class="text-3xl font-bold text-blue-600">${accuracy}%</p><p class="text-sm text-gray-500">Chính xác</p></div>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button onclick="startQuiz(currentUnit.unitId, Object.keys(currentUnit.quizzes)[0])" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3 px-6 rounded-full transition hover:bg-blue-50">Làm lại</button>
+                        <button onclick="startQuiz(Object.keys(currentUnit.quizzes)[0])" class="w-full bg-white border-2 border-blue-600 text-blue-600 font-bold py-3 px-6 rounded-full transition hover:bg-blue-50">Làm lại</button>
                         <button onclick="navigateTo('screen-home')" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition hover:bg-blue-700">Về trang chủ</button>
                     </div>
                 </main>
