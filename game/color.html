@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi Lưới Màu Logic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* bg-slate-100 */
+        }
+        .glowing-red { box-shadow: 0 0 15px 5px rgba(239, 68, 68, 0.6); }
+        .glowing-green { box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6); }
+        .glowing-blue { box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.6); }
+        .cell-container { position: relative; }
+        .cell {
+            user-select: none;
+            border: 3px solid #475569; /* slate-600 */
+            background-clip: padding-box;
+            position: relative;
+            z-index: 10;
+            transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+        }
+        .pre-filled { cursor: not-allowed; }
+        .cell-number { transition: opacity 0.25s ease-in-out; }
+        .color-swatch { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out; }
+        .color-swatch.disabled {
+            opacity: 0.4;
+            /* Clicks are handled by JS logic, not by disabling the element */
+        }
+        .connector {
+            position: absolute;
+            z-index: 5;
+            transition: opacity 0.25s ease-in-out, background-color 0.25s ease-in-out;
+            opacity: 0;
+        }
+        .connector.visible { opacity: 1; }
+        .connector-h { top: 50%; left: 100%; width: var(--connector-h-width, 0.5rem); height: 3px; transform: translateY(-50%); }
+        .connector-v { top: 100%; left: 50%; width: 3px; height: var(--connector-h-width, 0.5rem); transform: translateX(-50%); }
+        .connector-d1 { top: 100%; left: 100%; width: var(--connector-d-width, 0.707rem); height: 3px; transform-origin: top left; transform: rotate(45deg); }
+        .connector-d2 { top: 100%; right: 100%; width: var(--connector-d-width, 0.707rem); height: 3px; transform-origin: top right; transform: rotate(-45deg); }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        .anim-fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+        .anim-fade-out { animation: fadeOut 0.3s ease-in-out forwards; }
+
+
+        .gap-3\.5 { gap: 0.875rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-1\.5 { gap: 0.375rem; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2">
+
+    <!-- Main container for all screens -->
+    <div id="app-container" class="w-full max-w-sm h-[95vh] max-h-[850px] bg-slate-200 rounded-2xl shadow-lg flex flex-col p-4 sm:p-6 overflow-hidden">
+
+        <!-- Main Menu Screen -->
+        <div id="main-menu-screen" class="flex flex-col h-full text-center">
+            <!-- Header Area -->
+            <div class="flex-shrink-0 pt-8">
+                <h1 class="text-4xl font-bold text-slate-800 mb-2">Lưới Màu Logic</h1>
+                <p class="text-slate-600">Một trò chơi giải đố về màu sắc</p>
+            </div>
+
+            <!-- Main Buttons Area (Stretches to fill space) -->
+            <div class="flex-grow flex flex-col justify-center space-y-3 py-4">
+                <button id="continue-campaign-button" class="hidden w-full bg-blue-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Tiếp tục
+                </button>
+                <button id="start-campaign-button" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3 6v8a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-8l3-6H3z"></path><path d="M12 14c1.66 0 3-1.34 3-3V6"></path></svg>
+                    Chế độ Thường
+                </button>
+                <button id="custom-mode-button" class="w-full bg-purple-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg>
+                    Tùy chỉnh
+                </button>
+                 <button id="history-button" class="w-full bg-slate-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-slate-600 transition-colors flex items-center justify-center gap-2">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18.7 8a6 6 0 0 0-8.4-5.6l-1.8 1.8"></path><path d="M13 17.6a6 6 0 0 0 8.4-5.6l1.8-1.8"></path></svg>
+                    Lịch sử
+                </button>
+            </div>
+
+            <!-- High Score Area (Footer) -->
+            <div class="flex-shrink-0 pb-4">
+                <p class="text-slate-500">ĐIỂM CAO NHẤT (Chế độ Thường)</p>
+                <p id="high-score-display" class="text-3xl font-bold text-slate-700">--</p>
+                <p class="text-sm text-slate-500">(ít bước hơn là tốt hơn)</p>
+            </div>
+        </div>
+        
+        <!-- Game History Screen -->
+        <div id="history-screen" class="hidden flex flex-col h-full">
+            <div class="flex items-center mb-4 flex-shrink-0">
+                <button id="back-to-menu-from-history-button" class="p-2 rounded-full hover:bg-slate-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-slate-800 text-center flex-grow">Lịch sử chơi</h2>
+            </div>
+            <div id="history-list-container" class="flex-grow space-y-2 overflow-y-auto pr-2 bg-slate-100 p-2 rounded-lg">
+                <!-- History entries will be added here -->
+            </div>
+            <button id="clear-history-button" class="mt-4 w-full bg-red-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-red-600 transition-colors flex-shrink-0">Xóa lịch sử</button>
+        </div>
+
+        <!-- Custom Mode Setup Screen -->
+        <div id="custom-setup-screen" class="hidden flex flex-col h-full">
+             <div class="flex items-center mb-6 flex-shrink-0">
+                <button id="back-to-menu-button" class="p-2 rounded-full hover:bg-slate-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-slate-800 text-center flex-grow">Tùy chỉnh ván chơi</h2>
+            </div>
+            <div class="flex-grow overflow-y-auto pr-2">
+                <div class="flex items-center justify-between mb-4">
+                    <label for="rounds-select" class="font-bold text-slate-700">Số vòng:</label>
+                    <select id="rounds-select" class="p-2 rounded-md border-2 border-slate-300">
+                        <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div id="round-settings-container" class="space-y-3">
+                    <!-- Settings for each round will be added here -->
+                </div>
+            </div>
+            <button id="start-custom-game-button" class="mt-4 w-full bg-purple-500 text-white font-bold py-4 rounded-lg text-lg hover:bg-purple-600 transition-colors flex-shrink-0">Bắt đầu</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden flex flex-col h-full">
+            <!-- Part 1: Header & Progress (Fixed Top) -->
+            <div class="flex-shrink-0">
+                <header class="flex justify-between items-center mb-4">
+                    <div class="text-center">
+                        <p id="round-display" class="text-slate-600 font-bold text-lg">Vòng 1</p>
+                        <p id="grid-size-display" class="text-sm bg-slate-300 text-slate-700 font-semibold px-3 py-1 rounded-full">4x4</p>
+                    </div>
+                    <div class="text-center">
+                         <p class="text-slate-600 font-bold text-lg">Số bước</p>
+                         <p id="move-count-display" class="text-sm bg-slate-300 text-slate-700 font-semibold px-3 py-1 rounded-full">0</p>
+                    </div>
+                    <button id="home-button" class="p-2 rounded-full hover:bg-slate-300 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </button>
+                </header>
+                <div class="flex items-center gap-2">
+                    <div class="w-full bg-slate-300 rounded-full h-5">
+                        <div id="progress-bar" class="bg-green-500 h-5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <span id="progress-text" class="text-sm font-bold text-slate-600 w-12 text-right">0%</span>
+                </div>
+            </div>
+
+            <!-- Part 2: Game Board (Stretches to fill middle space) -->
+            <div id="game-board-container" class="flex-grow flex items-center justify-center py-4">
+                <div id="game-board" class="grid bg-transparent rounded-lg w-full aspect-square"></div>
+            </div>
+
+            <!-- Part 3: Color Palette & Undo Button (Fixed Bottom) -->
+            <div id="controls-container" class="flex-shrink-0 flex items-center justify-between">
+                <button id="undo-button" class="p-3 rounded-full hover:bg-slate-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                </button>
+                <div id="color-palette" class="flex justify-center items-center gap-4"></div>
+                <div class="w-[52px]"></div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="restart-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"></div>
+        <div id="win-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GAME CONFIGURATION ---
+            const COLORS = {
+                'R': { name: 'red', class: 'bg-red-500', glow: 'glowing-red' },
+                'G': { name: 'green', class: 'bg-green-500', glow: 'glowing-green' },
+                'B': { name: 'blue', class: 'bg-blue-500', glow: 'glowing-blue' },
+                'W': { name: 'white', class: 'bg-slate-300', glow: '' }
+            };
+            
+            const PREFILL_CONFIG = {
+                4: 3, 5: 6, 6: 8, 7: 11
+            };
+            
+            const puzzles = {
+                4: [
+                    [['R','R','G','G'],['R','R','G','G'],['B','B','R','R'],['B','B','R','R']],
+                    [['R','G','B','R'],['G','B','R','G'],['B','R','G','B'],['R','G','B','R']],
+                ],
+                5: [
+                    [['B','B','R','R','G'],['B','G','R','G','G'],['R','R','G','G','B'],['G','B','B','R','R'],['G','G','B','R','B']],
+                    [['R','G','B','G','R'],['G','B','R','B','G'],['B','R','G','R','B'],['G','B','R','B','G'],['R','G','B','G','R']],
+                ],
+                6: [
+                    [['R', 'R', 'G', 'G', 'B', 'B'], ['R', 'R', 'G', 'G', 'B', 'B'], ['G', 'G', 'B', 'B', 'R', 'R'], ['G', 'G', 'B', 'B', 'R', 'R'], ['B', 'B', 'R', 'R', 'G', 'G'], ['B', 'B', 'R', 'R', 'G', 'G']],
+                    [['R', 'G', 'G', 'B', 'B', 'R'], ['R', 'R', 'G', 'B', 'R', 'R'], ['G', 'R', 'R', 'R', 'R', 'B'], ['G', 'B', 'B', 'R', 'B', 'B'], ['B', 'B', 'B', 'B', 'G', 'G'], ['R', 'R', 'B', 'G', 'G', 'G']]
+                ],
+                7: [
+                    [['R','R','G','G','B','B','R'],['R','R','G','G','B','B','R'],['G','G','B','B','R','R','G'],['G','G','B','B','R','R','G'],['B','B','R','R','G','G','B'],['B','B','R','R','G','G','B'],['R','R','G','G','B','B','R']],
+                    [['B','R','G','B','G','R','B'],['R','G','B','G','B','G','R'],['G','B','R','B','R','B','G'],['B','G','R','G','R','G','B'],['G','B','R','B','R','B','G'],['R','G','B','G','B','G','R'],['B','R','G','B','G','R','B']],
+                ]
+            };
+            
+            // --- GAME STATE VARIABLES ---
+            let gameState = {
+                currentScreen: 'main-menu',
+                isTransitioning: false,
+                gameMode: null,
+                campaignProgress: { level: 0, totalMoves: 0 },
+                customSettings: { rounds: [], currentRound: 0, totalMoves: 0 },
+                currentGridSize: 0,
+                currentLevelMoves: 0,
+                solutionLayout: [],
+            };
+            let selectedColor = COLORS['R'].name;
+            let playerBoard = [];
+            let moveHistory = [];
+            let longPressTimer;
+
+            // --- DOM ELEMENT REFERENCES ---
+            const screens = {
+                mainMenu: document.getElementById('main-menu-screen'),
+                customSetup: document.getElementById('custom-setup-screen'),
+                game: document.getElementById('game-screen'),
+                history: document.getElementById('history-screen'),
+            };
+            const highScoreDisplay = document.getElementById('high-score-display');
+            const continueCampaignButton = document.getElementById('continue-campaign-button');
+            const startCampaignButton = document.getElementById('start-campaign-button');
+            const customModeButton = document.getElementById('custom-mode-button');
+            const historyButton = document.getElementById('history-button');
+            const backToMenuButton = document.getElementById('back-to-menu-button');
+            const backToMenuFromHistoryButton = document.getElementById('back-to-menu-from-history-button');
+            const roundsSelect = document.getElementById('rounds-select');
+            const roundSettingsContainer = document.getElementById('round-settings-container');
+            const startCustomGameButton = document.getElementById('start-custom-game-button');
+            const gameBoardContainer = document.getElementById('game-board-container');
+            const gameBoard = document.getElementById('game-board');
+            const colorPalette = document.getElementById('color-palette');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const restartModal = document.getElementById('restart-modal');
+            const winModal = document.getElementById('win-modal');
+            const undoButton = document.getElementById('undo-button');
+            const homeButton = document.getElementById('home-button');
+            const roundDisplay = document.getElementById('round-display');
+            const gridSizeDisplay = document.getElementById('grid-size-display');
+            const moveCountDisplay = document.getElementById('move-count-display');
+            const historyListContainer = document.getElementById('history-list-container');
+            const clearHistoryButton = document.getElementById('clear-history-button');
+
+            // --- LOCALSTORAGE HELPERS ---
+            const storage = {
+                getInProgressLevel: () => JSON.parse(localStorage.getItem('colorGrid_inProgressLevel')),
+                saveInProgressLevel: (state) => localStorage.setItem('colorGrid_inProgressLevel', JSON.stringify(state)),
+                clearInProgressLevel: () => localStorage.removeItem('colorGrid_inProgressLevel'),
+                getHighScore: () => localStorage.getItem('colorGrid_highScore') || Infinity,
+                saveHighScore: (score) => localStorage.setItem('colorGrid_highScore', score),
+                getHistory: () => JSON.parse(localStorage.getItem('colorGrid_history')) || [],
+                saveHistory: (history) => localStorage.setItem('colorGrid_history', JSON.stringify(history)),
+                clearHistory: () => localStorage.removeItem('colorGrid_history'),
+            };
+
+            // --- SCREEN MANAGEMENT ---
+            function showScreen(screenName) {
+                if (gameState.isTransitioning) return;
+                gameState.isTransitioning = true;
+
+                const currentScreenEl = screens[gameState.currentScreen];
+                const nextScreenEl = screens[screenName];
+
+                if (currentScreenEl && currentScreenEl !== nextScreenEl) {
+                    currentScreenEl.classList.add('anim-fade-out');
+                    setTimeout(() => {
+                        currentScreenEl.classList.add('hidden');
+                        currentScreenEl.classList.remove('anim-fade-out');
+
+                        gameState.currentScreen = screenName;
+                        nextScreenEl.classList.remove('hidden');
+                        nextScreenEl.classList.add('anim-fade-in');
+                        
+                        setTimeout(() => {
+                             nextScreenEl.classList.remove('anim-fade-in');
+                             gameState.isTransitioning = false;
+                        }, 300);
+                    }, 300);
+                } else {
+                    gameState.currentScreen = screenName;
+                    nextScreenEl.classList.remove('hidden');
+                    gameState.isTransitioning = false;
+                }
+            }
+
+            // --- GAME START & INITIALIZATION ---
+            function startGame(mode, settings = {}) {
+                gameState.gameMode = mode;
+                
+                if (settings.savedState) {
+                    // *** CHANGE: Load move history from saved state ***
+                    const { savedCampaignProgress, savedPlayerBoard, savedSolutionLayout, savedCurrentLevelMoves, savedCurrentGridSize, savedMoveHistory } = settings.savedState;
+                    gameState.campaignProgress = savedCampaignProgress;
+                    playerBoard = savedPlayerBoard;
+                    gameState.solutionLayout = savedSolutionLayout;
+                    gameState.currentLevelMoves = savedCurrentLevelMoves;
+                    gameState.currentGridSize = savedCurrentGridSize;
+                    moveHistory = savedMoveHistory || []; // Restore move history
+                    
+                    const levelIndex = gameState.campaignProgress.level;
+                    roundDisplay.textContent = `Vòng ${levelIndex + 1}`;
+                    
+                    startLevel(true);
+                } else if (mode === 'campaign') {
+                    moveHistory = [];
+                    const campaignLevels = [4, 5, 6, 7];
+                    gameState.campaignProgress = { level: 0, totalMoves: 0 };
+                    const levelIndex = gameState.campaignProgress.level;
+                    gameState.currentGridSize = campaignLevels[levelIndex];
+                    roundDisplay.textContent = `Vòng ${levelIndex + 1}`;
+                    startLevel();
+                } else { // Custom mode
+                    moveHistory = [];
+                    gameState.customSettings = { ...settings, currentRound: 0, totalMoves: 0 };
+                    gameState.currentGridSize = settings.rounds[0];
+                    roundDisplay.textContent = `Vòng 1 / ${settings.rounds.length}`;
+                    startLevel();
+                }
+            }
+
+            function startLevel(isLoadedLevel = false) {
+                if (!isLoadedLevel) {
+                    gameState.currentLevelMoves = 0;
+                    moveHistory = [];
+                    createPlayerBoard(gameState.currentGridSize);
+                }
+                
+                selectedColor = COLORS['R'].name;
+
+                const gridSize = gameState.currentGridSize;
+                gridSizeDisplay.textContent = `${gridSize}x${gridSize}`;
+                
+                const gapClasses = { 4: 'gap-3.5', 5: 'gap-3', 6: 'gap-2', 7: 'gap-1.5' };
+                const connectorSizes = { 4: ['0.875rem', '1.237rem'], 5: ['0.75rem', '1.06rem'], 6: ['0.5rem', '0.707rem'], 7: ['0.375rem', '0.53rem'] };
+                gameBoard.className = `grid grid-cols-${gridSize} ${gapClasses[gridSize]} bg-transparent rounded-lg w-full aspect-square`;
+                document.documentElement.style.setProperty('--connector-h-width', connectorSizes[gridSize][0]);
+                document.documentElement.style.setProperty('--connector-d-width', connectorSizes[gridSize][1]);
+
+                renderBoard(gridSize);
+                setupColorPalette();
+                updateAllUI();
+                
+                gameBoardContainer.classList.add('anim-fade-in');
+                setTimeout(() => gameBoardContainer.classList.remove('anim-fade-in'), 300);
+                
+                if (gameState.currentScreen !== 'game') {
+                    showScreen('game');
+                }
+            }
+
+            // --- GAME LOGIC ---
+            function handleWinLevel() {
+                 storage.clearInProgressLevel();
+                 let totalMoves = 0;
+                 let historyEntry = {
+                     id: Date.now(),
+                     date: new Date().toLocaleString('vi-VN'),
+                 };
+
+                 const startNextLevel = (logicFunction) => {
+                    if (gameState.isTransitioning) return;
+                    gameState.isTransitioning = true;
+                    gameBoardContainer.classList.add('anim-fade-out');
+                    setTimeout(() => {
+                        logicFunction();
+                        gameBoardContainer.classList.remove('anim-fade-out');
+                        gameState.isTransitioning = false;
+                    }, 300);
+                 };
+
+                 if (gameState.gameMode === 'campaign') {
+                    gameState.campaignProgress.level++;
+                    gameState.campaignProgress.totalMoves += gameState.currentLevelMoves;
+                    const campaignLevels = [4, 5, 6, 7];
+                    
+                    if (gameState.campaignProgress.level >= campaignLevels.length) {
+                        totalMoves = gameState.campaignProgress.totalMoves;
+                        const currentHighScore = storage.getHighScore();
+                        if (totalMoves < currentHighScore) {
+                            storage.saveHighScore(totalMoves);
+                        }
+                        historyEntry = {...historyEntry, mode: 'Chế độ Thường', details: `${campaignLevels.length} Vòng`, steps: totalMoves };
+                        const history = storage.getHistory();
+                        history.unshift(historyEntry);
+                        storage.saveHistory(history);
+                        showWinScreen(`Hoàn thành!`, `Tổng số bước: ${totalMoves}`);
+                    } else {
+                        startNextLevel(() => {
+                            gameState.currentGridSize = campaignLevels[gameState.campaignProgress.level];
+                            roundDisplay.textContent = `Vòng ${gameState.campaignProgress.level + 1}`;
+                            startLevel();
+                        });
+                    }
+                } else { // Custom mode
+                    gameState.customSettings.currentRound++;
+                    gameState.customSettings.totalMoves += gameState.currentLevelMoves;
+
+                    if (gameState.customSettings.currentRound >= gameState.customSettings.rounds.length) {
+                        totalMoves = gameState.customSettings.totalMoves;
+                        historyEntry = {...historyEntry, mode: 'Tùy chỉnh', details: `${gameState.customSettings.rounds.length} Vòng`, steps: totalMoves };
+                        const history = storage.getHistory();
+                        history.unshift(historyEntry);
+                        storage.saveHistory(history);
+                        showWinScreen(`Hoàn thành!`, `Tổng số bước: ${totalMoves}`);
+                    } else {
+                        startNextLevel(() => {
+                            const nextGridSize = gameState.customSettings.rounds[gameState.customSettings.currentRound];
+                            gameState.currentGridSize = nextGridSize;
+                            roundDisplay.textContent = `Vòng ${gameState.customSettings.currentRound + 1} / ${gameState.customSettings.rounds.length}`;
+                            startLevel();
+                        });
+                    }
+                }
+            }
+            
+            // --- BOARD CREATION ---
+            function calculateClueNumber(row, col, grid) {
+                const color = grid[row][col];
+                let count = 0;
+                const neighbors = getNeighborCoords(row, col, grid.length);
+                neighbors.forEach(({r, c}) => {
+                    if (grid[r][c] === color) count++;
+                });
+                return count;
+            }
+
+            function createPlayerBoard(gridSize) {
+                const solutionLayout = puzzles[gridSize][Math.floor(Math.random() * puzzles[gridSize].length)];
+                gameState.solutionLayout = solutionLayout;
+                
+                playerBoard = Array.from({ length: gridSize }, (_, r) => 
+                    Array.from({ length: gridSize }, (_, c) => ({
+                        color: 'W',
+                        clueNumber: calculateClueNumber(r, c, solutionLayout),
+                        currentNumber: 0,
+                        isPreFilled: false,
+                    }))
+                );
+
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        playerBoard[r][c].currentNumber = playerBoard[r][c].clueNumber;
+                    }
+                }
+
+                const allCellsCoords = [];
+                for (let r = 0; r < gridSize; r++) for (let c = 0; c < gridSize; c++) allCellsCoords.push({ r, c });
+                allCellsCoords.sort(() => 0.5 - Math.random());
+                const cellsToPreFillCount = PREFILL_CONFIG[gridSize];
+                for (let i = 0; i < cellsToPreFillCount; i++) {
+                    const { r, c } = allCellsCoords[i];
+                    playerBoard[r][c].color = solutionLayout[r][c];
+                    playerBoard[r][c].isPreFilled = true;
+                }
+                
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                         updateCellCounter(r, c);
+                         const neighbors = getNeighborCoords(r, c, gridSize);
+                         neighbors.forEach(({r: nr, c: nc}) => updateCellCounter(nr, nc));
+                    }
+                }
+            }
+            
+            function updateCellCounter(r, c) {
+                const cell = playerBoard[r][c];
+                if (cell.color === 'W') {
+                    cell.currentNumber = cell.clueNumber;
+                } else {
+                    const neighbors = getNeighborCoords(r, c, playerBoard.length);
+                    let currentMatchingNeighbors = 0;
+                    neighbors.forEach(({r: nr, c: nc}) => {
+                        if (playerBoard[nr][nc].color === cell.color) {
+                            currentMatchingNeighbors++;
+                        }
+                    });
+                    cell.currentNumber = cell.clueNumber - currentMatchingNeighbors;
+                }
+            }
+
+            // --- UI RENDERING ---
+            function renderBoard(gridSize) {
+                gameBoard.innerHTML = '';
+                gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, minmax(0, 1fr))`;
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        const cellContainer = document.createElement('div');
+                        cellContainer.className = 'cell-container';
+                        cellContainer.id = `container-${r}-${c}`;
+                        
+                        const cellDiv = document.createElement('div');
+                        cellDiv.id = `cell-${r}-${c}`;
+
+                        const numberSpan = document.createElement('span');
+                        numberSpan.className = 'cell-number';
+                        cellDiv.appendChild(numberSpan);
+                        
+                        const connH = document.createElement('div'); connH.id = `conn-h-${r}-${c}`; connH.className = 'connector connector-h';
+                        const connV = document.createElement('div'); connV.id = `conn-v-${r}-${c}`; connV.className = 'connector connector-v';
+                        const connD1 = document.createElement('div'); connD1.id = `conn-d1-${r}-${c}`; connD1.className = 'connector connector-d1';
+                        const connD2 = document.createElement('div'); connD2.id = `conn-d2-${r}-${c}`; connD2.className = 'connector connector-d2';
+
+                        cellContainer.append(cellDiv, connH, connV, connD1, connD2);
+                        gameBoard.appendChild(cellContainer);
+                        renderCell(r, c);
+                    }
+                }
+                updateAllConnectors();
+            }
+
+            function renderCell(r, c) {
+                const cell = playerBoard[r][c];
+                const cellDiv = document.getElementById(`cell-${r}-${c}`);
+                const numberSpan = cellDiv.querySelector('.cell-number');
+                const isSolved = cell.currentNumber === 0 && cell.color !== 'W';
+
+                cellDiv.className = 'cell w-full h-full rounded-md flex items-center justify-center text-xl sm:text-2xl font-bold';
+                cellDiv.classList.add(COLORS[cell.color].class);
+
+                numberSpan.textContent = cell.currentNumber;
+                numberSpan.classList.remove('text-white', 'text-slate-800');
+                numberSpan.classList.add(cell.color === 'W' ? 'text-slate-800' : 'text-white');
+                numberSpan.style.opacity = isSolved ? '0' : '1';
+                
+                if (cell.isPreFilled) {
+                    cellDiv.classList.add('pre-filled');
+                    cellDiv.onclick = null;
+                } else {
+                    cellDiv.classList.remove('pre-filled');
+                    cellDiv.classList.add('cursor-pointer', 'hover:opacity-80');
+                    cellDiv.onclick = () => handleCellClick(r, c);
+                }
+            }
+            
+            function setupColorPalette() {
+                colorPalette.innerHTML = '';
+                Object.keys(COLORS).filter(k => k !== 'W').forEach(key => {
+                    const color = COLORS[key];
+                    const swatchContainer = document.createElement('div');
+                    swatchContainer.className = 'relative flex flex-col items-center gap-1';
+                    const countDisplay = document.createElement('div');
+                    countDisplay.id = `count-${color.name}`;
+                    countDisplay.className = 'text-sm font-bold text-slate-600';
+                    const colorDiv = document.createElement('div');
+                    colorDiv.id = `swatch-${color.name}`;
+                    colorDiv.classList.add('color-swatch', 'w-11', 'h-11', 'rounded-lg', 'cursor-pointer', color.class);
+                    colorDiv.dataset.color = color.name;
+                    colorDiv.style.border = '3px solid #475569';
+                    
+                    colorDiv.addEventListener('click', () => {
+                        // Removed the disabled check to allow selection for removal
+                        selectedColor = color.name;
+                        updatePaletteSelection();
+                    });
+                    
+                    swatchContainer.append(countDisplay, colorDiv);
+                    colorPalette.appendChild(swatchContainer);
+                });
+            }
+
+            function updatePaletteSelection() {
+                colorPalette.querySelectorAll('.color-swatch').forEach(swatch => {
+                    const colorName = swatch.dataset.color;
+                    const colorInfo = Object.values(COLORS).find(c => c.name === colorName);
+                    if (selectedColor === colorName) {
+                        swatch.classList.add(colorInfo.glow, 'scale-110');
+                    } else {
+                        swatch.classList.remove(colorInfo.glow, 'scale-110');
+                    }
+                });
+            }
+
+            // --- EVENT HANDLING ---
+            // *** CHANGE: Updated click logic for color palette ***
+            function handleCellClick(r, c) {
+                if (gameState.isTransitioning) return;
+                const cell = playerBoard[r][c];
+                if (cell.isPreFilled) return;
+
+                const oldColor = cell.color;
+                const newColorKey = selectedColor ? Object.keys(COLORS).find(key => COLORS[key].name === selectedColor) : null;
+                
+                // Determine if the action is to remove the color
+                const isRemovingColor = oldColor === newColorKey;
+
+                let newColor;
+                if (isRemovingColor) {
+                    newColor = 'W'; // Set to white to remove
+                } else if (newColorKey) {
+                    newColor = newColorKey; // Set to the new selected color
+                } else {
+                    return; // No color selected, do nothing
+                }
+
+                // If adding a new color (not removing), perform validation checks
+                if (!isRemovingColor && newColor !== 'W') {
+                    const remainingCounts = getRemainingCounts();
+                    // Check if the color is available
+                    if (remainingCounts[newColorKey] <= 0) {
+                        const swatch = document.getElementById(`swatch-${COLORS[newColorKey].name}`);
+                        swatch.classList.add('shake');
+                        setTimeout(() => swatch.classList.remove('shake'), 300);
+                        return; // Stop if no more of this color is available
+                    }
+                    // Check neighbors for constraints
+                    const neighbors = getNeighborCoords(r, c, playerBoard.length);
+                    for (const {r: nr, c: nc} of neighbors) {
+                        const neighborCell = playerBoard[nr][nc];
+                        if (neighborCell.color === newColorKey && neighborCell.currentNumber <= 0) {
+                            const cellDiv = document.getElementById(`cell-${nr}-${nc}`);
+                            cellDiv.classList.add('shake');
+                            setTimeout(() => cellDiv.classList.remove('shake'), 300);
+                            return;
+                        }
+                    }
+                    let currentMatchingNeighbors = 0;
+                    neighbors.forEach(({r: nr, c: nc}) => {
+                        if(playerBoard[nr][nc].color === newColorKey) currentMatchingNeighbors++;
+                    });
+                    if (cell.clueNumber < currentMatchingNeighbors) {
+                        const cellDiv = document.getElementById(`cell-${r}-${c}`);
+                        cellDiv.classList.add('shake');
+                        setTimeout(() => cellDiv.classList.remove('shake'), 300);
+                        return;
+                    }
+                }
+
+                // If all checks pass (or if removing a color), proceed with the move
+                moveHistory.push(JSON.parse(JSON.stringify(playerBoard)));
+                gameState.currentLevelMoves++;
+                
+                cell.color = newColor;
+                const neighbors = getNeighborCoords(r, c, playerBoard.length);
+                updateCellCounter(r, c);
+                neighbors.forEach(({r: nr, c: nc}) => updateCellCounter(nr, nc));
+                renderCell(r, c);
+                neighbors.forEach(({r: nr, c: nc}) => renderCell(nr, nc));
+                updateAllUI();
+                
+                if (gameState.gameMode === 'campaign') {
+                    saveCurrentGameState();
+                }
+
+                checkWinCondition();
+            }
+
+            function handleUndo() {
+                if (moveHistory.length === 0 || gameState.isTransitioning) return;
+                playerBoard = moveHistory.pop();
+                gameState.currentLevelMoves--;
+                for (let r = 0; r < playerBoard.length; r++) for (let c = 0; c < playerBoard.length; c++) renderCell(r,c);
+                updateAllUI();
+                if (gameState.gameMode === 'campaign') {
+                    saveCurrentGameState();
+                }
+            }
+            
+            function getNeighborCoords(r, c, gridSize) {
+                const neighbors = [];
+                const directions = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+                for (const [dr, dc] of directions) {
+                    const newRow = r + dr;
+                    const newCol = c + dc;
+                    if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
+                        neighbors.push({r: newRow, c: newCol});
+                    }
+                }
+                return neighbors;
+            }
+            
+            // *** CHANGE: Save move history along with other game state ***
+            function saveCurrentGameState() {
+                const stateToSave = {
+                    savedCampaignProgress: gameState.campaignProgress,
+                    savedPlayerBoard: playerBoard,
+                    savedSolutionLayout: gameState.solutionLayout,
+                    savedCurrentLevelMoves: gameState.currentLevelMoves,
+                    savedCurrentGridSize: gameState.currentGridSize,
+                    savedMoveHistory: moveHistory 
+                };
+                storage.saveInProgressLevel(stateToSave);
+            }
+
+            // --- UI UPDATES ---
+            function updateAllUI() {
+                updateAllConnectors();
+                updateProgress();
+                updateRemainingCounts();
+                updatePaletteSelection();
+                moveCountDisplay.textContent = gameState.currentLevelMoves;
+            }
+            
+            function updateAllConnectors() {
+                if (!playerBoard || playerBoard.length === 0) return;
+                const gridSize = playerBoard.length;
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        const cellColor = playerBoard[r][c].color;
+                        const updateConnector = (connId, isVisible, colorKey) => {
+                            const conn = document.getElementById(connId);
+                            if (!conn) return;
+                            Object.values(COLORS).forEach(info => conn.classList.remove(info.class));
+                            if (isVisible) {
+                                conn.classList.add(COLORS[colorKey].class);
+                                conn.classList.add('visible');
+                            } else {
+                                conn.classList.remove('visible');
+                            }
+                        };
+                        const isWhite = cellColor === 'W';
+                        updateConnector(`conn-h-${r}-${c}`, !isWhite && c < gridSize - 1 && cellColor === playerBoard[r][c+1].color, cellColor);
+                        updateConnector(`conn-v-${r}-${c}`, !isWhite && r < gridSize - 1 && cellColor === playerBoard[r+1][c].color, cellColor);
+                        updateConnector(`conn-d1-${r}-${c}`, !isWhite && r < gridSize - 1 && c < gridSize - 1 && cellColor === playerBoard[r+1][c+1].color, cellColor);
+                        updateConnector(`conn-d2-${r}-${c}`, !isWhite && r < gridSize - 1 && c > 0 && cellColor === playerBoard[r+1][c-1].color, cellColor);
+                    }
+                }
+            }
+
+            function updateProgress() {
+                if (!playerBoard || playerBoard.length === 0) return;
+
+                const userFillableCells = playerBoard.flat().filter(cell => !cell.isPreFilled);
+                const totalUserFillable = userFillableCells.length;
+
+                if (totalUserFillable === 0) {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+                    return;
+                }
+
+                let solvedByUser = 0;
+                userFillableCells.forEach(cell => {
+                    if (cell.currentNumber === 0 && cell.color !== 'W') {
+                        solvedByUser++;
+                    }
+                });
+
+                const progress = totalUserFillable > 0 ? (solvedByUser / totalUserFillable) * 100 : 0;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${Math.round(progress)}%`;
+            }
+
+            function getRemainingCounts() {
+                const solutionLayout = gameState.solutionLayout;
+                if (!solutionLayout || solutionLayout.length === 0) return { R: 0, G: 0, B: 0 };
+                const requiredCounts = { R: 0, G: 0, B: 0 };
+                const currentCounts = { R: 0, G: 0, B: 0 };
+                solutionLayout.flat().forEach(colorKey => {
+                    if (requiredCounts[colorKey] !== undefined) requiredCounts[colorKey]++;
+                });
+                playerBoard.flat().forEach(cell => {
+                    if (cell.color !== 'W') currentCounts[cell.color]++;
+                });
+                return {
+                    R: requiredCounts.R - currentCounts.R,
+                    G: requiredCounts.G - currentCounts.G,
+                    B: requiredCounts.B - currentCounts.B,
+                };
+            }
+            
+            // *** CHANGE: Update swatch visual state without disabling clicks ***
+            function updateRemainingCounts() {
+                const remaining = getRemainingCounts();
+                Object.keys(remaining).forEach(key => {
+                    const colorName = COLORS[key].name;
+                    const remainingCount = Math.max(0, remaining[key]);
+                    const countEl = document.getElementById(`count-${colorName}`);
+                    if (countEl) countEl.textContent = remainingCount;
+                    const swatch = document.getElementById(`swatch-${colorName}`);
+                    if (swatch) {
+                        if (remaining[key] <= 0) {
+                            swatch.classList.add('disabled'); // This class now only controls opacity
+                        } else {
+                            swatch.classList.remove('disabled');
+                        }
+                    }
+                });
+            }
+
+            function checkWinCondition() {
+                if (!playerBoard || playerBoard.length === 0) return;
+                const allColored = playerBoard.flat().every(cell => cell.color !== 'W');
+                const allNumbersZero = playerBoard.flat().every(cell => cell.currentNumber === 0);
+                if (allColored && allNumbersZero) {
+                    setTimeout(() => handleWinLevel(), 500);
+                }
+            }
+            
+            function showWinScreen(title, message) {
+                 winModal.innerHTML = `
+                    <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-sm w-full anim-fade-in">
+                        <h2 class="text-2xl font-bold mb-4">🎉 ${title} 🎉</h2>
+                        <p class="mb-6 text-slate-600">${message}</p>
+                        <button id="win-modal-back-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Về màn hình chính</button>
+                    </div>
+                `;
+                winModal.classList.remove('hidden');
+                document.getElementById('win-modal-back-button').onclick = () => {
+                    winModal.classList.add('hidden');
+                    setupMainMenu();
+                };
+            }
+            
+            function setupMainMenu() {
+                const savedState = storage.getInProgressLevel();
+                if (savedState) {
+                    continueCampaignButton.classList.remove('hidden');
+                    startCampaignButton.textContent = 'Chơi mới';
+                } else {
+                    continueCampaignButton.classList.add('hidden');
+                    startCampaignButton.textContent = 'Chế độ Thường';
+                }
+                const highScore = storage.getHighScore();
+                highScoreDisplay.textContent = highScore === Infinity ? '--' : highScore;
+                showScreen('mainMenu');
+            }
+
+            function renderHistoryScreen() {
+                const history = storage.getHistory();
+                historyListContainer.innerHTML = '';
+                if (history.length === 0) {
+                    historyListContainer.innerHTML = `<p class="text-center text-slate-500 mt-4">Chưa có lịch sử chơi.</p>`;
+                    clearHistoryButton.classList.add('hidden');
+                    return;
+                }
+                clearHistoryButton.classList.remove('hidden');
+                history.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'bg-white p-3 rounded-lg shadow-sm';
+                    entryDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-slate-700">${entry.mode} - ${entry.details}</p>
+                                <p class="text-sm text-slate-500">${entry.date}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-slate-800">${entry.steps}</p>
+                                <p class="text-xs text-slate-500">bước</p>
+                            </div>
+                        </div>
+                    `;
+                    historyListContainer.appendChild(entryDiv);
+                });
+            }
+
+            // --- EVENT LISTENERS ---
+            startCampaignButton.addEventListener('click', () => {
+                storage.clearInProgressLevel();
+                startGame('campaign');
+            });
+            continueCampaignButton.addEventListener('click', () => {
+                const savedState = storage.getInProgressLevel();
+                if (savedState) {
+                    startGame('campaign', { savedState });
+                }
+            });
+            customModeButton.addEventListener('click', () => showScreen('customSetup'));
+            historyButton.addEventListener('click', () => {
+                renderHistoryScreen();
+                showScreen('history');
+            });
+            backToMenuButton.addEventListener('click', setupMainMenu);
+            backToMenuFromHistoryButton.addEventListener('click', setupMainMenu);
+            clearHistoryButton.addEventListener('click', () => {
+                storage.clearHistory();
+                renderHistoryScreen();
+            });
+
+            roundsSelect.addEventListener('change', () => {
+                const count = parseInt(roundsSelect.value);
+                roundSettingsContainer.innerHTML = '';
+                for(let i = 0; i < count; i++) {
+                    const settingHTML = `
+                        <div class="flex items-center justify-between bg-slate-100 p-2 rounded-md">
+                            <label class="font-bold text-slate-600">Vòng ${i + 1}</label>
+                            <select class="round-size-select p-1 rounded-md border-2 border-slate-300">
+                                <option value="4">4x4</option>
+                                <option value="5">5x5</option>
+                                <option value="6">6x6</option>
+                                <option value="7">7x7</option>
+                            </select>
+                        </div>
+                    `;
+                    roundSettingsContainer.innerHTML += settingHTML;
+                }
+            });
+            roundsSelect.dispatchEvent(new Event('change'));
+
+            startCustomGameButton.addEventListener('click', () => {
+                const rounds = Array.from(document.querySelectorAll('.round-size-select')).map(select => parseInt(select.value));
+                startGame('custom', { rounds });
+            });
+
+            homeButton.addEventListener('click', () => {
+                setupMainMenu();
+            });
+            restartModal.onclick = (e) => {
+                const target = e.target.closest('button');
+                if(!target) return;
+                if(target.id === 'confirm-restart-button') {
+                    startLevel(); // Restart level from scratch
+                    if(gameState.gameMode === 'campaign') saveCurrentGameState();
+                }
+                restartModal.classList.add('hidden');
+            }
+            undoButton.addEventListener('mousedown', () => {
+                longPressTimer = setTimeout(() => {
+                    restartModal.innerHTML = `
+                        <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-sm w-full">
+                            <h2 class="text-xl font-bold mb-4">Chơi lại vòng này?</h2>
+                            <p class="mb-6 text-slate-600">Toàn bộ tiến trình của vòng này sẽ bị mất.</p>
+                            <div class="flex justify-center gap-4">
+                                <button id="cancel-restart-button" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-6 rounded-lg transition-colors">Hủy</button>
+                                <button id="confirm-restart-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Chơi lại</button>
+                            </div>
+                        </div>`;
+                    restartModal.classList.remove('hidden');
+                }, 700);
+            });
+            undoButton.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+            undoButton.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
+            undoButton.addEventListener('click', handleUndo);
+
+            // --- START GAME ---
+            setupMainMenu();
+        });
+    </script>
+
+</body>
+</html>
