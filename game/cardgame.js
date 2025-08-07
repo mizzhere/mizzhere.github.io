@@ -1,4 +1,3 @@
-
     // --- LOCALSTORAGE FUNCTIONS ---
     const STORAGE_KEY = 'cardGameState';
 
