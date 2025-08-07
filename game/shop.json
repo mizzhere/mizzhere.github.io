@@ -31,7 +31,29 @@
       "content": "",
       "bg": "bg-gray-500/10",
       "previewCardId": "WINTER-RARE-S-P",
-      "rates": "GROUP:WINTER"
+      "rates": [
+        {
+          "type": "card",
+          "cardId": "WINTER-RARE-S-P",
+          "rate": 25
+        },
+        {
+          "type": "card",
+          "cardId": "WINTER-RARE-S-G",
+          "rate": 25
+        },
+        {
+          "type": "card",
+          "cardId": "WINTER-RARE-S-B",
+          "rate": 25
+        },
+        {
+          "type": "currency",
+          "currencyType": "eventTokens",
+          "amount": 999,
+          "rate": 25
+        }
+      ]
     }
   ],
   "eventShop": [
