@@ -1064,72 +1064,73 @@ function redrawGameBoard() {
         return -1;
     }
 
-    async function performBattle(slotIndex, playerCardId, opponentCardId, slotPoints) {
-        const playerCard = findCard(playerCardId);
-        const opponentCard = findCard(opponentCardId);
-        if(!playerCard || !opponentCard) return; // safety check
+   // THAY THẾ HÀM NÀY
+async function performBattle(slotIndex, playerCardId, opponentCardId, slotPoints) {
+    const playerCard = findCard(playerCardId);
+    const opponentCard = findCard(opponentCardId);
+    if (!playerCard || !opponentCard) return; // safety check
 
-        const playerSlotEl = document.querySelector(`#player-battle-zone .battle-slot[data-slot-index="${slotIndex}"]`);
-        const opponentSlotEl = document.querySelector(`#opponent-battle-zone .battle-slot:nth-child(${slotIndex + 1})`);
-        const playerCardEl = playerSlotEl.querySelector('.game-card');
-        const opponentCardEl = opponentSlotEl.querySelector('.game-card');
+    const playerSlotEl = document.querySelector(`#player-battle-zone .battle-slot[data-slot-index="${slotIndex}"]`);
+    const opponentSlotEl = document.querySelector(`#opponent-battle-zone .battle-slot:nth-child(${slotIndex + 1})`);
+    const playerCardEl = playerSlotEl.querySelector('.game-card');
+    const opponentCardEl = opponentSlotEl.querySelector('.game-card');
 
-        const colorPriority = getColorPriority(playerCard.color, opponentCard.color);
-        const playerDamage = Math.round(playerCard.attack * getDamageMultiplier(playerCard.shape, opponentCard.shape));
-        const opponentDamage = Math.round(opponentCard.attack * getDamageMultiplier(opponentCard.shape, playerCard.shape));
+    const colorPriority = getColorPriority(playerCard.color, opponentCard.color);
+    const playerDamage = Math.round(playerCard.attack * getDamageMultiplier(playerCard.shape, opponentCard.shape));
+    const opponentDamage = Math.round(opponentCard.attack * getDamageMultiplier(opponentCard.shape, playerCard.shape));
 
-        const performAttack = async (attackerEl, defenderEl, defenderCardId, damage) => {
-            attackerEl.style.animation = 'attack-animation-improved 0.6s ease-in-out';
-            await new Promise(r => setTimeout(r, 300));
-            
-            gameState.battleData[defenderCardId] -= damage;
-            const damageText = `<div class="damage-text">-${damage}</div>`;
-            defenderEl.insertAdjacentHTML('beforeend', damageText);
-            defenderEl.style.animation = 'shake-animation 0.3s';
-
-            const defenderCardInfo = findCard(defenderCardId);
-            defenderEl.innerHTML = createCardHTML(defenderCardInfo, {showDefense: true, currentDefense: Math.max(0, gameState.battleData[defenderCardId]), simple: true});
-            defenderEl.querySelector('.card-overlay').insertAdjacentHTML('afterend', damageText);
-            if(defenderEl.parentElement.dataset.points) { defenderEl.parentElement.innerHTML += `<div class="point-value">${defenderEl.parentElement.dataset.points}</div>`;}
-
-            await new Promise(r => setTimeout(r, 400));
-            attackerEl.style.animation = '';
-            defenderEl.style.animation = '';
-        };
-
-        const firstAttacker = (colorPriority > 0) ? 'player' : (colorPriority < 0) ? 'opponent' : 'simultaneous';
-
-        if (firstAttacker === 'player') {
-            await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
-            if (gameState.battleData[opponentCardId] > 0) await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
-        } else if (firstAttacker === 'opponent') {
-            await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
-            if (gameState.battleData[playerCardId] > 0) await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
-        } else {
-            await Promise.all([
-                performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage),
-                performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage)
-            ]);
-        }
-
-        const playerHealth = gameState.battleData[playerCardId];
-        const opponentHealth = gameState.battleData[opponentCardId];
+    const performAttack = async (attackerEl, defenderEl, defenderCardId, damage) => {
+        attackerEl.style.animation = 'attack-animation-improved 0.6s ease-in-out';
+        await new Promise(r => setTimeout(r, 300));
         
-        if (playerHealth > 0 && opponentHealth <= 0) {
-            gameState.playerScore += slotPoints;
-            gameState.lockedCards.push(playerCardId);
-            opponentCardEl.classList.add('defeated-card');
-        } else if (opponentHealth > 0 && playerHealth <= 0) {
-            gameState.opponentScore += slotPoints;
-            playerCardEl.classList.add('defeated-card');
-        } else {
-            if (playerHealth <= 0) playerCardEl.classList.add('defeated-card');
-            if (opponentHealth <= 0) opponentCardEl.classList.add('defeated-card');
-        }
-        
-        document.getElementById('player-score').textContent = gameState.playerScore;
-        document.getElementById('opponent-score').textContent = gameState.opponentScore;
+        gameState.battleData[defenderCardId] -= damage;
+        const damageText = `<div class="damage-text">-${damage}</div>`;
+        defenderEl.insertAdjacentHTML('beforeend', damageText);
+        defenderEl.style.animation = 'shake-animation 0.3s';
+
+        const defenderCardInfo = findCard(defenderCardId);
+        defenderEl.innerHTML = createCardHTML(defenderCardInfo, {showDefense: true, currentDefense: Math.max(0, gameState.battleData[defenderCardId]), simple: true});
+        defenderEl.querySelector('.card-overlay').insertAdjacentHTML('afterend', damageText);
+        if(defenderEl.parentElement.dataset.points) { defenderEl.parentElement.innerHTML += `<div class="point-value">${defenderEl.parentElement.dataset.points}</div>`;}
+
+        await new Promise(r => setTimeout(r, 400));
+        attackerEl.style.animation = '';
+        defenderEl.style.animation = '';
+    };
+
+    const firstAttacker = (colorPriority > 0) ? 'player' : (colorPriority < 0) ? 'opponent' : 'simultaneous';
+
+    if (firstAttacker === 'player') {
+        await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
+        if (gameState.battleData[opponentCardId] > 0) await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
+    } else if (firstAttacker === 'opponent') {
+        await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
+        if (gameState.battleData[playerCardId] > 0) await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
+    } else {
+        await Promise.all([
+            performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage),
+            performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage)
+        ]);
     }
+
+    const playerHealth = gameState.battleData[playerCardId];
+    const opponentHealth = gameState.battleData[opponentCardId];
+    
+    if (playerHealth > 0 && opponentHealth <= 0) {
+        gameState.playerScore += slotPoints;
+        // DÒNG BỊ LỖI ĐÃ ĐƯỢC XÓA BỎ TẠI ĐÂY
+        opponentCardEl.classList.add('defeated-card');
+    } else if (opponentHealth > 0 && playerHealth <= 0) {
+        gameState.opponentScore += slotPoints;
+        playerCardEl.classList.add('defeated-card');
+    } else {
+        if (playerHealth <= 0) playerCardEl.classList.add('defeated-card');
+        if (opponentHealth <= 0) opponentCardEl.classList.add('defeated-card');
+    }
+    
+    document.getElementById('player-score').textContent = gameState.playerScore;
+    document.getElementById('opponent-score').textContent = gameState.opponentScore;
+}
 
    // THAY THẾ HÀM NÀY
 function endRound() {
