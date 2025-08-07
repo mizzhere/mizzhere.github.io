@@ -344,10 +344,11 @@ const createCardHTML = (card, options = {}) => {
     }
 
     // THAY THẾ HÀM NÀY
+// THAY THẾ HÀM NÀY
 const renderGameScreen = () => {
     document.querySelector('.bottom-nav').style.display = 'none';
-    const playerTotalCards = gameState.playerDeck.length + gameState.playerHand.length;
-    const opponentTotalCards = gameState.opponentDeck.length + gameState.opponentHand.length;
+    const playerTotalCards = (gameState.playerDeck?.length || 0) + (gameState.playerHand?.length || 0);
+    const opponentTotalCards = (gameState.opponentDeck?.length || 0) + (gameState.opponentHand?.length || 0);
 
     return `
     <div id="game-rules-toggle" class="rules-toggle-btn">?</div>
@@ -355,7 +356,7 @@ const renderGameScreen = () => {
         <div class="opponent-info text-center">
             <h2 class="font-bold text-lg text-red-400">Đối Thủ</h2>
             <div class="player-stats text-md">
-                <span>Điểm: <span id="opponent-score" class="font-bold text-2xl">${gameState.opponentScore}</span></span>
+                <span>Điểm: <span id="opponent-score" class="font-bold text-2xl">${gameState.opponentScore || 0}</span></span>
                 <span>Bài còn lại: <span id="opponent-deck-count" class="font-bold text-2xl">${opponentTotalCards}</span></span>
             </div>
         </div>
@@ -369,7 +370,7 @@ const renderGameScreen = () => {
         </div>
         <div class="player-info text-center">
              <div class="player-stats text-md">
-                <span>Điểm: <span id="player-score" class="font-bold text-2xl">${gameState.playerScore}</span></span>
+                <span>Điểm: <span id="player-score" class="font-bold text-2xl">${gameState.playerScore || 0}</span></span>
                 <span>Bài còn lại: <span id="player-deck-count" class="font-bold text-2xl">${playerTotalCards}</span></span>
             </div>
             <h2 class="font-bold text-lg text-blue-400">Bạn</h2>
@@ -377,12 +378,11 @@ const renderGameScreen = () => {
     </div>
     <div id="player-hand-container" class="fixed bottom-0 left-0 right-0 p-2">
         <div id="player-hand" class="player-hand mx-auto max-w-lg">
-            ${gameState.playerHand.map(cardId => {
+            ${(gameState.playerHand || []).map(cardId => {
                 const cardInfo = findCard(cardId);
-                const isLocked = gameState.lockedCards.includes(cardId);
-                // Thẻ đã dùng trong các vòng trước sẽ bị khóa
-                const isUsed = gameState.playerUsedCards.includes(cardId);
-                return createCardHTML(cardInfo, { isLocked: isLocked || isUsed, simple: true });
+                // DÒNG ĐÃ SỬA: Thêm fallback '|| []' để đảm bảo mảng luôn tồn tại
+                const isUsed = (gameState.playerUsedCards || []).includes(cardId);
+                return createCardHTML(cardInfo, { isLocked: isUsed, simple: true });
             }).join('')}
         </div>
     </div>
@@ -416,7 +416,6 @@ const renderGameScreen = () => {
     </div>
     `;
 }
-
     // --- LOGIC ---
     function renderContent(page, subpage) {
         let content = '';
