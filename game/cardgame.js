@@ -526,52 +526,78 @@ const createCardHTML = (card, options = {}) => {
         ratesModal.classList.add('show');
     }
 
-    function purchaseItem(itemId) {
-        const item = [...shopItems, ...eventShopItems].find(i => i.id === itemId);
-        if (!item) return;
+    // Thay thế hàm purchaseItem cũ trong cardgame.js
+function purchaseItem(itemId) {
+    const item = [...shopItems, ...eventShopItems].find(i => i.id === itemId);
+    if (!item) return;
 
-        if (player[item.currency] >= item.price) {
-            player[item.currency] -= item.price;
-            
-            let receivedCards = [];
-            if (item.rates) {
-                const randomNumber = Math.random() * 100;
-                let cumulativeRate = 0;
-                for (const rateInfo of item.rates) {
-                    cumulativeRate += parseFloat(rateInfo.rate);
-                    if (randomNumber <= cumulativeRate) {
-                        const card = findCard(rateInfo.cardId);
-                        if (card) {
-                            receivedCards.push(card);
-                            player.collection[card.id] = (player.collection[card.id] || 0) + 1;
-                        }
-                        break;
+    if (player[item.currency] < item.price) {
+        alert('Không đủ tiền!');
+        return;
+    }
+
+    player[item.currency] -= item.price;
+    let receivedItems = [];
+
+    // Xử lý quay số
+    if (Array.isArray(item.rates)) {
+        const totalRate = 100; // Giả định tổng tỉ lệ là 100
+        const randomNumber = Math.random() * totalRate;
+        let cumulativeRate = 0;
+        let received = false;
+
+        for (const rateInfo of item.rates) {
+            cumulativeRate += parseFloat(rateInfo.rate);
+            if (randomNumber <= cumulativeRate && !received) {
+                if (rateInfo.type === 'card') {
+                    const card = findCard(rateInfo.cardId);
+                    if (card) {
+                        player.collection[card.id] = (player.collection[card.id] || 0) + 1;
+                        receivedItems.push({ type: 'card', item: card });
                     }
+                } else if (rateInfo.type === 'currency') {
+                    player[rateInfo.currencyType] += rateInfo.amount;
+                    receivedItems.push({ type: 'currency', item: { ...rateInfo } });
                 }
-            } else if (item.cardId) {
-                const card = findCard(item.cardId);
-                if (card) {
-                    receivedCards.push(card);
-                    player.collection[card.id] = (player.collection[card.id] || 0) + 1;
-                }
+                received = true;
             }
-            
-            updateCurrencyDisplay();
-            saveState(); // <-- LƯU TRẠNG THÁI
-            showPurchaseResultModal(item.name, receivedCards);
-        } else {
-            alert('Không đủ tiền!');
+        }
+    } else if (item.cardId) { // Logic cũ cho các item chỉ định sẵn thẻ
+        const card = findCard(item.cardId);
+        if (card) {
+            player.collection[card.id] = (player.collection[card.id] || 0) + 1;
+            receivedItems.push({ type: 'card', item: card });
         }
     }
+    
+    updateCurrencyDisplay();
+    saveState();
+    showPurchaseResultModal(item.name, receivedItems);
+}
 
-    function showPurchaseResultModal(itemName, cards) {
-        let cardsHTML = cards.map(card => `<div class="transform scale-90">${createCardHTML(card)}</div>`).join('');
-        document.getElementById('purchase-result-content').innerHTML = `
-            <div class="p-4 border-b border-white/10"><h2 class="text-xl font-bold text-white text-center">Mở ${itemName} thành công!</h2></div>
-            <div class="modal-body"><p class="text-center text-gray-300 mb-4">Bạn nhận được:</p><div class="purchase-result-grid">${cardsHTML}</div></div>
-            <div class="p-4"><button class="w-full bg-blue-500 text-white font-bold py-2 rounded-lg" onclick="document.getElementById('purchase-result-modal').classList.remove('show')">Đóng</button></div>`;
-        purchaseResultModal.classList.add('show');
-    }
+   // Thay thế hàm showPurchaseResultModal cũ trong cardgame.js
+function showPurchaseResultModal(itemName, receivedItems) {
+    let itemsHTML = receivedItems.map(received => {
+        if (received.type === 'card') {
+            return `<div class="transform scale-90">${createCardHTML(received.item)}</div>`;
+        } else if (received.type === 'currency') {
+            return `
+                <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 gap-2">
+                    <img src="${currencyIcons[received.item.currencyType]}" class="w-16 h-16 rounded-full">
+                    <span class="font-bold text-xl text-white">+ ${received.item.amount.toLocaleString('vi')}</span>
+                    <span class="text-yellow-400">${received.item.currencyType.replace('Tokens', ' Tokens')}</span>
+                </div>
+            `;
+        }
+        return '';
+    }).join('');
+
+    document.getElementById('purchase-result-content').innerHTML = `
+        <div class="p-4 border-b border-white/10"><h2 class="text-xl font-bold text-white text-center">Mở ${itemName} thành công!</h2></div>
+        <div class="modal-body"><p class="text-center text-gray-300 mb-4">Bạn nhận được:</p><div class="purchase-result-grid">${itemsHTML}</div></div>
+        <div class="p-4"><button class="w-full bg-blue-500 text-white font-bold py-2 rounded-lg" onclick="document.getElementById('purchase-result-modal').classList.remove('show')">Đóng</button></div>`;
+    purchaseResultModal.classList.add('show');
+}
 
     function add3DEffect(cardElement) {
         const holoLayer = cardElement.querySelector('.holographic-effect');
