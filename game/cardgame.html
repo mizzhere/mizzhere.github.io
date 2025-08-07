@@ -453,7 +453,9 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
         box-shadow: 0 8px 45px rgba(168, 85, 247, 0.5);
     }
 }
-       .rules-toggle-btn {
+       /* --- UI cho Luật chơi --- */
+/* --- UI cho Luật chơi --- */
+.rules-toggle-btn {
     position: fixed;
     top: 70px;
     right: 10px;
@@ -478,26 +480,35 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
 .rule-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px;
+    justify-content: center; /* Căn giữa các token */
+    gap: 8px; /* Khoảng cách giữa các token */
+    padding: 8px;
     background-color: rgba(0,0,0,0.2);
     border-radius: 8px;
-    font-weight: 600;
 }
-.rule-icon {
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    vertical-align: middle;
-    margin: 0 4px;
+.rule-token {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    flex-grow: 1; /* Giúp các token có chiều rộng bằng nhau */
+    justify-content: center;
+}
+.shape-icon {
+    width: 20px;
+    height: 20px;
 }
 .shape-icon svg {
     width: 100%;
     height: 100%;
 }
 .color-icon {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     border: 2px solid white;
 }
