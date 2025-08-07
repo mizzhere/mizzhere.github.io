@@ -46,14 +46,12 @@
     // --- DATA (REFACTORED WITH DYNAMIC GENERATION LOGIC) ---
     const player = {
         coins: 12500,
-        tokens: 850,
-        eventTokens: 240,
+        tokens: 11850,
+        eventTokens: 11240,
         collection: {
-            'HANNI-common-S-P': 1,
-            'HANNI-rare-D-G': 2,
-            'HANNI-limited-T-B': 1,
-            'KARINA-common-S-B': 1,
-            'KARINA-rare-D-P': 1,
+         
+            'HANNI-rare-D-G': 1,
+ 
         },
     };
 
