@@ -114,17 +114,8 @@ const createCardHTML = (card, options = {}) => {
     const currentDefense = options.currentDefense !== undefined ? options.currentDefense : card.defense;
     const defenseOverlay = options.showDefense ? `<div class="defense-overlay">HP: ${currentDefense}</div>` : '';
     const lockedClass = options.isLocked ? 'locked' : '';
-
-    // --- PHẦN THÊM MỚI ---
-    let specialEffectsHTML = '';
-    if (card.rarity === 'limited') {
-        let particles = '';
-        for (let i = 0; i < 10; i++) {
-            particles += '<i></i>';
-        }
-        specialEffectsHTML = `<div class="particle-container">${particles}</div>`;
-    }
-    // --- KẾT THÚC PHẦN THÊM MỚI ---
+    
+    // **ĐÃ XÓA LOGIC TẠO HIỆU ỨNG HẠT BỤI**
 
     const statsContainer = options.simple ? '' : `
         <div class="stats-container">
@@ -141,7 +132,6 @@ const createCardHTML = (card, options = {}) => {
         ${unownedOverlay}
         <img src="${card.imageUrl}" alt="${card.name}" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/300x500/cccccc/ffffff?text=Error';">
         <div class="card-overlay"></div>
-        ${specialEffectsHTML} <!-- Thêm HTML hiệu ứng đặc biệt vào đây -->
         <div class="holographic-effect"></div>
         <div class="rarity-icon ${shapeColorClass}">${icons[card.shape]}</div>
         ${themeLabel}
