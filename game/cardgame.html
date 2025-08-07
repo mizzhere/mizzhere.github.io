@@ -299,10 +299,16 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
     top: 40%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
-    font-size: 2.2rem;
+    font-size: 2.5rem; /* Tăng kích thước chữ */
     font-weight: 900;
     color: #ef4444; 
-    text-shadow: 0 0 6px white, 0 0 10px white;
+    /* Thêm viền đen đậm để nổi bật */
+    text-shadow: 
+        -2px -2px 0 #000, 
+         2px -2px 0 #000, 
+        -2px  2px 0 #000, 
+         2px  2px 0 #000, 
+         0 0 15px white;
     pointer-events: none; 
     z-index: 20; 
     animation: damage-animation 1.2s ease-out forwards;
@@ -506,6 +512,24 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
 .battle-slot.highlight-slot {
     background-color: rgba(253, 224, 71, 0.2); /* Nền vàng mờ cho slot có thể đặt */
     border-style: solid;
+}
+
+       .simple-attack-display {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background-color: rgba(239, 68, 68, 0.9); /* Màu đỏ */
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    z-index: 5;
 }
    </style>
 </head>
