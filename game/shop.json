@@ -2,11 +2,11 @@
   "mainShop": [
     {
       "id": "SHOP-HANNI-PACK",
-      "name": "Gói Hanni",
+      "name": "Hanni",
       "price": 500,
       "currency": "tokens",
-      "content": "Cơ hội nhận các thẻ Hanni hiếm!",
-      "bg": "bg-pink-500/10",
+      "content": "Nhận",
+      "bg": "bg-gray-500/10",
       "previewCardId": "HANNI-LIMITED-D-G",
       "rates": "GROUP:HANNI"
     }
@@ -17,17 +17,17 @@
       "name": "Khung Avatar",
       "price": 500,
       "currency": "eventTokens",
-      "content": "Khung viền độc quyền",
+      "content": "Khung viá»n Äá»c quyá»n",
       "bg": "bg-rose-600/10",
       "previewCardId": null,
       "rates": "DIRECT_PURCHASE"
     },
     {
       "id": "ES02",
-      "name": "Thẻ Karina Limited",
+      "name": "Tháº» Karina Limited",
       "price": 1000,
       "currency": "eventTokens",
-      "content": "Sở hữu thẻ Karina Limited",
+      "content": "Sá» há»¯u tháº» Karina Limited",
       "bg": "bg-indigo-600/10",
       "previewCardId": "KARINA-LIMITED-T-B",
       "rates": [
