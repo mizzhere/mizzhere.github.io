@@ -513,18 +513,68 @@ const createCardHTML = (card, options = {}) => {
         add3DEffect(cardModal.querySelector('.game-card'));
     }
 
-    function showRatesModal(item) {
+   function showRatesModal(item) {
         let ratesHTML = '';
-        if (item.rates) {
-            ratesHTML = `<div class="marquee-container"><div class="marquee-track gap-4 px-2">${[...item.rates, ...item.rates].map(rate => { const cardInfo = findCard(rate.cardId); return cardInfo ? `<div class="bg-white/5 rounded-xl p-2 flex flex-col items-center text-center hover:bg-white/10 transition shadow-md w-32 shrink-0"><div class="w-full h-48 overflow-hidden rounded-lg"><img src="${cardInfo.imageUrl}" alt="${cardInfo.name}" class="object-cover w-full h-full rounded-md shadow-inner"></div><div class="mt-2"><p class="text-white text-sm font-bold">${cardInfo.name}</p><p class="text-blue-400 font-bold text-sm">${rate.rate}%</p></div></div>` : ''; }).join('')}</div></div>`;
-        } else { ratesHTML = `<p class="text-center text-gray-400">Vật phẩm này sẽ được nhận ngay.</p>`; }
+        if (item.rates && Array.isArray(item.rates)) {
+            // Container cho danh sách tỷ lệ
+            ratesHTML = `<div class="space-y-2">`; 
+            
+            ratesHTML += item.rates.map(rate => {
+                let itemName = '';
+                let itemGroup = ''; // Dùng cho tên nhóm/theme của thẻ
+                let itemIcon = ''; // Icon đại diện
 
+                if (rate.type === 'card') {
+                    const cardInfo = findCard(rate.cardId);
+                    if (cardInfo) {
+                        itemName = cardInfo.name;
+                        itemGroup = cardInfo.theme;
+                        // Sử dụng icon hiếm và màu sắc làm biểu tượng
+                        itemIcon = `<div class="rarity-icon ${'color-' + cardInfo.color} w-8 h-8 shrink-0 flex items-center justify-center rounded-full">${icons[cardInfo.shape]}</div>`;
+                    } else {
+                        itemName = 'Thẻ không xác định';
+                        itemIcon = `<div class="w-8 h-8 shrink-0 flex items-center justify-center bg-gray-700 rounded-full">?</div>`;
+                    }
+                } else if (rate.type === 'currency') {
+                    // Xử lý cho các loại tiền tệ
+                    const currencyName = rate.currencyType.replace('eventTokens', 'Token Sự Kiện').replace('coins', 'Xu').replace('tokens', 'Token');
+                    itemName = `${rate.amount.toLocaleString('vi')} ${currencyName}`;
+                    itemIcon = `<img src="${currencyIcons[rate.currencyType]}" class="w-8 h-8 rounded-full shrink-0">`;
+                }
+
+                // Tạo HTML cho mỗi dòng trong danh sách
+                return `
+                    <div class="rate-item flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-4">
+                            ${itemIcon}
+                            <div>
+                                <p class="font-bold text-white text-md">${itemName}</p>
+                                ${itemGroup ? `<p class="text-xs text-gray-400">${itemGroup}</p>` : ''}
+                            </div>
+                        </div>
+                        <p class="font-bold text-blue-300 text-xl">${rate.rate}%</p>
+                    </div>
+                `;
+            }).join('');
+            
+            ratesHTML += `</div>`;
+        } else {
+            // Trường hợp vật phẩm mua trực tiếp, không có tỷ lệ
+            ratesHTML = `<p class="text-center text-gray-400">Bạn sẽ nhận được ngay vật phẩm này sau khi mua.</p>`;
+        }
+
+        // Tạo nội dung hoàn chỉnh cho modal
         document.getElementById('rates-modal-content').innerHTML = `
-            <div class="p-4 border-b border-white/10"><h2 class="text-xl font-bold text-white text-center">${item.name}</h2></div>
-            <div class="modal-body space-y-3"><p class="text-gray-300 text-center">${item.content}</p><h3 class="font-bold text-white pt-2">Vật phẩm có thể nhận:</h3><div class="space-y-2">${ratesHTML}</div></div>`;
+            <div class="p-4 border-b border-white/10">
+                <h2 class="text-xl font-bold text-white text-center">${item.name}</h2>
+            </div>
+            <div class="modal-body space-y-4">
+                <p class="text-gray-300 text-center">${item.content}</p>
+                <h3 class="font-bold text-white text-lg">Vật phẩm có thể nhận:</h3>
+                <div class="max-h-64 overflow-y-auto pr-2">${ratesHTML}</div>
+            </div>`;
         ratesModal.classList.add('show');
     }
-
     // Thay thế hàm purchaseItem cũ trong cardgame.js
 function purchaseItem(itemId) {
     const item = [...shopItems, ...eventShopItems].find(i => i.id === itemId);
