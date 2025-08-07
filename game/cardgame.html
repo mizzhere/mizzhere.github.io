@@ -110,12 +110,34 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
 .reward-item { display: flex; align-items: center; gap: 6px; background-color: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: #cbd5e1; }
 
 /* --- Shop Item Card (Grid Layout) --- */
-.shop-item { background-color: #2d3748; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 25px rgba(0,0,0,0.3); cursor: pointer; }
+/* --- Shop Item Card (Grid Layout) --- */
+.shop-item { 
+    background-color: #2d3748; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3); 
+    cursor: pointer;
+    transition: transform 0.3s ease; /* Thêm hiệu ứng chuyển động mượt mà */
+}
+
+/* Thêm hiệu ứng khi hover vào shop-item */
+.shop-item:hover {
+    transform: translateY(-5px); /* Nhấc vật phẩm lên một chút */
+    box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+}
+
+.shop-item .shop-item-preview .game-card {
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Thêm transition cho thẻ preview */
+}
+
+.shop-item:hover .shop-item-preview .game-card {
+    transform: scale(1.1) rotate(0deg) translateX(15px); /* Hiệu ứng trượt sang phải và phóng to nhẹ */
+}
+
 .shop-item-preview { height: 120px; background-color: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; position: relative; }
 .shop-item-preview .game-card { width: 70px; height: 100px; position: absolute; transform: scale(1.1) rotate(5deg); }
-.shop-item-info { padding: 12px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-.rates-button { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background-color: rgba(0,0,0,0.3); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: italic; font-weight: bold; }
-
 /* --- Modal Styles --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
 .modal-overlay.show { opacity: 1; visibility: visible; }
