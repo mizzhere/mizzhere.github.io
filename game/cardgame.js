@@ -935,6 +935,7 @@ function handleSlotClick(slotElement) {
     }
 }
 // THAY THẾ HÀM NÀY
+// THAY THẾ HÀM NÀY
 function redrawGameBoard() {
     const handContainer = document.getElementById('player-hand');
     const slotContainers = document.querySelectorAll('#player-battle-zone .battle-slot');
@@ -942,15 +943,23 @@ function redrawGameBoard() {
     // Cập nhật thẻ trên tay
     handContainer.innerHTML = gameState.playerHand.map(cardId => {
         const cardInfo = findCard(cardId);
-        const isUsed = gameState.playerUsedCards.includes(cardId);
+        const isUsed = (gameState.playerUsedCards || []).includes(cardId);
         const cardHTML = createCardHTML(cardInfo, { isLocked: isUsed, simple: true });
+        
         const wrapper = document.createElement('div');
         wrapper.innerHTML = cardHTML;
-        const cardElement = wrapper.firstChild;
-        if (cardId === gameState.selectedCardId) {
-            cardElement.classList.add('selected-card');
+
+        // SỬA LỖI TẠI ĐÂY: Dùng 'firstElementChild' thay vì 'firstChild'
+        const cardElement = wrapper.firstElementChild; 
+        
+        // Kiểm tra xem cardElement có tồn tại không trước khi thao tác
+        if (cardElement) {
+            if (cardId === gameState.selectedCardId) {
+                cardElement.classList.add('selected-card');
+            }
+            return cardElement.outerHTML;
         }
-        return cardElement.outerHTML;
+        return ''; // Trả về chuỗi rỗng nếu có lỗi
     }).join('');
 
     // Cập nhật các ô chiến đấu
@@ -969,10 +978,8 @@ function redrawGameBoard() {
         }
     });
     
-    // Không cần gọi lại addGameEventListeners vì đã dùng event delegation
     updateConfirmButtonState();
 }
-
     function updateConfirmButtonState() {
         const btn = document.getElementById('confirm-placement-btn');
         if(!btn) return;
