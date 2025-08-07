@@ -2,13 +2,26 @@
   "mainShop": [
     {
       "id": "SHOP-HANNI-PACK",
-      "name": "Hanni",
+      "name": "Xu hay Token?",
       "price": 500,
-      "currency": "tokens",
-      "content": "Nháº­n",
+      "currency": "coins",
+      "content": "Hehe xu đây?",
       "bg": "bg-gray-500/10",
-      "previewCardId": "HANNI-LIMITED-D-G",
-      "rates": "GROUP:HANNI"
+      "previewCardId": null,
+      "rates": [
+        {
+          "type": "currency",
+          "currencyType": "eventTokens",
+          "amount": 10000,
+          "rate": 1
+        },
+        {
+          "type": "currency",
+          "currencyType": "coins",
+          "amount": 100,
+          "rate": 99
+        }
+      ]
     }
   ],
   "eventShop": [
