@@ -74,9 +74,7 @@
 
     // 2. "Nhà máy" sản xuất thẻ: Tự động tạo cardDatabase
     let cardDatabase = [];
-    let shopItems = [];
-    let eventShopItems = [];
-
+   
     // Shop items giờ đây cũng sẽ linh hoạt hơn
 
     const eventData = [
@@ -268,43 +266,49 @@ const createCardHTML = (card, options = {}) => {
     };
     // --- LOGIC ---
 
-    // *** NEW FUNCTION TO LOAD AND PROCESS CARD DATA ***
-    async function loadCardDatabase() {
-        try {
-            const response = await fetch('cards.json'); // Đọc file cards.json
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            // Gán trực tiếp mảng thẻ vào biến toàn cục
-            cardDatabase = await response.json();
-            console.log(`Card database loaded successfully! ${cardDatabase.length} cards available.`);
-    shopItems = [
-                {
-                    id: 'SHOP-HANNI-PACK',
-                    name: 'Gói Hanni',
-                    price: 500,
-                    currency: 'tokens',
-                    content: 'Cơ hội nhận các thẻ Hanni hiếm!',
-                    bg: 'bg-pink-500/10',
-                    cardId: cardDatabase.find(c => c.name === 'HANNI' && c.rarity === 'limited').id, // Lấy thẻ Hanni Limited làm preview
-                    rates: cardDatabase
-                        .filter(c => c.name === 'HANNI')
-                        .map(c => ({
-                            cardId: c.id,
-                            rate: (100 / 27).toFixed(2)
-                        }))
-                },
-            ];
+   async function loadGameData() {
+    try {
+        // Sử dụng Promise.all để tải đồng thời 2 file, nhanh hơn
+        const [cardsResponse, shopResponse] = await Promise.all([
+            fetch('game/cards.json'), // Đảm bảo đường dẫn chính xác
+            fetch('game/shop.json')   // Đảm bảo đường dẫn chính xác
+        ]);
 
-            eventShopItems = [
-                { id: 'ES01', name: 'Khung Avatar', price: 500, currency: 'eventTokens', content: 'Khung viền độc quyền', bg: 'bg-rose-600/10', cardId: null, rates: null },
-                { id: 'ES02', name: 'Thẻ Karina Limited', price: 1000, currency: 'eventTokens', content: 'Sở hữu thẻ Karina Limited', bg: 'bg-indigo-600/10', cardId: cardDatabase.find(c => c.name === 'KARINA' && c.rarity === 'limited').id, rates: null }
-            ];
-        } catch (error) {
-            console.error("Could not load cards.json:", error);
-            alert("LỖI: Không thể tải dữ liệu thẻ bài. Vui lòng kiểm tra file cards.json và console log.");
-        }
+        if (!cardsResponse.ok) throw new Error(`Không thể tải cards.json: ${cardsResponse.status}`);
+        if (!shopResponse.ok) throw new Error(`Không thể tải shop.json: ${shopResponse.status}`);
+
+        cardDatabase = await cardsResponse.json();
+        const shopData = await shopResponse.json();
+
+        // Xử lý logic 'GROUP' cho shop items
+        const processRates = (items) => {
+            return items.map(item => {
+                if (typeof item.rates === 'string' && item.rates.startsWith('GROUP:')) {
+                    const groupName = item.rates.split(':')[1];
+                    const groupCards = cardDatabase.filter(c => c.name.toUpperCase() === groupName);
+                    if (groupCards.length > 0) {
+                        item.rates = groupCards.map(c => ({
+                            cardId: c.id,
+                            rate: (100 / groupCards.length).toFixed(2)
+                        }));
+                    } else {
+                        item.rates = []; // Không tìm thấy thẻ nào trong nhóm
+                    }
+                }
+                return item;
+            });
+        };
+
+        shopItems = processRates(shopData.mainShop);
+        eventShopItems = processRates(shopData.eventShop);
+
+        console.log(`Tải thành công: ${cardDatabase.length} thẻ, ${shopItems.length} vật phẩm chính, ${eventShopItems.length} vật phẩm sự kiện.`);
+
+    } catch (error) {
+        console.error("Không thể tải dữ liệu game:", error);
+        alert("LỖI: Không thể tải dữ liệu game. Vui lòng kiểm tra console log.");
     }
+}
 
     function renderDeckBuildingScreen() {
         const ownedCardIds = Object.keys(player.collection);
@@ -1005,7 +1009,7 @@ const createCardHTML = (card, options = {}) => {
     }));
     window.onload = async () => { 
         loadState(); // <-- TẢI TRẠNG THÁI KHI BẮT ĐẦU
-        await loadCardDatabase(); 
+          await loadGameData(); 
         
         updateCurrencyDisplay();
         renderContent('main');
