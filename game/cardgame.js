@@ -270,8 +270,8 @@ const createCardHTML = (card, options = {}) => {
     try {
         // Sử dụng Promise.all để tải đồng thời 2 file, nhanh hơn
         const [cardsResponse, shopResponse] = await Promise.all([
-            fetch('game/cards.json'), // Đảm bảo đường dẫn chính xác
-            fetch('game/shop.json')   // Đảm bảo đường dẫn chính xác
+            fetch('cards.json'), // Đảm bảo đường dẫn chính xác
+            fetch('shop.json')   // Đảm bảo đường dẫn chính xác
         ]);
 
         if (!cardsResponse.ok) throw new Error(`Không thể tải cards.json: ${cardsResponse.status}`);
