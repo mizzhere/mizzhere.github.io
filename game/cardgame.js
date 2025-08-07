@@ -337,9 +337,7 @@ const createCardHTML = (card, options = {}) => {
         addDeckBuilderEventListeners();
     }
 
-    // THAY THẾ HÀM NÀY
-// THAY THẾ HÀM NÀY
-const renderGameScreen = () => {
+   const renderGameScreen = () => {
     document.querySelector('.bottom-nav').style.display = 'none';
     const playerTotalCards = (gameState.playerDeck?.length || 0) + (gameState.playerHand?.length || 0);
     const opponentTotalCards = (gameState.opponentDeck?.length || 0) + (gameState.opponentHand?.length || 0);
@@ -374,9 +372,7 @@ const renderGameScreen = () => {
         <div id="player-hand" class="player-hand mx-auto max-w-lg">
             ${(gameState.playerHand || []).map(cardId => {
                 const cardInfo = findCard(cardId);
-                // DÒNG ĐÃ SỬA: Thêm fallback '|| []' để đảm bảo mảng luôn tồn tại
-                const isUsed = (gameState.playerUsedCards || []).includes(cardId);
-                return createCardHTML(cardInfo, { isLocked: isUsed, simple: true });
+                return createCardHTML(cardInfo, { isLocked: false, simple: true, showAttack: true });
             }).join('')}
         </div>
     </div>
@@ -386,22 +382,24 @@ const renderGameScreen = () => {
 
     <div id="rules-modal" class="modal-overlay rules-modal">
         <div class="modal-content">
-            <div class="p-4 border-b border-white/10"><h2 class="text-2xl font-bold text-white text-center">Luật Chơi</h2></div>
+            <div class="p-4 border-b border-white/10"><h2 class="text-2xl font-bold text-white text-center">Quy Tắc Khắc Chế</h2></div>
             <div class="modal-body p-4 space-y-4">
                 <div>
-                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Ưu tiên Hệ (Shape)</h3>
+                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Khắc Chế Hệ (Sát thương)</h3>
                     <div class="space-y-2 text-sm">
-                        <div class="rule-item"><span><span class="shape-icon">${icons.triangle}</span> Tam Giác</span> <span>></span> <span><span class="shape-icon">${icons.diamond}</span> Kim Cương & <span class="shape-icon">${icons.square}</span> Vuông</span></div>
-                        <div class="rule-item"><span><span class="shape-icon">${icons.diamond}</span> Kim Cương</span> <span>></span> <span><span class="shape-icon">${icons.square}</span> Vuông</span></div>
-                        <div class="text-center text-xs text-gray-400 mt-1">Hệ khắc chế gây 1.5x sát thương, bị khắc chế nhận 0.5x sát thương.</div>
+                        <div class="rule-item"><div class="rule-token"><span class="shape-icon">${icons.triangle}</span> Tam Giác</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><span class="shape-icon">${icons.diamond}</span> Kim Cương</div></div>
+                        <div class="rule-item"><div class="rule-token"><span class="shape-icon">${icons.diamond}</span> Kim Cương</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><span class="shape-icon">${icons.square}</span> Vuông</div></div>
+                        <div class="rule-item"><div class="rule-token"><span class="shape-icon">${icons.square}</span> Vuông</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><span class="shape-icon">${icons.triangle}</span> Tam Giác</div></div>
+                        <div class="text-center text-xs text-gray-400 mt-2">Hệ khắc chế gây 1.5x sát thương, bị khắc chế nhận 0.5x sát thương.</div>
                     </div>
                 </div>
                  <div>
-                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Ưu tiên Tấn công (Màu)</h3>
+                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Khắc Chế Màu (Tốc độ)</h3>
                     <div class="space-y-2 text-sm">
-                        <div class="rule-item"><span><div class="color-icon color-pink"></div> Hồng</span> <span>></span> <span><div class="color-icon color-green"></div> Xanh Lá & <div class="color-icon color-blue"></div> Xanh Dương</span></div>
-                        <div class="rule-item"><span><div class="color-icon color-green"></div> Xanh Lá</span> <span>></span> <span><div class="color-icon color-blue"></div> Xanh Dương</span></div>
-                         <div class="text-center text-xs text-gray-400 mt-1">Thẻ có màu ưu tiên hơn sẽ tấn công trước.</div>
+                        <div class="rule-item"><div class="rule-token"><div class="color-icon color-pink"></div> Hồng</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><div class="color-icon color-green"></div> Xanh Lá</div></div>
+                        <div class="rule-item"><div class="rule-token"><div class="color-icon color-green"></div> Xanh Lá</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><div class="color-icon color-blue"></div> Xanh Dương</div></div>
+                        <div class="rule-item"><div class="rule-token"><div class="color-icon color-blue"></div> Xanh Dương</div> <span class="text-xl text-green-400 font-black mx-2">></span> <div class="rule-token"><div class="color-icon color-pink"></div> Hồng</div></div>
+                        <div class="text-center text-xs text-gray-400 mt-2">Màu khắc chế được ra đòn tấn công trước.</div>
                     </div>
                 </div>
             </div>
@@ -1054,18 +1052,40 @@ function redrawGameBoard() {
     endRound();
 }
 
-    function getDamageMultiplier(attackerShape, defenderShape) {
-        if (attackerShape === defenderShape) return 1.0;
-        if ((attackerShape === 'triangle' && (defenderShape === 'diamond' || defenderShape === 'square')) || (attackerShape === 'diamond' && defenderShape === 'square')) return 1.5;
-        if ((attackerShape === 'diamond' && defenderShape === 'triangle') || (attackerShape === 'square' && (defenderShape === 'triangle' || defenderShape === 'diamond'))) return 0.5;
-        return 1.0;
+  function getDamageMultiplier(attackerShape, defenderShape) {
+    const advantages = {
+        triangle: 'diamond',
+        diamond: 'square',
+        square: 'triangle'
+    };
+
+    if (advantages[attackerShape] === defenderShape) {
+        return 1.25; // Gây thêm sát thương
+    }
+    
+    if (advantages[defenderShape] === attackerShape) {
+        return 0.75; // Bị giảm sát thương
     }
 
-    function getColorPriority(color1, color2) {
-        if (color1 === color2) return 0;
-        if ((color1 === 'pink' && color2 !== 'pink') || (color1 === 'green' && color2 === 'blue')) return 1;
-        return -1;
+    return 1.0; // Trung lập (cùng hệ)
+}
+   function getColorPriority(color1, color2) {
+    const advantages = {
+        pink: 'green',
+        green: 'blue',
+        blue: 'pink'
+    };
+
+    if (color1 === color2) {
+        return 0; // Hòa, đánh đồng thời
     }
+
+    if (advantages[color1] === color2) {
+        return 1; // Người chơi (color1) đi trước
+    }
+
+    return -1; // Đối thủ (color2) đi trước
+}
 
    // THAY THẾ HÀM NÀY
 async function performSingleClash(slotIndex) {
