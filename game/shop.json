@@ -78,8 +78,8 @@
     {
       "id": "ITEM-1754578309842",
       "name": "TOKEN HAY HANNI?",
-      "price": null,
-      "currency": "coins",
+      "price": 5000,
+      "currency": "eventTokens",
       "content": "",
       "bg": "bg-gray-500/10",
       "previewCardId": "HANNI-LIMITED-S-P",
