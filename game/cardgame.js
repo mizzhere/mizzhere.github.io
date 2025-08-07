@@ -343,46 +343,79 @@ const createCardHTML = (card, options = {}) => {
         addDeckBuilderEventListeners();
     }
 
-    const renderGameScreen = () => {
-        document.querySelector('.bottom-nav').style.display = 'none';
-        return `
-        <div id="game-board">
-            <div class="opponent-info text-center">
-                <h2 class="font-bold text-sm">Đối Thủ</h2>
-                <div class="player-stats text-xs">
-                    <span>Điểm: <span id="opponent-score">0</span></span>
-                    <span>Bài: <span id="opponent-deck-count">${gameState.opponentDeck.length + gameState.opponentHand.length}</span></span>
-                </div>
-            </div>
-            <div id="opponent-battle-zone" class="battle-zone">
-                ${[...Array(3)].map(() => `<div class="battle-slot"><div class="card-back">?</div></div>`).join('')}
-            </div>
-            <div id="player-battle-zone" class="battle-zone">
-                <div class="battle-slot" data-slot-index="0" data-points="1"><div class="point-value">1</div></div>
-                <div class="battle-slot" data-slot-index="1" data-points="2"><div class="point-value">2</div></div>
-                <div class="battle-slot" data-slot-index="2" data-points="1"><div class="point-value">1</div></div>
-            </div>
-            <div class="player-info text-center">
-                <div class="player-stats text-xs">
-                    <span>Điểm: <span id="player-score">0</span></span>
-                    <span>Bài: <span id="player-deck-count">${gameState.playerDeck.length + gameState.playerHand.length}</span></span>
-                </div>
-                <h2 class="font-bold text-sm">Bạn</h2>
+    // THAY THẾ HÀM NÀY
+const renderGameScreen = () => {
+    document.querySelector('.bottom-nav').style.display = 'none';
+    const playerTotalCards = gameState.playerDeck.length + gameState.playerHand.length;
+    const opponentTotalCards = gameState.opponentDeck.length + gameState.opponentHand.length;
+
+    return `
+    <div id="game-rules-toggle" class="rules-toggle-btn">?</div>
+    <div id="game-board">
+        <div class="opponent-info text-center">
+            <h2 class="font-bold text-lg text-red-400">Đối Thủ</h2>
+            <div class="player-stats text-md">
+                <span>Điểm: <span id="opponent-score" class="font-bold text-2xl">${gameState.opponentScore}</span></span>
+                <span>Bài còn lại: <span id="opponent-deck-count" class="font-bold text-2xl">${opponentTotalCards}</span></span>
             </div>
         </div>
-        <div id="player-hand-container" class="fixed bottom-0 left-0 right-0 p-2">
-            <div id="player-hand" class="player-hand mx-auto max-w-lg">
-                ${gameState.playerHand.map(cardId => {
-                    const cardInfo = findCard(cardId);
-                    const isLocked = gameState.lockedCards.includes(cardId);
-                    return createCardHTML(cardInfo, { draggable: !isLocked, isLocked: isLocked, simple: true });
-                }).join('')}
-            </div>
+        <div id="opponent-battle-zone" class="battle-zone">
+            ${[...Array(3)].map(() => `<div class="battle-slot"><div class="card-back">?</div></div>`).join('')}
         </div>
-        <div class="game-actions">
-            <button id="confirm-placement-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all disabled:bg-gray-500 disabled:cursor-not-allowed">Xếp Bài</button>
-        </div>`;
-    }
+        <div id="player-battle-zone" class="battle-zone">
+            <div class="battle-slot" data-slot-index="0" data-points="1"><div class="point-value">1</div></div>
+            <div class="battle-slot" data-slot-index="1" data-points="2"><div class="point-value">2</div></div>
+            <div class="battle-slot" data-slot-index="2" data-points="1"><div class="point-value">1</div></div>
+        </div>
+        <div class="player-info text-center">
+             <div class="player-stats text-md">
+                <span>Điểm: <span id="player-score" class="font-bold text-2xl">${gameState.playerScore}</span></span>
+                <span>Bài còn lại: <span id="player-deck-count" class="font-bold text-2xl">${playerTotalCards}</span></span>
+            </div>
+            <h2 class="font-bold text-lg text-blue-400">Bạn</h2>
+        </div>
+    </div>
+    <div id="player-hand-container" class="fixed bottom-0 left-0 right-0 p-2">
+        <div id="player-hand" class="player-hand mx-auto max-w-lg">
+            ${gameState.playerHand.map(cardId => {
+                const cardInfo = findCard(cardId);
+                const isLocked = gameState.lockedCards.includes(cardId);
+                // Thẻ đã dùng trong các vòng trước sẽ bị khóa
+                const isUsed = gameState.playerUsedCards.includes(cardId);
+                return createCardHTML(cardInfo, { isLocked: isLocked || isUsed, simple: true });
+            }).join('')}
+        </div>
+    </div>
+    <div class="game-actions">
+        <button id="confirm-placement-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all disabled:bg-gray-500 disabled:cursor-not-allowed">Xác Nhận</button>
+    </div>
+
+    <div id="rules-modal" class="modal-overlay rules-modal">
+        <div class="modal-content">
+            <div class="p-4 border-b border-white/10"><h2 class="text-2xl font-bold text-white text-center">Luật Chơi</h2></div>
+            <div class="modal-body p-4 space-y-4">
+                <div>
+                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Ưu tiên Hệ (Shape)</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="rule-item"><span><span class="shape-icon">${icons.triangle}</span> Tam Giác</span> <span>></span> <span><span class="shape-icon">${icons.diamond}</span> Kim Cương & <span class="shape-icon">${icons.square}</span> Vuông</span></div>
+                        <div class="rule-item"><span><span class="shape-icon">${icons.diamond}</span> Kim Cương</span> <span>></span> <span><span class="shape-icon">${icons.square}</span> Vuông</span></div>
+                        <div class="text-center text-xs text-gray-400 mt-1">Hệ khắc chế gây 1.5x sát thương, bị khắc chế nhận 0.5x sát thương.</div>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="font-bold text-lg text-yellow-300 mb-2">Ưu tiên Tấn công (Màu)</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="rule-item"><span><div class="color-icon color-pink"></div> Hồng</span> <span>></span> <span><div class="color-icon color-green"></div> Xanh Lá & <div class="color-icon color-blue"></div> Xanh Dương</span></div>
+                        <div class="rule-item"><span><div class="color-icon color-green"></div> Xanh Lá</span> <span>></span> <span><div class="color-icon color-blue"></div> Xanh Dương</span></div>
+                         <div class="text-center text-xs text-gray-400 mt-1">Thẻ có màu ưu tiên hơn sẽ tấn công trước.</div>
+                    </div>
+                </div>
+            </div>
+             <div class="p-4"><button class="w-full bg-blue-500 text-white font-bold py-2 rounded-lg" onclick="document.getElementById('rules-modal').classList.remove('show')">Đã hiểu</button></div>
+        </div>
+    </div>
+    `;
+}
 
     // --- LOGIC ---
     function renderContent(page, subpage) {
@@ -802,118 +835,144 @@ function add3DEffect(cardElement) {
         });
     }
 
-    function startGame(chosenDeck) {
-        const opponentDeckIds = shuffle(cardDatabase).slice(0, 12).map(c => c.id);
+    // THAY THẾ HÀM NÀY
+function startGame(chosenDeck) {
+    const opponentDeckIds = shuffle(cardDatabase).slice(0, 12).map(c => c.id);
 
-        gameState = {
-            playerDeck: shuffle(chosenDeck),
-            opponentDeck: shuffle(opponentDeckIds),
-            playerHand: [],
-            opponentHand: [],
-            playerSlots: [null, null, null],
-            opponentSlots: [null, null, null],
-            battleData: {},
-            lockedCards: [],
-            playerScore: 0,
-            opponentScore: 0,
-            phase: 'placement',
-        };
+    gameState = {
+        playerDeck: shuffle(chosenDeck),
+        opponentDeck: shuffle(opponentDeckIds),
+        playerHand: [],
+        opponentHand: [],
+        playerSlots: [null, null, null],
+        opponentSlots: [null, null, null],
+        playerUsedCards: [], // Thẻ người chơi đã dùng, không thể chọn lại
+        opponentUsedCards: [], // Thẻ đối thủ đã dùng
+        battleData: {},
+        playerScore: 0,
+        opponentScore: 0,
+        phase: 'placement',
+        selectedCardId: null, // Để theo dõi thẻ đang được chọn (cho cảm ứng)
+    };
 
-        for(let i=0; i<5; i++) {
-            if(gameState.playerDeck.length > 0) gameState.playerHand.push(gameState.playerDeck.pop());
-            if(gameState.opponentDeck.length > 0) gameState.opponentHand.push(gameState.opponentDeck.pop());
+    // Rút 5 thẻ ban đầu
+    for(let i=0; i<5; i++) {
+        if(gameState.playerDeck.length > 0) gameState.playerHand.push(gameState.playerDeck.pop());
+        if(gameState.opponentDeck.length > 0) gameState.opponentHand.push(gameState.opponentDeck.pop());
+    }
+
+    renderContent('game');
+}
+
+   // THAY THẾ HÀM NÀY
+function addGameEventListeners() {
+    const gameContainer = document.getElementById('game-board').parentElement;
+
+    // Listener cho nút luật chơi
+    document.getElementById('game-rules-toggle')?.addEventListener('click', () => {
+        document.getElementById('rules-modal').classList.add('show');
+    });
+
+    // Listener chính cho các hành động trong game
+    gameContainer.addEventListener('click', (e) => {
+        const cardElement = e.target.closest('.game-card');
+        const slotElement = e.target.closest('.battle-slot');
+
+        if (cardElement) { // Người dùng nhấn vào một thẻ bài
+            handleCardClick(cardElement);
+        } else if (slotElement) { // Người dùng nhấn vào một ô trống
+            handleSlotClick(slotElement);
         }
+    });
 
-        renderContent('game');
+    document.getElementById('confirm-placement-btn')?.addEventListener('click', () => {
+        if (gameState.phase === 'placement') startRound();
+    });
+}
+
+function handleCardClick(cardElement) {
+    const cardId = cardElement.dataset.cardId;
+    if (!cardId || cardElement.classList.contains('locked')) return;
+
+    const isCardInHand = cardElement.parentElement.id === 'player-hand';
+    const isCardInSlot = cardElement.parentElement.classList.contains('battle-slot');
+
+    if (isCardInHand) {
+        // Nếu thẻ đang được chọn, bỏ chọn nó
+        if (gameState.selectedCardId === cardId) {
+            gameState.selectedCardId = null;
+        } else { // Nếu chưa được chọn, chọn nó
+            gameState.selectedCardId = cardId;
+        }
+    } else if (isCardInSlot) {
+        // Trả thẻ từ slot về tay
+        const slotIndex = parseInt(cardElement.parentElement.dataset.slotIndex);
+        gameState.playerSlots[slotIndex] = null;
+        gameState.playerHand.push(cardId);
+        // Nếu thẻ vừa trả về đang được chọn, bỏ chọn nó
+        if(gameState.selectedCardId === cardId) {
+            gameState.selectedCardId = null;
+        }
     }
+    redrawGameBoard();
+}
 
-    function addGameEventListeners() {
-        const handCards = document.querySelectorAll('#player-hand .game-card');
-        const battleSlots = document.querySelectorAll('#player-battle-zone .battle-slot');
-        let draggedCardId = null;
-        let sourceLocation = null;
-        let sourceIndex = null;
-        
-        document.querySelectorAll('#player-hand .game-card, #player-battle-zone .game-card').forEach(card => {
-            if (card.classList.contains('locked')) return;
-            card.addEventListener('dragstart', (e) => {
-                draggedCardId = e.currentTarget.dataset.cardId;
-                const parent = e.currentTarget.parentElement;
-                if(parent.id === 'player-hand') {
-                    sourceLocation = 'hand';
-                } else {
-                    sourceLocation = 'slot';
-                    sourceIndex = parseInt(parent.dataset.slotIndex);
-                }
-                setTimeout(() => { if(e.currentTarget) e.currentTarget.style.visibility = 'hidden'; }, 0);
-            });
+function handleSlotClick(slotElement) {
+    if (!gameState.selectedCardId) return; // Phải chọn thẻ trước
 
-            card.addEventListener('dragend', (e) => {
-                if(e.currentTarget) e.currentTarget.style.visibility = 'visible';
-                draggedCardId = null; sourceLocation = null; sourceIndex = null;
-            });
-        });
+    const targetIndex = parseInt(slotElement.dataset.slotIndex);
+    const cardInTargetSlot = gameState.playerSlots[targetIndex];
 
-        battleSlots.forEach(slot => {
-            slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('over'); });
-            slot.addEventListener('dragleave', () => slot.classList.remove('over'));
-            slot.addEventListener('drop', (e) => {
-                e.preventDefault();
-                slot.classList.remove('over');
-                if (!draggedCardId) return;
+    // Nếu ô đã có thẻ, không làm gì cả
+    if(cardInTargetSlot) return;
 
-                const targetIndex = parseInt(slot.dataset.slotIndex);
-                const cardInTargetSlot = gameState.playerSlots[targetIndex];
-
-                if(sourceLocation === 'hand') {
-                    const handIndex = gameState.playerHand.indexOf(draggedCardId);
-                    if (handIndex > -1) gameState.playerHand.splice(handIndex, 1);
-                } else {
-                    gameState.playerSlots[sourceIndex] = null;
-                }
-                gameState.playerSlots[targetIndex] = draggedCardId;
-
-                if(cardInTargetSlot) {
-                    if(sourceLocation === 'hand') {
-                        gameState.playerHand.push(cardInTargetSlot);
-                    } else {
-                        gameState.playerSlots[sourceIndex] = cardInTargetSlot;
-                    }
-                }
-                
-                redrawGameBoard();
-            });
-        });
-
-        document.getElementById('confirm-placement-btn')?.addEventListener('click', () => {
-            if (gameState.phase === 'placement') startRound();
-        });
+    // Di chuyển thẻ được chọn từ tay vào ô
+    const handIndex = gameState.playerHand.indexOf(gameState.selectedCardId);
+    if (handIndex > -1) {
+        gameState.playerHand.splice(handIndex, 1);
+        gameState.playerSlots[targetIndex] = gameState.selectedCardId;
+        gameState.selectedCardId = null; // Bỏ chọn sau khi đặt
+        redrawGameBoard();
     }
+}
+// THAY THẾ HÀM NÀY
+function redrawGameBoard() {
+    const handContainer = document.getElementById('player-hand');
+    const slotContainers = document.querySelectorAll('#player-battle-zone .battle-slot');
 
-    function redrawGameBoard() {
-        const handContainer = document.getElementById('player-hand');
-        const slotContainers = document.querySelectorAll('#player-battle-zone .battle-slot');
+    // Cập nhật thẻ trên tay
+    handContainer.innerHTML = gameState.playerHand.map(cardId => {
+        const cardInfo = findCard(cardId);
+        const isUsed = gameState.playerUsedCards.includes(cardId);
+        const cardHTML = createCardHTML(cardInfo, { isLocked: isUsed, simple: true });
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = cardHTML;
+        const cardElement = wrapper.firstChild;
+        if (cardId === gameState.selectedCardId) {
+            cardElement.classList.add('selected-card');
+        }
+        return cardElement.outerHTML;
+    }).join('');
 
-        handContainer.innerHTML = gameState.playerHand.map(cardId => {
+    // Cập nhật các ô chiến đấu
+    slotContainers.forEach((slot, i) => {
+        const cardId = gameState.playerSlots[i];
+        slot.innerHTML = `<div class="point-value">${slot.dataset.points}</div>`; // Giữ lại điểm
+        if (cardId) {
             const cardInfo = findCard(cardId);
-            const isLocked = gameState.lockedCards.includes(cardId);
-            return createCardHTML(cardInfo, { draggable: !isLocked, isLocked: isLocked, simple: true });
-        }).join('');
-
-        slotContainers.forEach((slot, i) => {
-            const cardId = gameState.playerSlots[i];
-            slot.innerHTML = `<div class="point-value">${slot.dataset.points}</div>`;
-            if (cardId) {
-                const cardInfo = findCard(cardId);
-                const isLocked = gameState.lockedCards.includes(cardId);
-                const cardHTML = createCardHTML(cardInfo, { draggable: !isLocked, isLocked: isLocked, simple: true });
-                slot.insertAdjacentHTML('afterbegin', cardHTML);
-            }
-        });
-        
-        addGameEventListeners();
-        updateConfirmButtonState();
-    }
+            slot.insertAdjacentHTML('afterbegin', createCardHTML(cardInfo, { simple: true }));
+        }
+        // Highlight ô có thể đặt thẻ
+        if (gameState.selectedCardId && !cardId) {
+            slot.classList.add('highlight-slot');
+        } else {
+            slot.classList.remove('highlight-slot');
+        }
+    });
+    
+    // Không cần gọi lại addGameEventListeners vì đã dùng event delegation
+    updateConfirmButtonState();
+}
 
     function updateConfirmButtonState() {
         const btn = document.getElementById('confirm-placement-btn');
@@ -1066,68 +1125,98 @@ function add3DEffect(cardElement) {
         document.getElementById('opponent-score').textContent = gameState.opponentScore;
     }
 
-    function endRound() {
-        for(let i=0; i<3; i++) {
-            const pCardId = gameState.playerSlots[i];
-            if (pCardId && gameState.battleData[pCardId] <= 0) gameState.playerSlots[i] = null;
-            
-            const oCardId = gameState.opponentSlots[i];
-            if (oCardId && gameState.battleData[oCardId] <= 0) gameState.opponentSlots[i] = null;
-        }
+   // THAY THẾ HÀM NÀY
+function endRound() {
+    let playerDrawCount = 0;
 
-        for(let i=0; i<3; i++) {
-            const cardId = gameState.playerSlots[i];
-            if(cardId) {
-                gameState.playerHand.push(cardId);
-                gameState.playerSlots[i] = null;
+    // Di chuyển các thẻ đã dùng và tính toán số thẻ cần rút
+    for(let i=0; i<3; i++) {
+        const pCardId = gameState.playerSlots[i];
+        const oCardId = gameState.opponentSlots[i];
+
+        if (pCardId) {
+            // Thẻ người chơi dù thắng hay thua cũng bị loại khỏi vòng đấu
+            // Nếu thẻ không bị hết máu, nó sẽ vào chồng bài đã dùng
+            if (gameState.battleData[pCardId] > 0) {
+                gameState.playerUsedCards.push(pCardId);
+            }
+            // Nếu hết máu, thẻ sẽ bị loại vĩnh viễn (không cần làm gì thêm)
+        }
+        
+        if(oCardId) {
+             // Nếu thẻ đối thủ không bị hết máu, nó vào chồng bài đã dùng của đối thủ
+            if (gameState.battleData[oCardId] > 0) {
+                gameState.opponentUsedCards.push(oCardId);
+            } else {
+                // QUAN TRỌNG: Nếu thẻ đối thủ bị loại, người chơi được rút 1 thẻ mới
+                playerDrawCount++;
             }
         }
-        for(let i=0; i<3; i++) {
-            const cardId = gameState.opponentSlots[i];
-            if(cardId) {
-                gameState.opponentHand.push(cardId);
-                gameState.opponentSlots[i] = null;
-            }
-        }
-
-        const playerLiveCards = gameState.playerHand.length + gameState.playerDeck.length;
-        
-        if(playerLiveCards < 3) {
-            endGame();
-            return;
-        }
-
-        while(gameState.playerHand.length < 5 && gameState.playerDeck.length > 0) gameState.playerHand.push(gameState.playerDeck.pop());
-        while(gameState.opponentHand.length < 5 && gameState.opponentDeck.length > 0) gameState.opponentHand.push(gameState.opponentDeck.pop());
-        
-        gameState.phase = 'placement';
-        renderContent('game');
-        document.getElementById('confirm-placement-btn').style.display = 'flex';
     }
 
-    function endGame() {
-        gameState.phase = 'end';
-        document.querySelector('.bottom-nav').style.display = 'flex';
-        document.getElementById('player-hand-container')?.remove();
-        document.querySelector('.game-actions')?.remove();
-        
-        const modal = document.getElementById('game-over-modal');
-        const title = document.getElementById('game-over-title');
-        const message = document.getElementById('game-over-message');
+    // Dọn dẹp các slot
+    gameState.playerSlots = [null, null, null];
+    gameState.opponentSlots = [null, null, null];
+    
+    // Người chơi rút bài mới
+    for (let i = 0; i < playerDrawCount; i++) {
+        if (gameState.playerDeck.length > 0) {
+            gameState.playerHand.push(gameState.playerDeck.pop());
+        }
+    }
 
-        if(gameState.playerScore > gameState.opponentScore) {
+    // Kiểm tra điều kiện kết thúc game
+    const playerTotalCards = gameState.playerDeck.length + gameState.playerHand.length;
+    const opponentTotalCards = gameState.opponentDeck.length + gameState.opponentHand.length;
+
+    if (playerTotalCards === 0 || opponentTotalCards === 0) {
+        endGame();
+        return;
+    }
+    
+    // Đối thủ rút bài lại cho đủ 5 thẻ
+    while(gameState.opponentHand.length < 5 && gameState.opponentDeck.length > 0) {
+        gameState.opponentHand.push(gameState.opponentDeck.pop());
+    }
+    
+    gameState.phase = 'placement';
+    renderContent('game');
+    document.getElementById('confirm-placement-btn').style.display = 'flex';
+}
+   // THAY THẾ HÀM NÀY
+function endGame() {
+    gameState.phase = 'end';
+    document.querySelector('.bottom-nav').style.display = 'flex';
+    document.getElementById('player-hand-container')?.remove();
+    document.querySelector('.game-actions')?.remove();
+    
+    const modal = document.getElementById('game-over-modal');
+    const title = document.getElementById('game-over-title');
+    const message = document.getElementById('game-over-message');
+
+    const playerTotalCards = gameState.playerDeck.length + gameState.playerHand.length;
+    const opponentTotalCards = gameState.opponentDeck.length + gameState.opponentHand.length;
+    
+    if (opponentTotalCards === 0) {
+        title.textContent = 'Chiến Thắng!';
+        message.textContent = `Chúc mừng! Bạn đã đánh bại đối thủ! Tỷ số cuối cùng: ${gameState.playerScore} - ${gameState.opponentScore}.`;
+    } else if (playerTotalCards === 0) {
+        title.textContent = 'Thất Bại';
+        message.textContent = `Rất tiếc, bạn đã hết bài! Tỷ số cuối cùng: ${gameState.playerScore} - ${gameState.opponentScore}.`;
+    } else { // Trường hợp khác (hòa điểm khi hết bài)
+         if(gameState.playerScore > gameState.opponentScore) {
             title.textContent = 'Chiến Thắng!';
-            message.textContent = `Chúc mừng! Bạn đã thắng với tỉ số ${gameState.playerScore} - ${gameState.opponentScore}.`;
+            message.textContent = `Hết bài! Bạn thắng nhờ hơn điểm! Tỷ số: ${gameState.playerScore} - ${gameState.opponentScore}.`;
         } else if (gameState.opponentScore > gameState.playerScore) {
             title.textContent = 'Thất Bại';
-            message.textContent = `Rất tiếc! Bạn đã thua với tỉ số ${gameState.playerScore} - ${gameState.opponentScore}.`;
+            message.textContent = `Hết bài! Bạn thua do thấp điểm hơn! Tỷ số: ${gameState.playerScore} - ${gameState.opponentScore}.`;
         } else {
             title.textContent = 'Hòa!';
             message.textContent = `Trận đấu kết thúc với tỉ số hòa ${gameState.playerScore} - ${gameState.opponentScore}.`;
         }
-        modal.classList.add('show');
     }
-
+    modal.classList.add('show');
+}
 
     // --- INITIAL LOAD & EVENT LISTENERS ---
     navItems.forEach(item => item.addEventListener('click', handleNavClick));
