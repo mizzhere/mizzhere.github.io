@@ -97,41 +97,58 @@
     const purchaseResultModal = document.getElementById('purchase-result-modal');
 
     // --- CARD HTML GENERATOR ---
-    const createCardHTML = (card, options = {}) => {
-        const isOwned = card.id in player.collection;
-        const hasHoloClass = (card.rarity === 'rare' || card.rarity === 'limited') ? 'has-holo' : '';
-        const unownedClass = !isOwned && options.checkOwnership ? 'unowned' : '';
-        const unownedOverlay = !isOwned && options.checkOwnership ? `<div class="unowned-overlay"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg></div>` : '';
-        const shapeColorClass = `color-${card.color}`;
-        const rainbowClass = options?.mode === 'showcard' ? 'rainbow-loop' : '';
-        const themeLabel = options.simple ? '' : `<div class="theme-label">${card.theme}</div>`;
+   // --- CARD HTML GENERATOR ---
+const createCardHTML = (card, options = {}) => {
+    const isOwned = card.id in player.collection;
+    
+    // Thêm class độ hiếm vào thẻ chính để CSS có thể nhắm mục tiêu
+    const rarityClass = `rarity-${card.rarity}`;
 
-        const currentDefense = options.currentDefense !== undefined ? options.currentDefense : card.defense;
-        const defenseOverlay = options.showDefense ? `<div class="defense-overlay">HP: ${currentDefense}</div>` : '';
-        const lockedClass = options.isLocked ? 'locked' : '';
+    const hasHoloClass = (card.rarity === 'rare' || card.rarity === 'limited') ? 'has-holo' : '';
+    const unownedClass = !isOwned && options.checkOwnership ? 'unowned' : '';
+    const unownedOverlay = !isOwned && options.checkOwnership ? `<div class="unowned-overlay"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg></div>` : '';
+    const shapeColorClass = `color-${card.color}`;
+    const rainbowClass = options?.mode === 'showcard' ? 'rainbow-loop' : '';
+    const themeLabel = options.simple ? '' : `<div class="theme-label">${card.theme}</div>`;
 
-        const statsContainer = options.simple ? '' : `
-            <div class="stats-container">
-                <div class="stats-bar">
-                    <div class="stat attack">${card.attack}</div>
-                    <div class="stat type type-${card.rarity}">${card.label}</div>
-                    <div class="stat defense">${card.defense}</div>
-                </div>
-                <div class="name-section"><h2 class="name">${card.name}</h2></div>
-            </div>`;
+    const currentDefense = options.currentDefense !== undefined ? options.currentDefense : card.defense;
+    const defenseOverlay = options.showDefense ? `<div class="defense-overlay">HP: ${currentDefense}</div>` : '';
+    const lockedClass = options.isLocked ? 'locked' : '';
 
-        return `
-        <div class="game-card ${hasHoloClass} ${unownedClass} ${rainbowClass} ${lockedClass}" data-card-id="${card.id}" ${options.draggable ? 'draggable="true"' : ''}>
-            ${unownedOverlay}
-            <img src="${card.imageUrl}" alt="${card.name}" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/300x500/cccccc/ffffff?text=Error';">
-            <div class="card-overlay"></div>
-            <div class="holographic-effect"></div>
-            <div class="rarity-icon ${shapeColorClass}">${icons[card.shape]}</div>
-            ${themeLabel}
-            ${statsContainer}
-            ${defenseOverlay}
-        </div>`;
+    // --- PHẦN THÊM MỚI ---
+    let specialEffectsHTML = '';
+    if (card.rarity === 'limited') {
+        let particles = '';
+        for (let i = 0; i < 10; i++) {
+            particles += '<i></i>';
+        }
+        specialEffectsHTML = `<div class="particle-container">${particles}</div>`;
     }
+    // --- KẾT THÚC PHẦN THÊM MỚI ---
+
+    const statsContainer = options.simple ? '' : `
+        <div class="stats-container">
+            <div class="stats-bar">
+                <div class="stat attack">${card.attack}</div>
+                <div class="stat type type-${card.rarity}">${card.label}</div>
+                <div class="stat defense">${card.defense}</div>
+            </div>
+            <div class="name-section"><h2 class="name">${card.name}</h2></div>
+        </div>`;
+
+    return `
+    <div class="game-card ${rarityClass} ${hasHoloClass} ${unownedClass} ${rainbowClass} ${lockedClass}" data-card-id="${card.id}" ${options.draggable ? 'draggable="true"' : ''}>
+        ${unownedOverlay}
+        <img src="${card.imageUrl}" alt="${card.name}" class="card-image" onerror="this.onerror=null;this.src='https://placehold.co/300x500/cccccc/ffffff?text=Error';">
+        <div class="card-overlay"></div>
+        ${specialEffectsHTML} <!-- Thêm HTML hiệu ứng đặc biệt vào đây -->
+        <div class="holographic-effect"></div>
+        <div class="rarity-icon ${shapeColorClass}">${icons[card.shape]}</div>
+        ${themeLabel}
+        ${statsContainer}
+        ${defenseOverlay}
+    </div>`;
+}
 
     // --- SHOP ITEM HTML GENERATOR ---
     const createShopItemHTML = (item) => {
