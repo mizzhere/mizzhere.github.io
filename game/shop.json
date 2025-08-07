@@ -30,8 +30,8 @@
       "currency": "tokens",
       "content": "",
       "bg": "bg-gray-500/10",
-      "previewCardId": "WINTER",
-      "rates": []
+      "previewCardId": "WINTER-RARE-S-P",
+      "rates": "GROUP:WINTER"
     }
   ],
   "eventShop": [
