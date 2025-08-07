@@ -587,40 +587,50 @@ function purchaseItem(itemId) {
 
     player[item.currency] -= item.price;
     let receivedItems = [];
+    
+    // Lấy số lượng vật phẩm cần mở từ dữ liệu, mặc định là 1 nếu không có
+    const rewardsToOpen = item.rewardsCount || 1;
 
-    // Xử lý quay số
-    if (Array.isArray(item.rates)) {
-        const totalRate = 100; // Giả định tổng tỉ lệ là 100
-        const randomNumber = Math.random() * totalRate;
-        let cumulativeRate = 0;
-        let received = false;
+    // Vòng lặp để "mở" nhiều lần
+    for (let i = 0; i < rewardsToOpen; i++) {
+        if (Array.isArray(item.rates)) {
+            const randomNumber = Math.random() * 100;
+            let cumulativeRate = 0;
 
-        for (const rateInfo of item.rates) {
-            cumulativeRate += parseFloat(rateInfo.rate);
-            if (randomNumber <= cumulativeRate && !received) {
-                if (rateInfo.type === 'card') {
-                    const card = findCard(rateInfo.cardId);
-                    if (card) {
-                        player.collection[card.id] = (player.collection[card.id] || 0) + 1;
-                        receivedItems.push({ type: 'card', item: card });
+            for (const rateInfo of item.rates) {
+                cumulativeRate += parseFloat(rateInfo.rate);
+                if (randomNumber <= cumulativeRate) {
+                    // Logic xử lý nhận vật phẩm (giữ nguyên như cũ)
+                    if (rateInfo.type === 'card') {
+                        const card = findCard(rateInfo.cardId);
+                        if (card) {
+                            player.collection[card.id] = (player.collection[card.id] || 0) + 1;
+                            receivedItems.push({ type: 'card', item: card });
+                        }
+                    } else if (rateInfo.type === 'currency') {
+                        player[rateInfo.currencyType] += rateInfo.amount;
+                        receivedItems.push({ type: 'currency', item: { ...rateInfo } });
                     }
-                } else if (rateInfo.type === 'currency') {
-                    player[rateInfo.currencyType] += rateInfo.amount;
-                    receivedItems.push({ type: 'currency', item: { ...rateInfo } });
+                    // Sau khi tìm thấy một vật phẩm, thoát vòng lặp tỷ lệ và bắt đầu lần mở tiếp theo
+                    break; 
                 }
-                received = true;
             }
-        }
-    } else if (item.cardId) { // Logic cũ cho các item chỉ định sẵn thẻ
-        const card = findCard(item.cardId);
-        if (card) {
-            player.collection[card.id] = (player.collection[card.id] || 0) + 1;
-            receivedItems.push({ type: 'card', item: card });
         }
     }
     
+    // Logic cho vật phẩm có cardId cố định (nếu có)
+    if (item.cardId && rewardsToOpen === 1) {
+         const card = findCard(item.cardId);
+         if (card) {
+            player.collection[card.id] = (player.collection[card.id] || 0) + 1;
+            receivedItems.push({ type: 'card', item: card });
+         }
+    }
+
     updateCurrencyDisplay();
     saveState();
+    // Hàm showPurchaseResultModal đã có thể xử lý một mảng nhiều vật phẩm,
+    // nên không cần thay đổi ở đây.
     showPurchaseResultModal(item.name, receivedItems);
 }
 
