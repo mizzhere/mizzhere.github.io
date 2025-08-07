@@ -845,13 +845,11 @@ function startGame(chosenDeck) {
         opponentHand: [],
         playerSlots: [null, null, null],
         opponentSlots: [null, null, null],
-        playerUsedCards: [], // Thẻ người chơi đã dùng, không thể chọn lại
-        opponentUsedCards: [], // Thẻ đối thủ đã dùng
         battleData: {},
         playerScore: 0,
         opponentScore: 0,
         phase: 'placement',
-        selectedCardId: null, // Để theo dõi thẻ đang được chọn (cho cảm ứng)
+        selectedCardId: null, // Để theo dõi thẻ đang được chọn
     };
 
     // Rút 5 thẻ ban đầu
@@ -1000,56 +998,72 @@ function redrawGameBoard() {
         }
     }
 
-    async function startRound() {
-        gameState.phase = 'battle';
-        document.getElementById('confirm-placement-btn').style.display = 'none';
-        aiPlaceCards();
+   async function startRound() {
+    gameState.phase = 'battle';
+    document.getElementById('confirm-placement-btn').style.display = 'none';
+    aiPlaceCards();
 
-        const playerSlots = document.querySelectorAll('#player-battle-zone .battle-slot');
-        const opponentSlots = document.querySelectorAll('#opponent-battle-zone .battle-slot');
-        
-        [...gameState.playerSlots, ...gameState.opponentSlots].forEach(cardId => {
-            if(cardId) {
-                const card = findCard(cardId);
-                if(card) gameState.battleData[cardId] = card.defense;
+    // Chuẩn bị dữ liệu và hiển thị thẻ đối thủ
+    const playerSlots = document.querySelectorAll('#player-battle-zone .battle-slot');
+    const opponentSlots = document.querySelectorAll('#opponent-battle-zone .battle-slot');
+    gameState.battleData = {};
+    [...gameState.playerSlots, ...gameState.opponentSlots].flat().filter(id => id).forEach(cardId => {
+        const card = findCard(cardId);
+        if (card) gameState.battleData[cardId] = card.defense;
+    });
+
+    opponentSlots.forEach((slot, i) => {
+        const cardId = gameState.opponentSlots[i];
+        if (cardId) {
+            slot.innerHTML = createCardHTML(findCard(cardId), { showDefense: true, currentDefense: gameState.battleData[cardId], simple: true });
+        }
+    });
+    playerSlots.forEach((slot, i) => {
+        const cardId = gameState.playerSlots[i];
+        if (cardId) {
+            slot.innerHTML = createCardHTML(findCard(cardId), { showDefense: true, currentDefense: gameState.battleData[cardId], simple: true });
+            slot.innerHTML += `<div class="point-value">${slot.dataset.points}</div>`;
+        }
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Thực hiện chiến đấu cho từng ô
+    for (let i = 0; i < 3; i++) {
+        // Vòng lặp chiến đấu cho đến khi có người thắng trong ô
+        while (gameState.playerSlots[i] && gameState.opponentSlots[i]) {
+            await performSingleClash(i);
+
+            const pCardId = gameState.playerSlots[i];
+            const oCardId = gameState.opponentSlots[i];
+
+            if (pCardId && gameState.battleData[pCardId] <= 0) {
+                document.querySelector(`#player-battle-zone .battle-slot[data-slot-index="${i}"] .game-card`)?.classList.add('defeated-card');
+                await new Promise(r => setTimeout(r, 500));
+                gameState.playerSlots[i] = null;
             }
-        });
-
-        opponentSlots.forEach((slot, i) => {
-            const cardId = gameState.opponentSlots[i];
-            slot.innerHTML = '';
-            if(cardId) {
-                const cardInfo = findCard(cardId);
-                if(cardInfo) slot.innerHTML = createCardHTML(cardInfo, {showDefense: true, currentDefense: gameState.battleData[cardId], simple: true});
+            if (oCardId && gameState.battleData[oCardId] <= 0) {
+                document.querySelector(`#opponent-battle-zone .battle-slot:nth-child(${i + 1}) .game-card`)?.classList.add('defeated-card');
+                await new Promise(r => setTimeout(r, 500));
+                gameState.opponentSlots[i] = null;
             }
-        });
+        }
 
-        playerSlots.forEach((slot, i) => {
-            const cardId = gameState.playerSlots[i];
-            if(cardId) {
-                const cardInfo = findCard(cardId);
-                if(cardInfo) {
-                    slot.innerHTML = createCardHTML(cardInfo, {showDefense: true, currentDefense: gameState.battleData[cardId], simple: true});
-                    slot.innerHTML += `<div class="point-value">${slot.dataset.points}</div>`;
-                }
-            }
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        for (let i = 0; i < 3; i++) {
-            const playerCardId = gameState.playerSlots[i];
-            const opponentCardId = gameState.opponentSlots[i];
-            if (playerCardId && opponentCardId) {
-                const slotPoints = parseInt(playerSlots[i].dataset.points);
-                await performBattle(i, playerCardId, opponentCardId, slotPoints);
-            }
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        // Sau khi trận chiến ở ô kết thúc, tính điểm
+        if (gameState.playerSlots[i] && !gameState.opponentSlots[i]) {
+            gameState.playerScore += parseInt(playerSlots[i].dataset.points);
+        } else if (!gameState.playerSlots[i] && gameState.opponentSlots[i]) {
+            gameState.opponentScore += parseInt(playerSlots[i].dataset.points);
         }
         
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        endRound();
+        document.getElementById('player-score').textContent = gameState.playerScore;
+        document.getElementById('opponent-score').textContent = gameState.opponentScore;
+        await new Promise(r => setTimeout(r, 700));
     }
+    
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    endRound();
+}
 
     function getDamageMultiplier(attackerShape, defenderShape) {
         if (attackerShape === defenderShape) return 1.0;
@@ -1065,10 +1079,14 @@ function redrawGameBoard() {
     }
 
    // THAY THẾ HÀM NÀY
-async function performBattle(slotIndex, playerCardId, opponentCardId, slotPoints) {
+async function performSingleClash(slotIndex) {
+    const playerCardId = gameState.playerSlots[slotIndex];
+    const opponentCardId = gameState.opponentSlots[slotIndex];
+    if (!playerCardId || !opponentCardId) return;
+
     const playerCard = findCard(playerCardId);
     const opponentCard = findCard(opponentCardId);
-    if (!playerCard || !opponentCard) return; // safety check
+    if (!playerCard || !opponentCard) return;
 
     const playerSlotEl = document.querySelector(`#player-battle-zone .battle-slot[data-slot-index="${slotIndex}"]`);
     const opponentSlotEl = document.querySelector(`#opponent-battle-zone .battle-slot:nth-child(${slotIndex + 1})`);
@@ -1080,6 +1098,7 @@ async function performBattle(slotIndex, playerCardId, opponentCardId, slotPoints
     const opponentDamage = Math.round(opponentCard.attack * getDamageMultiplier(opponentCard.shape, playerCard.shape));
 
     const performAttack = async (attackerEl, defenderEl, defenderCardId, damage) => {
+        if (!attackerEl || !defenderEl) return;
         attackerEl.style.animation = 'attack-animation-improved 0.6s ease-in-out';
         await new Promise(r => setTimeout(r, 300));
         
@@ -1089,106 +1108,55 @@ async function performBattle(slotIndex, playerCardId, opponentCardId, slotPoints
         defenderEl.style.animation = 'shake-animation 0.3s';
 
         const defenderCardInfo = findCard(defenderCardId);
-        defenderEl.innerHTML = createCardHTML(defenderCardInfo, {showDefense: true, currentDefense: Math.max(0, gameState.battleData[defenderCardId]), simple: true});
-        defenderEl.querySelector('.card-overlay').insertAdjacentHTML('afterend', damageText);
+        defenderEl.innerHTML = createCardHTML(defenderCardInfo, { showDefense: true, currentDefense: Math.max(0, gameState.battleData[defenderCardId]), simple: true });
         if(defenderEl.parentElement.dataset.points) { defenderEl.parentElement.innerHTML += `<div class="point-value">${defenderEl.parentElement.dataset.points}</div>`;}
 
-        await new Promise(r => setTimeout(r, 400));
-        attackerEl.style.animation = '';
-        defenderEl.style.animation = '';
+        await new Promise(r => setTimeout(r, 600));
+        if(attackerEl) attackerEl.style.animation = '';
+        if(defenderEl) defenderEl.style.animation = '';
     };
 
-    const firstAttacker = (colorPriority > 0) ? 'player' : (colorPriority < 0) ? 'opponent' : 'simultaneous';
-
-    if (firstAttacker === 'player') {
+    if (colorPriority >= 0) { // Người chơi tấn công trước hoặc đồng thời
         await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
-        if (gameState.battleData[opponentCardId] > 0) await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
-    } else if (firstAttacker === 'opponent') {
+        if (gameState.battleData[opponentCardId] > 0) {
+            await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
+        }
+    } else { // Đối thủ tấn công trước
         await performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage);
-        if (gameState.battleData[playerCardId] > 0) await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
-    } else {
-        await Promise.all([
-            performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage),
-            performAttack(opponentCardEl, playerCardEl, playerCardId, opponentDamage)
-        ]);
+        if (gameState.battleData[playerCardId] > 0) {
+            await performAttack(playerCardEl, opponentCardEl, opponentCardId, playerDamage);
+        }
     }
-
-    const playerHealth = gameState.battleData[playerCardId];
-    const opponentHealth = gameState.battleData[opponentCardId];
-    
-    if (playerHealth > 0 && opponentHealth <= 0) {
-        gameState.playerScore += slotPoints;
-        // DÒNG BỊ LỖI ĐÃ ĐƯỢC XÓA BỎ TẠI ĐÂY
-        opponentCardEl.classList.add('defeated-card');
-    } else if (opponentHealth > 0 && playerHealth <= 0) {
-        gameState.opponentScore += slotPoints;
-        playerCardEl.classList.add('defeated-card');
-    } else {
-        if (playerHealth <= 0) playerCardEl.classList.add('defeated-card');
-        if (opponentHealth <= 0) opponentCardEl.classList.add('defeated-card');
-    }
-    
-    document.getElementById('player-score').textContent = gameState.playerScore;
-    document.getElementById('opponent-score').textContent = gameState.opponentScore;
 }
 
    // THAY THẾ HÀM NÀY
 function endRound() {
-    let playerDrawCount = 0;
-
-    // Di chuyển các thẻ đã dùng và tính toán số thẻ cần rút
-    for(let i=0; i<3; i++) {
-        const pCardId = gameState.playerSlots[i];
-        const oCardId = gameState.opponentSlots[i];
-
-        if (pCardId) {
-            // Thẻ người chơi dù thắng hay thua cũng bị loại khỏi vòng đấu
-            // Nếu thẻ không bị hết máu, nó sẽ vào chồng bài đã dùng
-            if (gameState.battleData[pCardId] > 0) {
-                gameState.playerUsedCards.push(pCardId);
-            }
-            // Nếu hết máu, thẻ sẽ bị loại vĩnh viễn (không cần làm gì thêm)
-        }
-        
-        if(oCardId) {
-             // Nếu thẻ đối thủ không bị hết máu, nó vào chồng bài đã dùng của đối thủ
-            if (gameState.battleData[oCardId] > 0) {
-                gameState.opponentUsedCards.push(oCardId);
-            } else {
-                // QUAN TRỌNG: Nếu thẻ đối thủ bị loại, người chơi được rút 1 thẻ mới
-                playerDrawCount++;
-            }
-        }
-    }
-
-    // Dọn dẹp các slot
+    // Tất cả thẻ đã dùng trong vòng (còn sống hoặc đã chết) đều bị loại khỏi trận đấu.
+    // Chúng ta chỉ cần dọn dẹp các slot là đủ.
     gameState.playerSlots = [null, null, null];
     gameState.opponentSlots = [null, null, null];
     
-    // Người chơi rút bài mới
-    for (let i = 0; i < playerDrawCount; i++) {
-        if (gameState.playerDeck.length > 0) {
-            gameState.playerHand.push(gameState.playerDeck.pop());
-        }
+    // Cả hai người chơi rút bài cho đến khi có 5 thẻ trên tay
+    while (gameState.playerHand.length < 5 && gameState.playerDeck.length > 0) {
+        gameState.playerHand.push(gameState.playerDeck.pop());
+    }
+    while (gameState.opponentHand.length < 5 && gameState.opponentDeck.length > 0) {
+        gameState.opponentHand.push(gameState.opponentDeck.pop());
     }
 
     // Kiểm tra điều kiện kết thúc game
     const playerTotalCards = gameState.playerDeck.length + gameState.playerHand.length;
     const opponentTotalCards = gameState.opponentDeck.length + gameState.opponentHand.length;
-
-    if (playerTotalCards === 0 || opponentTotalCards === 0) {
+    
+    // Nếu một người chơi hết sạch bài, hoặc không đủ 3 thẻ trên tay để bắt đầu vòng mới, game kết thúc.
+    if (playerTotalCards === 0 || opponentTotalCards === 0 || gameState.playerHand.length < 3) {
         endGame();
         return;
     }
     
-    // Đối thủ rút bài lại cho đủ 5 thẻ
-    while(gameState.opponentHand.length < 5 && gameState.opponentDeck.length > 0) {
-        gameState.opponentHand.push(gameState.opponentDeck.pop());
-    }
-    
+    // Chuẩn bị cho vòng mới
     gameState.phase = 'placement';
     renderContent('game');
-    document.getElementById('confirm-placement-btn').style.display = 'flex';
 }
    // THAY THẾ HÀM NÀY
 function endGame() {
