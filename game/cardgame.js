@@ -658,26 +658,68 @@ function showPurchaseResultModal(itemName, receivedItems) {
     purchaseResultModal.classList.add('show');
 }
 
-    function add3DEffect(cardElement) {
-        const holoLayer = cardElement.querySelector('.holographic-effect');
-        cardElement.addEventListener('mousemove', (e) => {
-            const rect = cardElement.getBoundingClientRect();
-            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-            const centerX = rect.width / 2; const centerY = rect.height / 2;
-            const rotateX = (y - centerY) / centerY * -12;
-            const rotateY = (x - centerX) / centerX * 12;
-            cardElement.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-            if (holoLayer) { holoLayer.style.backgroundPosition = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`; holoLayer.style.opacity = 1; }
-        });
-        cardElement.addEventListener('mouseleave', () => {
-            cardElement.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
-            if (holoLayer) holoLayer.style.opacity = 0;
-        });
-        cardElement.addEventListener('mouseenter', () => {
-            cardElement.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.05)';
-            if (holoLayer) holoLayer.style.opacity = 1;
-        });
-    }
+function add3DEffect(cardElement) {
+    const holoLayer = cardElement.querySelector('.holographic-effect');
+
+    // Hàm cập nhật hiệu ứng, dùng chung cho cả chuột và cảm ứng
+    const updateTransform = (x, y) => {
+        const rect = cardElement.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = (y - centerY) / centerY * -12; // Lật ngược giá trị để có cảm giác tự nhiên
+        const rotateY = (x - centerX) / centerX * 12;
+
+        cardElement.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+        if (holoLayer) {
+            holoLayer.style.backgroundPosition = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
+        }
+    };
+
+    // --- Xử lý cho Chuột ---
+    cardElement.addEventListener('mouseenter', () => {
+        cardElement.style.transition = 'transform 0.1s'; // Hiệu ứng chuyển động vào nhanh
+        if (holoLayer) holoLayer.style.opacity = 1;
+    });
+
+    cardElement.addEventListener('mousemove', (e) => {
+        const rect = cardElement.getBoundingClientRect();
+        updateTransform(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    cardElement.addEventListener('mouseleave', () => {
+        cardElement.style.transition = 'transform 0.5s ease'; // Hiệu ứng trả về mượt mà, chậm hơn
+        cardElement.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+        if (holoLayer) holoLayer.style.opacity = 0;
+    });
+
+    // --- Xử lý cho Cảm ứng (MỚI) ---
+    cardElement.addEventListener('touchstart', (e) => {
+        // Ngăn hành vi mặc định của trình duyệt (như cuộn trang) khi chạm vào thẻ
+        e.preventDefault();
+        cardElement.style.transition = 'transform 0.1s';
+        if (holoLayer) holoLayer.style.opacity = 1;
+        
+        // Áp dụng hiệu ứng ngay tại điểm chạm đầu tiên
+        const rect = cardElement.getBoundingClientRect();
+        if (e.touches[0]) {
+             updateTransform(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+        }
+    }, { passive: false }); // passive: false là cần thiết để preventDefault() hoạt động
+
+    cardElement.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Tiếp tục ngăn cuộn trang khi di chuyển ngón tay
+        const rect = cardElement.getBoundingClientRect();
+         if (e.touches[0]) {
+            updateTransform(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+         }
+    });
+
+    cardElement.addEventListener('touchend', () => {
+        cardElement.style.transition = 'transform 0.5s ease';
+        cardElement.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+        if (holoLayer) holoLayer.style.opacity = 0;
+    });
+}
             
     function updateCurrencyDisplay() {
         document.getElementById('player-coins').innerHTML = `<img src="${currencyIcons.coins}" class="currency-icon"><span>${player.coins.toLocaleString('vi')}</span>`;
