@@ -238,5 +238,113 @@
     "label": "LIMITED",
     "shape": "triangle",
     "color": "blue"
+  },
+  {
+    "id": "WINTER-RARE-S-P",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "square",
+    "color": "pink"
+  },
+  {
+    "id": "WINTER-RARE-S-G",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "square",
+    "color": "green"
+  },
+  {
+    "id": "WINTER-RARE-S-B",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "square",
+    "color": "blue"
+  },
+  {
+    "id": "WINTER-RARE-D-P",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "diamond",
+    "color": "pink"
+  },
+  {
+    "id": "WINTER-RARE-D-G",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "diamond",
+    "color": "green"
+  },
+  {
+    "id": "WINTER-RARE-D-B",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "diamond",
+    "color": "blue"
+  },
+  {
+    "id": "WINTER-RARE-T-P",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "triangle",
+    "color": "pink"
+  },
+  {
+    "id": "WINTER-RARE-T-G",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "triangle",
+    "color": "green"
+  },
+  {
+    "id": "WINTER-RARE-T-B",
+    "name": "Winter",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtffzjFbYAAw-FY?format=jpg&name=4096x4096",
+    "attack": 220,
+    "defense": 350,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "triangle",
+    "color": "blue"
   }
 ]
