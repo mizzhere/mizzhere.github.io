@@ -5,7 +5,7 @@
       "name": "Hanni",
       "price": 500,
       "currency": "tokens",
-      "content": "Nhận",
+      "content": "Nháº­n",
       "bg": "bg-gray-500/10",
       "previewCardId": "HANNI-LIMITED-D-G",
       "rates": "GROUP:HANNI"
@@ -17,22 +17,39 @@
       "name": "Khung Avatar",
       "price": 500,
       "currency": "eventTokens",
-      "content": "Khung viá»n Äá»c quyá»n",
+      "content": "Khung viÃ¡Â»Ân ÃÂÃ¡Â»Âc quyÃ¡Â»Ân",
       "bg": "bg-rose-600/10",
       "previewCardId": null,
       "rates": "DIRECT_PURCHASE"
     },
     {
       "id": "ES02",
-      "name": "Tháº» Karina Limited",
+      "name": "ThÃ¡ÂºÂ» Karina Limited",
       "price": 1000,
       "currency": "eventTokens",
-      "content": "Sá» há»¯u tháº» Karina Limited",
+      "content": "SÃ¡Â»Â hÃ¡Â»Â¯u thÃ¡ÂºÂ» Karina Limited",
       "bg": "bg-indigo-600/10",
       "previewCardId": "KARINA-LIMITED-T-B",
       "rates": [
         {
           "cardId": "KARINA-LIMITED-T-B",
+          "rate": 100
+        }
+      ]
+    },
+    {
+      "id": "ITEM-1754574313923",
+      "name": "Xu",
+      "price": 50,
+      "currency": "eventTokens",
+      "content": "1000 xu",
+      "bg": "bg-gray-500/10",
+      "previewCardId": null,
+      "rates": [
+        {
+          "type": "currency",
+          "currencyType": "coins",
+          "amount": 1000,
           "rate": 100
         }
       ]
