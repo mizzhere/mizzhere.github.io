@@ -303,13 +303,13 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
     top: -2px;
     width: calc(100% + 4px);
     height: calc(100% + 4px);
-    /* Gradient hình nón tạo hiệu ứng dải màu để xoay */
     background: conic-gradient(
         from 180deg at 50% 50%,
         #fde047, #f43f5e, #a855f7, #63b3ed, #84cc16, #fde047
     );
-    z-index: 0; /* Đặt nó ngay sau card-image */
-    border-radius: 22px; /* Lớn hơn border-radius của thẻ một chút */
+    /* SỬA LỖI: Tăng z-index để viền nổi lên trên ảnh và các lớp nền khác */
+    z-index: 2; 
+    border-radius: 22px; 
     animation: spin-border 4s linear infinite;
 }
 
