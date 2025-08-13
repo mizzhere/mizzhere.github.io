@@ -2,24 +2,119 @@
   "mainShop": [
     {
       "id": "SHOP-HANNI-PACK",
-      "name": "Xu hay Token?",
+      "name": "Bạn muốn Hanni?",
       "price": 500,
       "currency": "coins",
       "content": "Hehe xu đây?",
       "bg": "bg-gray-500/10",
-      "previewCardId": null,
+      "previewCardId": "HANNI-LIMITED-D-P",
+      "rewardsCount": 1,
       "rates": [
         {
           "type": "currency",
           "currencyType": "eventTokens",
           "amount": 10000,
+          "rate": 80
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-rare-D-G",
           "rate": 1
         },
         {
-          "type": "currency",
-          "currencyType": "coins",
-          "amount": 100,
-          "rate": 99
+          "type": "card",
+          "cardId": "HANNI-LIMITED-S-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-S-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-S-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-D-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-D-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-D-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-T-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-T-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "HANNI-LIMITED-T-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-limited-T-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-S-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-S-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-S-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-D-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-D-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-D-B",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-T-P",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-T-G",
+          "rate": 1
+        },
+        {
+          "type": "card",
+          "cardId": "KARINA-LIMITED-T-B",
+          "rate": 1
         }
       ]
     },
