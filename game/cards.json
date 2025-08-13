@@ -394,5 +394,53 @@
     "label": "RARE",
     "shape": "triangle",
     "color": "blue"
+  },
+  {
+    "id": "NINGNING-LIMITED-D-G",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtfZpD0aUAA2j8Z?format=jpg&name=4096x4096",
+    "attack": 250,
+    "defense": 510,
+    "rarity": "limited",
+    "label": "LIMITED",
+    "shape": "diamond",
+    "color": "green"
+  },
+  {
+    "id": "NINGNING-LIMITED-D-B",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtfZpD0aUAA2j8Z?format=jpg&name=4096x4096",
+    "attack": 250,
+    "defense": 510,
+    "rarity": "limited",
+    "label": "LIMITED",
+    "shape": "diamond",
+    "color": "blue"
+  },
+  {
+    "id": "NINGNING-LIMITED-T-G",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtfZpD0aUAA2j8Z?format=jpg&name=4096x4096",
+    "attack": 250,
+    "defense": 510,
+    "rarity": "limited",
+    "label": "LIMITED",
+    "shape": "triangle",
+    "color": "green"
+  },
+  {
+    "id": "NINGNING-LIMITED-T-B",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://pbs.twimg.com/media/GtfZpD0aUAA2j8Z?format=jpg&name=4096x4096",
+    "attack": 250,
+    "defense": 510,
+    "rarity": "limited",
+    "label": "LIMITED",
+    "shape": "triangle",
+    "color": "blue"
   }
 ]
