@@ -346,5 +346,53 @@
     "label": "RARE",
     "shape": "triangle",
     "color": "blue"
+  },
+  {
+    "id": "NINGNING-RARE-S-P",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://www.allkpop.com/upload/2025/06/content/151127/1750001249-gtfzlvmaaaarq8o.jpg",
+    "attack": 180,
+    "defense": 290,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "square",
+    "color": "pink"
+  },
+  {
+    "id": "NINGNING-RARE-S-B",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://www.allkpop.com/upload/2025/06/content/151127/1750001249-gtfzlvmaaaarq8o.jpg",
+    "attack": 180,
+    "defense": 290,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "square",
+    "color": "blue"
+  },
+  {
+    "id": "NINGNING-RARE-T-P",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://www.allkpop.com/upload/2025/06/content/151127/1750001249-gtfzlvmaaaarq8o.jpg",
+    "attack": 180,
+    "defense": 290,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "triangle",
+    "color": "pink"
+  },
+  {
+    "id": "NINGNING-RARE-T-B",
+    "name": "Ningning",
+    "theme": "Dirty Work aespa",
+    "imageUrl": "https://www.allkpop.com/upload/2025/06/content/151127/1750001249-gtfzlvmaaaarq8o.jpg",
+    "attack": 180,
+    "defense": 290,
+    "rarity": "rare",
+    "label": "RARE",
+    "shape": "triangle",
+    "color": "blue"
   }
 ]
