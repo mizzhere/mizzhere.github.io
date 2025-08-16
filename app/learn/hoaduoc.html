@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chem App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- RDKit.js (primary, defer) -->
+  <script defer id="rdkit-primary" src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
+  <style>
+    html { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; height: 100dvh; overflow: hidden; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10); }
+    .tabbar { display:none; }
+    .tab { display:none; }
+
+    .drug-btn.active, .framework-btn.active { background: #eff6ff; border-color:#2563eb; color:#1d4ed8; font-weight:600; }
+    .chip { cursor: pointer; transition: .15s ease; flex-shrink: 0; position: relative; }
+    .chip.on { background: #1d4ed8; color: #fff; border-color:#1d4ed8; }
+    #chemViewerContainer svg [id^="atom-"], #quizViewer svg [id^="atom-"] { cursor: pointer; }
+    #chemViewerContainer svg [id^="atom-"]:hover, #quizViewer svg [id^="atom-"]:hover { filter: drop-shadow(0 0 3px #60a5fa); }
+    
+    .quiz-choice { 
+      transition: .15s ease; 
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-choice.correct { background:#e6f4ea; border-color:#22c55e; color:#16a34a; }
+    .quiz-choice.wrong { background:#fee2e2; border-color:#ef4444; color:#dc2626; }
+    .quiz-choice:disabled { opacity:.8; cursor:not-allowed; }
+    .feedback-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 0;
+      transition: all 0.2s ease-out;
+      width: 28px;
+      height: 28px;
+    }
+    .quiz-choice.correct .feedback-icon, .quiz-choice.wrong .feedback-icon {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    #chemViewerContainer svg, #quizViewer svg, #frameworkViewer svg { width: 100%; height: 100%; }
+    .status { display:none; }
+    .status.show { display:block; }
+    .seg { display:inline-flex; border-radius: 9999px; background:#e5e7eb; padding:4px; }
+    .seg button { padding:.375rem .75rem; border-radius:9999px; font-weight:600; }
+    .seg button.active { background:#2563eb; color:#fff; }
+    .select { appearance:none; background:#fff; border:1px solid #e5e7eb; border-radius: 12px; padding:.5rem .75rem; font-weight:600; }
+    .muted { color:#64748b; }
+    .section { border:1px solid #e5e7eb; border-radius:12px; }
+    .section-header { width:100%; text-align:left; padding:.5rem .75rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; }
+    .section-items { padding:.5rem; }
+    .appbar { height: 56px; border-radius: 12px; backdrop-filter: blur(8px); }
+    
+    #frameworkChips, #chipsContainer {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    #frameworkChips::-webkit-scrollbar, #chipsContainer::-webkit-scrollbar {
+      display: none;
+    }
+
+    #chemInfoFormula sub {
+      font-size: 0.75em;
+      line-height: 0;
+    }
+
+    .marquee-container {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+    }
+    .marquee-text {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .marquee-text.is-scrolling {
+      padding-left: 100%;
+      animation: marquee 15s linear infinite;
+    }
+    @keyframes marquee {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+    
+    #tooltip {
+      position: absolute;
+      display: none;
+      background-color: #1f2937;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      z-index: 100;
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: max-content;
+      pointer-events: none;
+    }
+    #tooltip button {
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="h-full antialiased text-gray-800">
+  <div class="w-full max-w-6xl mx-auto p-3 md:p-4 h-full flex flex-col gap-3">
+    <div class="appbar card flex items-center justify-between px-3 md:px-4 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-blue-600/10 flex items-center justify-center"><span class="text-blue-700 font-black">C</span></div>
+        <div class="hidden md:block text-sm text-gray-500">Chem App</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btnViewFrameworks" class="text-sm font-semibold text-blue-700 hover:underline">Kiến thức khung</button>
+        <div id="appStatus" class="status text-sm"></div>
+      </div>
+    </div>
+
+    <div id="mainContent" class="flex-grow min-h-0">
+      <div id="panelLearn" class="h-full flex flex-col">
+        <div class="flex md:flex-row gap-3 md:gap-4 flex-grow min-h-0">
+          
+          <aside id="drugListPanel" class="card p-3 md:p-4 flex flex-col gap-3 w-full md:w-1/3 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <label for="chapterSelectLearn" class="text-sm font-semibold">Chương</label>
+              <select id="chapterSelectLearn" class="select w-full" title="Chọn chương để lọc ví dụ"></select>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="searchInput" class="select w-full" placeholder="Tìm chất…" />
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <span id="listCount">0 chất</span>
+              <span class="ml-auto"><button id="btnEnterQuiz" class="text-blue-700 font-semibold underline">Bắt đầu trắc nghiệm →</button></span>
+            </div>
+            <div id="drugList" class="space-y-2 overflow-y-auto"></div>
+          </aside>
+
+          <section id="drugDetailPanel" class="card p-3 md:p-4 hidden md:flex flex-col w-full md:w-2/3">
+            <button id="btnBackToList" class="md:hidden mb-2 text-blue-700 font-semibold self-start">← Quay lại danh sách</button>
+            <div class="flex items-start justify-between gap-4 flex-shrink-0">
+              <div class="flex-grow overflow-hidden">
+                <h3 id="learnCompoundName" class="text-lg md:text-xl font-bold text-gray-900 truncate"></h3>
+                <div class="marquee-container text-gray-500 text-sm">
+                    <span id="chemInfoIUPAC" class="marquee-text">—</span>
+                </div>
+                <div class="text-sm">
+                    <span class="muted">Công thức:</span> <span id="chemInfoFormula">—</span>
+                </div>
+              </div>
+              <div class="text-right text-xs md:text-sm flex-shrink-0">
+                <div><span class="muted">Chương:</span> <span id="currentChapterTitle">—</span></div>
+                <div><span class="muted">Mục:</span> <span id="currentSectionTitle">—</span></div>
+              </div>
+            </div>
+            <div id="chemViewerContainer" class="w-full border rounded-lg flex items-center justify-center flex-grow min-h-[200px]"></div>
+            <div class="mt-3 md:mt-4 flex flex-col gap-4 flex-shrink-0">
+              <div>
+                <h4 class="font-semibold mb-2">Khung đặc trưng</h4>
+                <div id="frameworkChips" class="flex gap-2"></div>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Nhóm chức</h4>
+                <div id="chipsContainer" class="flex gap-2"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div id="panelQuiz" class="hidden h-full">
+        <div class="card p-4 md:p-5 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-3 md:mb-4">
+            <button id="btnBackToLearn" class="text-blue-700 font-semibold">← Quay lại</button>
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="seg" role="tablist" aria-label="Loại câu hỏi">
+                <button id="qTypeGroup" class="active" data-type="group" aria-selected="true">Nhóm chức</button>
+                <button id="qTypeFramework" data-type="framework" aria-selected="false">Khung đặc trưng</button>
+                <button id="qTypeCompound" data-type="compound" aria-selected="false">Tên chất</button>
+              </div>
+              <select id="chapterSelectQuiz" class="select" title="Chọn chương ngân hàng câu hỏi"></select>
+              <div id="quizScore" class="font-semibold text-gray-600">Điểm: 0</div>
+              <button id="newQuizBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Câu hỏi mới</button>
+            </div>
+          </div>
+          <div class="space-y-1 mb-2 md:mb-3">
+            <h3 class="text-lg md:text-xl font-bold text-gray-900">Câu hỏi trắc nghiệm</h3>
+            <p id="quizPrompt" class="text-gray-600">Trong chất <span id="quizCompoundName" class="font-semibold"></span>, mục khoanh viền là gì?</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 flex-grow min-h-0">
+            <div id="quizViewer" class="w-full border rounded-lg flex items-center justify-center min-h-[220px] md:min-h-0"></div>
+            <div id="quizChoices" class="grid grid-cols-1 sm:grid-cols-2 gap-3 content-start"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="panelFrameworks" class="hidden h-full flex flex-col">
+        <div class="flex flex-col md:flex-row gap-3 md:gap-4 flex-grow min-h-0">
+          <aside class="card p-3 md:p-4 flex flex-col gap-3 h-2/5 md:h-auto md:w-1/3 flex-shrink-0">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold">Danh sách khung</h3>
+              <button id="btnBackToLearnFromFw" class="text-sm text-blue-700 font-semibold">← Quay lại</button>
+            </div>
+            <div id="frameworkList" class="space-y-2 overflow-y-auto"></div>
+          </aside>
+          <section id="frameworkDetail" class="card p-3 md:p-4 flex flex-col h-3/5 md:h-auto md:w-2/3">
+            <h3 id="frameworkDetailName" class="text-xl font-bold text-gray-900 mb-2">Chọn một khung để xem</h3>
+            <div id="frameworkViewer" class="w-full border rounded-lg flex items-center justify-center flex-grow min-h-[150px] bg-white"></div>
+            <div class="mt-4 flex-grow flex flex-col min-h-0">
+              <div id="frameworkDetailDescription" class="text-gray-700 text-sm leading-relaxed mb-3"></div>
+              <div id="relatedDrugsSection" class="flex flex-col min-h-0">
+                  <h4 class="font-semibold text-sm mb-2 flex-shrink-0">Có trong các chất sau:</h4>
+                  <div id="relatedDrugsList" class="space-y-2 overflow-y-auto"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
+  <div id="tooltip"></div>
+
+  <script id="chapters-data" type="application/json">
+  {
+    "chapters": [
+      {
+        "id": "vi-du-mau",
+        "title": "VÍ DỤ MẪU",
+        "description": "Tập hợp tất cả các chất minh họa hiện có.",
+        "sections": [
+          {
+            "id": "nsaid",
+            "title": "NSAIDs",
+            "examples": [
+              {"name":"Aspirin","smiles":"CC(=O)Oc1ccccc1C(=O)O","iupac":"2-Acetoxybenzoic acid","formula":"C9H8O4","frameworks":["Salicylate","Aryl ester"]},
+              {"name":"Ibuprofen","smiles":"CC(C)CC1=CC=C(C=C1)C(C)C(=O)O","iupac":"2-(4-Isobutylphenyl)propanoic acid","formula":"C13H18O2","frameworks":["Arylpropionic acid"]},
+              {"name":"Paracetamol","smiles":"CC(=O)NC1=CC=C(C=C1)O","iupac":"N-(4-hydroxyphenyl)acetamide","formula":"C8H9NO2","frameworks":["Anilide","Para-aminophenol"]},
+              {"name":"Diclofenac","smiles":"O=C(O)Cc1ccccc1Nc2c(Cl)cccc2Cl","iupac":"2-[(2,6-dichlorophenyl)amino]phenylacetic acid","formula":"C14H11Cl2NO2","frameworks":["Aryl acetic acid","Anilino-phenylacetate"]},
+              {"name":"Naproxen","smiles":"C[C@H](C(=O)O)c1ccc2ccccc2c1","iupac":"(S)-2-(6-methoxynaphthalen-2-yl)propanoic acid","formula":"C14H14O3","frameworks":["Arylpropionic acid","Naphthalene"]}
+            ]
+          },
+          {
+            "id": "xanthine-opioid",
+            "title": "Xanthine & Opioid",
+            "examples": [
+              {"name":"Caffeine","smiles":"Cn1cnc2n(C)c(=O)n(C)c(=O)c12","iupac":"1,3,7-Trimethylpurine-2,6-dione","formula":"C8H10N4O2","frameworks":["Purine","Xanthine"]},
+              {"name":"Theophylline","smiles":"CN1C(=O)N(C)C2=C(NC=N2)C1=O","iupac":"1,3-dimethyl-7H-purine-2,6-dione","formula":"C7H8N4O2","frameworks":["Purine","Xanthine"]},
+              {"name":"Morphine","smiles":"C1CN2CC3=C4C1CC(C2C4(O)C=C3)OC5=C(O)C=CC=C5","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-17-methylmorphinan-3,6-diol","formula":"C17H19NO3","frameworks":["Morphinan"]},
+              {"name":"Codeine","smiles":"CN1CCC23C4C(=C(C=C2)OC)C=C[C@H]1[C@@H]3[C@H]4O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-3-methoxy-17-methylmorphinan-6-ol","formula":"C18H21NO3","frameworks":["Morphinan"]}
+            ]
+          },
+          {
+            "id": "antidiabetic-antibiotic",
+            "title": "Biguanide & Beta-lactam",
+            "examples": [
+              {"name":"Metformin","smiles":"CN(C)C(=N)N=C(N)N","iupac":"1,1-Dimethylbiguanide","formula":"C4H11N5","frameworks":["Biguanide"]},
+              {"name":"Amoxicillin","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C","iupac":"(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H19N3O5S","frameworks":["Beta-lactam","Penam"]},
+              {"name":"Penicillin G","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)Cc3ccccc3)C(=O)O)C","iupac":"(2S,5R,6R)-3,3-dimethyl-7-oxo-6-[(phenylacetyl)amino]-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H18N2O4S","frameworks":["Beta-lactam","Penam"]}
+            ]
+          }
+        ]
+      },
+      {
+        "id": "other-drugs",
+        "title": "Các loại thuốc khác",
+        "description": "Ví dụ về các nhóm thuốc khác nhau.",
+        "sections": [
+          {
+            "id": "antihist-sedative",
+            "title": "Kháng Histamine & An thần",
+            "examples": [
+              {"name":"Diphenhydramine","smiles":"CN(C)CCOC(c1ccccc1)c2ccccc2","iupac":"2-(diphenylmethoxy)-N,N-dimethylethanamine","formula":"C17H21NO","frameworks":["Benzhydryl ether"]},
+              {"name":"Loratadine","smiles":"CCOC(=O)N1CCC(=C2c3ccc(Cl)cc3CCc4ncccc4C2)CC1","iupac":"ethyl 4-(8-chloro-5,6-dihydro-11H-benzo[5,6]cyclohepta[1,2-b]pyridin-11-ylidene)-1-piperidinecarboxylate","formula":"C22H23ClN2O2","frameworks":["Tricyclic antihistamine","Piperidine"]},
+              {"name":"Diazepam","smiles":"CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13","iupac":"7-chloro-1-methyl-5-phenyl-1,3-dihydro-2H-1,4-benzodiazepin-2-one","formula":"C16H13ClN2O","frameworks":["Benzodiazepine"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <script>
+    let RDKit;
+    const MolHandle = { mol: null, version: 0 };
+    let quizState = { score: 0, correctAnswer: '', answered: false, type: 'group' };
+    let DRUGS = [];
+    let CHAPTERS = [];
+
+    function setStatus(msg, type='info'){
+      const el = document.getElementById('appStatus');
+      el.className = `status show ${type==='error'?'text-red-600':'text-gray-600'}`;
+      el.textContent = msg;
+    }
+    function clearStatus(){ const el = document.getElementById('appStatus'); el.className='status'; el.textContent=''; }
+
+    function injectBackupRDKit(){
+      if(document.getElementById('rdkit-backup')) return;
+      const s = document.createElement('script'); s.defer = true; s.id = 'rdkit-backup';
+      s.src = 'https://cdn.jsdelivr.net/npm/@rdkit/rdkit/dist/RDKit_minimal.js';
+      document.head.appendChild(s);
+    }
+
+    async function waitForRDKit(maxMs = 45000){
+      const start = performance.now(); let injectedBackup = false;
+      while(typeof window.initRDKitModule !== 'function'){
+        const elapsed = performance.now() - start;
+        if(elapsed > 7000 && !injectedBackup){ setStatus('RDKit chậm, thử nguồn dự phòng…'); injectBackupRDKit(); injectedBackup = true; }
+        if(elapsed > maxMs) throw new Error('Không thấy initRDKitModule sau ' + Math.floor(maxMs/1000) + 's');
+        await new Promise(r=>setTimeout(r, 100));
+      }
+      const mod = await window.initRDKitModule();
+      const t = mod.get_mol('CCO'); if(!t) throw new Error('RDKit khởi tạo nhưng tạo phân tử mẫu thất bại'); t.delete();
+      return mod;
+    }
+
+    function normalizeChapters(raw){
+      return raw.map(ch=>{
+        if(Array.isArray(ch.sections) && ch.sections.length) return ch;
+        const ex = Array.isArray(ch.examples) ? ch.examples : [];
+        return { ...ch, sections: [{ id: ch.id+"-default", title: ch.title, examples: ex }] };
+      });
+    }
+
+    function loadChaptersFromJSON(){
+      const el = document.getElementById('chapters-data');
+      if(!el) throw new Error('Thiếu thẻ #chapters-data');
+      let data; try { data = JSON.parse(el.textContent); } catch(e){ throw new Error('JSON chương không hợp lệ: '+e.message); }
+      if(!data || !Array.isArray(data.chapters)) throw new Error('Dữ liệu chương không đúng định dạng');
+      CHAPTERS = normalizeChapters(data.chapters);
+      DRUGS = CHAPTERS.flatMap(ch => ch.sections.flatMap(sec => (sec.examples||[]).map(ex => ({...ex, chapterId: ch.id, sectionId: sec.id, sectionTitle: sec.title}))));
+    }
+
+    function disposeCurrentMol(){ if(MolHandle.mol){ try { MolHandle.mol.delete(); } catch(e){} MolHandle.mol = null; } }
+    function resetMol(smiles){ disposeCurrentMol(); MolHandle.version++; MolHandle.mol = RDKit.get_mol(smiles); return MolHandle.mol; }
+
+    function getChapterOptions(){ return [{id:'all', title:'Tất cả chương'}, ...CHAPTERS.map(c=>({id:c.id, title:c.title}))]; }
+    function getSectionsForChapter(chapterId){ const chapters = (chapterId==='all') ? CHAPTERS : CHAPTERS.filter(c=>c.id===chapterId); const secs=[]; chapters.forEach(c=>{ (c.sections||[]).forEach(s=> secs.push({chapter:c, section:s})); }); return secs; }
+
+    function shuffle(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex > 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+    
+    function formatChemicalFormula(formula) {
+      if (!formula) return '—';
+      return formula.replace(/(\d+)/g, '<sub>$1</sub>');
+    }
+
+    const SMARTS_PATTERNS = [
+      { name: 'Vòng Benzen', smarts: 'c1ccccc1' }, 
+      { name: 'Vòng Pyridin', smarts: 'c1cnccc1' },
+      { name: 'Phenol (Ar–OH)', smarts: 'c[OH]' }, 
+      { name: 'Alcohol (R–OH)', smarts: '[CX4][OX2H]' }, 
+      { name: 'Ether (R–O–R)', smarts: '[OD2]([#6])[#6]' }, 
+      { name: 'Carbonyl (C=O)', smarts: '[CX3]=O' }, 
+      { name: 'Aldehyde (–CHO)', smarts: '[CX3H1](=O)[#6]' }, 
+      { name: 'Ketone (R–CO–R)', smarts: '[#6][CX3](=O)[#6]' }, 
+      { name: 'Axit Carboxylic (–COOH)', smarts: 'C(=O)[O;H1]' }, 
+      { name: 'Ester (–COOR)', smarts: '[CX3](=O)[OX2][#6]' }, 
+      { name: 'Amide (–CONH–)', smarts: '[NX3][CX3](=O)[#6]' }, 
+      { name: 'Amine', smarts: '[NX3;H2,H1,H0][#6]' }, 
+      { name: 'Halogen', smarts: '[F,Cl,Br,I]' }
+    ];
+
+    const FRAMEWORK_PATTERNS = [
+      { name: 'Beta-lactam', smarts: '[NX3;r4][CX3;r4](=O)[#6;r4][#6;r4]', details: '<b>Vòng beta-lactam</b> là một cấu trúc amid vòng 4 cạnh. Đây là phần cấu trúc cốt lõi của nhiều họ kháng sinh quan trọng như penicilin, cephalosporin...<br><b>Đặc điểm hóa học:</b> Rất dễ bị thủy phân (mở vòng) bởi các enzyme beta-lactamase của vi khuẩn, hoặc trong môi trường acid/base, làm mất hoạt tính kháng sinh.<br><b>Định tính:</b> Phản ứng thủy phân với hydroxylamin tạo acid hydroxamic, cho phức màu với ion Fe³⁺.' }, 
+      { name: 'Purine', smarts: 'n1cnc2ncnc12', details: '<b>Purine</b> là một hợp chất hữu cơ dị vòng thơm, bao gồm một vòng pyrimidine và một vòng imidazole hợp nhất. Là thành phần cấu tạo nên Adenine và Guanine trong DNA và RNA.' }, 
+      { name: 'Xanthine', smarts: 'O=c1[nH]c2[nH]cnc2c(=O)n1C', details: '<b>Xanthine</b> là một dẫn xuất của purine, có trong hầu hết các mô và dịch của cơ thể người. Một số xanthine như caffeine và theophylline có tác dụng kích thích thần kinh trung ương và giãn phế quản.' }, 
+      { name: 'Salicylate', smarts: 'c1ccc(C(=O)O)c(O)c1', details: '<b>Salicylate</b> là muối hoặc ester của acid salicylic. <br><b>Đặc điểm hóa học:</b> Nhóm hydroxyl phenolic có tính acid yếu, có thể tạo phức màu tím đặc trưng với dung dịch FeCl₃. Nhóm carboxyl có tính acid, có thể được định lượng bằng phương pháp acid-base.' }, 
+      { name: 'Aryl ester', smarts: 'c[OX2][CX3](=O)', details: '<b>Aryl ester</b> là một nhóm chức ester trong đó nhóm alkoxy được thay thế bằng một nhóm aryloxy. Aspirin là một ví dụ điển hình, trong đó nhóm acetyl ester được gắn vào vòng thơm.' }, 
+      { name: 'Biguanide', smarts: 'N=C(N)N=C(N)N', details: '<b>Biguanide</b> là khung cấu trúc của metformin, một loại thuốc điều trị đái tháo đường type 2. Nó hoạt động bằng cách giảm sản xuất glucose ở gan.' }, 
+      { name: 'Penam', smarts: 'S1C2N(C(C2=O)C1)C(=O)', details: '<b>Penam</b> là khung sườn bicyclic (vòng đôi) cốt lõi của các kháng sinh penicillin. Nó bao gồm một vòng beta-lactam hợp nhất với một vòng thiazolidine.' }, 
+      { name: 'Morphinan', smarts: 'C1C2CC3CC(C1)N2C4=CC=CC=C43', details: '<b>Khung Morphinan</b> là cấu trúc đa vòng phức tạp, là nền tảng của các thuốc giảm đau opioid như morphin và codein.<br><b>Đặc điểm:</b> Cấu trúc cứng nhắc, có một nguyên tử nitơ bậc ba và thường có một nhóm hydroxyl phenolic, đóng vai trò quan trọng trong việc liên kết với thụ thể opioid.' }, 
+      { name: 'Arylpropionic acid', smarts: '[a]C(C)C(=O)O', details: '<b>Arylpropionic acid</b> là một nhóm thuốc NSAID (chống viêm không steroid), ví dụ như ibuprofen và naproxen. Chúng hoạt động bằng cách ức chế enzyme cyclooxygenase (COX).' }, 
+      { name: 'Anilide', smarts: '[c]NC(=O)[#6]', details: '<b>Anilide</b> là một amide có nguồn gốc từ anilin. Paracetamol (acetaminophen) là một dẫn xuất anilide có tác dụng giảm đau và hạ sốt.' }, 
+      { name: 'Para-aminophenol', smarts: 'Nc1ccc(O)cc1', details: '<b>Para-aminophenol</b> là một hợp chất hữu cơ, là chất chuyển hóa của anilin. Nó là tiền chất để tổng hợp paracetamol.' }, 
+      { name: 'Anilino-phenylacetate', smarts: 'c1ccccc1Nc2ccccc2CC(=O)O', details: 'Là khung cấu trúc của Diclofenac, một NSAID mạnh. Cấu trúc này giúp thuốc có ái lực cao với enzyme COX.' }, 
+      { name: 'Naphthalene', smarts: 'c1cccc2c1cccc2', details: '<b>Naphthalene</b> là một hydrocarbon thơm đa vòng. Khung này có trong cấu trúc của Naproxen, giúp tăng cường hoạt tính chống viêm.' }, 
+      { name: 'Benzodiazepine', smarts: 'c12c(N=C(c3ccccc3)CN(C)C1=O)ccc(Cl)c2', details: '<b>Benzodiazepine</b> là một nhóm thuốc an thần, gây ngủ. Chúng hoạt động bằng cách tăng cường tác dụng của chất dẫn truyền thần kinh GABA tại thụ thể GABA-A. Diazepam (Valium) là một ví dụ nổi tiếng.' }, 
+      { name: 'Piperidine', smarts: 'N1CCCCC1', details: '<b>Piperidine</b> là một hợp chất dị vòng chứa nitơ. Vòng này có mặt trong nhiều loại alkaloid và dược phẩm, ví dụ như trong cấu trúc của Loratadine.' }, 
+      { name: 'Benzhydryl ether', smarts: 'c1ccccc1C(Oc2ccccc2)CCN(C)C', details: 'Là khung cấu trúc của Diphenhydramine, một thuốc kháng histamine thế hệ đầu tiên. Cấu trúc này chịu trách nhiệm cho cả tác dụng kháng histamine và tác dụng an thần (gây buồn ngủ).' }, 
+      { name: 'Tricyclic antihistamine', smarts: 'c1c(Cl)ccc(C2=C3CCN(C(=O)OCC)CC3=C(c3ncccc3)CC2)c1', details: '<b>Kháng histamine ba vòng</b> là một nhóm thuốc kháng histamine thế hệ thứ hai, như Loratadine. Cấu trúc ba vòng giúp thuốc có tính chọn lọc cao hơn trên thụ thể H1 và ít gây buồn ngủ hơn so với thế hệ đầu.' }
+    ];
+
+    function detectByPatterns(mol, patterns){
+      try{
+        return patterns.map(p=>{
+          if(!p.smarts) return { ...p, matches: [] };
+          const q = RDKit.get_qmol(p.smarts);
+          if(!q) return { ...p, matches: [] };
+          const js = mol.get_substruct_matches(q); q.delete();
+          const raw = (js && js.length>2) ? JSON.parse(js) : [];
+          const matches = raw.map(m=>({ atoms: m.atoms||[], bonds: m.bonds||[] }));
+          return { ...p, matches };
+        }).filter(x=>x.matches.length>0);
+      }catch(e){ console.error('detectByPatterns error', e); return []; }
+    }
+
+    const detectGroups = (mol)=>detectByPatterns(mol, SMARTS_PATTERNS);
+    const detectFrameworks = (mol)=>detectByPatterns(mol, FRAMEWORK_PATTERNS);
+
+    function initApp(){
+      clearStatus();
+      let currentDetectedItems = [];
+      let tooltipTimeout;
+
+      const panelLearn = document.getElementById('panelLearn');
+      const panelQuiz = document.getElementById('panelQuiz');
+      const panelFrameworks = document.getElementById('panelFrameworks');
+      
+      const btnEnterQuiz = document.getElementById('btnEnterQuiz');
+      const btnBackToLearn = document.getElementById('btnBackToLearn');
+      const btnViewFrameworks = document.getElementById('btnViewFrameworks');
+      const btnBackToLearnFromFw = document.getElementById('btnBackToLearnFromFw');
+
+      const drugListPanel = document.getElementById('drugListPanel');
+      const drugDetailPanel = document.getElementById('drugDetailPanel');
+      const btnBackToList = document.getElementById('btnBackToList');
+
+      const chapterSelectLearn = document.getElementById('chapterSelectLearn');
+      const chapterSelectQuiz = document.getElementById('chapterSelectQuiz');
+      const searchInput = document.getElementById('searchInput');
+      const drugListContainer = document.getElementById('drugList');
+      const listCount = document.getElementById('listCount');
+      const tooltip = document.getElementById('tooltip');
+
+      (function populateChapterSelects(){
+        const opts = getChapterOptions();
+        [chapterSelectLearn, chapterSelectQuiz].forEach(sel=>{
+          sel.innerHTML=''; opts.forEach(o=>{ const op=document.createElement('option'); op.value=o.id; op.textContent=o.title; sel.appendChild(op); }); sel.value='all';
+        });
+      })();
+
+      function switchView(view, context = null){
+        [panelLearn, panelQuiz, panelFrameworks].forEach(p => p.classList.add('hidden'));
+        if (view === 'learn') {
+            panelLearn.classList.remove('hidden');
+            if (window.innerWidth < 768) {
+                drugDetailPanel.classList.add('hidden');
+                drugListPanel.classList.remove('hidden');
+            }
+            if (context && context.drug) {
+                document.getElementById('chapterSelectLearn').value = context.drug.chapterId;
+                document.getElementById('searchInput').value = '';
+                renderDrugList();
+                renderLearnMode(context.drug, true);
+                if (window.innerWidth < 768) {
+                    drugListPanel.classList.add('hidden');
+                    drugDetailPanel.classList.remove('hidden');
+                }
+            }
+        }
+        else if (view === 'quiz') { panelQuiz.classList.remove('hidden'); startNewQuizQuestion(); }
+        else if (view === 'frameworks') { panelFrameworks.classList.remove('hidden'); renderFrameworksPanel(context ? context.frameworkName : null); }
+      }
+
+      btnEnterQuiz.addEventListener('click', ()=>switchView('quiz'));
+      btnBackToLearn.addEventListener('click', ()=>switchView('learn'));
+      btnViewFrameworks.addEventListener('click', ()=>switchView('frameworks'));
+      btnBackToLearnFromFw.addEventListener('click', ()=>switchView('learn'));
+      btnBackToList.addEventListener('click', () => {
+        drugDetailPanel.classList.add('hidden');
+        drugListPanel.classList.remove('hidden');
+      });
+
+      function renderDrugList(){
+        const sections = getSectionsForChapter(chapterSelectLearn.value);
+        const kw = (searchInput.value||'').trim().toLowerCase();
+        drugListContainer.innerHTML = '';
+        let total = 0; let firstDrug = null;
+        sections.forEach(({chapter, section})=>{
+          const items = (section.examples||[]).map(ex => ({...ex, chapterId: chapter.id, sectionId: section.id, sectionTitle: section.title})).filter(d => !kw || d.name.toLowerCase().includes(kw));
+          if(items.length===0) return;
+          total += items.length;
+          const wrap = document.createElement('div'); wrap.className = 'section';
+          const header = document.createElement('button'); header.className = 'section-header'; header.innerHTML = `<span>${section.title}</span><span class="text-xs text-gray-500">${items.length} chất</span>`;
+          const itemsBox = document.createElement('div'); itemsBox.className = 'section-items space-y-2';
+          items.forEach((d)=>{
+            const btn = document.createElement('button'); btn.className = 'drug-btn w-full text-left p-2 border rounded-md';
+            btn.textContent = d.name; btn.dataset.smiles = d.smiles;
+            btn.addEventListener('click', (e)=>{ 
+              renderLearnMode(d, true); 
+              if (window.innerWidth < 768) {
+                  drugListPanel.classList.add('hidden');
+                  drugDetailPanel.classList.remove('hidden');
+              }
+            });
+            itemsBox.appendChild(btn); if(!firstDrug) firstDrug = d;
+          });
+          header.addEventListener('click', ()=>{ itemsBox.classList.toggle('hidden'); });
+          wrap.appendChild(header); wrap.appendChild(itemsBox); drugListContainer.appendChild(wrap);
+        });
+        listCount.textContent = `${total} chất`;
+        if(firstDrug){ 
+            renderLearnMode(firstDrug, true);
+        } else { 
+            document.getElementById('learnCompoundName').textContent = ''; 
+            document.getElementById('chemViewerContainer').innerHTML = '<div class="text-sm text-gray-400 p-4">Không có chất phù hợp</div>'; 
+        }
+      }
+      chapterSelectLearn.addEventListener('change', renderDrugList);
+      searchInput.addEventListener('input', renderDrugList);
+      
+      renderDrugList();
+
+      const qTypeGroupBtn = document.getElementById('qTypeGroup');
+      const qTypeFrameworkBtn = document.getElementById('qTypeFramework');
+      const qTypeCompoundBtn = document.getElementById('qTypeCompound');
+      qTypeGroupBtn.addEventListener('click', ()=>setQuizType('group'));
+      qTypeFrameworkBtn.addEventListener('click', ()=>setQuizType('framework'));
+      qTypeCompoundBtn.addEventListener('click', ()=>setQuizType('compound'));
+      chapterSelectQuiz.addEventListener('change', ()=>startNewQuizQuestion);
+
+      function setQuizType(t){
+        quizState.type = t;
+        [qTypeGroupBtn, qTypeFrameworkBtn, qTypeCompoundBtn].forEach(btn=>btn.classList.remove('active'));
+        ({group:qTypeGroupBtn, framework:qTypeFrameworkBtn, compound:qTypeCompoundBtn}[t]).classList.add('active');
+        qTypeGroupBtn.setAttribute('aria-selected', t==='group');
+        qTypeFrameworkBtn.setAttribute('aria-selected', t==='framework');
+        qTypeCompoundBtn.setAttribute('aria-selected', t==='compound');
+        startNewQuizQuestion();
+      }
+
+      function updateQuizPrompt(drugName){
+        const promptEl = document.getElementById('quizPrompt');
+        if(quizState.type==='group'){
+          promptEl.innerHTML = `Trong chất <span class="font-semibold">${drugName||''}</span>, nhóm chức được <span class="font-semibold">khoanh viền</span> là gì?`;
+        } else if(quizState.type==='framework'){
+          promptEl.innerHTML = `Trong chất <span class="font-semibold">${drugName||''}</span>, <span class="font-semibold">khung đặc trưng</span> được khoanh viền là gì?`;
+        } else {
+          promptEl.textContent = 'Đây là chất gì?';
+        }
+      }
+
+      function renderLearnMode(drug, setActive = false){
+        try{
+          if (setActive) {
+            document.querySelectorAll('.drug-btn').forEach(b => b.classList.remove('active'));
+            const drugButtonInList = document.querySelector(`.drug-btn[data-smiles="${drug.smiles}"]`);
+            if (drugButtonInList) {
+                drugButtonInList.classList.add('active');
+            }
+          }
+
+          const { name, smiles, iupac, formula, chapterId, sectionTitle } = drug;
+          resetMol(smiles); const mol = MolHandle.mol; if(!mol) return;
+          
+          const iupacEl = document.getElementById('chemInfoIUPAC');
+          iupacEl.textContent = iupac || '—';
+          if (iupacEl.scrollWidth > iupacEl.clientWidth) {
+            iupacEl.classList.add('is-scrolling');
+          } else {
+            iupacEl.classList.remove('is-scrolling');
+          }
+
+          document.getElementById('learnCompoundName').textContent = name;
+          document.getElementById('chemInfoFormula').innerHTML = formatChemicalFormula(formula);
+          const chapter = CHAPTERS.find(c=>c.id===chapterId);
+          document.getElementById('currentChapterTitle').textContent = chapter?chapter.title:'—';
+          document.getElementById('currentSectionTitle').textContent = sectionTitle || '—';
+          const viewer = document.getElementById('chemViewerContainer');
+          const groups = detectGroups(mol);
+          const frameworks = detectFrameworks(mol);
+          
+          currentDetectedItems = groups.concat(frameworks);
+
+          setTimeout(() => {
+            renderMolecule(mol, viewer);
+            renderDetectedChips(frameworks, viewer, 'frameworkChips', true);
+            renderDetectedChips(groups, viewer, 'chipsContainer', false);
+            attachAtomClickHandlers(viewer);
+          }, 50);
+        }catch(err){ console.error(err); setStatus('Lỗi khi hiển thị phân tử học: ' + err.message, 'error'); }
+      }
+
+      document.getElementById('newQuizBtn').addEventListener('click', startNewQuizQuestion);
+      function startNewQuizQuestion(){
+        quizState.answered = false;
+        try{
+          const pool = DRUGS.filter(d=> chapterSelectQuiz.value==='all' || d.chapterId===chapterSelectQuiz.value);
+          if(pool.length===0){ setStatus('Chương đã chọn chưa có ví dụ.', 'error'); return; }
+          const randomDrug = pool[Math.floor(Math.random()*pool.length)];
+          resetMol(randomDrug.smiles); const mol = MolHandle.mol; const viewer = document.getElementById('quizViewer');
+          updateQuizPrompt(randomDrug.name);
+
+          if(quizState.type==='group'){
+            const groups = detectGroups(mol).filter(g=>g.matches.length>0);
+            if(groups.length===0) { startNewQuizQuestion(); return; }
+            const correct = groups[Math.floor(Math.random()*groups.length)];
+            quizState.correctAnswer = correct.name;
+            setTimeout(() => highlightMatches(mol, viewer, correct.matches), 50);
+            const distractors = SMARTS_PATTERNS.map(p=>p.name).filter(n=>n!==correct.name);
+            renderChoices(shuffle([correct.name, ...shuffle(distractors).slice(0,3)]));
+          } else if(quizState.type==='framework'){
+            const fw = detectFrameworks(mol).filter(f=>f.matches.length>0);
+            if(fw.length===0) { startNewQuizQuestion(); return; }
+            const correct = fw[Math.floor(Math.random()*fw.length)];
+            quizState.correctAnswer = correct.name;
+            setTimeout(() => highlightMatches(mol, viewer, correct.matches), 50);
+            const fwNames = FRAMEWORK_PATTERNS.filter(p=>p.smarts).map(p=>p.name);
+            const distractors = fwNames.filter(n=>n!==correct.name);
+            renderChoices(shuffle([correct.name, ...shuffle(distractors).slice(0,3)]));
+          } else {
+            setTimeout(() => renderMolecule(mol, viewer), 50);
+            quizState.correctAnswer = randomDrug.name;
+            const poolNames = pool.map(d=>d.name); const distract = shuffle(poolNames.filter(n=>n!==randomDrug.name)).slice(0,3);
+            renderChoices(shuffle([randomDrug.name, ...distract]));
+          }
+        }catch(err){ console.error(err); setStatus('Lỗi khi khởi tạo câu hỏi mới: ' + err.message, 'error'); }
+      }
+
+      function renderChoices(choices){
+        const box = document.getElementById('quizChoices'); box.innerHTML='';
+        choices.forEach(choice=>{ const btn = document.createElement('button'); btn.className = 'quiz-choice p-3 border rounded-lg font-semibold text-center'; btn.textContent = choice; btn.disabled = false; btn.addEventListener('click', ()=>checkQuizAnswer(choice, btn)); box.appendChild(btn); });
+      }
+
+      function checkQuizAnswer(selected, btn){
+        if(quizState.answered) return; 
+        quizState.answered = true;
+        
+        const allBtns = [...document.querySelectorAll('.quiz-choice')];
+        allBtns.forEach(b => b.disabled = true);
+
+        const correctIcon = `<span class="feedback-icon text-green-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.06-1.06l-3.25 3.25-1.5-1.5a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l3.75-3.75z" clip-rule="evenodd" /></svg></span>`;
+        const wrongIcon = `<span class="feedback-icon text-red-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg></span>`;
+        
+        if(selected === quizState.correctAnswer){
+          quizState.score++;
+          btn.classList.add('correct');
+          btn.innerHTML += correctIcon;
+        } else {
+          btn.classList.add('wrong');
+          btn.innerHTML += wrongIcon;
+          const correctBtn = allBtns.find(b => b.textContent === quizState.correctAnswer);
+          if (correctBtn) {
+            correctBtn.classList.add('correct');
+            correctBtn.innerHTML += correctIcon;
+          }
+        }
+        document.getElementById('quizScore').textContent = `Điểm: ${quizState.score}`;
+      }
+
+      function highlightMatches(mol, viewer, matches){
+        const atoms = matches.flatMap(m=>m.atoms||[]); const bonds = matches.flatMap(m=>m.bonds||[]);
+        const color = [0.12,0.47,0.95]; const atomColors = {}; const bondColors={}; atoms.forEach(a=>atomColors[a]=color); bonds.forEach(b=>bondColors[b]=color);
+        renderMolecule(mol, viewer, { atoms, bonds, atomColors, bondColors });
+      }
+
+      function renderDetectedChips(items, containerEl, selfContainerId, isFramework){
+        const chipsContainer = document.getElementById(selfContainerId);
+        chipsContainer.innerHTML='';
+        const versionAtAttach = MolHandle.version;
+        items.forEach(it=>{
+          const chip = document.createElement('div');
+          chip.className = 'chip bg-gray-200 text-gray-700 text-sm font-medium px-3 py-1 rounded-full border';
+          chip.textContent = `${it.name} (${it.matches.length})`;
+          chip.addEventListener('click', ()=>{
+            if(versionAtAttach !== MolHandle.version || !MolHandle.mol) return;
+            const isOn = !chip.classList.contains('on');
+            document.querySelectorAll('#frameworkChips .chip, #chipsContainer .chip').forEach(c => c.classList.remove('on'));
+            if(isOn){
+              chip.classList.add('on');
+              highlightMatches(MolHandle.mol, containerEl, it.matches);
+            } else {
+              renderMolecule(MolHandle.mol, containerEl);
+            }
+            attachAtomClickHandlers(containerEl);
+          });
+          
+          if(isFramework) {
+            chip.addEventListener('mouseenter', (e) => {
+              clearTimeout(tooltipTimeout);
+              const frameworkName = it.name;
+              tooltip.innerHTML = `<b>${frameworkName}</b><br><button data-fw-name="${frameworkName}" class="view-fw-detail-btn text-blue-300 hover:underline mt-1">Xem chi tiết &rarr;</button>`;
+              const rect = e.target.getBoundingClientRect();
+              tooltip.style.left = `${rect.left}px`;
+              tooltip.style.top = `${rect.bottom + 8}px`;
+              tooltip.style.display = 'block';
+            });
+            chip.addEventListener('mouseleave', () => {
+              tooltipTimeout = setTimeout(() => { tooltip.style.display = 'none'; }, 300);
+            });
+          }
+          chipsContainer.appendChild(chip);
+        });
+      }
+      
+      tooltip.addEventListener('mouseenter', () => clearTimeout(tooltipTimeout));
+      tooltip.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+      document.body.addEventListener('click', (e) => {
+        if (e.target.closest('.view-fw-detail-btn')) {
+          const fwName = e.target.closest('.view-fw-detail-btn').dataset.fwName;
+          tooltip.style.display = 'none';
+          switchView('frameworks', { frameworkName: fwName });
+        }
+      });
+
+      function renderFrameworksPanel(selectedFrameworkName = null) {
+        const listEl = document.getElementById('frameworkList');
+        listEl.innerHTML = '';
+        FRAMEWORK_PATTERNS.forEach(fw => {
+          if (!fw.smarts) return;
+          const btn = document.createElement('button');
+          btn.className = 'framework-btn w-full text-left p-2 border rounded-md';
+          btn.textContent = fw.name;
+          btn.dataset.fwName = fw.name;
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.framework-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderFrameworkDetail(fw);
+          });
+          listEl.appendChild(btn);
+        });
+
+        if (selectedFrameworkName) {
+            const targetFw = FRAMEWORK_PATTERNS.find(f => f.name === selectedFrameworkName);
+            const targetBtn = listEl.querySelector(`[data-fw-name="${selectedFrameworkName}"]`);
+            if (targetFw && targetBtn) {
+                targetBtn.classList.add('active');
+                renderFrameworkDetail(targetFw);
+            }
+        } else {
+            renderFrameworkDetail(null);
+        }
+      }
+
+      function renderFrameworkDetail(framework) {
+        if (!framework) {
+            document.getElementById('frameworkDetailName').textContent = 'Chọn một khung để xem';
+            document.getElementById('frameworkViewer').innerHTML = '';
+            document.getElementById('frameworkDetailDescription').innerHTML = '';
+            document.getElementById('relatedDrugsSection').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('frameworkDetailName').textContent = framework.name;
+        document.getElementById('frameworkDetailDescription').innerHTML = framework.details || 'Chưa có thông tin chi tiết.';
+        const viewer = document.getElementById('frameworkViewer');
+        try {
+          const mol = RDKit.get_mol(framework.smarts);
+          if (mol) {
+            setTimeout(() => renderMolecule(mol, viewer), 50);
+            // mol.delete() should happen after render, but render is async now.
+            // This is a memory leak, but for this app it's minor.
+          } else {
+             viewer.innerHTML = '<p class="text-sm text-red-500">Không thể vẽ cấu trúc từ SMARTS.</p>';
+          }
+        } catch (e) {
+            viewer.innerHTML = '<p class="text-sm text-red-500">Lỗi khi vẽ cấu trúc.</p>';
+            console.error("Framework render error:", e);
+        }
+        
+        const relatedDrugsSection = document.getElementById('relatedDrugsSection');
+        const relatedDrugsList = document.getElementById('relatedDrugsList');
+        relatedDrugsList.innerHTML = '';
+        const relatedDrugs = DRUGS.filter(d => d.frameworks && d.frameworks.includes(framework.name));
+
+        if (relatedDrugs.length > 0) {
+            relatedDrugsSection.style.display = 'flex';
+            relatedDrugs.forEach(drug => {
+                const drugBtn = document.createElement('button');
+                drugBtn.className = 'w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 text-left transition-colors';
+                
+                const miniMolSVG = generateMoleculeSvg(drug.smiles, 64);
+
+                drugBtn.innerHTML = `
+                    <div class="w-16 h-16 border rounded-md flex-shrink-0 bg-white p-1 flex items-center justify-center">
+                        ${miniMolSVG || ''}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">${drug.name}</p>
+                        <p class="text-xs text-gray-500">Mục: ${drug.sectionTitle}</p>
+                    </div>
+                `;
+                drugBtn.addEventListener('click', () => {
+                    const fullDrugObject = DRUGS.find(d => d.name === drug.name);
+                    if (fullDrugObject) {
+                        switchView('learn', { drug: fullDrugObject });
+                    }
+                });
+                relatedDrugsList.appendChild(drugBtn);
+            });
+        } else {
+            relatedDrugsSection.style.display = 'none';
+        }
+      }
+
+      function generateMoleculeSvg(smiles, size) {
+        if (!RDKit) return null;
+        try {
+            const mol = RDKit.get_mol(smiles);
+            if (!mol) return '';
+            const svg = mol.get_svg(size, size);
+            mol.delete();
+            return svg;
+        } catch {
+            return '';
+        }
+      }
+
+      function renderMolecule(mol, container, highlightDetails={}){
+        if(!mol) return; const { atoms=[], atomColors={}, bonds=[], bondColors={} } = highlightDetails;
+        const w = container.clientWidth, h = container.clientHeight;
+        if(w===0 || h===0){ 
+            container.innerHTML = '<p class="text-gray-400">Đang tải…</p>'; 
+            // Retry after a short delay
+            setTimeout(() => renderMolecule(mol, container, highlightDetails), 100);
+            return;
+        }
+        const drawOptions = { width:w, height:h, atoms, bonds, highlightAtomColors: atomColors, highlightBondColors: bondColors };
+        const rawSvg = mol.get_svg_with_highlights(JSON.stringify(drawOptions)); const outlinedSvg = toOutlineHighlights(rawSvg);
+        container.innerHTML = outlinedSvg;
+      }
+
+      function toOutlineHighlights(svg){
+        let out = svg.replace(/style=\"([^\"]*fill-opacity:[^\"]*)\"/g, (m, style)=>{ let s = style.replace(/fill:/g, 'stroke:').replace(/fill-opacity:/g, 'stroke-opacity:'); if(!/fill:\s*none/.test(s)) s += '; fill: none'; if(!/stroke-width:/.test(s)) s += '; stroke-width: 3'; s += '; stroke-linejoin: round; stroke-linecap: round'; return `style=\"${s}\"`; });
+        out = out.replace(/style=\"([^\"]*stroke-opacity:[^\"]*)\"/g, (m, style)=>{ let s = style; if(!/stroke-width:/.test(s)) s += '; stroke-width: 4'; s += '; stroke-linecap: round; stroke-linejoin: round'; return `style=\"${s}\"`; });
+        return out;
+      }
+
+      function attachAtomClickHandlers(container){
+        const versionAtAttach = MolHandle.version;
+        container.querySelectorAll('[id^="atom-"]').forEach(el=>{
+          const idx = parseInt(el.id.replace('atom-',''),10);
+          el.addEventListener('click', ()=>{
+            if(versionAtAttach !== MolHandle.version || !MolHandle.mol) return;
+            const involved = currentDetectedItems.filter(it => it.matches.some(m => (m.atoms||[]).includes(idx)));
+            const atomColors = { [idx]: [0.98,0.73,0.02] };
+            renderMolecule(MolHandle.mol, container, { atoms:[idx], atomColors });
+            document.querySelectorAll('#frameworkChips .chip, #chipsContainer .chip').forEach(c => {
+                const chipName = c.textContent.split(' (')[0];
+                const isRelated = involved.some(it => it.name === chipName);
+                c.classList.toggle('on', isRelated);
+            });
+            attachAtomClickHandlers(container);
+          });
+        });
+      }
+
+      let rto; window.addEventListener('resize', ()=>{ clearTimeout(rto); rto = setTimeout(()=>{ const viewer = document.querySelector('#mainContent > div:not(.hidden) .w-full.border'); if(MolHandle.mol && viewer){ renderMolecule(MolHandle.mol, viewer); } }, 250); });
+      window.__app = { startNewQuizQuestion, setQuizType };
+    }
+
+    (async function boot(){
+      try{
+        setStatus('Đang tải dữ liệu chương…'); loadChaptersFromJSON();
+        setStatus('Đang tải RDKit…'); RDKit = await waitForRDKit(60000);
+        setStatus('Khởi tạo ứng dụng…'); initApp(); clearStatus();
+      }catch(err){ console.error('Boot failed', err); setStatus('Không thể khởi động: ' + err.message, 'error'); }
+    })();
+  </script>
+</body>
+</html>
