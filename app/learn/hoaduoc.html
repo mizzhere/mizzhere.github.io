@@ -24,25 +24,32 @@
     #chemViewerContainer svg [id^="atom-"]:hover, #quizViewer svg [id^="atom-"]:hover { filter: drop-shadow(0 0 3px #60a5fa); }
     
     .quiz-choice { 
-      transition: .15s ease; 
+      transition: all .2s ease; 
       position: relative;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .quiz-choice:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
     }
     .quiz-choice.correct { background:#e6f4ea; border-color:#22c55e; color:#16a34a; }
     .quiz-choice.wrong { background:#fee2e2; border-color:#ef4444; color:#dc2626; }
     .quiz-choice:disabled { opacity:.8; cursor:not-allowed; }
     .feedback-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.5);
+      position: relative;
+      transform: scale(0.5);
       opacity: 0;
       transition: all 0.2s ease-out;
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
     }
     .quiz-choice.correct .feedback-icon, .quiz-choice.wrong .feedback-icon {
-      transform: translate(-50%, -50%) scale(1);
+      transform: scale(1);
       opacity: 1;
     }
 
@@ -55,7 +62,8 @@
     .select { appearance:none; background:#fff; border:1px solid #e5e7eb; border-radius: 12px; padding:.5rem .75rem; font-weight:600; }
     .muted { color:#64748b; }
     .section { border:1px solid #e5e7eb; border-radius:12px; }
-    .section-header { width:100%; text-align:left; padding:.5rem .75rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; }
+    .section-header { width:100%; text-align:left; padding:.5rem .75rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; cursor: pointer; transition: background-color .15s ease; }
+    .section-header:hover { background-color: #f9fafb; }
     .section-items { padding:.5rem; }
     .appbar { height: 56px; border-radius: 12px; backdrop-filter: blur(8px); }
     
@@ -195,34 +203,52 @@
             <h3 class="text-lg md:text-xl font-bold text-gray-900">Câu hỏi trắc nghiệm</h3>
             <p id="quizPrompt" class="text-gray-600">Trong chất <span id="quizCompoundName" class="font-semibold"></span>, mục khoanh viền là gì?</p>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 flex-grow min-h-0">
-            <div id="quizViewer" class="w-full border rounded-lg flex items-center justify-center min-h-[220px] md:min-h-0"></div>
-            <div id="quizChoices" class="grid grid-cols-1 sm:grid-cols-2 gap-3 content-start"></div>
+          <div class="flex flex-col md:flex-row gap-4 md:gap-6 flex-grow min-h-0">
+            <div id="quizViewer" class="w-full md:w-1/2 border rounded-lg flex items-center justify-center flex-grow min-h-0"></div>
+            <div id="quizChoices" class="w-full md:w-1/2 grid grid-cols-2 gap-3 content-start flex-shrink-0 py-2"></div>
           </div>
         </div>
       </div>
       
       <div id="panelFrameworks" class="hidden h-full flex flex-col">
-        <div class="flex flex-col md:flex-row gap-3 md:gap-4 flex-grow min-h-0">
-          <aside class="card p-3 md:p-4 flex flex-col gap-3 h-2/5 md:h-auto md:w-1/3 flex-shrink-0">
+        <div class="flex md:flex-row gap-3 md:gap-4 flex-grow min-h-0">
+          <aside id="frameworkListPanel" class="card p-3 md:p-4 flex flex-col gap-3 w-full md:w-1/3 flex-shrink-0">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-bold">Danh sách khung</h3>
               <button id="btnBackToLearnFromFw" class="text-sm text-blue-700 font-semibold">← Quay lại</button>
             </div>
             <div id="frameworkList" class="space-y-2 overflow-y-auto"></div>
           </aside>
-          <section id="frameworkDetail" class="card p-3 md:p-4 flex flex-col h-3/5 md:h-auto md:w-2/3">
-            <h3 id="frameworkDetailName" class="text-xl font-bold text-gray-900 mb-2">Chọn một khung để xem</h3>
-            <div id="frameworkViewer" class="w-full border rounded-lg flex items-center justify-center flex-grow min-h-[150px] bg-white"></div>
-            <div class="mt-4 flex-grow flex flex-col min-h-0">
+          <section id="frameworkDetailPanel" class="card p-3 md:p-4 hidden md:flex flex-col w-full md:w-2/3">
+            <button id="btnBackToFwList" class="md:hidden mb-2 text-blue-700 font-semibold self-start">← Quay lại danh sách</button>
+            <h3 id="frameworkDetailName" class="text-xl font-bold text-gray-900 mb-2 flex-shrink-0">Chọn một khung để xem</h3>
+            <div id="frameworkViewer" class="w-full border rounded-lg flex items-center justify-center flex-shrink-0 h-1/3 md:h-auto md:flex-grow min-h-[150px] bg-white"></div>
+            <div class="mt-4 flex-grow flex flex-col min-h-0 overflow-y-auto">
               <div id="frameworkDetailDescription" class="text-gray-700 text-sm leading-relaxed mb-3"></div>
               <div id="relatedDrugsSection" class="flex flex-col min-h-0">
                   <h4 class="font-semibold text-sm mb-2 flex-shrink-0">Có trong các chất sau:</h4>
-                  <div id="relatedDrugsList" class="space-y-2 overflow-y-auto"></div>
+                  <div id="relatedDrugsList" class="space-y-2"></div>
               </div>
             </div>
           </section>
         </div>
+      </div>
+
+      <!-- FIX: Màn hình tổng quan chương mới -->
+      <div id="panelChapterOverview" class="hidden h-full">
+          <div class="card p-4 md:p-6 h-full flex flex-col">
+              <div class="flex-shrink-0 mb-4">
+                  <button id="btnBackToLearnFromOverview" class="text-blue-700 font-semibold mb-2">← Quay lại danh sách</button>
+                  <h2 id="overviewTitle" class="text-3xl md:text-4xl font-bold text-gray-900"></h2>
+              </div>
+              <div class="flex-grow overflow-y-auto">
+                  <p id="overviewDescription" class="text-gray-600 leading-relaxed"></p>
+                  <div id="overviewHighlights" class="mt-6">
+                      <h3 class="text-xl font-bold text-gray-800 mb-3">Các chất tiêu biểu</h3>
+                      <div id="overviewDrugList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                  </div>
+              </div>
+          </div>
       </div>
 
     </div>
@@ -232,62 +258,71 @@
 
   <script id="chapters-data" type="application/json">
   {
-    "chapters": [
-      {
-        "id": "vi-du-mau",
-        "title": "VÍ DỤ MẪU",
-        "description": "Tập hợp tất cả các chất minh họa hiện có.",
-        "sections": [
-          {
-            "id": "nsaid",
-            "title": "NSAIDs",
-            "examples": [
-              {"name":"Aspirin","smiles":"CC(=O)Oc1ccccc1C(=O)O","iupac":"2-Acetoxybenzoic acid","formula":"C9H8O4","frameworks":["Salicylate","Aryl ester"]},
-              {"name":"Ibuprofen","smiles":"CC(C)CC1=CC=C(C=C1)C(C)C(=O)O","iupac":"2-(4-Isobutylphenyl)propanoic acid","formula":"C13H18O2","frameworks":["Arylpropionic acid"]},
-              {"name":"Paracetamol","smiles":"CC(=O)NC1=CC=C(C=C1)O","iupac":"N-(4-hydroxyphenyl)acetamide","formula":"C8H9NO2","frameworks":["Anilide","Para-aminophenol"]},
-              {"name":"Diclofenac","smiles":"O=C(O)Cc1ccccc1Nc2c(Cl)cccc2Cl","iupac":"2-[(2,6-dichlorophenyl)amino]phenylacetic acid","formula":"C14H11Cl2NO2","frameworks":["Aryl acetic acid","Anilino-phenylacetate"]},
-              {"name":"Naproxen","smiles":"C[C@H](C(=O)O)c1ccc2ccccc2c1","iupac":"(S)-2-(6-methoxynaphthalen-2-yl)propanoic acid","formula":"C14H14O3","frameworks":["Arylpropionic acid","Naphthalene"]}
-            ]
-          },
-          {
-            "id": "xanthine-opioid",
-            "title": "Xanthine & Opioid",
-            "examples": [
-              {"name":"Caffeine","smiles":"Cn1cnc2n(C)c(=O)n(C)c(=O)c12","iupac":"1,3,7-Trimethylpurine-2,6-dione","formula":"C8H10N4O2","frameworks":["Purine","Xanthine"]},
-              {"name":"Theophylline","smiles":"CN1C(=O)N(C)C2=C(NC=N2)C1=O","iupac":"1,3-dimethyl-7H-purine-2,6-dione","formula":"C7H8N4O2","frameworks":["Purine","Xanthine"]},
-              {"name":"Morphine","smiles":"C1CN2CC3=C4C1CC(C2C4(O)C=C3)OC5=C(O)C=CC=C5","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-17-methylmorphinan-3,6-diol","formula":"C17H19NO3","frameworks":["Morphinan"]},
-              {"name":"Codeine","smiles":"CN1CCC23C4C(=C(C=C2)OC)C=C[C@H]1[C@@H]3[C@H]4O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-3-methoxy-17-methylmorphinan-6-ol","formula":"C18H21NO3","frameworks":["Morphinan"]}
-            ]
-          },
-          {
-            "id": "antidiabetic-antibiotic",
-            "title": "Biguanide & Beta-lactam",
-            "examples": [
-              {"name":"Metformin","smiles":"CN(C)C(=N)N=C(N)N","iupac":"1,1-Dimethylbiguanide","formula":"C4H11N5","frameworks":["Biguanide"]},
-              {"name":"Amoxicillin","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C","iupac":"(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H19N3O5S","frameworks":["Beta-lactam","Penam"]},
-              {"name":"Penicillin G","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)Cc3ccccc3)C(=O)O)C","iupac":"(2S,5R,6R)-3,3-dimethyl-7-oxo-6-[(phenylacetyl)amino]-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H18N2O4S","frameworks":["Beta-lactam","Penam"]}
-            ]
-          }
-        ]
+  "chapters": [
+    {
+      "id": "vi-du-mau",
+      "title": "VÍ DỤ MẪU",
+      "overview": {
+        "title": "Tổng quan các ví dụ mẫu",
+        "description": "Đây là tập hợp các hợp chất từ nhiều nhóm dược lý khác nhau để minh họa cho khả năng nhận dạng cấu trúc của ứng dụng. Mỗi chất đều có những đặc điểm về khung và nhóm chức riêng biệt, là nền tảng để tìm hiểu sâu hơn về hóa dược."
       },
-      {
-        "id": "other-drugs",
-        "title": "Các loại thuốc khác",
-        "description": "Ví dụ về các nhóm thuốc khác nhau.",
-        "sections": [
-          {
-            "id": "antihist-sedative",
-            "title": "Kháng Histamine & An thần",
-            "examples": [
-              {"name":"Diphenhydramine","smiles":"CN(C)CCOC(c1ccccc1)c2ccccc2","iupac":"2-(diphenylmethoxy)-N,N-dimethylethanamine","formula":"C17H21NO","frameworks":["Benzhydryl ether"]},
-              {"name":"Loratadine","smiles":"CCOC(=O)N1CCC(=C2c3ccc(Cl)cc3CCc4ncccc4C2)CC1","iupac":"ethyl 4-(8-chloro-5,6-dihydro-11H-benzo[5,6]cyclohepta[1,2-b]pyridin-11-ylidene)-1-piperidinecarboxylate","formula":"C22H23ClN2O2","frameworks":["Tricyclic antihistamine","Piperidine"]},
-              {"name":"Diazepam","smiles":"CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13","iupac":"7-chloro-1-methyl-5-phenyl-1,3-dihydro-2H-1,4-benzodiazepin-2-one","formula":"C16H13ClN2O","frameworks":["Benzodiazepine"]}
-            ]
-          }
-        ]
-      }
-    ]
-  }
+      "description": "Tập hợp tất cả các chất minh họa hiện có.",
+      "sections": [
+        {
+          "id": "nsaid",
+          "title": "NSAIDs",
+          "examples": [
+            {"name":"Aspirin","smiles":"CC(=O)Oc1ccccc1C(=O)O","iupac":"2-Acetoxybenzoic acid","formula":"C9H8O4","frameworks":["Salicylate","Aryl ester"]},
+            {"name":"Ibuprofen","smiles":"CC(C)CC1=CC=C(C=C1)C(C)C(=O)O","iupac":"2-(4-Isobutylphenyl)propanoic acid","formula":"C13H18O2","frameworks":["Arylpropionic acid"]},
+            {"name":"Paracetamol","smiles":"CC(=O)NC1=CC=C(C=C1)O","iupac":"N-(4-hydroxyphenyl)acetamide","formula":"C8H9NO2","frameworks":["Anilide","Para-aminophenol"]},
+            {"name":"Diclofenac","smiles":"O=C(O)Cc1ccccc1Nc2c(Cl)cccc2Cl","iupac":"2-[(2,6-dichlorophenyl)amino]phenylacetic acid","formula":"C14H11Cl2NO2","frameworks":["Anilino-phenylacetate"]},
+            {"name":"Naproxen","smiles":"COc1cccc2c1ccc([C@@H](C)C(=O)O)c2","iupac":"(S)-2-(6-methoxynaphthalen-2-yl)propanoic acid","formula":"C14H14O3","frameworks":["Arylpropionic acid","Naphthalene"]}
+          ]
+        },
+        {
+          "id": "xanthine-opioid",
+          "title": "Xanthine & Opioid",
+          "examples": [
+            {"name":"Caffeine","smiles":"Cn1cnc2n(C)c(=O)n(C)c(=O)c12","iupac":"1,3,7-Trimethylxanthine","formula":"C8H10N4O2","frameworks":["Purine","Xanthine"]},
+            {"name":"Theophylline","smiles":"Cn1c(=O)c2[nH]cnc2n(C)c1=O","iupac":"1,3-Dimethylxanthine","formula":"C7H8N4O2","frameworks":["Purine","Xanthine"]},
+            {"name":"Morphine","smiles":"CN1CCC23C4C=C(C=C2C1CC(C4O)O3)O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-17-methylmorphinan-3,6-diol","formula":"C17H19NO3","frameworks":["Morphinan"]},
+            {"name":"Codeine","smiles":"CN1CCC23C4C(=C(C=C2)OC)C=C[C@H]1[C@@H]3[C@H]4O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-3-methoxy-17-methylmorphinan-6-ol","formula":"C18H21NO3","frameworks":["Morphinan"]}
+          ]
+        },
+        {
+          "id": "antidiabetic-antibiotic",
+          "title": "Biguanide & Beta-lactam",
+          "examples": [
+            {"name":"Metformin","smiles":"CN(C)C(=N)N=C(N)N","iupac":"1,1-Dimethylbiguanide","formula":"C4H11N5","frameworks":["Biguanide"]},
+            {"name":"Amoxicillin","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C","iupac":"(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H19N3O5S","frameworks":["Beta-lactam","Penam"]},
+            {"name":"Penicillin G","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)Cc3ccccc3)C(=O)O)C","iupac":"(2S,5R,6R)-3,3-dimethyl-7-oxo-6-[(phenylacetyl)amino]-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H18N2O4S","frameworks":["Beta-lactam","Penam"]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "other-drugs",
+      "title": "Các loại thuốc khác",
+      "overview": {
+        "title": "Tổng quan các nhóm thuốc khác",
+        "description": "Chương này bao gồm các ví dụ về các nhóm thuốc có cơ chế và cấu trúc đa dạng, không thuộc các nhóm lớn đã được phân loại ở trên. Ví dụ bao gồm thuốc kháng histamine dùng trong điều trị dị ứng và thuốc an thần nhóm benzodiazepine tác động lên hệ thần kinh trung ương."
+      },
+      "description": "Ví dụ về các nhóm thuốc khác nhau.",
+      "sections": [
+        {
+          "id": "antihist-sedative",
+          "title": "Kháng Histamine & An thần",
+          "examples": [
+            {"name":"Diphenhydramine","smiles":"CN(C)CCOC(c1ccccc1)c2ccccc2","iupac":"2-(diphenylmethoxy)-N,N-dimethylethanamine","formula":"C17H21NO","frameworks":["Benzhydryl ether"]},
+            {"name":"Loratadine","smiles":"CCOC(=O)N1CCC(=C2c3ccc(Cl)cc3CCc4ncccc4C2)CC1","iupac":"ethyl 4-(8-chloro-5,6-dihydro-11H-benzo[5,6]cyclohepta[1,2-b]pyridin-11-ylidene)-1-piperidinecarboxylate","formula":"C22H23ClN2O2","frameworks":["Tricyclic antihistamine","Piperidine"]},
+            {"name":"Diazepam","smiles":"CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13","iupac":"7-chloro-1-methyl-5-phenyl-1,3-dihydro-2H-1,4-benzodiazepin-2-one","formula":"C16H13ClN2O","frameworks":["Benzodiazepine"]}
+          ]
+        }
+      ]
+    }
+  ]
+}
+
   </script>
 
   <script>
@@ -362,42 +397,137 @@
       return formula.replace(/(\d+)/g, '<sub>$1</sub>');
     }
 
-    const SMARTS_PATTERNS = [
-      { name: 'Vòng Benzen', smarts: 'c1ccccc1' }, 
-      { name: 'Vòng Pyridin', smarts: 'c1cnccc1' },
-      { name: 'Phenol (Ar–OH)', smarts: 'c[OH]' }, 
-      { name: 'Alcohol (R–OH)', smarts: '[CX4][OX2H]' }, 
-      { name: 'Ether (R–O–R)', smarts: '[OD2]([#6])[#6]' }, 
-      { name: 'Carbonyl (C=O)', smarts: '[CX3]=O' }, 
-      { name: 'Aldehyde (–CHO)', smarts: '[CX3H1](=O)[#6]' }, 
-      { name: 'Ketone (R–CO–R)', smarts: '[#6][CX3](=O)[#6]' }, 
-      { name: 'Axit Carboxylic (–COOH)', smarts: 'C(=O)[O;H1]' }, 
-      { name: 'Ester (–COOR)', smarts: '[CX3](=O)[OX2][#6]' }, 
-      { name: 'Amide (–CONH–)', smarts: '[NX3][CX3](=O)[#6]' }, 
-      { name: 'Amine', smarts: '[NX3;H2,H1,H0][#6]' }, 
-      { name: 'Halogen', smarts: '[F,Cl,Br,I]' }
-    ];
+   const SMARTS_PATTERNS = [
+  { name: 'Vòng Benzen',        smarts: 'c1ccccc1' },
+  // Tổng quát cho tất cả vòng pyridin (1 N thơm trong vòng benzen)
+  { name: 'Vòng Pyridin',       smarts: 'n1ccccc1' },
 
-    const FRAMEWORK_PATTERNS = [
-      { name: 'Beta-lactam', smarts: '[NX3;r4][CX3;r4](=O)[#6;r4][#6;r4]', details: '<b>Vòng beta-lactam</b> là một cấu trúc amid vòng 4 cạnh. Đây là phần cấu trúc cốt lõi của nhiều họ kháng sinh quan trọng như penicilin, cephalosporin...<br><b>Đặc điểm hóa học:</b> Rất dễ bị thủy phân (mở vòng) bởi các enzyme beta-lactamase của vi khuẩn, hoặc trong môi trường acid/base, làm mất hoạt tính kháng sinh.<br><b>Định tính:</b> Phản ứng thủy phân với hydroxylamin tạo acid hydroxamic, cho phức màu với ion Fe³⁺.' }, 
-      { name: 'Purine', smarts: 'n1cnc2ncnc12', details: '<b>Purine</b> là một hợp chất hữu cơ dị vòng thơm, bao gồm một vòng pyrimidine và một vòng imidazole hợp nhất. Là thành phần cấu tạo nên Adenine và Guanine trong DNA và RNA.' }, 
-      { name: 'Xanthine', smarts: 'O=c1[nH]c2[nH]cnc2c(=O)n1C', details: '<b>Xanthine</b> là một dẫn xuất của purine, có trong hầu hết các mô và dịch của cơ thể người. Một số xanthine như caffeine và theophylline có tác dụng kích thích thần kinh trung ương và giãn phế quản.' }, 
-      { name: 'Salicylate', smarts: 'c1ccc(C(=O)O)c(O)c1', details: '<b>Salicylate</b> là muối hoặc ester của acid salicylic. <br><b>Đặc điểm hóa học:</b> Nhóm hydroxyl phenolic có tính acid yếu, có thể tạo phức màu tím đặc trưng với dung dịch FeCl₃. Nhóm carboxyl có tính acid, có thể được định lượng bằng phương pháp acid-base.' }, 
-      { name: 'Aryl ester', smarts: 'c[OX2][CX3](=O)', details: '<b>Aryl ester</b> là một nhóm chức ester trong đó nhóm alkoxy được thay thế bằng một nhóm aryloxy. Aspirin là một ví dụ điển hình, trong đó nhóm acetyl ester được gắn vào vòng thơm.' }, 
-      { name: 'Biguanide', smarts: 'N=C(N)N=C(N)N', details: '<b>Biguanide</b> là khung cấu trúc của metformin, một loại thuốc điều trị đái tháo đường type 2. Nó hoạt động bằng cách giảm sản xuất glucose ở gan.' }, 
-      { name: 'Penam', smarts: 'S1C2N(C(C2=O)C1)C(=O)', details: '<b>Penam</b> là khung sườn bicyclic (vòng đôi) cốt lõi của các kháng sinh penicillin. Nó bao gồm một vòng beta-lactam hợp nhất với một vòng thiazolidine.' }, 
-      { name: 'Morphinan', smarts: 'C1C2CC3CC(C1)N2C4=CC=CC=C43', details: '<b>Khung Morphinan</b> là cấu trúc đa vòng phức tạp, là nền tảng của các thuốc giảm đau opioid như morphin và codein.<br><b>Đặc điểm:</b> Cấu trúc cứng nhắc, có một nguyên tử nitơ bậc ba và thường có một nhóm hydroxyl phenolic, đóng vai trò quan trọng trong việc liên kết với thụ thể opioid.' }, 
-      { name: 'Arylpropionic acid', smarts: '[a]C(C)C(=O)O', details: '<b>Arylpropionic acid</b> là một nhóm thuốc NSAID (chống viêm không steroid), ví dụ như ibuprofen và naproxen. Chúng hoạt động bằng cách ức chế enzyme cyclooxygenase (COX).' }, 
-      { name: 'Anilide', smarts: '[c]NC(=O)[#6]', details: '<b>Anilide</b> là một amide có nguồn gốc từ anilin. Paracetamol (acetaminophen) là một dẫn xuất anilide có tác dụng giảm đau và hạ sốt.' }, 
-      { name: 'Para-aminophenol', smarts: 'Nc1ccc(O)cc1', details: '<b>Para-aminophenol</b> là một hợp chất hữu cơ, là chất chuyển hóa của anilin. Nó là tiền chất để tổng hợp paracetamol.' }, 
-      { name: 'Anilino-phenylacetate', smarts: 'c1ccccc1Nc2ccccc2CC(=O)O', details: 'Là khung cấu trúc của Diclofenac, một NSAID mạnh. Cấu trúc này giúp thuốc có ái lực cao với enzyme COX.' }, 
-      { name: 'Naphthalene', smarts: 'c1cccc2c1cccc2', details: '<b>Naphthalene</b> là một hydrocarbon thơm đa vòng. Khung này có trong cấu trúc của Naproxen, giúp tăng cường hoạt tính chống viêm.' }, 
-      { name: 'Benzodiazepine', smarts: 'c12c(N=C(c3ccccc3)CN(C)C1=O)ccc(Cl)c2', details: '<b>Benzodiazepine</b> là một nhóm thuốc an thần, gây ngủ. Chúng hoạt động bằng cách tăng cường tác dụng của chất dẫn truyền thần kinh GABA tại thụ thể GABA-A. Diazepam (Valium) là một ví dụ nổi tiếng.' }, 
-      { name: 'Piperidine', smarts: 'N1CCCCC1', details: '<b>Piperidine</b> là một hợp chất dị vòng chứa nitơ. Vòng này có mặt trong nhiều loại alkaloid và dược phẩm, ví dụ như trong cấu trúc của Loratadine.' }, 
-      { name: 'Benzhydryl ether', smarts: 'c1ccccc1C(Oc2ccccc2)CCN(C)C', details: 'Là khung cấu trúc của Diphenhydramine, một thuốc kháng histamine thế hệ đầu tiên. Cấu trúc này chịu trách nhiệm cho cả tác dụng kháng histamine và tác dụng an thần (gây buồn ngủ).' }, 
-      { name: 'Tricyclic antihistamine', smarts: 'c1c(Cl)ccc(C2=C3CCN(C(=O)OCC)CC3=C(c3ncccc3)CC2)c1', details: '<b>Kháng histamine ba vòng</b> là một nhóm thuốc kháng histamine thế hệ thứ hai, như Loratadine. Cấu trúc ba vòng giúp thuốc có tính chọn lọc cao hơn trên thụ thể H1 và ít gây buồn ngủ hơn so với thế hệ đầu.' }
-    ];
+  { name: 'Phenol (Ar–OH)',     smarts: 'c[OX2H]' },
+  // Alcohol: C sp3 – O(H)
+  { name: 'Alcohol (R–OH)',     smarts: '[CX4][OX2H]' },
+  // Ether: O bậc 2 nối 2 carbon, loại trừ carbonyl lân cận
+  { name: 'Ether (R–O–R)',      smarts: '[OD2]([#6;!$(C=O)])[#6;!$(C=O)]' },
 
+  { name: 'Carbonyl (C=O)',     smarts: '[CX3]=O' },
+  { name: 'Aldehyde (–CHO)',    smarts: '[CX3H1](=O)[#6]' },
+  { name: 'Ketone (R–CO–R)',    smarts: '[#6][CX3](=O)[#6]' },
+
+  { name: 'Axit Carboxylic (–COOH)', smarts: '[CX3](=O)[OX2H1]' },
+  { name: 'Ester (–COOR)',      smarts: '[CX3](=O)[OX2][#6]' },
+
+  // Amide riêng, Amine loại trừ amide và thêm amoni bậc 4
+  { name: 'Amide (–CONH–)',     smarts: '[NX3][CX3](=O)[#6]' },
+  { name: 'Amine',              smarts: '[NX4+,$([NX3;H2,H1,H0;!$([NX3][CX3](=O))])][#6]' },
+
+  { name: 'Halogen',            smarts: '[F,Cl,Br,I]' },
+
+  // Bổ sung: thường gặp trong bộ ví dụ
+  { name: 'Carbamate (–NH–C(=O)–O–)', smarts: '[NX3][CX3](=O)[OX2][#6]' },
+  { name: 'Phenylacetic acid',        smarts: 'c[CH2]C(=O)O' },
+  { name: 'Aryl–O–Me (Ar–O–CH3)',     smarts: 'c[OX2][CH3]' }
+];
+
+ const FRAMEWORK_PATTERNS = [
+  // --- Lõi kháng sinh & các cấu trúc dị vòng ---
+  { 
+    name: 'Beta-lactam', 
+    smarts: '[NX3;r4][CX3;r4](=O)[#6;r4][#6;r4]', 
+    details: '<b>Vòng beta-lactam</b> là một cấu trúc amid vòng 4 cạnh. Đây là phần cấu trúc cốt lõi của nhiều họ kháng sinh quan trọng như penicillin, cephalosporin...<br><b>Đặc điểm hóa học:</b> Rất dễ bị thủy phân (mở vòng) bởi các enzyme beta-lactamase của vi khuẩn, hoặc trong môi trường acid/base, làm mất hoạt tính kháng sinh.<br><b>Định tính:</b> Có thể thủy phân bằng hydroxylamin tạo acid hydroxamic, cho phức màu với ion Fe³⁺.' 
+  },
+  { 
+    name: 'Penam', 
+    smarts: 'S1C2C(CN2C(=O)C1)C', 
+    details: '<b>Penam</b> là khung sườn bicyclic (vòng đôi) cốt lõi của các kháng sinh penicillin. Nó bao gồm một vòng beta-lactam hợp nhất với một vòng thiazolidine. Căng vòng làm tăng tính phản ứng của amid (dễ bị tấn công nucleophile), là nền tảng cho hoạt tính kháng khuẩn nhưng cũng khiến phân tử kém bền với thủy phân.' 
+  },
+  { 
+    name: 'Purine', 
+    smarts: 'n1cnc2ncnc12', 
+    details: '<b>Purine</b> là một dị vòng thơm hợp nhất gồm vòng pyrimidine và imidazole. Đây là khung của base nitơ Adenine và Guanine trong DNA/RNA, cũng là lõi của nhiều dẫn xuất sinh học/thuốc (ví dụ: allopurinol, azathioprine).' 
+  },
+  { 
+    name: 'Xanthine', 
+    // Lưu ý: mô tả khung 2,6-dioxopurine; các N có thể được methyl hóa (caffeine, theophylline)
+    // Đây là mẫu tương đối tổng quát để phục vụ nhận diện nhanh.
+    smarts: 'O=C1C2=Nc(nc2N(C(=O)N1))',
+    details: '<b>Xanthine</b> (2,6-dioxopurine) là dẫn xuất purine có 2 nhóm carbonyl ở vị trí 2 và 6. Nhiều xanthine N-methyl hóa (caffeine, theophylline) có tác dụng kích thích thần kinh trung ương và giãn phế quản. Trong phân tích, các nhóm imide (–CO–NH–CO–) đặc trưng cho phản ứng với bazơ mạnh và có thể tạo muối với base.' 
+  },
+  { 
+    name: 'Piperidine', 
+    smarts: 'N1CCCCC1', 
+    details: '<b>Piperidine</b> là vòng dị vòng no 6 cạnh chứa một nitơ. Xuất hiện rộng rãi trong alkaloid và dược phẩm; ảnh hưởng đến tính bazơ, độ tan và khả năng liên kết thụ thể (ví dụ có mặt trong cấu trúc loratadine).' 
+  },
+  { 
+    name: 'Naphthalene', 
+    smarts: 'c1cccc2c1cccc2', 
+    details: '<b>Naphthalene</b> là hydrocarbon thơm đa vòng gồm hai vòng benzen hợp nhất. Trong dược chất (như naproxen), khung này làm tăng tính kỵ nước và ái lực với đích, ảnh hưởng đến dược động học và gắn kết protein huyết tương.' 
+  },
+  
+  // --- Lõi thuốc NSAIDs ---
+  { 
+    name: 'Salicylate', 
+    // Cho phép OH hoặc O-acyl ở ortho so với –COOH (Aspirin vẫn match)
+    smarts: 'c1ccc(C(=O)O)c([OX2H,OX2][#6](=O)[#6])c1', 
+    details: '<b>Salicylate</b> là muối/ester của acid salicylic. <br><b>Đặc điểm hóa học:</b> Nhóm hydroxyl phenolic có tính acid yếu, cho phức tím với FeCl₃; nhóm carboxyl có tính acid mạnh hơn, định lượng được bằng chuẩn độ acid–base. Trong aspirin, –OH phenolic bị acetyl hóa (O-acyl), vẫn giữ tính acid của –COOH.' 
+  },
+  { 
+    name: 'Arylpropionic acid', 
+    smarts: '[a]C(C)C(=O)O', 
+    drawable_smiles: 'c1ccccc1C(C)C(=O)O', 
+    details: '<b>Arylpropionic acid</b> là lớp NSAID gồm ibuprofen, naproxen… Cơ chế: ức chế cyclooxygenase (COX) làm giảm tổng hợp prostaglandin. Nhóm –CH(CH3)–COOH gắn với nhân thơm là motif đặc trưng, thường có đồng phân lập thể ảnh hưởng dược lực học.' 
+  },
+  { 
+    name: 'Anilide', 
+    smarts: '[c]NC(=O)[#6]', 
+    drawable_smiles: 'c1ccccc1NC(=O)C', 
+    details: '<b>Anilide</b> là amide của anilin. Paracetamol (acetaminophen) là dẫn xuất anilide điển hình với tác dụng giảm đau – hạ sốt; –NH–CO– làm giảm bazơ của N thơm, tăng bền vững và ảnh hưởng chuyển hóa (glucuronid/ sulfat hóa).' 
+  },
+  { 
+    name: 'Para-aminophenol', 
+    smarts: 'Nc1ccc(O)cc1', 
+    details: '<b>Para-aminophenol</b> có –NH2 và –OH ở vị trí para trên vòng phenyl. Đây là trung gian quan trọng trong tổng hợp paracetamol; cặp nhóm định hướng para/meta ảnh hưởng rõ rệt đến hoạt tính và phản ứng điện hóa.' 
+  },
+  { 
+    name: 'Anilino-phenylacetate', 
+    smarts: 'c1ccccc1Nc2ccccc2CC(=O)O', 
+    details: 'Khung <b>anilino-phenylacetate</b> mô tả đặc trưng của diclofenac: nhân anilin liên kết nhân phenyl thông qua cầu –CH2–COO–. Sự thay thế halogen (2,6-dichloro) tăng kỵ nước, ái lực COX và thời gian tác dụng.' 
+  },
+  { 
+    name: 'Aryl ester', 
+    smarts: 'c[OX2][CX3](=O)', 
+    details: '<b>Aryl ester</b> là ester trong đó phần alkoxy/aryloxy gắn trực tiếp nhân thơm. Aspirin là ví dụ điển hình (acetylsalicylate). Ester dễ bị thủy phân trong điều kiện base/enzyme esterase.' 
+  },
+
+  // --- Lõi các thuốc khác ---
+  { 
+    name: 'Morphinan', 
+    // Tối giản nhưng vẫn nêu bật khung đa vòng có N cầu
+    smarts: 'C1CCN2CC3CC1CC2CC=C3', 
+    details: '<b>Khung Morphinan</b> là polycyclic cứng (tương ứng với morphine/codeine). Đặc trưng bởi N bậc ba cầu và các tâm lập thể quan trọng. Thay thế tại phenol (O-CH3 ở codeine) và tại N ảnh hưởng mạnh đến ái lực thụ thể opioid và dược lực học.' 
+  },
+  { 
+    name: 'Biguanide', 
+    smarts: 'N=C(N)N=C(N)N', 
+    details: '<b>Biguanide</b> gồm chuỗi guanidine kép liên hợp. Metformin là đại diện nổi bật điều trị ĐTĐ typ 2; cơ chế chính: giảm tân tạo glucose ở gan, tăng nhạy cảm insulin. Motif polybasic ảnh hưởng đến hấp thu và phân bố (ít gắn protein, thải trừ qua thận).' 
+  },
+  { 
+    name: 'Benzodiazepine', 
+    // Mẫu bền cho 1,4-benzodiazepin-2-one (diazepam-like)
+    smarts: 'c1ccc2nccc(C(=O)N)nc2c1', 
+    drawable_smiles: 'c1ccc2c(c1)N=C(c3ccccc3)CN(C)C2=O',
+    details: '<b>Benzodiazepine</b> là nhóm an thần – giải lo âu, tăng cường tác dụng GABA tại thụ thể GABA-A. Motif 1,4-benzodiazepin-2-one là lõi phổ biến (diazepam). Thay thế tại N1/C2/C7 (Cl) tinh chỉnh ái lực và dược động học.' 
+  },
+  { 
+    name: 'Benzhydryl ether', 
+    smarts: 'c1ccccc1C(O)c2ccccc2', 
+    drawable_smiles: 'c1ccccc1C(OCCN(C)C)c2ccccc2', 
+    details: 'Khung <b>benzhydryl ether</b> (diphenylmethoxy–) xuất hiện trong diphenhydramine. Tính kỵ nước cao và có trung tâm cation (amine) giải thích tác dụng kháng H1 và khả năng qua hàng rào máu–não (gây buồn ngủ).' 
+  },
+  { 
+    name: 'Loratadine scaffold',
+    smarts: 'c1c(Cl)ccc(C2=C3CCN(C(=O)OCC)CC3=C(c3ncccc3)CC2)c1', 
+    details: '<b>Khung loratadine</b> là kháng histamine thế hệ hai ba vòng hợp nhất kèm piperidine, chứa liên kết carbamate. Cấu trúc này cho tính chọn lọc cao với H1 ngoại biên và ít gây buồn ngủ so với thế hệ đầu.' 
+  }
+];
     function detectByPatterns(mol, patterns){
       try{
         return patterns.map(p=>{
@@ -423,15 +553,21 @@
       const panelLearn = document.getElementById('panelLearn');
       const panelQuiz = document.getElementById('panelQuiz');
       const panelFrameworks = document.getElementById('panelFrameworks');
+      const panelChapterOverview = document.getElementById('panelChapterOverview');
       
       const btnEnterQuiz = document.getElementById('btnEnterQuiz');
       const btnBackToLearn = document.getElementById('btnBackToLearn');
       const btnViewFrameworks = document.getElementById('btnViewFrameworks');
       const btnBackToLearnFromFw = document.getElementById('btnBackToLearnFromFw');
+      const btnBackToLearnFromOverview = document.getElementById('btnBackToLearnFromOverview');
 
       const drugListPanel = document.getElementById('drugListPanel');
       const drugDetailPanel = document.getElementById('drugDetailPanel');
       const btnBackToList = document.getElementById('btnBackToList');
+      
+      const frameworkListPanel = document.getElementById('frameworkListPanel');
+      const frameworkDetailPanel = document.getElementById('frameworkDetailPanel');
+      const btnBackToFwList = document.getElementById('btnBackToFwList');
 
       const chapterSelectLearn = document.getElementById('chapterSelectLearn');
       const chapterSelectQuiz = document.getElementById('chapterSelectQuiz');
@@ -448,7 +584,7 @@
       })();
 
       function switchView(view, context = null){
-        [panelLearn, panelQuiz, panelFrameworks].forEach(p => p.classList.add('hidden'));
+        [panelLearn, panelQuiz, panelFrameworks, panelChapterOverview].forEach(p => p.classList.add('hidden'));
         if (view === 'learn') {
             panelLearn.classList.remove('hidden');
             if (window.innerWidth < 768) {
@@ -467,16 +603,31 @@
             }
         }
         else if (view === 'quiz') { panelQuiz.classList.remove('hidden'); startNewQuizQuestion(); }
-        else if (view === 'frameworks') { panelFrameworks.classList.remove('hidden'); renderFrameworksPanel(context ? context.frameworkName : null); }
+        else if (view === 'frameworks') { 
+            panelFrameworks.classList.remove('hidden'); 
+            if (window.innerWidth < 768) {
+                frameworkDetailPanel.classList.add('hidden');
+                frameworkListPanel.classList.remove('hidden');
+            }
+            renderFrameworksPanel(context ? context.frameworkName : null); 
+        } else if (view === 'chapterOverview') {
+            panelChapterOverview.classList.remove('hidden');
+            renderChapterOverview(context.chapterId);
+        }
       }
 
       btnEnterQuiz.addEventListener('click', ()=>switchView('quiz'));
       btnBackToLearn.addEventListener('click', ()=>switchView('learn'));
       btnViewFrameworks.addEventListener('click', ()=>switchView('frameworks'));
       btnBackToLearnFromFw.addEventListener('click', ()=>switchView('learn'));
+      btnBackToLearnFromOverview.addEventListener('click', ()=>switchView('learn'));
       btnBackToList.addEventListener('click', () => {
         drugDetailPanel.classList.add('hidden');
         drugListPanel.classList.remove('hidden');
+      });
+      btnBackToFwList.addEventListener('click', () => {
+        frameworkDetailPanel.classList.add('hidden');
+        frameworkListPanel.classList.remove('hidden');
       });
 
       function renderDrugList(){
@@ -484,28 +635,49 @@
         const kw = (searchInput.value||'').trim().toLowerCase();
         drugListContainer.innerHTML = '';
         let total = 0; let firstDrug = null;
-        sections.forEach(({chapter, section})=>{
-          const items = (section.examples||[]).map(ex => ({...ex, chapterId: chapter.id, sectionId: section.id, sectionTitle: section.title})).filter(d => !kw || d.name.toLowerCase().includes(kw));
-          if(items.length===0) return;
-          total += items.length;
-          const wrap = document.createElement('div'); wrap.className = 'section';
-          const header = document.createElement('button'); header.className = 'section-header'; header.innerHTML = `<span>${section.title}</span><span class="text-xs text-gray-500">${items.length} chất</span>`;
-          const itemsBox = document.createElement('div'); itemsBox.className = 'section-items space-y-2';
-          items.forEach((d)=>{
-            const btn = document.createElement('button'); btn.className = 'drug-btn w-full text-left p-2 border rounded-md';
-            btn.textContent = d.name; btn.dataset.smiles = d.smiles;
-            btn.addEventListener('click', (e)=>{ 
-              renderLearnMode(d, true); 
-              if (window.innerWidth < 768) {
-                  drugListPanel.classList.add('hidden');
-                  drugDetailPanel.classList.remove('hidden');
-              }
-            });
-            itemsBox.appendChild(btn); if(!firstDrug) firstDrug = d;
-          });
-          header.addEventListener('click', ()=>{ itemsBox.classList.toggle('hidden'); });
-          wrap.appendChild(header); wrap.appendChild(itemsBox); drugListContainer.appendChild(wrap);
-        });
+       // REPLACE THE OLD forEach LOOP WITH THIS ONE
+
+sections.forEach(({chapter, section})=>{
+  const items = (section.examples||[]).map(ex => ({...ex, chapterId: chapter.id, sectionId: section.id, sectionTitle: section.title})).filter(d => !kw || d.name.toLowerCase().includes(kw));
+  if(items.length===0) return;
+  total += items.length;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'section';
+
+  const header = document.createElement('button');
+  header.className = 'section-header';
+  header.innerHTML = `<span>${section.title}</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-gray-400" style="transition: transform 0.2s ease;"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>`;
+  
+  const itemsBox = document.createElement('div');
+  itemsBox.className = 'section-items space-y-2';
+  itemsBox.style.display = 'none'; // Set initial state to hidden
+
+  // Add the click event listener AFTER itemsBox is defined
+  header.addEventListener('click', () => {
+    const isVisible = itemsBox.style.display !== 'none';
+    itemsBox.style.display = isVisible ? 'none' : 'grid'; // Use 'grid' or 'block'
+    header.querySelector('svg').style.transform = isVisible ? 'rotate(0deg)' : 'rotate(90deg)';
+  });
+
+  items.forEach((d)=>{
+    const btn = document.createElement('button');
+    btn.className = 'drug-btn w-full text-left p-2 border rounded-md';
+    btn.textContent = d.name; btn.dataset.smiles = d.smiles;
+    btn.addEventListener('click', (e)=>{ 
+      renderLearnMode(d, true); 
+      if (window.innerWidth < 768) {
+          drugListPanel.classList.add('hidden');
+          drugDetailPanel.classList.remove('hidden');
+      }
+    });
+    itemsBox.appendChild(btn); if(!firstDrug) firstDrug = d;
+  });
+
+  wrap.appendChild(header);
+  wrap.appendChild(itemsBox); // This line adds the drug list correctly
+  drugListContainer.appendChild(wrap);
+});
         listCount.textContent = `${total} chất`;
         if(firstDrug){ 
             renderLearnMode(firstDrug, true);
@@ -627,7 +799,22 @@
 
       function renderChoices(choices){
         const box = document.getElementById('quizChoices'); box.innerHTML='';
-        choices.forEach(choice=>{ const btn = document.createElement('button'); btn.className = 'quiz-choice p-3 border rounded-lg font-semibold text-center'; btn.textContent = choice; btn.disabled = false; btn.addEventListener('click', ()=>checkQuizAnswer(choice, btn)); box.appendChild(btn); });
+        choices.forEach(choice=>{ 
+            const btn = document.createElement('button'); 
+            btn.className = 'quiz-choice p-3 border rounded-lg font-semibold text-center'; 
+            btn.disabled = false; 
+            btn.addEventListener('click', ()=>checkQuizAnswer(choice, btn)); 
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = choice;
+            btn.appendChild(textSpan);
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'feedback-icon';
+            btn.appendChild(iconSpan);
+
+            box.appendChild(btn); 
+        });
       }
 
       function checkQuizAnswer(selected, btn){
@@ -637,20 +824,23 @@
         const allBtns = [...document.querySelectorAll('.quiz-choice')];
         allBtns.forEach(b => b.disabled = true);
 
-        const correctIcon = `<span class="feedback-icon text-green-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.06-1.06l-3.25 3.25-1.5-1.5a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l3.75-3.75z" clip-rule="evenodd" /></svg></span>`;
-        const wrongIcon = `<span class="feedback-icon text-red-600"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg></span>`;
+        const correctIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.06-1.06l-3.25 3.25-1.5-1.5a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.06 0l3.75-3.75z" clip-rule="evenodd" /></svg>`;
+        const wrongIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg>`;
         
+        const iconContainer = btn.querySelector('.feedback-icon');
+
         if(selected === quizState.correctAnswer){
           quizState.score++;
           btn.classList.add('correct');
-          btn.innerHTML += correctIcon;
+          if(iconContainer) iconContainer.innerHTML = correctIcon;
         } else {
           btn.classList.add('wrong');
-          btn.innerHTML += wrongIcon;
+          if(iconContainer) iconContainer.innerHTML = wrongIcon;
           const correctBtn = allBtns.find(b => b.textContent === quizState.correctAnswer);
           if (correctBtn) {
             correctBtn.classList.add('correct');
-            correctBtn.innerHTML += correctIcon;
+            const correctIconContainer = correctBtn.querySelector('.feedback-icon');
+            if (correctIconContainer) correctIconContainer.innerHTML = correctIcon;
           }
         }
         document.getElementById('quizScore').textContent = `Điểm: ${quizState.score}`;
@@ -724,6 +914,10 @@
             document.querySelectorAll('.framework-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderFrameworkDetail(fw);
+            if (window.innerWidth < 768) {
+              frameworkListPanel.classList.add('hidden');
+              frameworkDetailPanel.classList.remove('hidden');
+            }
           });
           listEl.appendChild(btn);
         });
@@ -734,6 +928,10 @@
             if (targetFw && targetBtn) {
                 targetBtn.classList.add('active');
                 renderFrameworkDetail(targetFw);
+                if (window.innerWidth < 768) {
+                    frameworkListPanel.classList.add('hidden');
+                    frameworkDetailPanel.classList.remove('hidden');
+                }
             }
         } else {
             renderFrameworkDetail(null);
@@ -753,7 +951,7 @@
         document.getElementById('frameworkDetailDescription').innerHTML = framework.details || 'Chưa có thông tin chi tiết.';
         const viewer = document.getElementById('frameworkViewer');
         try {
-          const mol = RDKit.get_mol(framework.smarts);
+          const mol = RDKit.get_mol(framework.drawable_smiles || framework.smarts);
           if (mol) {
             setTimeout(() => renderMolecule(mol, viewer), 50);
             // mol.delete() should happen after render, but render is async now.
@@ -799,6 +997,36 @@
         } else {
             relatedDrugsSection.style.display = 'none';
         }
+      }
+      
+      function renderChapterOverview(chapterId) {
+        const chapter = CHAPTERS.find(c => c.id === chapterId);
+        if (!chapter) return;
+
+        document.getElementById('overviewTitle').textContent = chapter.overview.title || chapter.title;
+        document.getElementById('overviewDescription').innerHTML = chapter.overview.description || chapter.description || '';
+
+        const overviewDrugList = document.getElementById('overviewDrugList');
+        overviewDrugList.innerHTML = '';
+        const chapterDrugs = DRUGS.filter(d => d.chapterId === chapterId);
+        
+        chapterDrugs.forEach(drug => {
+            const drugCard = document.createElement('button');
+            drugCard.className = 'flex flex-col items-center p-3 border rounded-lg hover:bg-gray-100 hover:shadow-md text-center transition-all';
+            
+            const miniMolSVG = generateMoleculeSvg(drug.smiles, 100);
+
+            drugCard.innerHTML = `
+                <div class="w-28 h-28 mb-2 flex items-center justify-center">
+                    ${miniMolSVG || ''}
+                </div>
+                <p class="font-semibold text-gray-800 text-sm">${drug.name}</p>
+            `;
+            drugCard.addEventListener('click', () => {
+                switchView('learn', { drug: drug });
+            });
+            overviewDrugList.appendChild(drugCard);
+        });
       }
 
       function generateMoleculeSvg(smiles, size) {
