@@ -272,30 +272,102 @@
           "id": "nsaid",
           "title": "NSAIDs",
           "examples": [
-            {"name":"Aspirin","smiles":"CC(=O)Oc1ccccc1C(=O)O","iupac":"2-Acetoxybenzoic acid","formula":"C9H8O4","frameworks":["Salicylate","Aryl ester"]},
-            {"name":"Ibuprofen","smiles":"CC(C)CC1=CC=C(C=C1)C(C)C(=O)O","iupac":"2-(4-Isobutylphenyl)propanoic acid","formula":"C13H18O2","frameworks":["Arylpropionic acid"]},
-            {"name":"Paracetamol","smiles":"CC(=O)NC1=CC=C(C=C1)O","iupac":"N-(4-hydroxyphenyl)acetamide","formula":"C8H9NO2","frameworks":["Anilide","Para-aminophenol"]},
-            {"name":"Diclofenac","smiles":"O=C(O)Cc1ccccc1Nc2c(Cl)cccc2Cl","iupac":"2-[(2,6-dichlorophenyl)amino]phenylacetic acid","formula":"C14H11Cl2NO2","frameworks":["Anilino-phenylacetate"]},
-            {"name":"Naproxen","smiles":"COc1cccc2c1ccc([C@@H](C)C(=O)O)c2","iupac":"(S)-2-(6-methoxynaphthalen-2-yl)propanoic acid","formula":"C14H14O3","frameworks":["Arylpropionic acid","Naphthalene"]}
+            {
+              "name": "Aspirin",
+              "smiles": "CC(=O)Oc1ccccc1C(=O)O",
+              "iupac": "2-Acetoxybenzoic acid",
+              "formula": "C9H8O4",
+              "frameworks": ["Salicylate", "Aryl ester"]
+            },
+            {
+              "name": "Ibuprofen",
+              "smiles": "CC(C)Cc1ccc(C(C)C(=O)O)cc1",
+              "iupac": "2-(4-Isobutylphenyl)propanoic acid",
+              "formula": "C13H18O2",
+              "frameworks": ["Arylpropionic acid"]
+            },
+            {
+              "name": "Paracetamol",
+              "smiles": "CC(=O)Nc1ccc(O)cc1",
+              "iupac": "N-(4-hydroxyphenyl)acetamide",
+              "formula": "C8H9NO2",
+              "frameworks": ["Anilide", "Para-aminophenol"]
+            },
+            {
+              "name": "Diclofenac",
+              "smiles": "O=C(O)Cc1ccccc1Nc2c(Cl)cccc2Cl",
+              "iupac": "2-[(2,6-dichlorophenyl)amino]phenylacetic acid",
+              "formula": "C14H11Cl2NO2",
+              "frameworks": ["Anilino-phenylacetate"]
+            },
+            {
+              "name": "Naproxen",
+              "smiles": "COc1ccc2cc(ccc2c1)C(C)C(=O)O",
+              "iupac": "(S)-2-(6-methoxynaphthalen-2-yl)propanoic acid",
+              "formula": "C14H14O3",
+              "frameworks": ["Arylpropionic acid", "Naphthalene"]
+            }
           ]
         },
         {
           "id": "xanthine-opioid",
           "title": "Xanthine & Opioid",
           "examples": [
-            {"name":"Caffeine","smiles":"Cn1cnc2n(C)c(=O)n(C)c(=O)c12","iupac":"1,3,7-Trimethylxanthine","formula":"C8H10N4O2","frameworks":["Purine","Xanthine"]},
-            {"name":"Theophylline","smiles":"Cn1c(=O)c2[nH]cnc2n(C)c1=O","iupac":"1,3-Dimethylxanthine","formula":"C7H8N4O2","frameworks":["Purine","Xanthine"]},
-            {"name":"Morphine","smiles":"CN1CCC23C4C=C(C=C2C1CC(C4O)O3)O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-17-methylmorphinan-3,6-diol","formula":"C17H19NO3","frameworks":["Morphinan"]},
-            {"name":"Codeine","smiles":"CN1CCC23C4C(=C(C=C2)OC)C=C[C@H]1[C@@H]3[C@H]4O","iupac":"(5α,6α)-7,8-didehydro-4,5-epoxy-3-methoxy-17-methylmorphinan-6-ol","formula":"C18H21NO3","frameworks":["Morphinan"]}
+            {
+              "name": "Caffeine",
+              "smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+              "iupac": "1,3,7-Trimethylxanthine",
+              "formula": "C8H10N4O2",
+              "frameworks": ["Purine", "Xanthine"]
+            },
+            {
+              "name": "Theophylline",
+              "smiles": "Cn1c(=O)c2c(n(C)c1=O)[nH]cn2",
+              "iupac": "1,3-Dimethylxanthine",
+              "formula": "C7H8N4O2",
+              "frameworks": ["Purine", "Xanthine"]
+            },
+            {
+              "name": "Morphine",
+              "smiles": "CN1CC[C@]23[C@@H]4[C@H]1CC5=C2C(=C(C=C5)O)O[C@H]3[C@H](C4)O",
+              "iupac": "(5α,6α)-7,8-didehydro-4,5-epoxy-17-methylmorphinan-3,6-diol",
+              "formula": "C17H19NO3",
+              "frameworks": ["Morphinan"]
+            },
+            {
+              "name": "Codeine",
+              "smiles": "COc1ccc2c3c1O[C@H]4[C@@H](C=C[C@H]([C@H]34)N(C)CC2)O",
+              "iupac": "(5α,6α)-7,8-didehydro-4,5-epoxy-3-methoxy-17-methylmorphinan-6-ol",
+              "formula": "C18H21NO3",
+              "frameworks": ["Morphinan"]
+            }
           ]
         },
         {
           "id": "antidiabetic-antibiotic",
           "title": "Biguanide & Beta-lactam",
           "examples": [
-            {"name":"Metformin","smiles":"CN(C)C(=N)N=C(N)N","iupac":"1,1-Dimethylbiguanide","formula":"C4H11N5","frameworks":["Biguanide"]},
-            {"name":"Amoxicillin","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C","iupac":"(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H19N3O5S","frameworks":["Beta-lactam","Penam"]},
-            {"name":"Penicillin G","smiles":"CC1(C(N2C(S1)C(C2=O)NC(=O)Cc3ccccc3)C(=O)O)C","iupac":"(2S,5R,6R)-3,3-dimethyl-7-oxo-6-[(phenylacetyl)amino]-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid","formula":"C16H18N2O4S","frameworks":["Beta-lactam","Penam"]}
+            {
+              "name": "Metformin",
+              "smiles": "CN(C)C(=N)NC(=N)N",
+              "iupac": "1,1-Dimethylbiguanide",
+              "formula": "C4H11N5",
+              "frameworks": ["Biguanide"]
+            },
+            {
+              "name": "Amoxicillin",
+              "smiles": "CC1([C@@H](N2[C@H](S1)[C@@H](C2=O)NC(=O)[C@@H](c3ccc(cc3)O)N)C(=O)O)C",
+              "iupac": "(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid",
+              "formula": "C16H19N3O5S",
+              "frameworks": ["Beta-lactam", "Penam"]
+            },
+            {
+              "name": "Penicillin G",
+              "smiles": "CC1([C@@H](N2[C@H](S1)[C@@H](C2=O)NC(=O)Cc3ccccc3)C(=O)O)C",
+              "iupac": "(2S,5R,6R)-3,3-dimethyl-7-oxo-6-[(phenylacetyl)amino]-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid",
+              "formula": "C16H18N2O4S",
+              "frameworks": ["Beta-lactam", "Penam"]
+            }
           ]
         }
       ]
@@ -313,16 +385,33 @@
           "id": "antihist-sedative",
           "title": "Kháng Histamine & An thần",
           "examples": [
-            {"name":"Diphenhydramine","smiles":"CN(C)CCOC(c1ccccc1)c2ccccc2","iupac":"2-(diphenylmethoxy)-N,N-dimethylethanamine","formula":"C17H21NO","frameworks":["Benzhydryl ether"]},
-            {"name":"Loratadine","smiles":"CCOC(=O)N1CCC(=C2c3ccc(Cl)cc3CCc4ncccc4C2)CC1","iupac":"ethyl 4-(8-chloro-5,6-dihydro-11H-benzo[5,6]cyclohepta[1,2-b]pyridin-11-ylidene)-1-piperidinecarboxylate","formula":"C22H23ClN2O2","frameworks":["Tricyclic antihistamine","Piperidine"]},
-            {"name":"Diazepam","smiles":"CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13","iupac":"7-chloro-1-methyl-5-phenyl-1,3-dihydro-2H-1,4-benzodiazepin-2-one","formula":"C16H13ClN2O","frameworks":["Benzodiazepine"]}
+            {
+              "name": "Diphenhydramine",
+              "smiles": "CN(C)CCOC(c1ccccc1)c2ccccc2",
+              "iupac": "2-(diphenylmethoxy)-N,N-dimethylethanamine",
+              "formula": "C17H21NO",
+              "frameworks": ["Benzhydryl ether"]
+            },
+            {
+              "name": "Loratadine",
+              "smiles": "CCOC(=O)N1CCC(=C2c3ccc(Cl)cc3CCc4ncccc42)CC1",
+              "iupac": "ethyl 4-(8-chloro-5,6-dihydro-11H-benzo[5,6]cyclohepta[1,2-b]pyridin-11-ylidene)-1-piperidinecarboxylate",
+              "formula": "C22H23ClN2O2",
+              "frameworks": ["Loratadine scaffold", "Piperidine"]
+            },
+            {
+              "name": "Diazepam",
+              "smiles": "CN1C(=O)CN=C(c2ccccc2)c3cc(Cl)ccc13",
+              "iupac": "7-chloro-1-methyl-5-phenyl-1,3-dihydro-2H-1,4-benzodiazepin-2-one",
+              "formula": "C16H13ClN2O",
+              "frameworks": ["Benzodiazepine"]
+            }
           ]
         }
       ]
     }
   ]
 }
-
   </script>
 
   <script>
@@ -415,9 +504,19 @@
   { name: 'Axit Carboxylic (–COOH)', smarts: '[CX3](=O)[OX2H1]' },
   { name: 'Ester (–COOR)',      smarts: '[CX3](=O)[OX2][#6]' },
 
-  // Amide riêng, Amine loại trừ amide và thêm amoni bậc 4
-  { name: 'Amide (–CONH–)',     smarts: '[NX3][CX3](=O)[#6]' },
-  { name: 'Amine',              smarts: '[NX4+,$([NX3;H2,H1,H0;!$([NX3][CX3](=O))])][#6]' },
+    { name: 'Amide (–CONH–)',     smarts: '[NX3][CX3](=O)[#6]' },
+  
+  // Phân loại Amine theo bậc
+  { name: 'Amine bậc 1 (–NH2)',   smarts: '[NX3;H2;!$([N][CX3]=O);!$([N][S](=O)=O)][#6]' },
+  { name: 'Amine bậc 2 (–NH–)',   smarts: '[NX3;H1;!$([N][CX3]=O);!$([N][S](=O)=O)]([#6])[#6]' },
+  { name: 'Amine bậc 3 (–N<)',    smarts: '[NX3;H0;!$([N][CX3]=O);!$([N][S](=O)=O)]([#6])([#6])[#6]' },
+  { name: 'Amoni bậc 4 (–N+<)',   smarts: '[NX4+]([#6])([#6])([#6])[#6]' },
+  
+  // Amine thơm riêng biệt
+  { name: 'Aniline (Ar–NH2)',     smarts: '[NX3;H2]c' },
+  { name: 'N-Aryl amine',         smarts: '[NX3;H1](c)[#6]' },
+  { name: 'Diarylamnie',          smarts: '[NX3;H1](c)c' },
+
 
   { name: 'Halogen',            smarts: '[F,Cl,Br,I]' },
 
@@ -427,28 +526,26 @@
   { name: 'Aryl–O–Me (Ar–O–CH3)',     smarts: 'c[OX2][CH3]' }
 ];
 
- const FRAMEWORK_PATTERNS = [
+const FRAMEWORK_PATTERNS = [
   // --- Lõi kháng sinh & các cấu trúc dị vòng ---
   { 
     name: 'Beta-lactam', 
-    smarts: '[NX3;r4][CX3;r4](=O)[#6;r4][#6;r4]', 
+    smarts: '[NX3;r4][CX3;r4](=O)[CX4;r4][CX4;r4]1', 
     details: '<b>Vòng beta-lactam</b> là một cấu trúc amid vòng 4 cạnh. Đây là phần cấu trúc cốt lõi của nhiều họ kháng sinh quan trọng như penicillin, cephalosporin...<br><b>Đặc điểm hóa học:</b> Rất dễ bị thủy phân (mở vòng) bởi các enzyme beta-lactamase của vi khuẩn, hoặc trong môi trường acid/base, làm mất hoạt tính kháng sinh.<br><b>Định tính:</b> Có thể thủy phân bằng hydroxylamin tạo acid hydroxamic, cho phức màu với ion Fe³⁺.' 
   },
   { 
     name: 'Penam', 
-    smarts: 'S1C2C(CN2C(=O)C1)C', 
+    smarts: 'S1CC2NC(=O)[C@H]2C1', 
     details: '<b>Penam</b> là khung sườn bicyclic (vòng đôi) cốt lõi của các kháng sinh penicillin. Nó bao gồm một vòng beta-lactam hợp nhất với một vòng thiazolidine. Căng vòng làm tăng tính phản ứng của amid (dễ bị tấn công nucleophile), là nền tảng cho hoạt tính kháng khuẩn nhưng cũng khiến phân tử kém bền với thủy phân.' 
   },
   { 
     name: 'Purine', 
-    smarts: 'n1cnc2ncnc12', 
+    smarts: 'c1ncnc2[nH]cnc12', 
     details: '<b>Purine</b> là một dị vòng thơm hợp nhất gồm vòng pyrimidine và imidazole. Đây là khung của base nitơ Adenine và Guanine trong DNA/RNA, cũng là lõi của nhiều dẫn xuất sinh học/thuốc (ví dụ: allopurinol, azathioprine).' 
   },
   { 
     name: 'Xanthine', 
-    // Lưu ý: mô tả khung 2,6-dioxopurine; các N có thể được methyl hóa (caffeine, theophylline)
-    // Đây là mẫu tương đối tổng quát để phục vụ nhận diện nhanh.
-    smarts: 'O=C1C2=Nc(nc2N(C(=O)N1))',
+    smarts: 'O=c1[nH]c(=O)c2[nH]cnc2[nH]1',
     details: '<b>Xanthine</b> (2,6-dioxopurine) là dẫn xuất purine có 2 nhóm carbonyl ở vị trí 2 và 6. Nhiều xanthine N-methyl hóa (caffeine, theophylline) có tác dụng kích thích thần kinh trung ương và giãn phế quản. Trong phân tích, các nhóm imide (–CO–NH–CO–) đặc trưng cho phản ứng với bazơ mạnh và có thể tạo muối với base.' 
   },
   { 
@@ -465,19 +562,18 @@
   // --- Lõi thuốc NSAIDs ---
   { 
     name: 'Salicylate', 
-    // Cho phép OH hoặc O-acyl ở ortho so với –COOH (Aspirin vẫn match)
-    smarts: 'c1ccc(C(=O)O)c([OX2H,OX2][#6](=O)[#6])c1', 
+    smarts: 'c1ccccc1C(=O)O[OX2H,OX2C(=O)]', 
     details: '<b>Salicylate</b> là muối/ester của acid salicylic. <br><b>Đặc điểm hóa học:</b> Nhóm hydroxyl phenolic có tính acid yếu, cho phức tím với FeCl₃; nhóm carboxyl có tính acid mạnh hơn, định lượng được bằng chuẩn độ acid–base. Trong aspirin, –OH phenolic bị acetyl hóa (O-acyl), vẫn giữ tính acid của –COOH.' 
   },
   { 
     name: 'Arylpropionic acid', 
-    smarts: '[a]C(C)C(=O)O', 
+    smarts: 'c[CH](C)C(=O)O', 
     drawable_smiles: 'c1ccccc1C(C)C(=O)O', 
     details: '<b>Arylpropionic acid</b> là lớp NSAID gồm ibuprofen, naproxen… Cơ chế: ức chế cyclooxygenase (COX) làm giảm tổng hợp prostaglandin. Nhóm –CH(CH3)–COOH gắn với nhân thơm là motif đặc trưng, thường có đồng phân lập thể ảnh hưởng dược lực học.' 
   },
   { 
     name: 'Anilide', 
-    smarts: '[c]NC(=O)[#6]', 
+    smarts: 'c[NH]C(=O)[#6]', 
     drawable_smiles: 'c1ccccc1NC(=O)C', 
     details: '<b>Anilide</b> là amide của anilin. Paracetamol (acetaminophen) là dẫn xuất anilide điển hình với tác dụng giảm đau – hạ sốt; –NH–CO– làm giảm bazơ của N thơm, tăng bền vững và ảnh hưởng chuyển hóa (glucuronid/ sulfat hóa).' 
   },
@@ -488,7 +584,7 @@
   },
   { 
     name: 'Anilino-phenylacetate', 
-    smarts: 'c1ccccc1Nc2ccccc2CC(=O)O', 
+    smarts: 'c1ccccc1[NH]c2ccccc2CC(=O)O', 
     details: 'Khung <b>anilino-phenylacetate</b> mô tả đặc trưng của diclofenac: nhân anilin liên kết nhân phenyl thông qua cầu –CH2–COO–. Sự thay thế halogen (2,6-dichloro) tăng kỵ nước, ái lực COX và thời gian tác dụng.' 
   },
   { 
@@ -500,31 +596,29 @@
   // --- Lõi các thuốc khác ---
   { 
     name: 'Morphinan', 
-    // Tối giản nhưng vẫn nêu bật khung đa vòng có N cầu
-    smarts: 'C1CCN2CC3CC1CC2CC=C3', 
+    smarts: '[CH2][CH2][CH2]N1CC2C3C(C1)CCC3C=C2', 
     details: '<b>Khung Morphinan</b> là polycyclic cứng (tương ứng với morphine/codeine). Đặc trưng bởi N bậc ba cầu và các tâm lập thể quan trọng. Thay thế tại phenol (O-CH3 ở codeine) và tại N ảnh hưởng mạnh đến ái lực thụ thể opioid và dược lực học.' 
   },
   { 
     name: 'Biguanide', 
-    smarts: 'N=C(N)N=C(N)N', 
+    smarts: 'NC(=N)NC(=N)N', 
     details: '<b>Biguanide</b> gồm chuỗi guanidine kép liên hợp. Metformin là đại diện nổi bật điều trị ĐTĐ typ 2; cơ chế chính: giảm tân tạo glucose ở gan, tăng nhạy cảm insulin. Motif polybasic ảnh hưởng đến hấp thu và phân bố (ít gắn protein, thải trừ qua thận).' 
   },
   { 
     name: 'Benzodiazepine', 
-    // Mẫu bền cho 1,4-benzodiazepin-2-one (diazepam-like)
-    smarts: 'c1ccc2nccc(C(=O)N)nc2c1', 
+    smarts: 'c1ccc2c(c1)N=C(c3ccccc3)CN(C)C2=O',
     drawable_smiles: 'c1ccc2c(c1)N=C(c3ccccc3)CN(C)C2=O',
     details: '<b>Benzodiazepine</b> là nhóm an thần – giải lo âu, tăng cường tác dụng GABA tại thụ thể GABA-A. Motif 1,4-benzodiazepin-2-one là lõi phổ biến (diazepam). Thay thế tại N1/C2/C7 (Cl) tinh chỉnh ái lực và dược động học.' 
   },
   { 
     name: 'Benzhydryl ether', 
-    smarts: 'c1ccccc1C(O)c2ccccc2', 
+    smarts: 'c1ccccc1C([OX2]CC[NX3])c2ccccc2', 
     drawable_smiles: 'c1ccccc1C(OCCN(C)C)c2ccccc2', 
     details: 'Khung <b>benzhydryl ether</b> (diphenylmethoxy–) xuất hiện trong diphenhydramine. Tính kỵ nước cao và có trung tâm cation (amine) giải thích tác dụng kháng H1 và khả năng qua hàng rào máu–não (gây buồn ngủ).' 
   },
   { 
     name: 'Loratadine scaffold',
-    smarts: 'c1c(Cl)ccc(C2=C3CCN(C(=O)OCC)CC3=C(c3ncccc3)CC2)c1', 
+    smarts: 'c1c(Cl)ccc(C2=C3CCN(C(=O)OCC)CC3=C(c4ncccc4)CC2)c1', 
     details: '<b>Khung loratadine</b> là kháng histamine thế hệ hai ba vòng hợp nhất kèm piperidine, chứa liên kết carbamate. Cấu trúc này cho tính chọn lọc cao với H1 ngoại biên và ít gây buồn ngủ so với thế hệ đầu.' 
   }
 ];
