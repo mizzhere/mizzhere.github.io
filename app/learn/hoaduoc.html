@@ -257,7 +257,7 @@
   <div id="tooltip"></div>
 
   <script id="chapters-data" type="application/json">
-  {
+ {
   "chapters": [
     {
       "id": "vi-du-mau",
@@ -359,7 +359,7 @@
               "smiles": "CC1([C@@H](N2[C@H](S1)[C@@H](C2=O)NC(=O)[C@@H](c3ccc(cc3)O)N)C(=O)O)C",
               "iupac": "(2S,5R,6R)-6-[(2R)-2-amino-2-(4-hydroxyphenyl)acetamido]-3,3-dimethyl-7-oxo-4-thia-1-azabicyclo[3.2.0]heptane-2-carboxylic acid",
               "formula": "C16H19N3O5S",
-              "frameworks": ["Beta-lactam", "Penam"]
+              "frameworks": ["Beta-lactam", "Penam", "Amine bậc 1 (–NH2)"]
             },
             {
               "name": "Penicillin G",
@@ -390,7 +390,7 @@
               "smiles": "CN(C)CCOC(c1ccccc1)c2ccccc2",
               "iupac": "2-(diphenylmethoxy)-N,N-dimethylethanamine",
               "formula": "C17H21NO",
-              "frameworks": ["Benzhydryl ether"]
+              "frameworks": ["Benzhydryl ether", "Amine bậc 3 (–N<)"]
             },
             {
               "name": "Loratadine",
@@ -515,8 +515,7 @@
   // Amine thơm riêng biệt
   { name: 'Aniline (Ar–NH2)',     smarts: '[NX3;H2]c' },
   { name: 'N-Aryl amine',         smarts: '[NX3;H1](c)[#6]' },
-  { name: 'Diarylamnie',          smarts: '[NX3;H1](c)c' },
-
+  
 
   { name: 'Halogen',            smarts: '[F,Cl,Br,I]' },
 
