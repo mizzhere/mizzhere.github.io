@@ -160,70 +160,66 @@
         justify-content: center;
         align-items: center;
       }
-      #player-hand {
-        align-items: flex-end;
-      }
-      #opponent-hand {
-        align-items: flex-start;
-      }
-
+     
       /* Bảng đấu - trung tâm của trò chơi */
       #board {
-        flex: 1; /* Chiếm hết không gian còn lại */
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        background-color: var(--bg-surface-1);
-        border-radius: var(--border-radius-lg);
-        border: 1px solid var(--border-color);
+           flex: 1;
+    display: grid
+;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.75rem;
+    place-content: center;
+    padding: 0.75rem;
+    background-color: var(--bg-surface-1);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
       }
 
-      .lane {
-        flex: 1;
+      .card-slot {
+          width: 4.2rem;   /* SỬA LẠI: Bằng chiều rộng thẻ bài */
+  height: 6rem;    /* SỬA LẠI: Bằng chiều cao thẻ bài */
         display: flex;
-        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         background-color: rgba(0, 0, 0, 0.2);
         border-radius: var(--border-radius-md);
         border: 1px dashed var(--border-color);
-        padding: 0.5rem;
-        gap: 0.5rem;
-        position: relative;
+        position: relative; /* Cần cho việc đặt tên khu vực ở bước 3 */
         transition: all 0.3s ease;
       }
-      .lane.drop-hover {
+
+      /* Thêm lại hiệu ứng drop-hover cho từng ô */
+      .card-slot.drop-hover {
         border-style: solid;
         border-color: var(--accent-primary);
         box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
       }
+.card-slot::before {
+  position: absolute;
+  bottom: 0.25rem; /* Đưa xuống dưới */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem; /* Cho to hơn một chút */
+  font-weight: 900; /* Đậm hơn cho nổi bật */
+  z-index: 10; /* QUAN TRỌNG: Để nổi lên trên lá bài */
+  pointer-events: none; /* Để không cản trở việc kéo thả */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Thêm bóng cho dễ đọc */
+}
 
-      .lane-header {
-        text-align: center;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-      }
-      #main-lane .lane-header {
-        color: var(--priority-glow-color, #ffc107);
-      }
-      #side-lane .lane-header {
-        color: var(--special-glow-color, #03a9f4);
-      }
-
-      .lane-slots {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .card-slot {
-        flex: 1;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
+/* Tô màu VÀNG cho cả 2 nhãn */
+.card-slot[data-zone="main"]::before {
+  content: 'x2';
+  color: var(--priority-glow-color, #ffc107);
+}
+.card-slot[data-zone="side"]::before {
+  content: 'x1';
+  color: var(--priority-glow-color, #ffc107);
+}
       /* ============================================= */
       /* 4. THIẾT KẾ THẺ BÀI (CARD) MỚI               */
       /* ============================================= */
@@ -233,7 +229,7 @@
         border-radius: var(--border-radius-md);
         background-color: var(--bg-surface-2);
         position: relative;
-        transition: all 0.3s ease;
+         transition: transform 0.3s ease, opacity 0.3s ease, left 0.4s ease-in-out;
         transform-style: preserve-3d;
         flex-shrink: 0;
         border: 2px solid var(--border-color);
@@ -242,6 +238,12 @@
       .hand .card {
         position: absolute;
         cursor: grab;
+      }
+            #player-hand .card {
+        bottom: 0; /* Ghim chặt lá bài vào cạnh dưới khu vực tay bài */
+      }
+      #opponent-hand .card {
+        top: 0; /* Ghim chặt lá bài vào cạnh trên khu vực tay bài */
       }
       .hand .card:active {
         cursor: grabbing;
@@ -534,21 +536,12 @@
       </div>
 
       <!-- BẢNG ĐẤU TRUNG TÂM -->
-      <div id="board">
-        <div id="main-lane" class="lane" data-zone="main">
-          <div class="lane-header">KHU VỰC CHÍNH (x2)</div>
-          <div class="lane-slots">
-            <div id="opponent-main-slot" class="card-slot"></div>
-            <div id="player-main-slot" class="card-slot"></div>
-          </div>
-        </div>
-        <div id="side-lane" class="lane" data-zone="side">
-          <div class="lane-header">KHU VỰC PHỤ (x1)</div>
-          <div class="lane-slots">
-            <div id="opponent-side-slot" class="card-slot"></div>
-            <div id="player-side-slot" class="card-slot"></div>
-          </div>
-        </div>
+       <div id="board">
+        <div id="opponent-side-slot" class="card-slot" data-zone="side"></div>
+        <div id="opponent-main-slot" class="card-slot" data-zone="main"></div>
+        
+        <div id="player-side-slot" class="card-slot" data-zone="side"></div>
+        <div id="player-main-slot" class="card-slot" data-zone="main"></div>
       </div>
 
       <!-- KHU VỰC NGƯỜI CHƠI -->
@@ -820,12 +813,17 @@
               ? 5
               : gameState.cardBasePoints[card.type];
             if (zoneName) {
-              let zoneMultiplier = zoneName === ZONES.MAIN ? 2 : 1;
-              let calculatedPoints = basePoints * zoneMultiplier;
+              // --- SỬA LOGIC TÍNH ĐIỂM TẠI ĐÂY ---
+              let finalMultiplier;
               if (card.isPriority && isDefenderCard) {
-                calculatedPoints *= zoneName === ZONES.MAIN ? 3 : 2;
+                // Nếu là thẻ Ưu Tiên phòng thủ, hệ số là 3 (Khu Chính) hoặc 2 (Khu Phụ)
+                finalMultiplier = zoneName === ZONES.MAIN ? 3 : 2;
+              } else {
+                // Nếu không, hệ số là 2 (Khu Chính) hoặc 1 (Khu Phụ)
+                finalMultiplier = zoneName === ZONES.MAIN ? 2 : 1;
               }
-              displayPoints = calculatedPoints;
+              displayPoints = basePoints * finalMultiplier;
+              // --- KẾT THÚC PHẦN SỬA ---
             } else {
               displayPoints = basePoints;
             }
@@ -986,7 +984,7 @@
         }
 
         // CẬP NHẬT LẠI HÀM DRAG-DROP ĐỂ DÙNG `data-zone`
-        dragEnd(e) {
+dragEnd(e) {
           if (!dragState.isDragging) return;
           document.removeEventListener("mousemove", game.dragging);
           document.removeEventListener("touchmove", game.dragging);
@@ -995,18 +993,29 @@
 
           let droppedOnZone = null;
           const pointer = e.changedTouches ? e.changedTouches[0] : e;
+          
+          // SỬA Ở ĐÂY: Lặp qua các ô người chơi có thể thả vào
+          const dropTargets = [
+            DOMElements.board.playerMainSlot,
+            DOMElements.board.playerSideSlot,
+            // Thêm 2 ô của đối thủ để có hiệu ứng hover, nhưng việc thả vào sẽ do logic game quyết định
+            DOMElements.board.opponentMainSlot, 
+            DOMElements.board.opponentSideSlot
+          ];
 
-          [DOMElements.board.mainLane, DOMElements.board.sideLane].forEach(
-            (zoneEl) => {
-              zoneEl.classList.remove("drop-hover");
-              const zoneRect = zoneEl.getBoundingClientRect();
+          dropTargets.forEach((slotEl) => {
+              slotEl.classList.remove("drop-hover");
+              const slotRect = slotEl.getBoundingClientRect();
               if (
-                pointer.clientX > zoneRect.left &&
-                pointer.clientX < zoneRect.right &&
-                pointer.clientY > zoneRect.top &&
-                pointer.clientY < zoneRect.bottom
+                pointer.clientX > slotRect.left &&
+                pointer.clientX < slotRect.right &&
+                pointer.clientY > slotRect.top &&
+                pointer.clientY < slotRect.bottom
               ) {
-                droppedOnZone = zoneEl.dataset.zone; // Lấy tên zone từ data-attribute
+                // Chỉ tính là thả hợp lệ vào ô của người chơi
+                if (slotEl === DOMElements.board.playerMainSlot || slotEl === DOMElements.board.playerSideSlot) {
+                   droppedOnZone = slotEl.dataset.zone;
+                }
               }
             }
           );
@@ -1021,8 +1030,7 @@
           dragState.cardData = null;
           game.render();
         }
-
-        dragging(e) {
+dragging(e) {
           if (!dragState.isDragging) return;
           e.preventDefault();
           const pointer = e.touches ? e.touches[0] : e;
@@ -1030,23 +1038,28 @@
           const y = pointer.clientY - dragState.offsetY;
           dragState.draggedElement.style.left = `${x}px`;
           dragState.draggedElement.style.top = `${y}px`;
-          [DOMElements.board.mainLane, DOMElements.board.sideLane].forEach(
-            (zoneEl) => {
-              const zoneRect = zoneEl.getBoundingClientRect();
+
+          // SỬA Ở ĐÂY: Lặp qua các ô người chơi có thể thả vào để hiện hiệu ứng
+          const dropTargets = [
+            DOMElements.board.playerMainSlot,
+            DOMElements.board.playerSideSlot,
+          ];
+          
+          dropTargets.forEach((slotEl) => {
+              const zoneRect = slotEl.getBoundingClientRect();
               if (
                 pointer.clientX > zoneRect.left &&
                 pointer.clientX < zoneRect.right &&
                 pointer.clientY > zoneRect.top &&
                 pointer.clientY < zoneRect.bottom
               ) {
-                zoneEl.classList.add("drop-hover");
+                slotEl.classList.add("drop-hover");
               } else {
-                zoneEl.classList.remove("drop-hover");
+                slotEl.classList.remove("drop-hover");
               }
             }
           );
         }
-
         // HÀM CẬP NHẬT THÔNG TIN TRẬN ĐẤU
         updateGameInfo() {
           DOMElements.header.turnInfo.textContent = `Vòng ${gameState.round} - Ván ${gameState.turn}`;
@@ -1174,9 +1187,17 @@
               break;
             case PHASES.CHECK_DRAW:
               const defenderForDraw = this.getCurrentDefender();
-              if (!defenderForDraw.hand.some((c) => c.isPriority)) {
+              const hasPriorityCard = defenderForDraw.hand.some((c) => c.isPriority);
+              const hasEnoughCards = defenderForDraw.hand.length >= 2;
+
+              // --- SỬA LOGIC TẠI ĐÂY ---
+              // Người chơi phải bốc bài nếu KHÔNG CÓ thẻ Ưu Tiên HOẶC có ÍT HƠN 2 LÁ BÀI
+              if (!hasPriorityCard || !hasEnoughCards) {
+                let reason = !hasPriorityCard 
+                  ? "không có Thẻ Ưu Tiên" 
+                  : "có ít hơn 2 lá bài";
                 this.log(
-                  `${defenderForDraw.name} không có Thẻ Ưu Tiên! Bắt buộc bốc bài.`
+                  `${defenderForDraw.name} ${reason}! Bắt buộc bốc bài.`
                 );
                 await this.sleep(1500);
                 this.handleDraw(defenderForDraw.id);
@@ -1403,21 +1424,31 @@
           const attackZone = gameState.attackerZoneChoice;
 
           // BƯỚC 1: XỬ LÝ KHU PHỤ
+          // BƯỚC 1: XỬ LÝ KHU PHỤ (ĐÃ CẬP NHẬT LOGIC)
           const sideZoneCard = gameState.battlefield.side.defenderCard;
           if (attackZone !== ZONES.SIDE && sideZoneCard) {
-            if (sideZoneCard.isBasic && !sideZoneCard.isPriority) {
+            if (sideZoneCard.isBasic) {
+              // Thẻ Thường và Ưu Tiên đều được cộng điểm cơ bản
               gameState.cardBasePoints[sideZoneCard.type]++;
               this.log(
-                `Thẻ ${
-                  sideZoneCard.type
-                } Thường được bảo toàn. +1 điểm cơ bản! (Hiện tại: ${
-                  gameState.cardBasePoints[sideZoneCard.type]
-                })`
+                `Thẻ ${sideZoneCard.type} (${sideZoneCard.isPriority ? "Ưu Tiên" : "Thường"}) được bảo toàn. +1 điểm cơ bản! (Hiện tại: ${gameState.cardBasePoints[sideZoneCard.type]})`
               );
               await this.sleep(1500);
+
+              if (sideZoneCard.isPriority) {
+                // Thẻ Ưu tiên bị loại bỏ vào bộ bài chung
+                gameState.commonDeck.push(sideZoneCard);
+                this.log(`Thẻ Ưu Tiên ở Khu Phụ của ${defender.name} bị loại bỏ.`);
+              } else {
+                // Thẻ Thường được trả về tay
+                defender.hand.push(sideZoneCard);
+                this.log(`Thẻ ở Khu Phụ của ${defender.name} được trả về tay.`);
+              }
+            } else {
+              // Thẻ Đặc Biệt (Luôn Thắng/Thua) chỉ đơn giản là trả về tay
+              defender.hand.push(sideZoneCard);
+              this.log(`Thẻ ở Khu Phụ của ${defender.name} được trả về tay.`);
             }
-            defender.hand.push(sideZoneCard);
-            this.log(`Thẻ ở Khu Phụ của ${defender.name} được trả về tay.`);
             await this.sleep(1000);
           }
 
@@ -1466,85 +1497,61 @@
             else clashResult = "defender";
           }
 
-          // BƯỚC 3: TÍNH ĐIỂM GIAO TRANH
-          let attackerScoreChange = 0,
-            defenderScoreChange = 0;
+          // BƯỚC 3, 4, 5 KẾT HỢP: TÍNH VÀ PHÂN BỔ ĐIỂM THEO LUẬT MỚI
+          let attackerScoreChange = 0;
+          let defenderScoreChange = 0;
           const zoneMultiplier = attackZone === ZONES.MAIN ? 2 : 1;
-          const attackerBasePoints = attackingCard.isSpecial
-            ? 5
-            : gameState.cardBasePoints[attackingCard.type];
-          let attackerGiaoTranh = attackerBasePoints * zoneMultiplier;
-          const defenderBasePoints = defendingCard.isSpecial
-            ? 5
-            : gameState.cardBasePoints[defendingCard.type];
-          let defenderGiaoTranh = defenderBasePoints * zoneMultiplier;
-          if (defendingCard.isPriority) {
-            defenderGiaoTranh *= attackZone === ZONES.MAIN ? 3 : 2;
-          }
+          const bonusBasePoint = 5;
 
-          // BƯỚC 4: PHÂN BỔ ĐIỂM TỪ CUỘC ĐỐI ĐẦU
-          this.recordHistory(clashResult);
-          if (clashResult === "attacker") {
-            attackerScoreChange += attackerGiaoTranh;
-            defenderScoreChange -= defenderGiaoTranh;
-            this.log(`${attacker.name} thắng cuộc đối đầu!`);
-          } else if (clashResult === "defender") {
-            defenderScoreChange += defenderGiaoTranh;
-            attackerScoreChange -= attackerGiaoTranh;
-            this.log(`${defender.name} thắng cuộc đối đầu!`);
+          // Tính trước giá trị giao tranh của cả hai lá bài
+          const attackerBasePoints = attackingCard.isSpecial ? 5 : gameState.cardBasePoints[attackingCard.type];
+          const attackerGiaoTranh = attackerBasePoints * zoneMultiplier;
+
+          const defenderBasePoints = defendingCard.isSpecial ? 5 : gameState.cardBasePoints[defendingCard.type];
+          let defenderMultiplier = defendingCard.isPriority ? (attackZone === ZONES.MAIN ? 3 : 2) : zoneMultiplier;
+          const defenderGiaoTranh = defenderBasePoints * defenderMultiplier;
+
+          // Xác định xem người chơi có hoàn thành mục đích thẻ Đặc Biệt không
+          const attackerFulfilledPurpose = attackingCard.isSpecial && 
+                ((attackingCard.type === SPECIAL_CARDS.WIN && clashResult === "attacker") || 
+                 (attackingCard.type === SPECIAL_CARDS.LOSE && clashResult === "defender"));
+
+          const defenderFulfilledPurpose = defendingCard.isSpecial && 
+                ((defendingCard.type === SPECIAL_CARDS.WIN && clashResult === "defender") || 
+                 (defendingCard.type === SPECIAL_CARDS.LOSE && clashResult === "attacker"));
+          
+          // Tính điểm cho người Tấn Công
+          if (attackerFulfilledPurpose) {
+            attackerScoreChange = bonusBasePoint * zoneMultiplier;
+            this.log(`${attacker.name} hoàn thành mục đích thẻ Đặc Biệt!`);
           } else {
-            this.log("Cuộc đối đầu kết thúc với kết quả Hòa!");
+            if (clashResult === "attacker") attackerScoreChange = attackerGiaoTranh;
+            else if (clashResult === "defender") attackerScoreChange = -defenderGiaoTranh;
           }
 
+          // Tính điểm cho người Phòng Thủ
+          if (defenderFulfilledPurpose) {
+            defenderScoreChange = bonusBasePoint * zoneMultiplier;
+            this.log(`${defender.name} hoàn thành mục đích thẻ Đặc Biệt!`);
+          } else {
+            if (clashResult === "defender") defenderScoreChange = defenderGiaoTranh;
+            else if (clashResult === "attacker") defenderScoreChange = -attackerGiaoTranh;
+          }
+          
+          this.recordHistory(clashResult);
+          if (clashResult === "attacker") this.log(`${attacker.name} thắng cuộc đối đầu!`);
+          else if (clashResult === "defender") this.log(`${defender.name} thắng cuộc đối đầu!`);
+          else this.log("Cuộc đối đầu kết thúc với kết quả Hòa!");
+          
+          await this.sleep(1500);
+
+          // Áp dụng thay đổi điểm số
           attacker.score += attackerScoreChange;
           defender.score += defenderScoreChange;
           this.render();
           this.showScoreChange(attacker.id, attackerScoreChange);
           this.showScoreChange(defender.id, defenderScoreChange);
           await this.sleep(1500);
-
-          // BƯỚC 5: XỬ LÝ ĐIỂM THƯỞNG THẺ ĐẶC BIỆT (ĐÃ SỬA LỖI)
-          let attackerBonus = 0,
-            defenderBonus = 0;
-          const bonusBasePoint = 5; // Điểm thưởng gốc theo luật
-
-          if (
-            attackingCard.isSpecial &&
-            ((attackingCard.type === SPECIAL_CARDS.WIN &&
-              clashResult === "attacker") ||
-              (attackingCard.type === SPECIAL_CARDS.LOSE &&
-                clashResult === "defender"))
-          ) {
-            attackerBonus = bonusBasePoint * zoneMultiplier;
-          }
-          if (
-            defendingCard.isSpecial &&
-            ((defendingCard.type === SPECIAL_CARDS.WIN &&
-              clashResult === "defender") ||
-              (defendingCard.type === SPECIAL_CARDS.LOSE &&
-                clashResult === "attacker"))
-          ) {
-            defenderBonus = bonusBasePoint * zoneMultiplier;
-          }
-
-          if (attackerBonus > 0 || defenderBonus > 0) {
-            attacker.score += attackerBonus;
-            defender.score += defenderBonus;
-            this.render();
-            if (attackerBonus > 0) {
-              this.showScoreChange(attacker.id, attackerBonus);
-              this.log(
-                `${attacker.name} đạt mục đích thẻ đặc biệt! +${attackerBonus} điểm.`
-              );
-            }
-            if (defenderBonus > 0) {
-              this.showScoreChange(defender.id, defenderBonus);
-              this.log(
-                `${defender.name} đạt mục đích thẻ đặc biệt! +${defenderBonus} điểm.`
-              );
-            }
-            await this.sleep(1500);
-          }
 
           // BƯỚC 6: DỌN DẸP BÀN ĐẤU
           if (attackingCard.isBasic) {
@@ -1834,21 +1841,46 @@
         async ai_placeDefenseCards() {
           await this.sleep(1000);
           const ai = this.getCurrentDefender();
-          let priorityCards = ai.hand.filter((c) => c.isPriority);
-          let otherCards = ai.hand.filter((c) => !c.isPriority);
-          let card1 = priorityCards.splice(
-            Math.floor(Math.random() * priorityCards.length),
-            1
-          )[0];
-          let card2Pool = [...priorityCards, ...otherCards].filter(
-            (c) => !(card1.isSpecial && c.isSpecial)
-          );
-          let card2 = card2Pool.splice(
-            Math.floor(Math.random() * card2Pool.length),
-            1
-          )[0];
-          gameState.battlefield.side.defenderCard = card1;
-          gameState.battlefield.main.defenderCard = card2;
+          
+          // --- SỬA TOÀN BỘ LOGIC CHỌN BÀI CỦA AI ---
+          let card1 = null, card2 = null;
+          
+          // Lấy ra tất cả các cặp bài có thể có từ tay của AI
+          let allPairs = [];
+          for (let i = 0; i < ai.hand.length; i++) {
+            for (let j = i + 1; j < ai.hand.length; j++) {
+              allPairs.push([ai.hand[i], ai.hand[j]]);
+            }
+          }
+
+          // Lọc ra các cặp hợp lệ (có ít nhất 1 thẻ Ưu Tiên và không chứa 2 thẻ Đặc Biệt)
+          const validPairs = allPairs.filter(pair => {
+            const hasPriority = pair[0].isPriority || pair[1].isPriority;
+            const notTwoSpecials = !(pair[0].isSpecial && pair[1].isSpecial);
+            return hasPriority && notTwoSpecials;
+          });
+
+          if (validPairs.length > 0) {
+            // Nếu có cặp hợp lệ, chọn ngẫu nhiên một cặp
+            const chosenPair = validPairs[Math.floor(Math.random() * validPairs.length)];
+            card1 = chosenPair[0];
+            card2 = chosenPair[1];
+          } else {
+            // Trường hợp rất hiếm: không có cặp nào hợp lệ, báo lỗi và dừng (cần xử lý thêm nếu muốn game tiếp tục)
+            // Logic CHECK_DRAW mới sẽ gần như loại bỏ hoàn toàn trường hợp này.
+            this.log(`LỖI: AI ${ai.name} không tìm thấy cặp bài phòng thủ hợp lệ!`);
+            return; 
+          }
+
+          // Phân ngẫu nhiên 2 lá bài vào 2 khu vực
+          if (Math.random() < 0.5) {
+              gameState.battlefield.main.defenderCard = card1;
+              gameState.battlefield.side.defenderCard = card2;
+          } else {
+              gameState.battlefield.main.defenderCard = card2;
+              gameState.battlefield.side.defenderCard = card1;
+          }
+
           ai.hand = ai.hand.filter(
             (c) => c.id !== card1.id && c.id !== card2.id
           );
