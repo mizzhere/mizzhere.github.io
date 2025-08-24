@@ -807,8 +807,8 @@
           const cardEl = document.createElement("div");
           cardEl.className = "card";
           if (hide) cardEl.classList.add("flipped");
-          if (card.isSpecial) cardEl.classList.add("special");
-          if (card.isPriority) cardEl.classList.add("priority");
+          if (card.isSpecial && !hide) cardEl.classList.add("special");
+          if (card.isPriority && !hide) cardEl.classList.add("priority");
 
           const priorityTag = card.isPriority
             ? '<span class="card-priority-tag">ƯT</span>'
@@ -1568,10 +1568,11 @@
             await this.sleep(1000);
           }
           if (attackingCard.isPriority) attacker.priorityCardsUsedThisRound++;
-          if (gameState.battlefield.main.defenderCard?.isPriority)
-            defender.priorityCardsUsedThisRound++;
-          if (gameState.battlefield.side.defenderCard?.isPriority)
-            defender.priorityCardsUsedThisRound++;
+          // Hai dòng dưới đây đã bị xóa hoặc comment lại để sửa lỗi
+          // if (gameState.battlefield.main.defenderCard?.isPriority)
+          //   defender.priorityCardsUsedThisRound++;
+          // if (gameState.battlefield.side.defenderCard?.isPriority)
+          //   defender.priorityCardsUsedThisRound++;
           if (clashResult === "attacker")
             gameState.lastTurnWinnerId = attacker.id;
           else if (clashResult === "defender")
