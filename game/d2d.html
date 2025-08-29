@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Tử Chiến Song Khu Oẳn Tù Tì</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
@@ -50,7 +51,7 @@
 
         html,
         body {
-            width: 100%;
+            width: 100dvw;
             height: 100dvh;
             overflow: hidden;
             background-color: var(--bg-primary);
@@ -989,11 +990,117 @@
             margin-bottom: 2rem;
             max-width: 400px;
         }
+
+        /* Thêm vào cuối thẻ <style> */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            /* Dưới modal, trên game */
+            pointer-events: none;
+            /* Cho phép click xuyên qua overlay */
+        }
+
+        #tutorial-highlight-box {
+            position: absolute;
+            border-radius: 12px;
+            transition: all 0.4s ease-in-out;
+            /* Dùng box-shadow để làm mờ xung quanh, tạo hiệu ứng "spotlight" */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+        }
+
+        #tutorial-text-box {
+            position: absolute;
+            background-color: var(--bg-surface-1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            max-width: 350px;
+            z-index: 9999;
+            pointer-events: auto;
+            /* Cho phép tương tác với hộp thoại */
+            transition: all 0.4s ease-in-out;
+            text-align: center;
+        }
+
+        #tutorial-text-box p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Thêm vào cuối thẻ <style> */
+        .rule-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .rule-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .rule-tab-btn.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .rule-tab-content {
+            display: none;
+            animation: fade-in 0.3s;
+        }
+
+        .rule-tab-content.active {
+            display: block;
+        }
+
+        .rule-tab-content p,
+        .rule-tab-content ul {
+            margin-bottom: 0.75rem;
+            text-align: left;
+        }
+
+        .rule-tab-content ul {
+            padding-left: 1.5rem;
+        }
+
+        /* CSS CHO HEADER NÂNG CẤP */
+        #turn-info:hover {
+            color: var(--accent-primary-hover);
+        }
+
+        .history-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: var(--text-secondary);
+            transition: fill 0.2s ease;
+        }
+
+        #history-trigger:hover .history-icon {
+            fill: var(--text-primary);
+        }
     </style>
 </head>
 
 <body>
-
+    <div id="tutorial-overlay" style="display: none;">
+        <div id="tutorial-highlight-box"></div>
+        <div id="tutorial-text-box">
+            <p id="tutorial-text">Đây là hướng dẫn...</p>
+            <div class="modal-options">
+                <button id="tutorial-skip-btn" class="btn btn-secondary">Bỏ qua</button>
+                <button id="tutorial-next-btn" class="btn">Tiếp theo</button>
+            </div>
+        </div>
+    </div>
     <div id="turn-handoff-overlay">
         <h1 id="handoff-player-name">Lượt của Người Chơi X</h1>
 
@@ -1015,17 +1122,26 @@
 
     <div id="game-mode-modal" class="modal-overlay">
         <div class="modal-content">
-            <div id="continue-game-section" style="display: none; margin-bottom: 1rem; text-align: center;">
-                <p style="margin-bottom: 0.5rem; color: var(--text-secondary);">Bạn có một màn chơi đang dang dở:</p>
+
+            <div id="continue-game-section" style="display: none; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                <p style="margin-bottom: 1rem;">Phát hiện một ván chơi đang dang dở:</p>
                 <button id="continue-btn" class="btn"></button>
-                <hr style="border-color: var(--border-color); margin: 1rem 0;">
             </div>
             <h2>Chọn Chế Độ Chơi</h2>
             <p>Bạn muốn chơi theo chế độ nào?</p>
+
             <div class="modal-options">
                 <button id="pvai-btn" class="btn">🤖 Chơi với Máy</button>
                 <button id="pvp-btn" class="btn btn-secondary">🧑‍🤝‍🧑 Chơi 2 Người</button>
             </div>
+
+            <div style="margin-top: 1rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <label style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="tutorial-toggle-checkbox">
+                    <span>Bật Hướng Dẫn Cho Người Mới</span>
+                </label>
+            </div>
+
         </div>
     </div>
     <div id="game-container">
@@ -1071,12 +1187,16 @@
 
             <!-- HEADER GAME - Đặt ở cuối để có z-index cao hơn theo luồng DOM tự nhiên -->
             <div id="game-header">
-                <div id="turn-info">Vòng 1 - Ván 1</div>
+                <div id="turn-info-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div id="turn-info" style="cursor: pointer; transition: color 0.2s ease;" title="Xem bảng điểm chi tiết">Vòng 1 - Ván 1</div>
+                    <div id="rules-trigger" style="cursor: pointer; font-size: 1.5rem; line-height: 1;" title="Xem luật chơi">❓</div>
+                </div>
+
                 <div id="history-trigger">
-                    <div id="history-dots">
-                        <!-- Các chấm lịch sử sẽ được JS render ở đây -->
-                    </div>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary)">Xem</span>
+                    <div id="history-dots"></div>
+                    <svg class="history-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"></path>
+                    </svg>
                 </div>
             </div>
             <button id="confirm-placement-btn" class="btn" style="display: none">
@@ -1085,7 +1205,68 @@
         </div>
         <!-- Container cho các phần tử động như modal, thông báo -->
         <div id="dynamic-elements-container"></div>
+        <div id="rules-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <h2>Luật Chơi</h2>
+                <div id="rules-tabs" style="display: flex; border-bottom: 1px solid var(--border-color);">
+                    <button class="rule-tab-btn active" data-tab="tab-basics">Cơ Bản</button>
+                    <button class="rule-tab-btn" data-tab="tab-cards">Các Loại Thẻ</button>
+                    <button class="rule-tab-btn" data-tab="tab-zones">Khu Vực</button>
+                    <button class="rule-tab-btn" data-tab="tab-scoring">Tính Điểm</button>
+                </div>
 
+                <div id="rules-content" class="detailed-history-content" style="padding-top: 1rem;">
+                    <div id="tab-basics" class="rule-tab-content active">
+                        <p><strong>Mục tiêu:</strong> Đạt nhiều điểm hơn đối thủ sau 5 vòng đấu.</p>
+                        <p>Mỗi vòng có 2 ván, hai người chơi đổi vai trò Tấn Công và Phòng Thủ.</p>
+                        <p><strong>Phòng Thủ:</strong> Đặt 2 lá bài úp xuống 2 khu vực.</p>
+                        <p><strong>Tấn Công:</strong> Đặt 1 lá bài ngửa vào 1 trong 2 khu vực để đối đầu.</p>
+                    </div>
+                    <div id="tab-cards" class="rule-tab-content">
+                        <p><strong>Thẻ Thường (Búa, Kéo, Bao):</strong> Theo quy tắc oẳn tù tì. Có thể trở thành <strong>Thẻ Ưu Tiên</strong> (viền vàng), được nhân điểm cao hơn.</p>
+                        <p><strong>Thẻ Đặc Biệt:</strong></p>
+                        <ul>
+                            <li><strong>Luôn Thắng (👑):</strong> Thắng mọi thẻ Thường.</li>
+                            <li><strong>Luôn Thua (🏳️):</strong> Thua mọi thẻ Thường.</li>
+                        </ul>
+                    </div>
+                    <div id="tab-zones" class="rule-tab-content">
+                        <p><strong>Khu Chính (x2):</strong> Điểm giao tranh được nhân 2.</p>
+                        <p><strong>Khu Phụ (x1):</strong> Điểm giao tranh giữ nguyên.</p>
+                        <p>Nếu Tấn Công vào Khu Chính, lá bài ở Khu Phụ của Phòng Thủ sẽ được "bảo toàn" và làm tăng điểm cơ bản của loại thẻ đó (+1 Điểm).</p>
+                    </div>
+                    <div id="tab-scoring" class="rule-tab-content">
+                        <p>Điểm nhận được = (Điểm cơ bản của thẻ) x (Hệ số khu vực).</p>
+                        <p><strong>Hệ số nhân:</strong></p>
+                        <ul>
+                            <li>Khu Phụ (x1): Thường <strong>x1</strong>, Ưu Tiên <strong>x2</strong></li>
+                            <li>Khu Chính (x2): Thường <strong>x2</strong>, Ưu Tiên <strong>x3</strong></li>
+                        </ul>
+                        <p>Người thắng giao tranh nhận điểm, người thua bị trừ điểm tương ứng.</p>
+                    </div>
+                </div>
+
+                <div class="modal-options">
+                    <button id="close-rules-btn" class="btn">Đã hiểu</button>
+                </div>
+            </div>
+        </div>
+        <div id="scoreboard-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content" style="max-width: 450px;">
+                <h2>Bảng Điểm Chi Tiết</h2>
+
+                <div style="width: 100%; margin: 1rem 0;">
+                    <canvas id="score-chart"></canvas>
+                </div>
+
+                <div id="score-table-container" class="detailed-history-content" style="max-height: 25vh;">
+                </div>
+
+                <div class="modal-options">
+                    <button id="close-scoreboard-btn" class="btn">Đóng</button>
+                </div>
+            </div>
+        </div>
         <script>
             /* ================================================================== */
             /* SỬA ĐỔI DOM ELEMENTS ĐỂ TRỎ ĐẾN CÁC ID VÀ CLASS MỚI               */
@@ -1264,6 +1445,7 @@
                     document.getElementById("confirm-placement-btn").onclick = () =>
                         this.confirmAction();
                     this.saveGameState();
+                    tutorial.start();
                 }
                 // THÊM 3 HÀM MỚI NÀY VÀO BẤT KỲ ĐÂU TRONG CLASS GAME
 
@@ -1338,7 +1520,136 @@
                             break;
                     }
                 }
-                // THAY THẾ TOÀN BỘ HÀM NÀY
+                // Dán hàm này vào bên trong class Game
+                showScoreboardModal() {
+                    const modal = document.getElementById('scoreboard-modal');
+                    if (!modal) return;
+
+                    const p0 = gameState.players[0];
+                    const p1 = gameState.players[1];
+
+                    // 1. Chuẩn bị dữ liệu
+                    const labels = ['Bắt đầu'];
+                    const scoreDiffData = [0]; // Chênh lệch điểm (p0 - p1)
+                    let p0Score = 0;
+                    let p1Score = 0;
+
+                    let tableHTML = `
+        <table style="width: 100%; text-align: center; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 0.5rem;">Ván</th>
+                    <th style="padding: 0.5rem;">${p0.name}</th>
+                    <th style="padding: 0.5rem;">${p1.name}</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+                    gameState.detailedHistory.forEach(turn => {
+                        const p0_change = (turn.player.role === 'Tấn Công') ? turn.attackerScoreChange : turn.defenderScoreChange;
+                        const p1_change = (turn.opponent.role === 'Tấn Công') ? turn.attackerScoreChange : turn.defenderScoreChange;
+
+                        p0Score += p0_change;
+                        p1Score += p1_change;
+
+                        const label = `V${turn.round}-${turn.turn}`;
+                        labels.push(label);
+                        scoreDiffData.push(p0Score - p1Score);
+
+                        tableHTML += `
+            <tr style="border-top: 1px solid var(--border-color);">
+                <td style="padding: 0.5rem;">${label}</td>
+                <td style="padding: 0.5rem;">${p0Score}</td>
+                <td style="padding: 0.5rem;">${p1Score}</td>
+            </tr>
+        `;
+                    });
+
+                    tableHTML += `</tbody></table>`;
+                    document.getElementById('score-table-container').innerHTML = tableHTML;
+
+                    // 2. Vẽ Biểu đồ
+                    const ctx = document.getElementById('score-chart').getContext('2d');
+
+                    // Hủy biểu đồ cũ nếu có để tránh lỗi
+                    if (this.scoreChartInstance) {
+                        this.scoreChartInstance.destroy();
+                    }
+
+                    this.scoreChartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Chênh Lệch Điểm',
+                                data: scoreDiffData,
+                                borderColor: '#ffc107', // Màu vàng cho đường line
+                                borderWidth: 3,
+                                pointBackgroundColor: '#ffc107',
+                                pointRadius: 4,
+                                tension: 0.1,
+                                fill: true, // Bật tính năng tô màu vùng
+                                // Logic tô màu 2 miền
+                                backgroundColor: context => {
+                                    if (!context.parsed) {
+                                        return 'rgba(158, 158, 158, 0.3)'; // Trả về màu mặc định nếu chưa có dữ liệu
+                                    }
+                                    const value = context.parsed.y;
+                                    if (value > 0) {
+                                        return 'rgba(76, 175, 80, 0.3)'; // Màu xanh lá khi P0 dẫn
+                                    } else if (value < 0) {
+                                        return 'rgba(244, 67, 54, 0.3)'; // Màu đỏ khi P1 dẫn
+                                    }
+                                    return 'rgba(158, 158, 158, 0.3)'; // Màu xám khi hòa
+                                }
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let value = context.parsed.y;
+                                            if (value > 0) return `${p0.name} dẫn trước ${value} điểm`;
+                                            if (value < 0) return `${p1.name} dẫn trước ${-value} điểm`;
+                                            return 'Hòa điểm';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    // Xóa 'beginAtZero: true' để trục y tự động căn chỉnh âm-dương
+                                    grid: {
+                                        // Làm nổi bật đường kẻ mốc 0
+                                        color: context => (context.tick.value === 0 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'),
+                                        lineWidth: context => (context.tick.value === 0 ? 2 : 1),
+                                    },
+                                    ticks: {
+                                        color: 'var(--text-secondary)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        color: 'var(--text-secondary)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // 3. Hiển thị modal
+                    modal.style.display = 'flex';
+                }
                 async showTurnHandoff(nextPlayerId) {
                     // Chỉ hiển thị màn hình này ở chế độ PvP và khi lượt chơi thực sự thay đổi
                     if (this.gameMode !== 'pvp' || this.activePlayerId === nextPlayerId) {
@@ -1944,27 +2255,28 @@
                     // Bài phòng thủ sẽ bị ẩn NẾU:
                     //   - Chưa đến giai đoạn lật bài (flip === false)
                     //   - VÀ người đang chơi active KHÔNG PHẢI là người phòng thủ.
-                    const shouldHideDefenderCards = !flip && !defenderIsActive;
-
-                    // ======================================================================
-                    // === KẾT THÚC THAY ĐỔI CỐT LÕI                                      ===
-                    // ======================================================================
+                    const attackZone = gameState.attackerZoneChoice;
 
                     // Render thẻ của người Phòng thủ
                     placeCard(
                         bf.main.defenderCard,
                         defenderMainSlot,
                         ZONES.MAIN,
-                        shouldHideDefenderCards, // Sử dụng biến logic mới
+                        // Thẻ này sẽ bị ẩn (isHidden = true) NẾU:
+                        // - Người chơi hiện tại không phải là người phòng thủ (tức là người tấn công đang xem)
+                        // - VÀ (chưa đến lúc lật bài HOẶC đây không phải là khu vực bị tấn công)
+                        !defenderIsActive && (!flip || attackZone !== ZONES.MAIN),
                         true // isDefender
                     );
                     placeCard(
                         bf.side.defenderCard,
                         defenderSideSlot,
                         ZONES.SIDE,
-                        shouldHideDefenderCards, // Sử dụng biến logic mới
+                        // Logic tương tự cho thẻ ở khu vực phụ
+                        !defenderIsActive && (!flip || attackZone !== ZONES.SIDE),
                         true // isDefender
                     );
+
 
                     // Render thẻ của người Tấn công (luôn hiện)
                     placeCard(
@@ -2345,13 +2657,24 @@
                                 await this.ai_placeDefenseCards();
                             break;
                         case PHASES.ATTACKER_CHOOSE_CARD:
+                            // ======================= FIX BẮT ĐẦU =======================
+                            const attacker = this.getCurrentAttacker();
+                            if (attacker.hand.length === 0) {
+                                this.log(`${attacker.name} đã hết bài! Bắt buộc bốc bài.`);
+                                await this.sleep(1500);
+                                // Đánh dấu để sau khi bốc bài xong, game sẽ quay lại đúng lượt Tấn Công
+                                gameState.postDrawPhase = PHASES.ATTACKER_CHOOSE_CARD;
+                                this.handleDraw(attacker.id);
+                                return; // Dừng lại để chờ quá trình bốc bài hoàn tất
+                            }
+                            // ======================== FIX KẾT THÚC =======================
+
                             // SỬA Ở ĐÂY: không gọi FINAL_DECISION nữa
                             // Việc chuyển phase sẽ do hàm handleAttackerDrop đảm nhiệm
                             this.log("Tấn Công: Kéo 1 lá bài vào khu vực muốn tấn công.");
                             if (this.getCurrentAttacker().isAI)
                                 await this.ai_chooseAttackCard();
                             break;
-
                             // --- THÊM CÁC CASE MỚI ---
                         case PHASES.DEFENDER_SWAP_CHOICE:
                             await this.handleDefenderSwapChoice();
@@ -2598,7 +2921,9 @@
                   gameState.cardBasePoints[sideZoneCard.type]
                 })`
                             );
-                            this.render();
+                            this.render({
+                                updateBattlefield: false
+                            });
                             await this.sleep(1500);
                             if (sideZoneCard.isPriority) {
                                 gameState.commonDeck.push(sideZoneCard);
@@ -3176,7 +3501,9 @@
                         basicCards = player.hand.filter((c) => c.isBasic);
                     }
                     this.log("Rút bài hoàn tất. Tiếp tục trận đấu.");
-                    this.setPhase(PHASES.DEFENDER_PLACE_CARDS);
+                    const nextPhase = gameState.postDrawPhase || PHASES.DEFENDER_PLACE_CARDS;
+                    delete gameState.postDrawPhase; // Xóa đánh dấu sau khi đã dùng
+                    this.setPhase(nextPhase);
                 }
                 ai_handlePrioritySelection(player, drawnCards, neededCount) {
                     for (let i = 0; i < neededCount; i++) {
@@ -3353,9 +3680,148 @@
                 }
             }
 
-            // THAY THẾ TOÀN BỘ KHỐI LOGIC KHỞI ĐỘNG GAME BẰNG KHỐI MỚI NÀY
 
+            // Đặt class này sau class Game
+            // THAY THẾ TOÀN BỘ CLASS NÀY
+            class TutorialManager {
+                constructor(game) {
+                    this.game = game;
+                    this.isActive = false;
+                    this.currentStep = 0;
+                    this.steps = [];
+
+                    this.overlay = document.getElementById('tutorial-overlay');
+                    this.highlightBox = document.getElementById('tutorial-highlight-box');
+                    this.textBox = document.getElementById('tutorial-text-box');
+                    this.textElement = document.getElementById('tutorial-text');
+                    this.nextBtn = document.getElementById('tutorial-next-btn');
+                    this.skipBtn = document.getElementById('tutorial-skip-btn'); // Nút mới
+
+                    this.nextBtn.onclick = () => this.next();
+                    this.skipBtn.onclick = () => this.end(); // Bỏ qua sẽ kết thúc hướng dẫn
+                }
+
+                start() {
+                    // Kiểm tra xem người dùng có muốn xem hướng dẫn không
+                    const tutorialEnabled = document.getElementById('tutorial-toggle-checkbox').checked;
+                    if (!tutorialEnabled) {
+                        // Đánh dấu đã hoàn thành để không hỏi lại
+                        localStorage.setItem('tutorialCompleted', 'true');
+                        return;
+                    }
+
+                    this.isActive = true;
+                    this.currentStep = 0;
+                    this.defineSteps();
+                    this.showStep(this.currentStep);
+                    this.overlay.style.display = 'block';
+                }
+
+                defineSteps() {
+                    this.steps = [{
+                            element: '#player-hand',
+                            text: 'Chào mừng bạn! Đây là các lá bài trên tay của bạn. Lá bài có viền vàng là "Thẻ Ưu Tiên".'
+                        },
+                        {
+                            element: '.player-info.role-defender',
+                            text: 'Vai trò của bạn trong ván này là "Phòng Thủ". Bạn cần đặt 2 lá bài xuống bàn.'
+                        },
+                        {
+                            element: '#player-main-slot',
+                            text: 'Đây là Khu Vực Chính (x2 điểm). Hãy kéo một lá bài vào đây.'
+                        },
+                        {
+                            element: '#player-side-slot',
+                            text: 'Và đây là Khu Vực Phụ (x1 điểm). Hãy kéo lá bài còn lại vào đây. Lưu ý: Bạn phải đặt ít nhất 1 Thẻ Ưu Tiên.'
+                        },
+                        {
+                            element: '#action-bar',
+                            text: 'Tuyệt vời! Sau khi đặt bài, hãy nhấn "Xác Nhận" để chốt vị trí.'
+                        },
+                        {
+                            element: '#game-container',
+                            text: 'Hướng dẫn cơ bản đã xong! Chúc bạn chơi vui vẻ. Bạn có thể xem lại luật chơi bất kỳ lúc nào bằng nút ❓.'
+                        }
+                    ];
+                }
+
+                showStep(index) {
+                    if (!this.steps[index]) {
+                        this.end();
+                        return;
+                    }
+
+                    const step = this.steps[index];
+                    this.textElement.innerHTML = step.text; // Dùng innerHTML để nhận thẻ ❓
+
+                    // Nếu là bước cuối, đổi nút "Tiếp theo" thành "Hoàn thành"
+                    if (index === this.steps.length - 1) {
+                        this.nextBtn.textContent = 'Hoàn thành';
+                    } else {
+                        this.nextBtn.textContent = 'Tiếp theo';
+                    }
+
+                    const targetElement = document.querySelector(step.element);
+                    if (targetElement) {
+                        const rect = targetElement.getBoundingClientRect();
+
+                        this.highlightBox.style.width = `${rect.width + 16}px`;
+                        this.highlightBox.style.height = `${rect.height + 16}px`;
+                        this.highlightBox.style.top = `${rect.top - 8}px`;
+                        this.highlightBox.style.left = `${rect.left - 8}px`;
+
+                        if (rect.top > window.innerHeight / 2) {
+                            this.textBox.style.top = `${rect.top - this.textBox.offsetHeight - 20}px`;
+                        } else {
+                            this.textBox.style.top = `${rect.bottom + 20}px`;
+                        }
+                        this.textBox.style.left = `50%`;
+                        this.textBox.style.transform = 'translateX(-50%)';
+                    }
+                }
+
+                next() {
+                    this.currentStep++;
+                    this.showStep(this.currentStep);
+                }
+
+                end() {
+                    this.isActive = false;
+                    this.overlay.style.display = 'none';
+                    // Luôn lưu lại trạng thái đã hoàn thành để lần sau không tự bật
+                    localStorage.setItem('tutorialCompleted', 'true');
+                }
+            }
+
+            function setupRulesModal() {
+                const rulesTrigger = document.getElementById('rules-trigger');
+                const rulesModal = document.getElementById('rules-modal');
+                const closeBtn = document.getElementById('close-rules-btn');
+                const tabs = document.querySelectorAll('.rule-tab-btn');
+                const contents = document.querySelectorAll('.rule-tab-content');
+
+                rulesTrigger.onclick = () => {
+                    rulesModal.style.display = 'flex';
+                };
+
+                closeBtn.onclick = () => {
+                    rulesModal.style.display = 'none';
+                };
+
+                tabs.forEach(tab => {
+                    tab.onclick = () => {
+                        // Xóa active class khỏi tất cả các tab và content
+                        tabs.forEach(t => t.classList.remove('active'));
+                        contents.forEach(c => c.classList.remove('active'));
+
+                        // Thêm active class cho tab và content được chọn
+                        tab.classList.add('active');
+                        document.getElementById(tab.dataset.tab).classList.add('active');
+                    };
+                });
+            }
             const game = new Game();
+            const tutorial = new TutorialManager(game);
             const modeModal = document.getElementById('game-mode-modal');
             const nameModal = document.getElementById('player-name-modal');
 
@@ -3397,6 +3863,10 @@
 
             // Hàm kiểm tra và khởi tạo giao diện ban đầu
             function initializeUI() {
+                const tutorialCheckbox = document.getElementById('tutorial-toggle-checkbox');
+                // Mặc định bật hướng dẫn nếu chưa từng hoàn thành
+                tutorialCheckbox.checked = !localStorage.getItem('tutorialCompleted');
+                tutorialCheckbox.onchange = () => localStorage.removeItem('tutorialCompleted');
                 const savedGame = localStorage.getItem('savedGame');
                 if (savedGame) {
                     const state = JSON.parse(savedGame);
@@ -3415,6 +3885,22 @@
 
                 document.getElementById('pvai-btn').onclick = () => showNameModal('pvai');
                 document.getElementById('pvp-btn').onclick = () => showNameModal('pvp');
+                setupRulesModal();
+                const scoreboardModal = document.getElementById('scoreboard-modal');
+                // Kích hoạt mở modal
+                document.getElementById('turn-info').onclick = () => {
+                    if (game) game.showScoreboardModal();
+                };
+                // Xử lý nút đóng
+                document.getElementById('close-scoreboard-btn').onclick = () => {
+                    scoreboardModal.style.display = 'none';
+                };
+                // Đóng modal khi click ra ngoài
+                scoreboardModal.addEventListener('click', (event) => {
+                    if (event.target === scoreboardModal) {
+                        scoreboardModal.style.display = 'none';
+                    }
+                });
             }
 
             // Chạy hàm khởi tạo khi trang được tải
