@@ -1,0 +1,158 @@
+{
+  "playPass": {
+    "price": 1000,
+    "xpPerLevel": 100,
+    "rewards": [
+      {
+        "level": 1,
+        "freeReward": { "type": "coins", "amount": 200 },
+        "paidReward": { "type": "specialCurrency", "amount": 5 }
+      },
+      {
+        "level": 2,
+        "freeReward": { "type": "coins", "amount": 400 },
+        "paidReward": { "type": "tokens", "amount": 40 }
+      },
+      {
+        "level": 3,
+        "freeReward": { "type": "coins", "amount": 600 },
+        "paidReward": { "type": "specialCurrency", "amount": 15 }
+      },
+      {
+        "level": 4,
+        "freeReward": { "type": "coins", "amount": 800 },
+        "paidReward": { "type": "tokens", "amount": 80 }
+      },
+      {
+        "level": 5,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "eventTokens", "amount": 50 }
+      },
+      {
+        "level": 6,
+        "freeReward": { "type": "coins", "amount": 1200 },
+        "paidReward": { "type": "tokens", "amount": 120 }
+      },
+      {
+        "level": 7,
+        "freeReward": { "type": "coins", "amount": 1400 },
+        "paidReward": { "type": "specialCurrency", "amount": 35 }
+      },
+      {
+        "level": 8,
+        "freeReward": { "type": "coins", "amount": 1600 },
+        "paidReward": { "type": "tokens", "amount": 160 }
+      },
+      {
+        "level": 9,
+        "freeReward": { "type": "coins", "amount": 1800 },
+        "paidReward": { "type": "specialCurrency", "amount": 45 }
+      },
+      {
+        "level": 10,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "chest", "name": "Rương Hiếm", "icon": "https://placehold.co/64x64/63b3ed/1e40af?text=Rare" }
+      },
+      {
+        "level": 11,
+        "freeReward": { "type": "coins", "amount": 2200 },
+        "paidReward": { "type": "specialCurrency", "amount": 55 }
+      },
+      {
+        "level": 12,
+        "freeReward": { "type": "coins", "amount": 2400 },
+        "paidReward": { "type": "tokens", "amount": 240 }
+      },
+      {
+        "level": 13,
+        "freeReward": { "type": "coins", "amount": 2600 },
+        "paidReward": { "type": "specialCurrency", "amount": 65 }
+      },
+      {
+        "level": 14,
+        "freeReward": { "type": "coins", "amount": 2800 },
+        "paidReward": { "type": "tokens", "amount": 280 }
+      },
+      {
+        "level": 15,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "eventTokens", "amount": 150 }
+      },
+      {
+        "level": 16,
+        "freeReward": { "type": "coins", "amount": 3200 },
+        "paidReward": { "type": "tokens", "amount": 320 }
+      },
+      {
+        "level": 17,
+        "freeReward": { "type": "coins", "amount": 3400 },
+        "paidReward": { "type": "specialCurrency", "amount": 85 }
+      },
+      {
+        "level": 18,
+        "freeReward": { "type": "coins", "amount": 3600 },
+        "paidReward": { "type": "tokens", "amount": 360 }
+      },
+      {
+        "level": 19,
+        "freeReward": { "type": "coins", "amount": 3800 },
+        "paidReward": { "type": "specialCurrency", "amount": 95 }
+      },
+      {
+        "level": 20,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "chest", "name": "Rương Hiếm", "icon": "https://placehold.co/64x64/63b3ed/1e40af?text=Rare" }
+      },
+       {
+        "level": 21,
+        "freeReward": { "type": "coins", "amount": 4200 },
+        "paidReward": { "type": "specialCurrency", "amount": 105 }
+      },
+      {
+        "level": 22,
+        "freeReward": { "type": "coins", "amount": 4400 },
+        "paidReward": { "type": "tokens", "amount": 440 }
+      },
+      {
+        "level": 23,
+        "freeReward": { "type": "coins", "amount": 4600 },
+        "paidReward": { "type": "specialCurrency", "amount": 115 }
+      },
+      {
+        "level": 24,
+        "freeReward": { "type": "coins", "amount": 4800 },
+        "paidReward": { "type": "tokens", "amount": 480 }
+      },
+      {
+        "level": 25,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "eventTokens", "amount": 250 }
+      },
+      {
+        "level": 26,
+        "freeReward": { "type": "coins", "amount": 5200 },
+        "paidReward": { "type": "tokens", "amount": 520 }
+      },
+      {
+        "level": 27,
+        "freeReward": { "type": "coins", "amount": 5400 },
+        "paidReward": { "type": "specialCurrency", "amount": 135 }
+      },
+      {
+        "level": 28,
+        "freeReward": { "type": "coins", "amount": 5600 },
+        "paidReward": { "type": "tokens", "amount": 560 }
+      },
+      {
+        "level": 29,
+        "freeReward": { "type": "coins", "amount": 5800 },
+        "paidReward": { "type": "specialCurrency", "amount": 145 }
+      },
+      {
+        "level": 30,
+        "freeReward": { "type": "tokens", "amount": 50 },
+        "paidReward": { "type": "chest", "name": "Rương Huyền Thoại", "icon": "https://placehold.co/64x64/fde047/92400e?text=Legend" }
+      }
+    ]
+  }
+}
