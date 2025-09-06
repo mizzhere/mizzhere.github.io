@@ -111,6 +111,7 @@ const createCardHTML = (card, options = {}) => {
     const defenseOverlay = options.showDefense ? `<div class="defense-overlay">HP: ${options.currentDefense !== undefined ? options.currentDefense : card.defense}</div>` : '';
     const lockedClass = options.isLocked ? 'locked' : '';
     const attackDisplay = options.simple && options.showAttack ? `<div class="simple-attack-display">${card.attack}</div>` : '';
+    const levelDisplay = `<div class="card-level">Lv.${card.level !== undefined ? card.level : 1}</div>`;
     const statsContainer = options.simple ? '' : `
         <div class="stats-container">
             <div class="stats-bar">
@@ -127,6 +128,7 @@ const createCardHTML = (card, options = {}) => {
         <div class="card-overlay"></div>
         <div class="holographic-effect"></div>
         <div class="rarity-icon ${shapeColorClass}">${icons[card.shape]}</div>
+        ${levelDisplay}
         ${options.simple ? '' : `<div class="theme-label">${card.theme}</div>`}
         ${statsContainer}
         ${defenseOverlay}
@@ -961,6 +963,7 @@ function redrawGameBoard() {
     const slotContainers = document.querySelectorAll('#player-battle-zone .battle-slot');
     handContainer.innerHTML = (gameState.playerHand || []).map(cardId => {
         const cardInfo = findCard(cardId);
+        // Giữ lại class animate nếu đã có
         const cardHTML = createCardHTML(cardInfo, { isLocked: false, simple: true, showAttack: true });
         const wrapper = document.createElement('div');
         wrapper.innerHTML = cardHTML;
@@ -968,6 +971,11 @@ function redrawGameBoard() {
         if (cardElement) {
             if (cardId === gameState.selectedCardId) {
                 cardElement.classList.add('selected-card');
+            }
+            // Nếu cardElement đã có class animate, giữ lại
+            if (handContainer.querySelector(`[data-card-id='${cardId}']`)?.classList.contains('animate__animated')) {
+                cardElement.classList.add('animate__animated');
+                cardElement.classList.add('animate__fadeIn');
             }
             return cardElement.outerHTML;
         }
@@ -1175,6 +1183,43 @@ function endGame() {
         }
     }
     modal.classList.add('show');
+}
+
+// --- CARD UPGRADE LOGIC ---
+function canUpgradeCard(cardId) {
+    return player.collection[cardId] >= 3;
+}
+function upgradeCard(cardId) {
+    if (!canUpgradeCard(cardId)) return false;
+    const card = findCard(cardId);
+    if (!card) return false;
+    // Tăng cấp độ cho thẻ
+    player.collection[cardId] -= 3;
+    // Tìm thẻ cùng loại, cấp cao hơn
+    let nextLevel = (card.level || 1) + 1;
+    let upgradedCard = cardDatabase.find(c => c.name === card.name && (c.level === nextLevel));
+    if (!upgradedCard) {
+        // Nếu chưa có thẻ cấp cao hơn, tạo mới
+        upgradedCard = { ...card, id: `${card.id}-Lv${nextLevel}`, level: nextLevel };
+        cardDatabase.push(upgradedCard);
+    }
+    player.collection[upgradedCard.id] = (player.collection[upgradedCard.id] || 0) + 1;
+    saveState();
+    return upgradedCard;
+}
+// --- SMART CARD EXCHANGE LOGIC ---
+function smartCardExchange(sourceId, targetId) {
+    const sourceCard = findCard(sourceId);
+    const targetCard = findCard(targetId);
+    if (!sourceCard || !targetCard) return false;
+    if (player.collection[sourceId] < 1) return false;
+    // Chỉ cho phép đổi sang thẻ cùng loại, cấp thấp hơn
+    if (sourceCard.name !== targetCard.name || (targetCard.level || 1) >= (sourceCard.level || 1)) return false;
+    player.collection[sourceId] -= 1;
+    if (player.collection[sourceId] === 0) delete player.collection[sourceId];
+    player.collection[targetId] = (player.collection[targetId] || 0) + 1;
+    saveState();
+    return true;
 }
 
 // --- INITIAL LOAD & EVENT LISTENERS ---
