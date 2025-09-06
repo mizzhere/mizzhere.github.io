@@ -1,743 +1,1331 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
     <title>Card Game Lobby</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    
-   <style>
-    /* --- Base Styles --- */
-body {
-    font-family: 'Inter', sans-serif;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background-color: #1a202c;
-    background-image: linear-gradient(160deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
-}
-.marquee-container {
-    overflow: hidden;
-    position: relative;
-}
-.marquee-track {
-    display: flex;
-    width: max-content;
-    animation: scroll-left 30s linear infinite;
-}
-.marquee-container:hover .marquee-track {
-    animation-play-state: paused;
-}
-.rainbow-loop {
-    animation: rainbow 5s linear infinite;
-    pointer-events: none;
-}
-@keyframes rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-}
-.rainbow-follow {
-    animation: none !important;
-}
-@keyframes scroll-left {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-50%); }
-}
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-/* --- Custom Scrollbar --- */
-main::-webkit-scrollbar, .modal-body::-webkit-scrollbar { width: 6px; }
-main::-webkit-scrollbar-track, .modal-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-main::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.2); border-radius: 6px; }
-main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.4); }
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+      rel="stylesheet"
+    />
 
-/* --- Header Currency Bar --- */
-.top-header { background-color: rgba(26, 32, 44, 0.5); backdrop-filter: blur(5px); padding: 8px 16px; flex-shrink: 0; }
-.currency-display { background-color: rgba(0,0,0,0.3); border-radius: 9999px; padding: 4px 10px 4px 6px; display: flex; align-items: center; font-weight: 600; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 0.8rem; }
-.currency-icon { width: 24px; height: 24px; margin-right: 4px; }
+    <style>
+      /* --- Base Styles --- */
+      body {
+        font-family: "Inter", sans-serif;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background-color: #1a202c;
+        background-image: linear-gradient(
+          160deg,
+          #1a202c 0%,
+          #2d3748 50%,
+          #4a5568 100%
+        );
+      }
+      .marquee-container {
+        overflow: hidden;
+        position: relative;
+      }
+      .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: scroll-left 30s linear infinite;
+      }
+      .marquee-container:hover .marquee-track {
+        animation-play-state: paused;
+      }
+      .rainbow-loop {
+        animation: rainbow 5s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes rainbow {
+        0% {
+          filter: hue-rotate(0deg);
+        }
+        100% {
+          filter: hue-rotate(360deg);
+        }
+      }
+      .rainbow-follow {
+        animation: none !important;
+      }
+      @keyframes scroll-left {
+        0% {
+          transform: translateX(0%);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
 
-/* --- Navigation Styles --- */
-.nav-item.active { color: #63b3ed; transform: translateY(-2px); }
-.nav-item.active .nav-indicator { width: 24px; height: 4px; background-color: #63b3ed; border-radius: 2px; margin-top: 4px; }
-.nav-item { transition: all 0.2s ease-in-out; color: #a0aec0; }
-.bottom-nav { background-color: rgba(26, 32, 44, 0.8); backdrop-filter: blur(10px); flex-shrink: 0; }
+      /* --- Custom Scrollbar --- */
+      main::-webkit-scrollbar,
+      .modal-body::-webkit-scrollbar {
+        width: 6px;
+      }
+      main::-webkit-scrollbar-track,
+      .modal-body::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      main::-webkit-scrollbar-thumb,
+      .modal-body::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+      }
+      main::-webkit-scrollbar-thumb:hover,
+      .modal-body::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
 
-/* --- Card Styles --- */
-.game-card { aspect-ratio: 7 / 10; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); background: #000; transform-style: preserve-3d; will-change: transform; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-.game-card.unowned { cursor: not-allowed; }
-.game-card.unowned .card-image { filter: grayscale(100%); }
-.unowned-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 5; display: flex; align-items: center; justify-content: center; }
-.unowned-overlay svg { width: 30%; height: 30%; color: rgba(255,255,255,0.7); }
-.card-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
-.card-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, transparent 0%, transparent 60%, rgba(0, 0, 0, 0.3) 80%, rgba(0, 0, 0, 0.8) 100%); z-index: 2; }
-.holographic-effect { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, transparent 20%, rgba(255, 0, 150, 0.15) 25%, rgba(0, 255, 255, 0.15) 30%, rgba(255, 255, 0, 0.15) 35%, rgba(255, 0, 150, 0.15) 40%, transparent 45%, transparent 55%, rgba(0, 255, 255, 0.15) 60%, rgba(255, 255, 0, 0.15) 65%, rgba(255, 0, 150, 0.15) 70%, rgba(0, 255, 255, 0.15) 75%, transparent 80%); z-index: 4; opacity: 0; transition: opacity 0.3s ease; background-size: 200% 200%; animation: hologramShift 3s linear infinite; }
-.game-card.has-holo:hover .holographic-effect { opacity: 1; }
-.rarity-icon { position: absolute; top: 15px; left: 15px; width: 15%; height: auto; aspect-ratio: 1/1; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 3; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); border: 2px solid rgba(255,255,255,0.2); }
-.rarity-icon svg { width: 60%; height: 60%; color: white; }
-.color-pink { background-color: #be185d; } .color-green { background-color: #059669; } .color-blue { background-color: #4f46e5; }
-.theme-label { position: absolute; top: 15px; right: 15px; background-color: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 9999px; font-size: 0.65rem; font-weight: 600; z-index: 3; }
-.stats-container { position: absolute; bottom: 15px; left: 15px; right: 15px; z-index: 3; border-radius: 4px; border: 2px solid #000; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
-.stats-bar { display: flex; height: 30px; }
-.stat { display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; }
-.attack, .defense { background: white; flex-basis: 25%; }
-.attack { color: #ff3b30; border-right: 2px solid #000; }
-.defense { color: #007aff; }
-.type { background: white; font-size: 12px; text-transform: uppercase; border-left: 2px solid #000; border-right: 2px solid #000; flex-grow: 1; }
-.type-common { color: #a0aec0; } .type-rare { color: #4299e1; } .type-limited { color: #00ff88; animation: glow 2s ease-in-out infinite alternate; }
-@keyframes glow { from { text-shadow: 0 0 8px rgba(0, 255, 136, 0.6); } to { text-shadow: 0 0 15px rgba(0, 255, 136, 0.9), 0 0 25px rgba(0, 255, 136, 0.4); } }
-.name-section { background: white; padding: 6px; text-align: center; }
-.name { font-size: 0.9rem; font-weight: 900; color: #000; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
+      /* --- Header Currency Bar --- */
+      .top-header {
+        background-color: rgba(26, 32, 44, 0.5);
+        backdrop-filter: blur(5px);
+        padding: 8px 16px;
+        flex-shrink: 0;
+      }
+      .currency-display {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 9999px;
+        padding: 4px 10px 4px 6px;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-size: 0.8rem;
+      }
+      .currency-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 4px;
+      }
 
-/* --- Library/Shop Tabs --- */
-.custom-tabs { display: flex; gap: 12px; margin-bottom: 20px; padding: 4px; background-color: rgba(0,0,0,0.2); border-radius: 12px; }
-.custom-tab { flex-grow: 1; padding: 10px; border-radius: 8px; text-align: center; font-weight: 700; color: #a0aec0; cursor: pointer; transition: all 0.3s ease; position: relative; }
-.custom-tab.active { color: white; background-color: #63b3ed; }
+      /* --- Navigation Styles --- */
+      .nav-item.active {
+        color: #63b3ed;
+        transform: translateY(-2px);
+      }
+      .nav-item.active .nav-indicator {
+        width: 24px;
+        height: 4px;
+        background-color: #63b3ed;
+        border-radius: 2px;
+        margin-top: 4px;
+      }
+      .nav-item {
+        transition: all 0.2s ease-in-out;
+        color: #a0aec0;
+      }
+      .bottom-nav {
+        background-color: rgba(26, 32, 44, 0.8);
+        backdrop-filter: blur(10px);
+        flex-shrink: 0;
+      }
 
-/* --- Event Card --- */
-.event-card { border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); background-color: #2d3748; }
-.event-banner { height: 120px; width: 100%; object-fit: cover; }
-.event-info { padding: 16px; }
-.event-rewards { display: flex; gap: 12px; margin-top: 12px; }
-.reward-item { display: flex; align-items: center; gap: 6px; background-color: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: #cbd5e1; }
-
-/* --- Shop Item Card (Grid Layout) --- */
-/* --- Shop Item Card (Grid Layout) --- */
-.shop-item { 
-    background-color: #2d3748; 
-    border-radius: 16px; 
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column; 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3); 
-    cursor: pointer;
-    transition: transform 0.3s ease; /* Thêm hiệu ứng chuyển động mượt mà */
-}
-
-/* Thêm hiệu ứng khi hover vào shop-item */
-.shop-item:hover {
-    transform: translateY(-5px); /* Nhấc vật phẩm lên một chút */
-    box-shadow: 0 12px 35px rgba(0,0,0,0.4);
-}
-
-.shop-item .shop-item-preview .game-card {
-    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Thêm transition cho thẻ preview */
-}
-
-.shop-item:hover .shop-item-preview .game-card {
-    transform: scale(1.1) rotate(0deg) translateX(15px); /* Hiệu ứng trượt sang phải và phóng to nhẹ */
-}
-
-.shop-item-preview { height: 120px; background-color: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; position: relative; }
-.shop-item-preview .game-card { width: 70px; height: 100px; position: absolute; transform: scale(1.1) rotate(5deg); }
-.shop-item-info { padding: 12px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-.rates-button { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background-color: rgba(0,0,0,0.3); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: italic; font-weight: bold; }
-
-/* --- Modal Styles --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-.modal-overlay.show { opacity: 1; visibility: visible; }
-.modal-content { transform: scale(0.8); transition: transform 0.3s ease; background-color: #2d3748; border-radius: 16px; width: 90%; max-width: 400px; max-height: 80%; display: flex; flex-direction: column; }
-.modal-overlay.show .modal-content { transform: scale(1); }
-#card-modal-content { background-color: transparent; box-shadow: none; }
-.modal-body { padding: 16px; overflow-y: auto; }
-.rate-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; background-color: rgba(0,0,0,0.2); border-radius: 8px; }
-.purchase-result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-#game-over-modal .modal-content { max-width: 300px; text-align: center;}
-
-/* --- Game Screen Styles (REVISED) --- */
-#game-board {
-    display: grid;
-    grid-template-rows: auto 1fr 1fr auto;
-    height: 100%;
-    width: 100%;
-    gap: 8px;
-    padding-bottom: 140px; 
-}
-.battle-zone {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    align-items: center;
-    padding: 0 1rem;
-}
-.battle-slot {
-    aspect-ratio: 7 / 10;
-    border: 2px dashed rgba(255,255,255,0.2);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: background-color 0.2s ease;
-}
-.battle-slot.over {
-    background-color: rgba(255,255,255,0.1);
-}
-.battle-slot .game-card {
-    width: 100%;
-    height: 100%;
-    cursor: grab;
-}
-.battle-slot .point-value {
-    position: absolute;
-    top: -10px;
-    right: -5px;
-    background: #facc15;
-    color: #a16207;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    z-index: 10;
-}
-.player-hand {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 16px;
-    backdrop-filter: blur(5px);
-    min-height: 120px;
-}
-.player-hand .game-card {
-    width: 70px;
-    height: 100px;
-    cursor: grab;
-}
-.player-hand .game-card:hover {
-    transform: translateY(-10px) scale(1.05);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-}
-.player-info, .opponent-info {
-    text-align: center;
-    color: white;
-    padding: 0;
-}
-.card-back {
-    aspect-ratio: 7 / 10;
-    border-radius: 20px;
-    background: linear-gradient(145deg, #4a5568, #2d3748);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #a0aec0;
-    font-size: 2rem;
-    border: 2px solid rgba(255,255,255,0.2);
-}
-.battle-slot .card-back {
-    width: 100%;
-    height: 100%;
-}
-.player-stats {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    font-size: 0.8rem;
-    color: #cbd5e1;
-}
-.game-actions {
-    position: fixed;
-    bottom: 135px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-}
-.defense-overlay {
-    position: absolute;
-    bottom: 40%;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 122, 255, 0.8);
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    z-index: 5;
-    padding: 2px 0;
-    font-size: 0.8rem;
-}
-.game-card.locked {
-    filter: grayscale(80%) brightness(0.7);
-    cursor: not-allowed;
-}
-
-/* --- NEW & REVISED ANIMATIONS AND STYLES --- */
-.deck-card-wrapper .game-card {
-    transition: transform 0.2s ease, outline 0.2s ease;
-}
-@keyframes attack-animation-improved {
-    0% { transform: scale(1) translateY(0); z-index: 10; }
-    50% { transform: scale(1.15) translateY(-40px); z-index: 10; box-shadow: 0 0 20px #fef08a; }
-    100% { transform: scale(1) translateY(0); z-index: 10; }
-}
-@keyframes shake-animation {
-    0% { transform: translate(1px, 1px); }
-    25% { transform: translate(-2px, -1px); }
-    50% { transform: translate(2px, 1px); }
-    75% { transform: translate(-1px, 2px); }
-    100% { transform: translate(1px, -1px); }
-}
-@keyframes damage-animation {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-30px); }
-}
-.damage-text {
-    position: absolute; 
-    top: 40%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    font-size: 2.5rem; /* Tăng kích thước chữ */
-    font-weight: 900;
-    color: #ef4444; 
-    /* Thêm viền đen đậm để nổi bật */
-    text-shadow: 
-        -2px -2px 0 #000, 
-         2px -2px 0 #000, 
-        -2px  2px 0 #000, 
-         2px  2px 0 #000, 
-         0 0 15px white;
-    pointer-events: none; 
-    z-index: 20; 
-    animation: damage-animation 1.2s ease-out forwards;
-}
-.defeated-card {
-    animation: shake-animation 0.5s;
-    filter: grayscale(100%) brightness(0.5) !important;
-    opacity: 0.6 !important;
-    transition: filter 0.5s, opacity 0.5s;
-}
-       .game-card.rarity-limited {
-    position: relative;
-    /* Thêm một box-shadow lung linh để tăng cảm giác quyền năng */
-    animation: limited-card-pulse 2s infinite alternate;
-}
-
-/* 1. VIỀN NĂNG LƯỢNG (ANIMATED BORDER) */
-/* Chúng ta dùng pseudo-element ::before để tạo lớp viền gradient */
-.game-card.rarity-limited::before {
-    content: '';
-    position: absolute;
-    left: -2px; 
-    top: -2px;
-    width: calc(100% + 6px);
-    height: calc(100% + 6px);
-    background: conic-gradient(
-        from 180deg at 50% 50%,
-        #fde047, #f43f5e, #a855f7, #63b3ed, #84cc16, #fde047
-    );
-    /* SỬA LỖI: Tăng z-index để viền nổi lên trên ảnh và các lớp nền khác */
-    z-index: 0; 
-    border-radius: 22px; 
-    animation: spin-border 4s linear infinite;
-}
-
-@keyframes spin-border {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 2. HIỆU ỨNG HẠT BAY LÊN (PARTICLE EFFECT) */
-.particle-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60%; /* Giới hạn chiều cao hạt bay */
-    pointer-events: none; /* Cho phép click xuyên qua */
-    overflow: hidden;
-    z-index: 5; /* Đảm bảo nó nổi lên trên các lớp khác */
-}
-
-.particle-container i {
-    position: absolute;
-    bottom: 0;
-    background: #fde047; /* Màu vàng Gold */
-    border-radius: 50%;
-    opacity: 0;
-    animation: rise 5s infinite;
-    box-shadow: 0 0 5px #fde047, 0 0 10px #fde047, 0 0 15px #fde047;
-}
-/* 2. HIỆU ỨNG CHO THẺ "RARE" (MỚI) */
-
-/* Tạo một lớp giả ::after để làm hiệu ứng lướt sáng */
-.game-card.rarity-rare::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        105deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.4) 48%,
-        rgba(255, 255, 255, 0.4) 52%,
-        transparent 60%
-    );
-    z-index: 3; /* Đảm bảo nó hiện trên các lớp khác */
-    
-    /* Ban đầu, đặt nó ở ngoài thẻ bên trái */
-    transform: translateX(-150%);
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); /* Thêm transition mượt mà */
-    pointer-events: none; /* Cho phép click xuyên qua */
-}
-
-/* Khi hover vào thẻ Rare, di chuyển vệt sáng qua phải */
-.game-card.rarity-rare:hover::after {
-    transform: translateX(150%);
-}
-@keyframes rise {
-    0% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-200px); /* Tăng giá trị để hạt bay cao hơn */
-        opacity: 0;
-    }
-}
-
-/* Tạo sự đa dạng cho các hạt: vị trí, kích thước, delay khác nhau */
-.particle-container i:nth-child(1) { left: 10%; width: 4px; height: 4px; animation-delay: 0.1s; animation-duration: 4.5s; }
-.particle-container i:nth-child(2) { left: 20%; width: 2px; height: 2px; animation-delay: 0.5s; animation-duration: 6s; }
-.particle-container i:nth-child(3) { left: 35%; width: 5px; height: 5px; animation-delay: 1.2s; animation-duration: 3.8s; }
-.particle-container i:nth-child(4) { left: 45%; width: 3px; height: 3px; animation-delay: 2.5s; animation-duration: 5.5s; }
-.particle-container i:nth-child(5) { left: 60%; width: 4px; height: 4px; animation-delay: 3s; animation-duration: 4.2s; }
-.particle-container i:nth-child(6) { left: 75%; width: 2px; height: 2px; animation-delay: 1.8s; animation-duration: 6.5s; }
-.particle-container i:nth-child(7) { left: 90%; width: 3px; height: 3px; animation-delay: 4s; animation-duration: 5s; }
-.particle-container i:nth-child(8) { left: 5%; width: 2px; height: 2px; animation-delay: 2s; animation-duration: 7s; }
-.particle-container i:nth-child(9) { left: 85%; width: 4px; height: 4px; animation-delay: 3.5s; animation-duration: 4.8s; }
-.particle-container i:nth-child(10) { left: 50%; width: 3px; height: 3px; animation-delay: 0.8s; animation-duration: 5.2s; }
-
-/* 3. NÂNG CẤP HIỆU ỨNG GLOW CHO CHỮ */
-/* Ghi đè hiệu ứng glow cũ bằng một hiệu ứng mạnh và đẹp hơn */
-.type-limited {
-    /* Thêm font-weight và một gradient nhẹ cho chữ */
-    font-weight: 900;
-    background-image: linear-gradient(45deg, #a8ff78, #78ffd6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: limited-glow 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes limited-glow {
-  from {
-    text-shadow: 0 0 10px #fff, 0 0 20px #a8ff78, 0 0 30px #a8ff78;
-  }
-  to {
-    text-shadow: 0 0 20px #fff, 0 0 30px #78ffd6, 0 0 40px #78ffd6;
-  }
-}
-
-@keyframes limited-card-pulse {
-    from {
+      /* --- Card Styles --- */
+      .game-card {
+        aspect-ratio: 7 / 10;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    }
-    to {
-        box-shadow: 0 8px 45px rgba(168, 85, 247, 0.5);
-    }
-}
-       /* --- UI cho Luật chơi --- */
-/* --- UI cho Luật chơi --- */
-.rules-toggle-btn {
-    position: fixed;
-    top: 70px;
-    right: 10px;
-    width: 40px;
-    height: 40px;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    z-index: 100;
-    cursor: pointer;
-}
-.rules-modal .modal-content {
-    max-width: 380px;
-}
-.rule-item {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Căn giữa các token */
-    gap: 8px; /* Khoảng cách giữa các token */
-    padding: 8px;
-    background-color: rgba(0,0,0,0.2);
-    border-radius: 8px;
-}
-.rule-token {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-weight: 600;
-    flex-grow: 1; /* Giúp các token có chiều rộng bằng nhau */
-    justify-content: center;
-}
-.shape-icon {
-    width: 20px;
-    height: 20px;
-}
-.shape-icon svg {
-    width: 100%;
-    height: 100%;
-}
-.color-icon {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid white;
-}
+        background: #000;
+        transform-style: preserve-3d;
+        will-change: transform;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+      }
+      .game-card.unowned {
+        cursor: not-allowed;
+      }
+      .game-card.unowned .card-image {
+        filter: grayscale(100%);
+      }
+      .unowned-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .unowned-overlay svg {
+        width: 30%;
+        height: 30%;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+      .card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          180deg,
+          transparent 0%,
+          transparent 60%,
+          rgba(0, 0, 0, 0.3) 80%,
+          rgba(0, 0, 0, 0.8) 100%
+        );
+        z-index: 2;
+      }
+      .holographic-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          transparent 20%,
+          rgba(255, 0, 150, 0.15) 25%,
+          rgba(0, 255, 255, 0.15) 30%,
+          rgba(255, 255, 0, 0.15) 35%,
+          rgba(255, 0, 150, 0.15) 40%,
+          transparent 45%,
+          transparent 55%,
+          rgba(0, 255, 255, 0.15) 60%,
+          rgba(255, 255, 0, 0.15) 65%,
+          rgba(255, 0, 150, 0.15) 70%,
+          rgba(0, 255, 255, 0.15) 75%,
+          transparent 80%
+        );
+        z-index: 4;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        background-size: 200% 200%;
+        animation: hologramShift 3s linear infinite;
+      }
+      .game-card.has-holo:hover .holographic-effect {
+        opacity: 1;
+      }
+      .rarity-icon {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 15%;
+        height: auto;
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .rarity-icon svg {
+        width: 60%;
+        height: 60%;
+        color: white;
+      }
+      .color-pink {
+        background-color: #be185d;
+      }
+      .color-green {
+        background-color: #059669;
+      }
+      .color-blue {
+        background-color: #4f46e5;
+      }
+      .theme-label {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        z-index: 3;
+      }
+      .stats-container {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        z-index: 3;
+        border-radius: 4px;
+        border: 2px solid #000;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .stats-bar {
+        display: flex;
+        height: 30px;
+      }
+      .stat {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 13px;
+      }
+      .attack,
+      .defense {
+        background: white;
+        flex-basis: 25%;
+      }
+      .attack {
+        color: #ff3b30;
+        border-right: 2px solid #000;
+      }
+      .defense {
+        color: #007aff;
+      }
+      .type {
+        background: white;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-left: 2px solid #000;
+        border-right: 2px solid #000;
+        flex-grow: 1;
+      }
+      .type-common {
+        color: #a0aec0;
+      }
+      .type-rare {
+        color: #4299e1;
+      }
+      .type-limited {
+        color: #00ff88;
+        animation: glow 2s ease-in-out infinite alternate;
+      }
+      @keyframes glow {
+        from {
+          text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+        }
+        to {
+          text-shadow: 0 0 15px rgba(0, 255, 136, 0.9),
+            0 0 25px rgba(0, 255, 136, 0.4);
+        }
+      }
+      .name-section {
+        background: white;
+        padding: 6px;
+        text-align: center;
+      }
+      .name {
+        font-size: 0.9rem;
+        font-weight: 900;
+        color: #000;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 0;
+      }
 
-/* --- UI cho Trạng thái Game --- */
-.player-hand .game-card.selected-card {
-    outline: 4px solid #fde047; /* Viền vàng cho thẻ được chọn */
-    box-shadow: 0 0 25px #fde047;
-    transform: translateY(-15px) scale(1.1);
-}
+      /* --- Library/Shop Tabs --- */
+      .custom-tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 4px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+      }
+      .custom-tab {
+        flex-grow: 1;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #a0aec0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+      .custom-tab.active {
+        color: white;
+        background-color: #63b3ed;
+      }
 
-.battle-slot.highlight-slot {
-    background-color: rgba(253, 224, 71, 0.2); /* Nền vàng mờ cho slot có thể đặt */
-    border-style: solid;
-}
+      /* --- Event Card --- */
+      .event-card {
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        background-color: #2d3748;
+      }
+      .event-banner {
+        height: 120px;
+        width: 100%;
+        object-fit: cover;
+      }
+      .event-info {
+        padding: 16px;
+      }
+      .event-rewards {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .reward-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #cbd5e1;
+      }
 
-       .simple-attack-display {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    background-color: rgba(239, 68, 68, 0.9); /* Màu đỏ */
-    color: white;
-    font-weight: 700;
-    font-size: 12px;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    z-index: 5;
-}
+      /* --- Shop Item Card (Grid Layout) --- */
+      .shop-item {
+        background-color: #2d3748;
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        transition: transform 0.3s ease; /* Thêm hiệu ứng chuyển động mượt mà */
+      }
 
-       /* --- Play Pass Styles --- */
-.pass-header {
-    padding: 1rem;
-    background-color: rgba(0,0,0,0.2);
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-.pass-progress-container {
-    margin-top: 1rem;
-}
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #a0aec0;
-    margin-bottom: 0.5rem;
-}
-.progress-bar-bg {
-    width: 100%;
-    height: 12px;
-    background-color: rgba(0,0,0,0.4);
-    border-radius: 9999px;
-    overflow: hidden;
-}
-.progress-bar-fg {
-    height: 100%;
-    background: linear-gradient(90deg, #4299e1, #63b3ed);
-    border-radius: 9999px;
-    transition: width 0.5s ease;
-}
-.pass-purchase {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-}
-#pass-rewards-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.pass-level-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-}
-.pass-level-container.unlocked {
-    opacity: 1;
-}
-.level-marker {
-    flex-shrink: 0;
-    width: 40px;
-    height: 90%;
-    background-color: #2d3748;
-    border: 2px solid #4a5568;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: #a0aec0;
-}
-.pass-level-container.unlocked .level-marker {
-    background-color: #4a5568;
-    color: white;
-    border-color: #63b3ed;
-}
-.rewards-wrapper {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-.pass-reward-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px;
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-}
-.pass-reward-item.free-track {
-    background-color: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.pass-reward-item.paid-track {
-    background: linear-gradient(135deg, rgba(236, 201, 75, 0.1), rgba(251, 227, 142, 0.15));
-    border: 1px solid rgba(251, 227, 142, 0.3);
-}
-.pass-reward-item.locked {
-    filter: grayscale(80%);
-}
-.locked-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
-.locked-overlay svg { width: 32px; height: 32px; }
-.item-icon { flex-shrink: 0; }
-.item-amount { flex-grow: 1; }
-.claim-btn {
-    flex-shrink: 0;
-    padding: 6px 14px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    background-color: #4a5568;
-    color: #a0aec0;
-    cursor: not-allowed;
-}
-.claim-btn.can-claim {
-    background-color: #38a169;
-    color: white;
-    cursor: pointer;
-}
-.claim-btn.claimed {
-    background-color: transparent;
-    border: 1px solid #4a5568;
-    color: #718096;
-}
-.pass-reward-item.is-claimed {
-    opacity: 0.5;
-}
+      /* Thêm hiệu ứng khi hover vào shop-item */
+      .shop-item:hover {
+        transform: translateY(-5px); /* Nhấc vật phẩm lên một chút */
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+      }
 
-   </style>
-</head>
-<body class="flex flex-col antialiased">
+      .shop-item .shop-item-preview .game-card {
+        transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Thêm transition cho thẻ preview */
+      }
 
+      .shop-item:hover .shop-item-preview .game-card {
+        transform: scale(1.1) rotate(0deg) translateX(15px); /* Hiệu ứng trượt sang phải và phóng to nhẹ */
+      }
+
+      .shop-item-preview {
+        height: 120px;
+        background-color: rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .shop-item-preview .game-card {
+        width: 70px;
+        height: 100px;
+        position: absolute;
+        transform: scale(1.1) rotate(5deg);
+      }
+      .shop-item-info {
+        padding: 12px;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+      }
+      .rates-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-style: italic;
+        font-weight: bold;
+      }
+
+      /* --- Modal Styles --- */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      .modal-content {
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+        background-color: #2d3748;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        max-height: 80%;
+        display: flex;
+        flex-direction: column;
+      }
+      .modal-overlay.show .modal-content {
+        transform: scale(1);
+      }
+      #card-modal-content {
+        background-color: transparent;
+        box-shadow: none;
+      }
+      .modal-body {
+        padding: 16px;
+        overflow-y: auto;
+      }
+      .rate-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+      }
+      .purchase-result-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      #game-over-modal .modal-content {
+        max-width: 300px;
+        text-align: center;
+      }
+
+      /* --- Game Screen Styles (REVISED) --- */
+      #game-board {
+        display: grid;
+        grid-template-rows: auto 1fr 1fr auto;
+        height: 100%;
+        width: 100%;
+        gap: 8px;
+        padding-bottom: 140px;
+      }
+      .battle-zone {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        align-items: center;
+        padding: 0 1rem;
+      }
+      .battle-slot {
+        aspect-ratio: 7 / 10;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: background-color 0.2s ease;
+      }
+      .battle-slot.over {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      .battle-slot .game-card {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+      }
+      .battle-slot .point-value {
+        position: absolute;
+        top: -10px;
+        right: -5px;
+        background: #facc15;
+        color: #a16207;
+        font-weight: bold;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+      }
+      .player-hand {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        backdrop-filter: blur(5px);
+        min-height: 120px;
+      }
+      .player-hand .game-card {
+        width: 70px;
+        height: 100px;
+        cursor: grab;
+      }
+      .player-hand .game-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      }
+      .player-info,
+      .opponent-info {
+        text-align: center;
+        color: white;
+        padding: 0;
+      }
+      .card-back {
+        aspect-ratio: 7 / 10;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #4a5568, #2d3748);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+        font-size: 2rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .battle-slot .card-back {
+        width: 100%;
+        height: 100%;
+      }
+      .player-stats {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #cbd5e1;
+      }
+      .game-actions {
+        position: fixed;
+        bottom: 135px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+      }
+      .defense-overlay {
+        position: absolute;
+        bottom: 40%;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 122, 255, 0.8);
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        z-index: 5;
+        padding: 2px 0;
+        font-size: 0.8rem;
+      }
+      .game-card.locked {
+        filter: grayscale(80%) brightness(0.7);
+        cursor: not-allowed;
+      }
+
+      /* --- NEW & REVISED ANIMATIONS AND STYLES --- */
+      .deck-card-wrapper .game-card {
+        transition: transform 0.2s ease, outline 0.2s ease;
+      }
+      @keyframes attack-animation-improved {
+        0% {
+          transform: scale(1) translateY(0);
+          z-index: 10;
+        }
+        50% {
+          transform: scale(1.15) translateY(-40px);
+          z-index: 10;
+          box-shadow: 0 0 20px #fef08a;
+        }
+        100% {
+          transform: scale(1) translateY(0);
+          z-index: 10;
+        }
+      }
+      @keyframes shake-animation {
+        0% {
+          transform: translate(1px, 1px);
+        }
+        25% {
+          transform: translate(-2px, -1px);
+        }
+        50% {
+          transform: translate(2px, 1px);
+        }
+        75% {
+          transform: translate(-1px, 2px);
+        }
+        100% {
+          transform: translate(1px, -1px);
+        }
+      }
+      @keyframes damage-animation {
+        0% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+      }
+      .damage-text {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2.5rem; /* Tăng kích thước chữ */
+        font-weight: 900;
+        color: #ef4444;
+        /* Thêm viền đen đậm để nổi bật */
+        text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000,
+          2px 2px 0 #000, 0 0 15px white;
+        pointer-events: none;
+        z-index: 20;
+        animation: damage-animation 1.2s ease-out forwards;
+      }
+      .defeated-card {
+        animation: shake-animation 0.5s;
+        filter: grayscale(100%) brightness(0.5) !important;
+        opacity: 0.6 !important;
+        transition: filter 0.5s, opacity 0.5s;
+      }
+      .game-card.rarity-limited {
+        position: relative;
+        /* Thêm một box-shadow lung linh để tăng cảm giác quyền năng */
+        animation: limited-card-pulse 2s infinite alternate;
+      }
+
+      /* 1. VIỀN NĂNG LƯỢNG (ANIMATED BORDER) */
+      /* Chúng ta dùng pseudo-element ::before để tạo lớp viền gradient */
+      .game-card.rarity-limited::before {
+        content: "";
+        position: absolute;
+        left: -2px;
+        top: -2px;
+        width: calc(100% + 6px);
+        height: calc(100% + 6px);
+        background: conic-gradient(
+          from 180deg at 50% 50%,
+          #fde047,
+          #f43f5e,
+          #a855f7,
+          #63b3ed,
+          #84cc16,
+          #fde047
+        );
+        /* SỬA LỖI: Tăng z-index để viền nổi lên trên ảnh và các lớp nền khác */
+        z-index: 0;
+        border-radius: 22px;
+        animation: spin-border 4s linear infinite;
+      }
+
+      @keyframes spin-border {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 2. HIỆU ỨNG HẠT BAY LÊN (PARTICLE EFFECT) */
+      .particle-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60%; /* Giới hạn chiều cao hạt bay */
+        pointer-events: none; /* Cho phép click xuyên qua */
+        overflow: hidden;
+        z-index: 5; /* Đảm bảo nó nổi lên trên các lớp khác */
+      }
+
+      .particle-container i {
+        position: absolute;
+        bottom: 0;
+        background: #fde047; /* Màu vàng Gold */
+        border-radius: 50%;
+        opacity: 0;
+        animation: rise 5s infinite;
+        box-shadow: 0 0 5px #fde047, 0 0 10px #fde047, 0 0 15px #fde047;
+      }
+      /* 2. HIỆU ỨNG CHO THẺ "RARE" (MỚI) */
+
+      /* Tạo một lớp giả ::after để làm hiệu ứng lướt sáng */
+      .game-card.rarity-rare::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          105deg,
+          transparent 40%,
+          rgba(255, 255, 255, 0.4) 48%,
+          rgba(255, 255, 255, 0.4) 52%,
+          transparent 60%
+        );
+        z-index: 3; /* Đảm bảo nó hiện trên các lớp khác */
+
+        /* Ban đầu, đặt nó ở ngoài thẻ bên trái */
+        transform: translateX(-150%);
+        transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); /* Thêm transition mượt mà */
+        pointer-events: none; /* Cho phép click xuyên qua */
+      }
+
+      /* Khi hover vào thẻ Rare, di chuyển vệt sáng qua phải */
+      .game-card.rarity-rare:hover::after {
+        transform: translateX(150%);
+      }
+      @keyframes rise {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-200px); /* Tăng giá trị để hạt bay cao hơn */
+          opacity: 0;
+        }
+      }
+
+      /* Tạo sự đa dạng cho các hạt: vị trí, kích thước, delay khác nhau */
+      .particle-container i:nth-child(1) {
+        left: 10%;
+        width: 4px;
+        height: 4px;
+        animation-delay: 0.1s;
+        animation-duration: 4.5s;
+      }
+      .particle-container i:nth-child(2) {
+        left: 20%;
+        width: 2px;
+        height: 2px;
+        animation-delay: 0.5s;
+        animation-duration: 6s;
+      }
+      .particle-container i:nth-child(3) {
+        left: 35%;
+        width: 5px;
+        height: 5px;
+        animation-delay: 1.2s;
+        animation-duration: 3.8s;
+      }
+      .particle-container i:nth-child(4) {
+        left: 45%;
+        width: 3px;
+        height: 3px;
+        animation-delay: 2.5s;
+        animation-duration: 5.5s;
+      }
+      .particle-container i:nth-child(5) {
+        left: 60%;
+        width: 4px;
+        height: 4px;
+        animation-delay: 3s;
+        animation-duration: 4.2s;
+      }
+      .particle-container i:nth-child(6) {
+        left: 75%;
+        width: 2px;
+        height: 2px;
+        animation-delay: 1.8s;
+        animation-duration: 6.5s;
+      }
+      .particle-container i:nth-child(7) {
+        left: 90%;
+        width: 3px;
+        height: 3px;
+        animation-delay: 4s;
+        animation-duration: 5s;
+      }
+      .particle-container i:nth-child(8) {
+        left: 5%;
+        width: 2px;
+        height: 2px;
+        animation-delay: 2s;
+        animation-duration: 7s;
+      }
+      .particle-container i:nth-child(9) {
+        left: 85%;
+        width: 4px;
+        height: 4px;
+        animation-delay: 3.5s;
+        animation-duration: 4.8s;
+      }
+      .particle-container i:nth-child(10) {
+        left: 50%;
+        width: 3px;
+        height: 3px;
+        animation-delay: 0.8s;
+        animation-duration: 5.2s;
+      }
+
+      /* 3. NÂNG CẤP HIỆU ỨNG GLOW CHO CHỮ */
+      /* Ghi đè hiệu ứng glow cũ bằng một hiệu ứng mạnh và đẹp hơn */
+      .type-limited {
+        /* Thêm font-weight và một gradient nhẹ cho chữ */
+        font-weight: 900;
+        background-image: linear-gradient(45deg, #a8ff78, #78ffd6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: limited-glow 1.5s ease-in-out infinite alternate;
+      }
+
+      @keyframes limited-glow {
+        from {
+          text-shadow: 0 0 10px #fff, 0 0 20px #a8ff78, 0 0 30px #a8ff78;
+        }
+        to {
+          text-shadow: 0 0 20px #fff, 0 0 30px #78ffd6, 0 0 40px #78ffd6;
+        }
+      }
+
+      @keyframes limited-card-pulse {
+        from {
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        to {
+          box-shadow: 0 8px 45px rgba(168, 85, 247, 0.5);
+        }
+      }
+      /* --- UI cho Luật chơi --- */
+      /* --- UI cho Luật chơi --- */
+      .rules-toggle-btn {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        z-index: 100;
+        cursor: pointer;
+      }
+      .rules-modal .modal-content {
+        max-width: 380px;
+      }
+      .rule-item {
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Căn giữa các token */
+        gap: 8px; /* Khoảng cách giữa các token */
+        padding: 8px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+      }
+      .rule-token {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+        flex-grow: 1; /* Giúp các token có chiều rộng bằng nhau */
+        justify-content: center;
+      }
+      .shape-icon {
+        width: 20px;
+        height: 20px;
+      }
+      .shape-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+      .color-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid white;
+      }
+
+      /* --- UI cho Trạng thái Game --- */
+      .player-hand .game-card.selected-card {
+        outline: 4px solid #fde047; /* Viền vàng cho thẻ được chọn */
+        box-shadow: 0 0 25px #fde047;
+        transform: translateY(-15px) scale(1.1);
+      }
+
+      .battle-slot.highlight-slot {
+        background-color: rgba(
+          253,
+          224,
+          71,
+          0.2
+        ); /* Nền vàng mờ cho slot có thể đặt */
+        border-style: solid;
+      }
+
+      .simple-attack-display {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        background-color: rgba(239, 68, 68, 0.9); /* Màu đỏ */
+        color: white;
+        font-weight: 700;
+        font-size: 12px;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        z-index: 5;
+      }
+
+      /* --- Play Pass Styles --- */
+      .pass-header {
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+      .pass-progress-container {
+        margin-top: 1rem;
+      }
+      .level-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #a0aec0;
+        margin-bottom: 0.5rem;
+      }
+      .progress-bar-bg {
+        width: 100%;
+        height: 12px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .progress-bar-fg {
+        height: 100%;
+        background: linear-gradient(90deg, #4299e1, #63b3ed);
+        border-radius: 9999px;
+        transition: width 0.5s ease;
+      }
+      .pass-purchase {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+      }
+      #pass-rewards-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .pass-level-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+      }
+      .pass-level-container.unlocked {
+        opacity: 1;
+      }
+      .level-marker {
+        flex-shrink: 0;
+        width: 40px;
+        height: 90%;
+        background-color: #2d3748;
+        border: 2px solid #4a5568;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.2rem;
+        color: #a0aec0;
+      }
+      .pass-level-container.unlocked .level-marker {
+        background-color: #4a5568;
+        color: white;
+        border-color: #63b3ed;
+      }
+      .rewards-wrapper {
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pass-reward-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+      .pass-reward-item.free-track {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .pass-reward-item.paid-track {
+        background: linear-gradient(
+          135deg,
+          rgba(236, 201, 75, 0.1),
+          rgba(251, 227, 142, 0.15)
+        );
+        border: 1px solid rgba(251, 227, 142, 0.3);
+      }
+      .pass-reward-item.locked {
+        filter: grayscale(80%);
+      }
+      .locked-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+      .locked-overlay svg {
+        width: 32px;
+        height: 32px;
+      }
+      .item-icon {
+        flex-shrink: 0;
+      }
+      .item-amount {
+        flex-grow: 1;
+      }
+      .claim-btn {
+        flex-shrink: 0;
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        cursor: pointer;
+        background-color: #4a5568;
+        color: #a0aec0;
+        cursor: not-allowed;
+      }
+      .claim-btn.can-claim {
+        background-color: #38a169;
+        color: white;
+        cursor: pointer;
+      }
+      .claim-btn.claimed {
+        background-color: transparent;
+        border: 1px solid #4a5568;
+        color: #718096;
+      }
+      .pass-reward-item.is-claimed {
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body class="flex flex-col antialiased">
     <header class="top-header w-full">
-        <div class="flex justify-end items-center gap-2">
-            <div id="player-coins" class="currency-display"></div>
-            <div id="player-tokens" class="currency-display"></div>
-            <div id="player-event-tokens" class="currency-display"></div>
-            <div id="player-special-currency" class="currency-display"></div>
-        </div>
+      <div class="flex justify-end items-center gap-2">
+        <div id="player-coins" class="currency-display"></div>
+        <div id="player-tokens" class="currency-display"></div>
+        <div id="player-event-tokens" class="currency-display"></div>
+        <div id="player-special-currency" class="currency-display"></div>
+      </div>
     </header>
 
-    <main id="main-content" class="flex-grow p-5 overflow-y-auto w-full max-w-screen-lg mx-auto">
-        </main>
+    <main
+      id="main-content"
+      class="flex-grow p-5 overflow-y-auto w-full max-w-screen-lg mx-auto"
+    ></main>
 
-    <nav class="bottom-nav shadow-[0_-2px_10px_rgba(0,0,0,0.2)] rounded-t-2xl w-full">
-        <div class="flex justify-around items-center h-20 max-w-md mx-auto">
-            <div id="nav-main" class="nav-item active text-center cursor-pointer flex flex-col items-center justify-center">
-                <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                <span class="text-xs font-semibold tracking-wide">Sảnh</span>
-                <div class="nav-indicator"></div>
-            </div>
-            <div id="nav-pass" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
-    <svg class="h-6 w-6 mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12.5C20 12.2239 19.7761 12 19.5 12H4.5C4.22386 12 4 12.2239 4 12.5V13.5C4 14.8807 5.11929 16 6.5 16H17.5C18.8807 16 20 14.8807 20 13.5V12.5ZM2 8.5C2 7.11929 3.11929 6 4.5 6H19.5C20.8807 6 22 7.11929 22 8.5V11.25C21.1563 11.25 20.3538 11.5312 19.75 12H4.25C3.64624 12 2.84375 11.7188 2 11.25V8.5Z"/></svg>
-    <span class="text-xs font-semibold tracking-wide">Play Pass</span>
-    <div class="nav-indicator"></div>
-</div>
-            <div id="nav-decks" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
-                <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                <span class="text-xs font-semibold tracking-wide">Thẻ bài</span>
-                <div class="nav-indicator"></div>
-            </div>
-            <div id="nav-events" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
-                <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span class="text-xs font-semibold tracking-wide">Sự kiện</span>
-                <div class="nav-indicator"></div>
-            </div>
-            <div id="nav-shop" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
-                <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                <span class="text-xs font-semibold tracking-wide">Cửa hàng</span>
-                <div class="nav-indicator"></div>
-            </div>
+    <nav
+      class="bottom-nav shadow-[0_-2px_10px_rgba(0,0,0,0.2)] rounded-t-2xl w-full"
+    >
+      <div class="flex justify-around items-center h-20 max-w-md mx-auto">
+        <div
+          id="nav-main"
+          class="nav-item active text-center cursor-pointer flex flex-col items-center justify-center"
+        >
+          <svg
+            class="h-6 w-6 mb-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            />
+          </svg>
+          <span class="text-xs font-semibold tracking-wide">Sảnh</span>
+          <div class="nav-indicator"></div>
         </div>
+        <div
+          id="nav-pass"
+          class="nav-item text-center cursor-pointer flex flex-col items-center justify-center"
+        >
+          <svg
+            class="h-6 w-6 mb-1"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M20 12.5C20 12.2239 19.7761 12 19.5 12H4.5C4.22386 12 4 12.2239 4 12.5V13.5C4 14.8807 5.11929 16 6.5 16H17.5C18.8807 16 20 14.8807 20 13.5V12.5ZM2 8.5C2 7.11929 3.11929 6 4.5 6H19.5C20.8807 6 22 7.11929 22 8.5V11.25C21.1563 11.25 20.3538 11.5312 19.75 12H4.25C3.64624 12 2.84375 11.7188 2 11.25V8.5Z"
+            />
+          </svg>
+          <span class="text-xs font-semibold tracking-wide">Play Pass</span>
+          <div class="nav-indicator"></div>
+        </div>
+        <div
+          id="nav-decks"
+          class="nav-item text-center cursor-pointer flex flex-col items-center justify-center"
+        >
+          <svg
+            class="h-6 w-6 mb-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+          <span class="text-xs font-semibold tracking-wide">Thẻ bài</span>
+          <div class="nav-indicator"></div>
+        </div>
+        <div
+          id="nav-events"
+          class="nav-item text-center cursor-pointer flex flex-col items-center justify-center"
+        >
+          <svg
+            class="h-6 w-6 mb-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span class="text-xs font-semibold tracking-wide">Sự kiện</span>
+          <div class="nav-indicator"></div>
+        </div>
+        <div
+          id="nav-shop"
+          class="nav-item text-center cursor-pointer flex flex-col items-center justify-center"
+        >
+          <svg
+            class="h-6 w-6 mb-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+          <span class="text-xs font-semibold tracking-wide">Cửa hàng</span>
+          <div class="nav-indicator"></div>
+        </div>
+      </div>
     </nav>
 
-    <div id="card-modal" class="modal-overlay"><div id="card-modal-content" class="modal-content"></div></div>
-    <div id="rates-modal" class="modal-overlay"><div id="rates-modal-content" class="modal-content"></div></div>
-    <div id="purchase-result-modal" class="modal-overlay"><div id="purchase-result-content" class="modal-content"></div></div>
-    <div id="game-over-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="p-4 border-b border-white/10"><h2 id="game-over-title" class="text-2xl font-bold text-white text-center">Trận đấu kết thúc</h2></div>
-            <div class="modal-body p-6 space-y-4">
-                <p id="game-over-message" class="text-center text-gray-300 text-lg"></p>
-                <button class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600" onclick="document.getElementById('game-over-modal').classList.remove('show'); renderContent('main');">Về Sảnh chính</button>
-            </div>
-        </div>
+    <div id="card-modal" class="modal-overlay">
+      <div id="card-modal-content" class="modal-content"></div>
     </div>
-  <script src="cardgame.js"></script>
-</body>
+    <div id="rates-modal" class="modal-overlay">
+      <div id="rates-modal-content" class="modal-content"></div>
+    </div>
+    <div id="purchase-result-modal" class="modal-overlay">
+      <div id="purchase-result-content" class="modal-content"></div>
+    </div>
+    <div id="game-over-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="p-4 border-b border-white/10">
+          <h2
+            id="game-over-title"
+            class="text-2xl font-bold text-white text-center"
+          >
+            Trận đấu kết thúc
+          </h2>
+        </div>
+        <div class="modal-body p-6 space-y-4">
+          <p
+            id="game-over-message"
+            class="text-center text-gray-300 text-lg"
+          ></p>
+          <button
+            class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600"
+            onclick="document.getElementById('game-over-modal').classList.remove('show'); renderContent('main');"
+          >
+            Về Sảnh chính
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="cardgame.js"></script>
+  </body>
 </html>
