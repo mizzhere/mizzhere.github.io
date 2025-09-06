@@ -542,6 +542,144 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
     border: 2px solid white;
     z-index: 5;
 }
+
+       /* --- Play Pass Styles --- */
+.pass-header {
+    padding: 1rem;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+.pass-progress-container {
+    margin-top: 1rem;
+}
+.level-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #a0aec0;
+    margin-bottom: 0.5rem;
+}
+.progress-bar-bg {
+    width: 100%;
+    height: 12px;
+    background-color: rgba(0,0,0,0.4);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.progress-bar-fg {
+    height: 100%;
+    background: linear-gradient(90deg, #4299e1, #63b3ed);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+}
+.pass-purchase {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+#pass-rewards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.pass-level-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+.pass-level-container.unlocked {
+    opacity: 1;
+}
+.level-marker {
+    flex-shrink: 0;
+    width: 40px;
+    height: 90%;
+    background-color: #2d3748;
+    border: 2px solid #4a5568;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #a0aec0;
+}
+.pass-level-container.unlocked .level-marker {
+    background-color: #4a5568;
+    color: white;
+    border-color: #63b3ed;
+}
+.rewards-wrapper {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.pass-reward-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+.pass-reward-item.free-track {
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.pass-reward-item.paid-track {
+    background: linear-gradient(135deg, rgba(236, 201, 75, 0.1), rgba(251, 227, 142, 0.15));
+    border: 1px solid rgba(251, 227, 142, 0.3);
+}
+.pass-reward-item.locked {
+    filter: grayscale(80%);
+}
+.locked-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.locked-overlay svg { width: 32px; height: 32px; }
+.item-icon { flex-shrink: 0; }
+.item-amount { flex-grow: 1; }
+.claim-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-color: #4a5568;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+.claim-btn.can-claim {
+    background-color: #38a169;
+    color: white;
+    cursor: pointer;
+}
+.claim-btn.claimed {
+    background-color: transparent;
+    border: 1px solid #4a5568;
+    color: #718096;
+}
+.pass-reward-item.is-claimed {
+    opacity: 0.5;
+}
+
    </style>
 </head>
 <body class="flex flex-col antialiased">
@@ -551,6 +689,7 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
             <div id="player-coins" class="currency-display"></div>
             <div id="player-tokens" class="currency-display"></div>
             <div id="player-event-tokens" class="currency-display"></div>
+            <div id="player-special-currency" class="currency-display"></div>
         </div>
     </header>
 
@@ -564,6 +703,11 @@ main::-webkit-scrollbar-thumb:hover, .modal-body::-webkit-scrollbar-thumb:hover 
                 <span class="text-xs font-semibold tracking-wide">Sảnh</span>
                 <div class="nav-indicator"></div>
             </div>
+            <div id="nav-pass" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
+    <svg class="h-6 w-6 mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12.5C20 12.2239 19.7761 12 19.5 12H4.5C4.22386 12 4 12.2239 4 12.5V13.5C4 14.8807 5.11929 16 6.5 16H17.5C18.8807 16 20 14.8807 20 13.5V12.5ZM2 8.5C2 7.11929 3.11929 6 4.5 6H19.5C20.8807 6 22 7.11929 22 8.5V11.25C21.1563 11.25 20.3538 11.5312 19.75 12H4.25C3.64624 12 2.84375 11.7188 2 11.25V8.5Z"/></svg>
+    <span class="text-xs font-semibold tracking-wide">Play Pass</span>
+    <div class="nav-indicator"></div>
+</div>
             <div id="nav-decks" class="nav-item text-center cursor-pointer flex flex-col items-center justify-center">
                 <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                 <span class="text-xs font-semibold tracking-wide">Thẻ bài</span>
