@@ -164,21 +164,25 @@
 <body class="text-white">
 
     <div id="game-container">
-        <div id="top-ui" class="w-full flex flex-col items-center invisible px-2">
-    <div id="neutral-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
-    <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-sm text-gray-300"></div>
-    <div id="player1-info" class="w-full max-w-lg">
+      <div id="top-ui" class="w-full flex flex-col items-center invisible px-2 py-2 md:py-0">
+    <div id="player1-info" class="w-full max-w-lg mb-2">
         <h2 class="font-bold text-lg text-blue-500 flex items-center">
             <span>Người chơi 1</span>
             <span id="player1-status-icons" class="flex items-center ml-2 space-x-1"></span>
         </h2>
         <div id="player1-lives" class="flex space-x-1 mt-1"></div>
     </div>
+    <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
 </div>
-
-<canvas id="gameCanvas"></canvas>
-
-<div id="bottom-ui" class="w-full flex flex-col items-center invisible px-2">
+    
+    <div id="canvas-wrapper" class="relative flex justify-center items-center">
+        <div id="neutral-cooldown-timers" class="absolute top-1 left-1/2 -translate-x-1/2 z-10 w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 text-sm text-gray-300"></div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+<div id="countdown-screen" class="screen-overlay hidden">
+    <h1 id="countdown-text" class="text-9xl font-bold text-white" style="text-shadow: 0 0 20px rgba(0,0,0,0.5);"></h1>
+</div>
+<div id="bottom-ui" class="w-full flex flex-col items-center invisible px-2 py-2 md:py-0">
     <div id="player2-info" class="w-full max-w-lg mt-2">
          <h2 class="font-bold text-lg text-red-500 flex items-center">
             <span>Người chơi 2</span>
@@ -507,8 +511,28 @@
             homingMissile: (item) => { ctx.fillStyle = ITEM_COLORS.homingMissile; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius); ctx.lineTo(item.x - item.radius, item.y + item.radius * 0.5); ctx.lineTo(item.x + item.radius, item.y + item.radius * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke(); }
         };
         
-        function updateLivesUI() { if (!players[0] || !players[1]) return; const p1LivesDiv = document.getElementById('player1-lives'); const p2LivesDiv = document.getElementById('player2-lives'); p1LivesDiv.innerHTML = ''; p2LivesDiv.innerHTML = ''; for (let i = 0; i < players[0].lives; i++) p1LivesDiv.innerHTML += `<div class="w-4 h-4 bg-blue-500 rounded-full"></div>`; for (let i = 0; i < players[1].lives; i++) p2LivesDiv.innerHTML += `<div class="w-4 h-4 bg-red-500 rounded-full"></div>`; }
-        
+        // Thay thế toàn bộ hàm này
+function updateLivesUI() {
+    if (!players[0] || !players[1]) return;
+    const p1LivesDiv = document.getElementById('player1-lives');
+    const p2LivesDiv = document.getElementById('player2-lives');
+    
+    const renderLives = (container, player, colorClass) => {
+        container.innerHTML = '';
+        for (let i = 0; i < 5; i++) { // Luôn lặp 5 lần
+            if (i < player.lives) {
+                // Tim đầy
+                container.innerHTML += `<div class="w-4 h-4 ${colorClass} rounded-full"></div>`;
+            } else {
+                // Tim rỗng (màu xám)
+                container.innerHTML += `<div class="w-4 h-4 bg-gray-700 rounded-full"></div>`;
+            }
+        }
+    };
+
+    renderLives(p1LivesDiv, players[0], 'bg-blue-500');
+    renderLives(p2LivesDiv, players[1], 'bg-red-500');
+}
         function updatePlayerStatusUI() {
             const p1_icons = document.getElementById('player1-status-icons');
             const p2_icons = document.getElementById('player2-status-icons');
@@ -713,9 +737,12 @@
 
         function triggerDeath(deadPlayerController) { if (!animationFrameId && !effectLoopId) return; cancelAnimationFrame(animationFrameId); animationFrameId = null; cancelAnimationFrame(effectLoopId); effectLoopId = null; const lastBall = deadPlayerController.balls[0] || {x: canvas.width / 2, y: canvas.height/2}; triggerEffect(lastBall.x, lastBall.y, deadPlayerController.color, { count: 50, speed: 8, friction: 0.98, life: 80 }); players = players.filter(p => p !== deadPlayerController); pauseGameForEffect({duration: 1200, shake: 15}); deathAnimationLoop(); }
         function deathAnimationLoop() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawTimer(); getAllPlayerBalls().forEach(p => p.draw()); for (const type in items) if(items[type].item) items[type].item.draw(); particles.forEach((p, index) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(index, 1); }); if (particles.length > 0) { requestAnimationFrame(deathAnimationLoop); } else { endGame(); } }
-        function endGame(isTimeUp = false) { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } gameOverScreen.classList.remove('hidden'); document.getElementById('top-ui').classList.add('invisible');
+        function endGame(isTimeUp = false) { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } restartButton.classList.add('hidden'); gameOverScreen.classList.remove('hidden'); document.getElementById('top-ui').classList.add('invisible');
 document.getElementById('bottom-ui').classList.add('invisible');
-; let winner = ''; const p1 = players.find(p => p.name === 'Người chơi 1'); const p2 = players.find(p => p.name === 'Người chơi 2'); const p1Lives = p1?.lives ?? 0; const p2Lives = p2?.lives ?? 0; if (isTimeUp) { if (p1Lives > p2Lives) winner = 'p1'; else if (p2Lives > p1Lives) winner = 'p2'; else winner = 'draw'; } else { if (!p1 || p1Lives <= 0) winner = 'p2'; else winner = 'p1'; } if (winner === 'p1') { winnerText.textContent = `Người chơi 1 chiến thắng!`; winnerText.classList.add('text-blue-500'); } else if (winner === 'p2') { winnerText.textContent = `Người chơi 2 chiến thắng!`; winnerText.classList.add('text-red-500'); } else { winnerText.textContent = `Hòa!`; } }
+; let winner = ''; const p1 = players.find(p => p.name === 'Người chơi 1'); const p2 = players.find(p => p.name === 'Người chơi 2'); const p1Lives = p1?.lives ?? 0; const p2Lives = p2?.lives ?? 0; if (isTimeUp) { if (p1Lives > p2Lives) winner = 'p1'; else if (p2Lives > p1Lives) winner = 'p2'; else winner = 'draw'; } else { if (!p1 || p1Lives <= 0) winner = 'p2'; else winner = 'p1'; } if (winner === 'p1') { winnerText.textContent = `Người chơi 1 chiến thắng!`; winnerText.classList.add('text-blue-500'); } else if (winner === 'p2') { winnerText.textContent = `Người chơi 2 chiến thắng!`; winnerText.classList.add('text-red-500'); } else { winnerText.textContent = `Hòa!`; } setTimeout(() => {
+        restartButton.classList.remove('hidden');
+    }, 3000); // Hiện nút sau 3 giây
+}
         
         function init() {
             setCanvasSize();
@@ -752,87 +779,151 @@ document.getElementById('bottom-ui').classList.add('invisible');
                 else if (ITEM_CONFIG[type].type === 'debuff') typeIcon = `<div class="type-icon text-red-400">▼</div>`
                 else if (ITEM_CONFIG[type].type === 'map_effect') typeIcon = `<div class="type-icon text-yellow-400">♦</div>`
                 
-                itemDiv.innerHTML = `${ICONS[type]}${typeIcon}<div class="overlay">X</div>`;
-                itemDiv.onclick = () => handleBanPickSelection(type);
-                itemDiv.onmouseenter = (e) => showTooltip(e, type);
-                itemDiv.onmouseleave = hideTooltip;
-                grid.appendChild(itemDiv);
+                itemDiv.innerHTML = `${ICONS[type]}${typeIcon}<div class="overlay">/</div>`;
+                // Thay thế bằng đoạn mã này
+const isTouchDevice = 'ontouchstart' in window;
+if (isTouchDevice) {
+    let pressTimer;
+    itemDiv.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        pressTimer = setTimeout(() => {
+            showTooltip(e.touches[0], type);
+        }, 500); // 500ms for long press
+    });
+    itemDiv.addEventListener('touchend', () => {
+        clearTimeout(pressTimer);
+        hideTooltip();
+        handleBanPickSelection(type);
+    });
+    itemDiv.addEventListener('touchmove', () => {
+        clearTimeout(pressTimer);
+        hideTooltip();
+    });
+} else {
+    itemDiv.onclick = () => handleBanPickSelection(type);
+    itemDiv.onmouseenter = (e) => showTooltip(e, type);
+    itemDiv.onmouseleave = hideTooltip;
+}
+grid.appendChild(itemDiv);
             });
             updateBanPickUI();
         }
         
-        function showTooltip(event, type) {
-            const item = ITEM_CONFIG[type];
-            let statsHTML = `<p class="text-gray-400 text-sm mt-1">Hồi chiêu: ${item.baseRespawn / 1000}s</p>`;
-            if (item.stats && Object.keys(item.stats).length > 0) {
-                statsHTML += `<div class="mt-2 border-t border-gray-600 pt-2">`;
-                for (const [key, value] of Object.entries(item.stats)) {
-                    statsHTML += `<p class="text-sm"><span class="font-semibold text-gray-300">${key}:</span> ${value}</p>`;
-                }
-                statsHTML += `</div>`;
-            }
-            tooltip.innerHTML = `<h4 class="font-bold mb-1">${item.name}</h4><p class="text-gray-400">${item.desc}</p>${statsHTML}`;
-            
-            const tooltipWidth = 250;
-            let left = event.clientX + 15;
-            if (left + tooltipWidth > window.innerWidth) {
-                left = event.clientX - tooltipWidth - 15;
-            }
-            tooltip.style.left = `${left}px`;
-            tooltip.style.top = `${event.clientY + 15}px`;
-            tooltip.style.opacity = '1';
+// Thay thế toàn bộ hàm này
+function showTooltip(event, type) {
+    const item = ITEM_CONFIG[type];
+    let statsHTML = `<p class="text-gray-400 text-sm mt-1">Hồi chiêu: ${item.baseRespawn / 1000}s</p>`;
+    if (item.stats && Object.keys(item.stats).length > 0) {
+        statsHTML += `<div class="mt-2 border-t border-gray-600 pt-2">`;
+        for (const [key, value] of Object.entries(item.stats)) {
+            statsHTML += `<p class="text-sm"><span class="font-semibold text-gray-300">${key}:</span> ${value}</p>`;
         }
+        statsHTML += `</div>`;
+    }
+    tooltip.innerHTML = `<h4 class="font-bold mb-1">${item.name}</h4><p class="text-gray-400">${item.desc}</p>${statsHTML}`;
+    tooltip.style.opacity = '1';
+    
+    // --- LOGIC ĐIỀU CHỈNH VỊ TRÍ ---
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const margin = 15;
+    let left = event.clientX + margin;
+    let top = event.clientY + margin;
+
+    if (left + tooltipRect.width > window.innerWidth) {
+        left = event.clientX - tooltipRect.width - margin;
+    }
+    if (top + tooltipRect.height > window.innerHeight) {
+        top = event.clientY - tooltipRect.height - margin;
+    }
+    if (left < 0) left = margin;
+    if (top < 0) top = margin;
+    // ------------------------------------
+    
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+}
         function hideTooltip() { tooltip.style.opacity = '0'; }
         
-        function updateBanPickUI() {
-            const title = document.getElementById('ban-pick-title');
-            const p1PicksDiv = document.getElementById('p1-picks');
-            const p2PicksDiv = document.getElementById('p2-picks');
-            const p1BansDiv = document.getElementById('p1-bans');
-            const p2BansDiv = document.getElementById('p2-bans');
-            
-            document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot'));
-            document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400'));
+// Thay thế toàn bộ hàm này
+function updateBanPickUI() {
+    const title = document.getElementById('ban-pick-title');
+    const p1PicksDiv = document.getElementById('p1-picks');
+    const p2PicksDiv = document.getElementById('p2-picks');
+    const p1BansDiv = document.getElementById('p1-bans');
+    const p2BansDiv = document.getElementById('p2-bans');
+    
+    document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot'));
+    document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400'));
 
-            p1BansDiv.innerHTML = ''; p2BansDiv.innerHTML = '';
-            p1PicksDiv.innerHTML = ''; p2PicksDiv.innerHTML = '';
-            for(let i=0; i<2; i++) { p1BansDiv.innerHTML += `<div class="p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative">${banPickState.p1Bans[i] ? ICONS[banPickState.p1Bans[i]].replace('h-8 w-8', 'h-full w-full') + '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">X</div>' : ''}</div>`; }
-            for(let i=0; i<2; i++) { p2BansDiv.innerHTML += `<div class="p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative">${banPickState.p2Bans[i] ? ICONS[banPickState.p2Bans[i]].replace('h-8 w-8', 'h-full w-full') + '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">X</div>' : ''}</div>`; }
-            for(let i=0; i<3; i++) { p1PicksDiv.innerHTML += `<div class="p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center">${banPickState.p1Picks[i] ? ICONS[banPickState.p1Picks[i]].replace('h-8 w-8', 'h-full w-full') : ''}</div>`; }
-            for(let i=0; i<3; i++) { p2PicksDiv.innerHTML += `<div class="p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center">${banPickState.p2Picks[i] ? ICONS[banPickState.p2Picks[i]].replace('h-8 w-8', 'h-full w-full') : ''}</div>`; }
-
-            const currentStep = banPickSequence[banPickState.currentIndex];
-            if (currentStep) {
-                const isP1 = currentStep.player === 1;
-                title.className = 'text-3xl font-bold mb-4';
-                title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500');
-
-                const phase = currentStep.phase;
-                if(phase === 'ban') {
-                    const bans = isP1 ? banPickState.p1Bans : banPickState.p2Bans;
-                    const container = isP1 ? p1BansDiv : p2BansDiv;
-                    if (bans.length < 2) container.children[bans.length].classList.add('pulsing-slot');
-                    title.textContent = `Người chơi ${currentStep.player} - Cấm`;
-                } else { // Pick
-                    const picks = isP1 ? banPickState.p1Picks : banPickState.p2Picks;
-                    const container = isP1 ? p1PicksDiv : p2PicksDiv;
-                    if(picks.length < 3) container.children[picks.length].classList.add('pulsing-slot');
-                    title.textContent = `Người chơi ${currentStep.player} - Chọn`;
+    const renderSlots = (container, items, maxSlots, isBan = false) => {
+        container.innerHTML = '';
+        for (let i = 0; i < maxSlots; i++) {
+            let content = '';
+            if (items[i]) {
+                content = ICONS[items[i]].replace('h-8 w-8', 'h-full w-full');
+                if (isBan) {
+                    content += '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">/</div>';
                 }
             }
-
-            const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
-            const picked = [...banPickState.p1Picks, ...banPickState.p2Picks];
-            document.querySelectorAll('.ban-pick-item').forEach(el => {
-                const type = el.id.replace('bp-item-', '');
-                el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable');
-                if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400');
-                if (banned.includes(type)) el.classList.add('banned');
-                else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1');
-                else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2');
-                else el.classList.add('selectable');
-            });
+            const banClass = isBan ? 'p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative' : 'p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center';
+            container.innerHTML += `<div class="${banClass}">${content}</div>`;
         }
+    };
+
+    renderSlots(p1BansDiv, banPickState.p1Bans, 2, true);
+    renderSlots(p2BansDiv, banPickState.p2Bans, 2, true);
+    renderSlots(p1PicksDiv, banPickState.p1Picks, 3);
+    renderSlots(p2PicksDiv, banPickState.p2Picks, 3);
+
+    const currentStep = banPickSequence[banPickState.currentIndex];
+    if (currentStep) {
+        const isP1 = currentStep.player === 1;
+        title.className = 'text-3xl font-bold mb-4';
+        title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500');
+
+        const phase = currentStep.phase;
+        if(phase === 'ban') {
+            const bans = isP1 ? banPickState.p1Bans : banPickState.p2Bans;
+            const container = isP1 ? p1BansDiv : p2BansDiv;
+            if (bans.length < 2) {
+                const slot = container.children[bans.length];
+                slot.classList.add('pulsing-slot');
+                // --- THÊM LOGIC HIỂN THỊ "NHÁ" ---
+                if (banPickState.selectionCandidate) {
+                     slot.innerHTML = ICONS[banPickState.selectionCandidate].replace('h-8 w-8', 'h-full w-full') + '<div class="absolute inset-0 bg-red-800 bg-opacity-50 flex items-center justify-center text-white text-3xl font-bold"></div>';
+                }
+                // ------------------------------------
+            }
+            title.textContent = `Người chơi ${currentStep.player} - Cấm`;
+        } else { // Pick
+            const picks = isP1 ? banPickState.p1Picks : banPickState.p2Picks;
+            const container = isP1 ? p1PicksDiv : p2PicksDiv;
+            if(picks.length < 3) {
+                const slot = container.children[picks.length];
+                slot.classList.add('pulsing-slot');
+                // --- THÊM LOGIC HIỂN THỊ "NHÁ" ---
+                if (banPickState.selectionCandidate) {
+                    slot.innerHTML = ICONS[banPickState.selectionCandidate].replace('h-8 w-8', 'h-full w-full');
+                    slot.classList.add('opacity-50');
+                }
+                // ------------------------------------
+            }
+            title.textContent = `Người chơi ${currentStep.player} - Chọn`;
+        }
+    }
+
+    const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
+    const picked = [...banPickState.p1Picks, ...banPickState.p2Picks];
+    document.querySelectorAll('.ban-pick-item').forEach(el => {
+        const type = el.id.replace('bp-item-', '');
+        el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable');
+        if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400');
+        if (banned.includes(type)) el.classList.add('banned');
+        else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1');
+        else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2');
+        else el.classList.add('selectable');
+    });
+}
         
         function handleBanPickSelection(type) {
             const currentStep = banPickSequence[banPickState.currentIndex];
@@ -883,47 +974,85 @@ document.getElementById('bottom-ui').classList.add('invisible');
             banPickState.p2Picks.forEach(type => activeItemTypes[type] = { owner: 'p2' });
             commonItems.forEach(type => activeItemTypes[type] = { owner: 'neutral' });
             
-            startGame(activeItemTypes);
+            startCountdown(activeItemTypes);
         }
 
-        function startGame(activeItemTypes) {
-            document.getElementById('top-ui').classList.remove('invisible');
-document.getElementById('bottom-ui').classList.remove('invisible');
-            
-            players = [];
-            const playerRadius = (canvas.width / 25) * 1.4 * 0.7;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const p1Spawn = { x: centerX + centerX / 2, y: centerY / 2 }; // Top Right
-            const p2Spawn = { x: centerX / 2, y: centerY + centerY / 2 }; // Bottom Left
-            
-            const p1 = new PlayerController('Người chơi 1', '#3b82f6', new PlayerBall(p1Spawn.x, p1Spawn.y, playerRadius));
-            p1.balls[0].controller = p1;
-            const p2 = new PlayerController('Người chơi 2', '#ef4444', new PlayerBall(p2Spawn.x, p2Spawn.y, playerRadius));
-            p2.balls[0].controller = p2;
-            players.push(p1, p2);
+        // Xóa hàm startGame cũ và thêm 2 hàm mới này vào
+function startCountdown(activeItemTypes) {
+    const countdownScreen = document.getElementById('countdown-screen');
+    const countdownText = document.getElementById('countdown-text');
+    countdownScreen.classList.remove('hidden');
 
-            items = {};
-            for (const type in activeItemTypes) {
-                let owner = 'neutral';
-                if(activeItemTypes[type].owner === 'p1') owner = p1;
-                if(activeItemTypes[type].owner === 'p2') owner = p2;
-                items[type] = { ...ITEM_CONFIG[type], owner: owner, item: null, cooldownEndTime: Date.now() + INITIAL_SPAWN_TIME, initialCooldownUsed: false };
-            }
-            
-            gameEndTime = Date.now() + TOTAL_GAME_TIME;
-            
-            updateLivesUI(); updatePlayerStatusUI();
-            
-            for (const type in items) {
-                const timeoutId = setTimeout(() => {
-                    spawnItem(type);
-                    items[type].initialCooldownUsed = true;
-                }, INITIAL_SPAWN_TIME);
-                itemSpawnTimeouts.push(timeoutId);
-            }
-            gameLoop();
+    // Thiết lập game nhưng chưa chạy gameLoop
+    setupGame(activeItemTypes);
+
+    let count = 3;
+    countdownText.textContent = count;
+
+    const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownText.textContent = count;
+        } else if (count === 0) {
+            countdownText.textContent = "Bắt Đầu!";
+            countdownText.classList.remove('text-9xl');
+            countdownText.classList.add('text-7xl');
+        } else {
+            clearInterval(interval);
+            countdownScreen.classList.add('hidden');
+            // Reset lại class cho lần sau
+            countdownText.classList.add('text-9xl');
+            countdownText.classList.remove('text-7xl');
+            startGame(); // Bắt đầu game sau khi đếm ngược xong
         }
+    }, 1000);
+}
+
+function setupGame(activeItemTypes) {
+    document.getElementById('top-ui').classList.remove('invisible');
+    document.getElementById('bottom-ui').classList.remove('invisible');
+            
+    players = [];
+    const playerRadius = (canvas.width / 25) * 1.4 * 0.7;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const p1Spawn = { x: centerX + centerX / 2, y: centerY / 2 };
+    const p2Spawn = { x: centerX / 2, y: centerY + centerY / 2 };
+    
+    const p1 = new PlayerController('Người chơi 1', '#3b82f6', new PlayerBall(p1Spawn.x, p1Spawn.y, playerRadius));
+    p1.balls[0].controller = p1;
+    const p2 = new PlayerController('Người chơi 2', '#ef4444', new PlayerBall(p2Spawn.x, p2Spawn.y, playerRadius));
+    p2.balls[0].controller = p2;
+    players.push(p1, p2);
+
+    items = {};
+    for (const type in activeItemTypes) {
+        let owner = 'neutral';
+        if(activeItemTypes[type].owner === 'p1') owner = p1;
+        if(activeItemTypes[type].owner === 'p2') owner = p2;
+        items[type] = { ...ITEM_CONFIG[type], owner: owner, item: null, cooldownEndTime: Date.now() + INITIAL_SPAWN_TIME, initialCooldownUsed: false };
+    }
+            
+    updateLivesUI(); 
+    updatePlayerStatusUI();
+    updateCooldownUI();
+
+    // Vẽ trạng thái ban đầu lên canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    getAllPlayerBalls().forEach(ball => ball.draw());
+}
+
+function startGame() {
+    gameEndTime = Date.now() + TOTAL_GAME_TIME;
+    for (const type in items) {
+        const timeoutId = setTimeout(() => {
+            spawnItem(type);
+            items[type].initialCooldownUsed = true;
+        }, INITIAL_SPAWN_TIME);
+        itemSpawnTimeouts.push(timeoutId);
+    }
+    gameLoop();
+}
 
         window.addEventListener('resize', init);
         startButton.addEventListener('click', showBanPickPhase);
