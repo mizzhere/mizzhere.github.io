@@ -143,6 +143,9 @@
             }
             #ban-pick-screen .dialog-card {
                 padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                max-height: 90vh;
             }
             #ban-pick-screen > div > div {
                 flex-direction: column;
@@ -158,6 +161,10 @@
              #p1-bans, #p1-picks, #p2-bans, #p2-picks {
                 justify-content: center;
             }
+             #ban-pick-grid-container {
+                max-height: 40vh;
+                overflow-y: auto;
+             }
         }
     </style>
 </head>
@@ -170,7 +177,7 @@
             <span>Người chơi 1</span>
             <span id="player1-status-icons" class="flex items-center ml-2 space-x-1"></span>
         </h2>
-        <div id="player1-lives" class="flex space-x-1 mt-1"></div>
+        <div id="player1-lives" class="flex items-center space-x-1 mt-1"></div>
     </div>
     <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
 <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
@@ -187,7 +194,7 @@
             <span>Người chơi 2</span>
             <span id="player2-status-icons" class="flex items-center ml-2 space-x-1"></span>
         </h2>
-        <div id="player2-lives" class="flex space-x-1 mt-1"></div>
+        <div id="player2-lives" class="flex items-center space-x-1 mt-1"></div>
     </div>
     <div id="player2-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-300"></div>
 </div>
@@ -211,9 +218,14 @@
                     </div>
                     
                     <!-- Center Grid -->
-                    <div class="w-1/2 px-4">
-                        <h2 id="ban-pick-title" class="text-3xl font-bold mb-4 text-gray-100"></h2>
-                        <div id="ban-pick-grid" class="grid grid-cols-4 md:grid-cols-5 gap-4"></div>
+                    <div class="w-1/2 px-4 flex flex-col">
+                        <div id="ban-pick-header-container" class="text-center mb-4">
+                            <h2 id="ban-pick-title" class="text-3xl font-bold text-gray-100"></h2>
+                             <div id="ban-pick-info-mobile" class="hidden md:hidden p-2 bg-gray-900 rounded-lg"></div>
+                        </div>
+                        <div id="ban-pick-grid-container" class="flex-grow">
+                             <div id="ban-pick-grid" class="grid grid-cols-4 gap-4"></div>
+                        </div>
                     </div>
         
                     <!-- Player 2 Side -->
@@ -230,6 +242,7 @@
         <div id="game-over-screen" class="screen-overlay hidden">
              <div class="dialog-card">
                 <h2 id="winner-text" class="text-4xl font-bold mb-4"></h2>
+                <div id="results-details" class="my-6 text-lg"></div>
                 <button id="restart-button" class="material-button mt-4 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg text-xl">Chơi lại</button>
             </div>
         </div>
@@ -263,29 +276,34 @@
             cannotEat: `<svg class="h-8 w-8 text-green-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-2.8-10.2L11 11.6V8h2v5.1l-1.8 1.8-1.4-1.4 1.2-1.2-3.8-3.7z"/></svg>`,
             laserGun: `<svg class="h-8 w-8 text-pink-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2L8 8H2V6H4.6L2.8 2.8L4.2 1.4L6 2M2 16H8L6 22L4.2 20.6L2.8 21.2L4.6 18H2V16M9 3H15V5H9V3M20.6 1.4L19.2 2.8L21.4 6H18V8H24L22 2L20.6 1.4M15 19H9V21H15V19M22 16H18V18H21.4L19.2 21.2L20.6 22.6L24 16Z"/></svg>`,
             slow: `<svg class="h-8 w-8 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="m15 5-1.41 1.41L15 7.83V14.17l-1.41-1.41L12.17 14 17 18.83 21.83 14 20.41 12.59 19 14.17V7.83l1.41 1.41L21.83 8 17 3.17 12.17 8l1.41 1.41L15 7.83zM7 5l-1.41 1.41L7 7.83v6.34l-1.41-1.41L4.17 14 9 18.83 13.83 14 12.41 12.59 11 14.17V7.83l1.41 1.41L13.83 8 9 3.17 4.17 8l1.41 1.41L7 7.83z"/></svg>`,
-            homingMissile: `<svg class="h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 5.95L6 6.18L8.73 9.09L8.09 13.05L12 11L15.91 13.05L15.27 9.09L18 6.18L14.09 5.95L12 2M22 13V15H17V13H22M2 13V15H15V13H2Z" /></svg>`
+            homingMissile: `<svg class="h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 5.95L6 6.18L8.73 9.09L8.09 13.05L12 11L15.91 13.05L15.27 9.09L18 6.18L14.09 5.95L12 2M22 13V15H17V13H22M2 13V15H15V13H2Z" /></svg>`,
+            reflectiveCloak: `<svg class="h-8 w-8 text-fuchsia-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 9l4 1.5V21h14v-9.5L23 9l-11-7zm0 2.5l7 4.5-2 .75V19H7v-9.25L5 8l7-4.5zM9 13v2h6v-2H9z"/></svg>`,
+            snare: `<svg class="h-8 w-8 text-lime-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12H17A5,5 0 0,0 12,7V4M4,12A8,8 0 0,1 12,4V7A5,5 0 0,0 7,12H4M12,20A8,8 0 0,1 4,12H7A5,5 0 0,0 12,17V20M20,12A8,8 0 0,1 12,20V17A5,5 0 0,0 17,12H20Z" /></svg>`
         };
         const ITEM_COLORS = {
             weapon: '#f6e05e', health: '#48bb78', bomb: '#f56565', shield: '#38bdf8',
             grow: '#63b3ed', shrink: '#f6ad55', speedBoost: '#4fd1c5', rain: '#3b82f6', 
             invisibility: '#9ca3af', wallSpikes: '#ef4444', diagonalWall: '#818cf8', clone: '#c084fc', 
-            cannotEat: '#86efac', laserGun: '#f472b6', slow: '#f59e0b', homingMissile: '#f97316'
+            cannotEat: '#86efac', laserGun: '#f472b6', slow: '#f59e0b', homingMissile: '#f97316',
+            reflectiveCloak: '#e879f9', snare: '#a3e635'
         };
 
         let players = [], items = {}, animationFrameId, gameEndTime, activeLaser = null, activeMissile = null;
         let activeRainZone = null, activeSpikeWall = null, activeDiagonalWall = null;
         let itemSpawnTimeouts = [];
-        let itemDisappearTimeouts = { health: null, bomb: null };
+        let itemDisappearTimeouts = { health: null, bomb: null, snare: null };
         let particles = [];
         const TOTAL_GAME_TIME = 90 * 1000;
         const INITIAL_SPAWN_TIME = 5000;
         let banPickState = { currentIndex: 0, p1Bans: [], p2Bans: [], p1Picks: [], p2Picks: [], selectionCandidate: null };
 
         const ITEM_CONFIG = {
-            weapon: { name: 'Vũ Khí', baseRespawn: 5000, type: 'neutral', desc: 'Nhận 1 vũ khí có gai. Va chạm với đối thủ sẽ khiến họ mất 1 mạng.', stats: { 'Thời gian': '10s' } }, 
-            health: { name: 'Hồi Máu', baseRespawn: 7000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
+            weapon: { name: 'Vũ Khí Gai', baseRespawn: 10000, type: 'neutral', desc: 'Nhận một lớp gai tồn tại trong 5s. Va chạm với đối thủ sẽ gây sát thương và phá vỡ gai. Gai cũng sẽ vỡ khi chặn các sát thương khác.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '1 lần tấn công/phòng thủ' } }, 
+            health: { name: 'Hồi Máu', baseRespawn: 5000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
             bomb: { name: 'Bom', baseRespawn: 5000, type: 'debuff', desc: 'Đặt một quả bom trên bản đồ. Đối thủ của người nhặt sẽ bị mất mạng nếu chạm phải.', stats: {} },
-            shield: { name: 'Khiên', baseRespawn: 10000, type: 'buff', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Thời gian': '5s' } }, 
+            shield: { name: 'Khiên', baseRespawn: 10000, type: 'buff', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Hiệu ứng': 'Chặn 1 đòn' } }, 
+            reflectiveCloak: { name: 'Áo Choàng Phản', baseRespawn: 15000, type: 'buff', desc: 'Tồn tại 10s hoặc đến khi bị tấn công, sẽ phản lại sát thương cho đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '1 lần phản đòn'} },
+            snare: { name: 'Trói Chân', baseRespawn: 15000, type: 'debuff', desc: 'Đặt một chiếc bẫy. Đối thủ của người nhặt sẽ bị trói chân trong 3 giây nếu dẫm phải.', stats: { 'Thời gian trói': '3s'} },
             grow: { name: 'Phóng To', baseRespawn: 12000, type: 'debuff', desc: 'Phóng to kích thước của đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '+25% Kích thước' } }, 
             shrink: { name: 'Thu Nhỏ', baseRespawn: 12000, type: 'buff', desc: 'Thu nhỏ kích thước bản thân.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '-25% Kích thước' } }, 
             speedBoost: { name: 'Tăng Tốc', baseRespawn: 12000, type: 'buff', desc: 'Tăng mạnh tốc độ di chuyển.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '+50% Tốc độ' } }, 
@@ -338,7 +356,7 @@
                 if (currentDir.y < 0) { let t = -currentPos.y / currentDir.y; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: currentPos.x + t * currentDir.x, y: 0}; reflectionDir = {x: currentDir.x, y: -currentDir.y}; } }
                 if (currentDir.y > 0) { let t = (canvas.height - currentPos.y) / currentDir.y; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: currentPos.x + t * currentDir.x, y: canvas.height}; reflectionDir = {x: currentDir.x, y: -currentDir.y}; } }
                 if (currentDir.x < 0) { let t = -currentPos.x / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: 0, y: currentPos.y + t * currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
-                if (currentDir.x > 0) { let t = (canvas.width - currentPos.x) / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: canvas.width, y: currentPos.y + t * currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
+                if (currentDir.x > 0) { let t = (canvas.width - currentPos.x) / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: canvas.width, y: currentPos.y + currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
                 if (endPoint) { this.segments.push({ p1: currentPos, p2: endPoint }); this.calculatePath(endPoint, reflectionDir); }
             }
             draw() { const lifeLeft = (this.endTime - Date.now()) / 2000; if (lifeLeft < 0) return; ctx.strokeStyle = this.owner.color; ctx.lineWidth = 4; ctx.shadowBlur = 10; ctx.shadowColor = this.owner.color; ctx.globalAlpha = lifeLeft; this.segments.forEach(seg => { ctx.beginPath(); ctx.moveTo(seg.p1.x, seg.p1.y); ctx.lineTo(seg.p2.x, seg.p2.y); ctx.stroke(); }); ctx.globalAlpha = 1; ctx.shadowBlur = 0; }
@@ -398,7 +416,7 @@
                 }
 
                 if(distToTarget < this.radius + target.radius) {
-                    this.targetController.takeDamage(target);
+                    this.targetController.takeDamage(target, this.owner);
                     triggerEffect(this.x, this.y, ITEM_COLORS.homingMissile, { count: 30, speed: 4 });
                     activeMissile = null;
                 }
@@ -428,32 +446,90 @@
                 let angle = Math.random() * Math.PI * 2; this.dx = Math.cos(angle) * this.speed; this.dy = Math.sin(angle) * this.speed;
             }
             get radius() { return this.controller.sizeEffect === 'shrink' ? this.baseRadius * 0.75 : (this.controller.sizeEffect === 'grow' ? this.baseRadius * 1.25 : this.baseRadius); }
-            get hasWeapon() { return this.controller.hasWeapon; }
-            get weaponEndTime() { return this.controller.weaponEndTime; }
-            get hasShield() { return this.controller.hasShield; }
-            get shieldEndTime() { return this.controller.shieldEndTime; }
             get invincibleUntil() { return this.controller.invincibleUntil; }
             get sizeEffect() { return this.controller.sizeEffect; }
             get cannotEatUntil() { return this.controller.cannotEatUntil; }
-
+            get isSnared() { return this.controller.snaredUntil && Date.now() < this.controller.snaredUntil; }
+            
             draw() {
                 ctx.globalAlpha = 1;
                 if (this.invincibleUntil && Date.now() < this.invincibleUntil) { if (Math.floor(Date.now() / 150) % 2 === 0) { ctx.globalAlpha = 0.5; } }
-                if (this.hasShield) { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(56, 189, 248, 0.4)'; ctx.fill(); ctx.closePath(); }
+                
+                // Draw armor layers underneath the ball
+                this.controller.armor.forEach((armorType, index) => {
+                    const armorRadius = this.radius + 5 + (index * 4);
+                    const armorColor = ITEM_COLORS[armorType] || '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, armorRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = armorColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.closePath();
+                });
+
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.controller.color; ctx.fill();
                 if (this.sizeEffect) { ctx.strokeStyle = this.sizeEffect === 'grow' ? '#f6ad55' : '#63b3ed'; ctx.lineWidth = 4; ctx.stroke(); }
                 if (this.cannotEatUntil && Date.now() < this.cannotEatUntil) { ctx.strokeStyle = ITEM_COLORS.cannotEat; ctx.lineWidth = 4; ctx.stroke(); }
+                if (this.isSnared) { 
+                    ctx.strokeStyle = ITEM_COLORS.snare; ctx.lineWidth = 4; ctx.stroke(); 
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2);
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
                 ctx.closePath();
                 ctx.globalAlpha = 1;
-                
-                if (this.hasWeapon) { ctx.fillStyle = '#f6e05e'; for (let i = 0; i < 12; i++) { let angle = (i / 12) * Math.PI * 2, spikeLength = this.radius * 0.5; ctx.beginPath(); ctx.moveTo(this.x + Math.cos(angle) * this.radius, this.y + Math.sin(angle) * this.radius); ctx.lineTo(this.x + Math.cos(angle) * (this.radius + spikeLength), this.y + Math.sin(angle) * (this.radius + spikeLength)); ctx.lineTo(this.x + Math.cos(angle + 0.1) * this.radius, this.y + Math.sin(angle + 0.1) * this.radius); ctx.fill(); ctx.closePath(); } const remainingTime = Math.ceil((this.weaponEndTime - Date.now()) / 1000); if (remainingTime > 0) { ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'white'; ctx.font = `bold ${this.radius * 0.7}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(remainingTime, this.x, this.y); } }
             }
-            update() { this.x += this.dx; this.y += this.dy; }
+            update() { 
+                if (this.isSnared) {
+                    // Không cập nhật vị trí, giữ nguyên vận tốc để khi hết hiệu lực có thể di chuyển lại
+                    return; 
+                }
+                this.x += this.dx; 
+                this.y += this.dy; 
+            }
         }
 
         class PlayerController {
-            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.hasWeapon = false; this.weaponEndTime = null; this.hasShield = false; this.shieldEndTime = null; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null }; this.cannotEatUntil = null; }
-            takeDamage(ball) { const now = Date.now(); if (this.invincibleUntil && now < this.invincibleUntil) return false; if (this.hasShield) { this.hasShield = false; triggerEffect(ball.x, ball.y, ITEM_COLORS.shield, { count: 25, speed: 5 }); return false; } if (this.balls.length > 1) { this.removeBall(ball); return false; } else { this.lives--; this.invincibleUntil = now + 2000; updateLivesUI(); if (this.lives <= 0) { triggerDeath(this); } else { pauseGameForEffect({ duration: 1200, shake: 5 }); } return true; } }
+            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null }; this.cannotEatUntil = null; this.snaredUntil = null;}
+            
+            takeDamage(ball, attacker = null, isReflectedDamage = false) {
+                const now = Date.now();
+                if (this.invincibleUntil && now < this.invincibleUntil) return false;
+
+                if (this.armor.length > 0) {
+                    const armorType = this.armor.pop();
+                    if (armorType === 'reflectiveCloak') {
+                        clearTimeout(this.effectTimeouts.reflectiveCloak);
+                    }
+                    if (armorType === 'weapon') {
+                         clearTimeout(this.effectTimeouts.weapon);
+                    }
+                    triggerEffect(ball.x, ball.y, ITEM_COLORS[armorType] || this.color, { count: 25, speed: 5 });
+                    
+                    if (!isReflectedDamage && (armorType === 'reflectiveCloak') && attacker && attacker.balls.length > 0) {
+                        attacker.takeDamage(attacker.balls[0], this, true);
+                    }
+                    updateLivesUI();
+                    return false;
+                }
+
+                if (this.balls.length > 1) { 
+                    this.removeBall(ball); 
+                    return false; 
+                } else { 
+                    this.lives--; 
+                    this.invincibleUntil = now + 2000; 
+                    updateLivesUI(); 
+                    if (this.lives <= 0) { 
+                        triggerDeath(this); 
+                    } else { 
+                        pauseGameForEffect({ duration: 1200, shake: 5 }); 
+                    } 
+                    return true; 
+                } 
+            }
             addBall() {
                 if (this.balls.length >= 3) return;
                 const parentBall = this.balls[0];
@@ -470,12 +546,23 @@
                     case 'size': this.sizeEffect = value; break;
                     case 'speed': this.speedMultiplier = value; break;
                     case 'cannotEat': this.cannotEatUntil = Date.now() + duration; break;
+                    case 'snare': this.snaredUntil = Date.now() + duration; break;
+                    case 'reflectiveCloak':
+                        this.armor.push('reflectiveCloak');
+                        this.effectTimeouts.reflectiveCloak = setTimeout(() => {
+                           const index = this.armor.indexOf('reflectiveCloak');
+                           if(index > -1) this.armor.splice(index, 1);
+                           updateLivesUI();
+                        }, duration);
+                        updateLivesUI();
+                        return; // Exit early to avoid standard timeout logic
                 }
                  this.effectTimeouts[effectType] = setTimeout(() => {
                     switch(effectType) {
                         case 'size': this.sizeEffect = null; break;
                         case 'speed': this.speedMultiplier = 1.0; break;
                         case 'cannotEat': this.cannotEatUntil = null; break;
+                        case 'snare': this.snaredUntil = null; break;
                     }
                     updatePlayerStatusUI();
                 }, duration);
@@ -507,31 +594,39 @@
             cannotEat: (item) => { ctx.fillStyle = ITEM_COLORS.cannotEat; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.6, Math.PI * 0.2, Math.PI * 1.8); ctx.stroke(); },
             laserGun: (item) => { ctx.fillStyle = ITEM_COLORS.laserGun; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(item.x - item.radius * 0.5, item.y); ctx.lineTo(item.x + item.radius * 0.5, item.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius * 0.5); ctx.lineTo(item.x, item.y + item.radius * 0.5); ctx.stroke(); },
             slow: (item) => { ctx.fillStyle = ITEM_COLORS.slow; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'white'; ctx.beginPath(); ctx.moveTo(item.x - 5, item.y + 5); ctx.lineTo(item.x, item.y); ctx.lineTo(item.x + 5, item.y + 5); ctx.moveTo(item.x - 5, item.y); ctx.lineTo(item.x, item.y - 5); ctx.lineTo(item.x + 5, item.y); ctx.lineWidth = 2; ctx.stroke(); },
-            homingMissile: (item) => { ctx.fillStyle = ITEM_COLORS.homingMissile; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius); ctx.lineTo(item.x - item.radius, item.y + item.radius * 0.5); ctx.lineTo(item.x + item.radius, item.y + item.radius * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+            homingMissile: (item) => { ctx.fillStyle = ITEM_COLORS.homingMissile; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius); ctx.lineTo(item.x - item.radius, item.y + item.radius * 0.5); ctx.lineTo(item.x + item.radius, item.y + item.radius * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke(); },
+            reflectiveCloak: (item) => { ctx.fillStyle = ITEM_COLORS.reflectiveCloak; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); },
+            snare: (item) => { ctx.fillStyle = ITEM_COLORS.snare; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); },
+            snare_trap: (item) => { ctx.strokeStyle = ITEM_COLORS.snare; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.5, 0, Math.PI * 2); ctx.stroke(); }
         };
         
-        // Thay thế toàn bộ hàm này
-function updateLivesUI() {
-    if (!players[0] || !players[1]) return;
-    const p1LivesDiv = document.getElementById('player1-lives');
-    const p2LivesDiv = document.getElementById('player2-lives');
-    
-    const renderLives = (container, player, colorClass) => {
-        container.innerHTML = '';
-        for (let i = 0; i < 5; i++) { // Luôn lặp 5 lần
-            if (i < player.lives) {
-                // Tim đầy
-                container.innerHTML += `<div class="w-4 h-4 ${colorClass} rounded-full"></div>`;
-            } else {
-                // Tim rỗng (màu xám)
-                container.innerHTML += `<div class="w-4 h-4 bg-gray-700 rounded-full"></div>`;
-            }
-        }
-    };
+        function updateLivesUI() {
+            if (!players[0] || !players[1]) return;
+            const p1LivesDiv = document.getElementById('player1-lives');
+            const p2LivesDiv = document.getElementById('player2-lives');
+            
+            const renderLives = (container, player, colorClass) => {
+                container.innerHTML = '';
+                // Render hearts
+                for (let i = 0; i < 5; i++) {
+                    if (i < player.lives) {
+                        container.innerHTML += `<div class="w-4 h-4 ${colorClass} rounded-full"></div>`;
+                    } else {
+                        container.innerHTML += `<div class="w-4 h-4 bg-gray-700 rounded-full"></div>`;
+                    }
+                }
+                // Render armor icons
+                const armorContainer = document.createElement('div');
+                armorContainer.className = 'flex items-center space-x-1 ml-2';
+                player.armor.forEach(armorType => {
+                     armorContainer.innerHTML += `<div class="w-4 h-4">${ICONS[armorType].replace('h-8 w-8', 'h-4 w-4')}</div>`;
+                });
+                container.appendChild(armorContainer);
+            };
 
-    renderLives(p1LivesDiv, players[0], 'bg-blue-500');
-    renderLives(p2LivesDiv, players[1], 'bg-red-500');
-}
+            renderLives(p1LivesDiv, players[0], 'bg-blue-500');
+            renderLives(p2LivesDiv, players[1], 'bg-red-500');
+        }
         function updatePlayerStatusUI() {
             const p1_icons = document.getElementById('player1-status-icons');
             const p2_icons = document.getElementById('player2-status-icons');
@@ -539,12 +634,11 @@ function updateLivesUI() {
             const smallIcon = (svg) => svg.replace('h-8 w-8', 'h-4 w-4');
             const addIcons = (player, container) => {
                 if (!player) return;
-                if (player.hasWeapon) container.innerHTML += smallIcon(ICONS.weapon);
-                if (player.hasShield) container.innerHTML += smallIcon(ICONS.shield);
                 if (player.invincibleUntil && Date.now() < player.invincibleUntil) container.innerHTML += smallIcon(ICONS.invisibility);
                 if (player.sizeEffect) container.innerHTML += smallIcon(ICONS[player.sizeEffect]);
                 if (player.speedMultiplier !== 1.0) container.innerHTML += smallIcon(player.speedMultiplier > 1 ? ICONS.speedBoost : ICONS.slow);
                 if (player.cannotEatUntil && Date.now() < player.cannotEatUntil) container.innerHTML += smallIcon(ICONS.cannotEat);
+                if (player.snaredUntil && Date.now() < player.snaredUntil) container.innerHTML += smallIcon(ICONS.snare);
                 if (player.hasSpikeWallImmunity) container.innerHTML += smallIcon(ICONS.wallSpikes);
                 if (player.balls.length > 1) container.innerHTML += `<span class="text-sm font-bold text-purple-400">x${player.balls.length}</span>`;
             };
@@ -554,7 +648,7 @@ function updateLivesUI() {
         
         function getRandomPosition(radius) { return { x: Math.random() * (canvas.width - radius * 2) + radius, y: Math.random() * (canvas.height - radius * 2) + radius } }
         function triggerEffect(x, y, color, { count = 20, speed = 3, life = 40, friction = 0.95 } = {}) { for (let i = 0; i < count; i++) { const angle = Math.random() * Math.PI * 2; const currentSpeed = Math.random() * speed + 1; particles.push(new Particle( x, y, Math.cos(angle) * currentSpeed, Math.sin(angle) * currentSpeed, Math.random() * 2 + 1, color, life, friction )); } }
-        function spawnItem(type) { if (items[type] && items[type].item) return; const radius = canvas.width / 40; const pos = getRandomPosition(radius); let duration = null; if (type === 'health') duration = 7000; if (type === 'bomb') duration = 5000; items[type].item = new Item(pos.x, pos.y, radius, type, items[type].owner, duration); items[type].cooldownEndTime = null; if (duration) { clearTimeout(itemDisappearTimeouts[type]); itemDisappearTimeouts[type] = setTimeout(() => { if (items[type] && items[type].item) { items[type].item = null; const respawnTime = items[type].currentRespawn; items[type].cooldownEndTime = Date.now() + respawnTime; itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); } }, duration); } }
+        function spawnItem(type) { if (items[type] && items[type].item) return; const radius = canvas.width / 40; const pos = getRandomPosition(radius); let duration = null; if (type === 'health') duration = 7000; if (type === 'bomb' || type === 'snare_trap') duration = 5000; items[type].item = new Item(pos.x, pos.y, radius, type, items[type].owner, duration); items[type].cooldownEndTime = null; if (duration) { clearTimeout(itemDisappearTimeouts[type]); itemDisappearTimeouts[type] = setTimeout(() => { if (items[type] && items[type].item) { items[type].item = null; const respawnTime = items[type].currentRespawn; items[type].cooldownEndTime = Date.now() + respawnTime; itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); } }, duration); } }
         function updatePlayerVelocity(playerBall) { const mag = Math.hypot(playerBall.dx, playerBall.dy); if (mag > 0) { playerBall.dx = (playerBall.dx / mag) * playerBall.speed; playerBall.dy = (playerBall.dy / mag) * playerBall.speed; } }
         const getAllPlayerBalls = () => players.flatMap(p => p.balls);
 
@@ -569,24 +663,62 @@ function updateLivesUI() {
                     if (b1.controller === b2.controller) continue;
                     const dist = Math.hypot(b1.x - b2.x, b1.y - b2.y);
                     if (dist < b1.radius + b2.radius) {
-                        const now = Date.now();
-                        const b1Invincible = b1.controller.invincibleUntil && now < b1.controller.invincibleUntil;
-                        const b2Invincible = b2.controller.invincibleUntil && now < b2.controller.invincibleUntil;
                         const overlap = b1.radius + b2.radius - dist;
                         const nx = (b2.x - b1.x) / dist; const ny = (b2.y - b1.y) / dist;
-                        b1.x -= overlap / 2 * nx; b1.y -= overlap / 2 * ny;
-                        b2.x += overlap / 2 * nx; b2.y += overlap / 2 * ny;
+
+                        // Position correction based on snare state
+                        if (!b1.isSnared && !b2.isSnared) {
+                            b1.x -= overlap / 2 * nx; b1.y -= overlap / 2 * ny;
+                            b2.x += overlap / 2 * nx; b2.y += overlap / 2 * ny;
+                        } else if (b1.isSnared && !b2.isSnared) {
+                            b2.x += overlap * nx; b2.y += overlap * ny;
+                        } else if (!b1.isSnared && b2.isSnared) {
+                            b1.x -= overlap * nx; b1.y -= overlap * ny;
+                        }
+
                         const tx = -ny; const ty = nx;
-                        const dpTan1 = b1.dx * tx + b1.dy * ty; const dpTan2 = b2.dx * tx + b2.dy * ty;
-                        const dpNorm1 = b1.dx * nx + b1.dy * ny; const dpNorm2 = b2.dx * nx + b2.dy * ny;
-                        b1.dx = tx * dpTan1 + nx * dpNorm2; b1.dy = ty * dpTan1 + ny * dpNorm2;
-                        b2.dx = tx * dpTan2 + nx * dpNorm1; b2.dy = ty * dpTan2 + ny * dpNorm1;
-                        updatePlayerVelocity(b1); updatePlayerVelocity(b2);
-                        const b1Hit = b2.controller.hasWeapon && !b1Invincible;
-                        const b2Hit = b1.controller.hasWeapon && !b2Invincible;
-                        if (b1Hit) { b2.controller.hasWeapon = false; b1.controller.takeDamage(b1); if(b2.controller.balls.length > 1) b2.controller.removeBall(b2); }
-                        if (b2Hit) { b1.controller.hasWeapon = false; b2.controller.takeDamage(b2); if(b1.controller.balls.length > 1) b1.controller.removeBall(b1); }
-                        if(b1Hit || b2Hit) triggerEffect((b1.x + b2.x) / 2, (b1.y + b2.y) / 2, ITEM_COLORS.weapon, { count: 15, speed: 4 });
+                        const dpTan1 = b1.dx * tx + b1.dy * ty;
+                        const dpTan2 = b2.dx * tx + b2.dy * ty;
+                        const dpNorm1 = b1.dx * nx + b1.dy * ny;
+                        const dpNorm2 = b2.dx * nx + b2.dy * ny;
+                        
+                        // Velocity change, snared balls are like immovable objects
+                        if (!b1.isSnared) {
+                            b1.dx = tx * dpTan1 + nx * dpNorm2;
+                            b1.dy = ty * dpTan1 + ny * dpNorm2;
+                        }
+                        if (!b2.isSnared) {
+                            b2.dx = tx * dpTan2 + nx * dpNorm1;
+                            b2.dy = ty * dpTan2 + ny * dpNorm1;
+                        }
+                        
+                        updatePlayerVelocity(b1); 
+                        updatePlayerVelocity(b2);
+
+                        const b1HasGai = b1.controller.armor.includes('weapon');
+                        const b2HasGai = b2.controller.armor.includes('weapon');
+
+                        if (b1HasGai && b2HasGai) {
+                            const b1GaiIndex = b1.controller.armor.lastIndexOf('weapon');
+                            if(b1GaiIndex > -1) b1.controller.armor.splice(b1GaiIndex, 1);
+                            const b2GaiIndex = b2.controller.armor.lastIndexOf('weapon');
+                            if(b2GaiIndex > -1) b2.controller.armor.splice(b2GaiIndex, 1);
+                            
+                            clearTimeout(b1.controller.effectTimeouts.weapon);
+                            clearTimeout(b2.controller.effectTimeouts.weapon);
+                            triggerEffect((b1.x + b2.x) / 2, (b1.y + b2.y) / 2, ITEM_COLORS.weapon, { count: 20 });
+                        } else if (b1HasGai) {
+                            b2.controller.takeDamage(b2, b1.controller);
+                            const b1GaiIndex = b1.controller.armor.lastIndexOf('weapon');
+                            if(b1GaiIndex > -1) b1.controller.armor.splice(b1GaiIndex, 1);
+                             clearTimeout(b1.controller.effectTimeouts.weapon);
+                        } else if (b2HasGai) {
+                            b1.controller.takeDamage(b1, b2.controller);
+                            const b2GaiIndex = b2.controller.armor.lastIndexOf('weapon');
+                             if(b2GaiIndex > -1) b2.controller.armor.splice(b2GaiIndex, 1);
+                             clearTimeout(b2.controller.effectTimeouts.weapon);
+                        }
+                        updateLivesUI();
                     }
                 }
                  const ball = allBalls[i];
@@ -600,10 +732,52 @@ function updateLivesUI() {
         }
 
         const ITEM_PICKUP_LOGIC = {
-            weapon: (ball) => { ball.controller.hasWeapon = true; ball.controller.weaponEndTime = Date.now() + 10000; return true; },
+            weapon: (ball) => { 
+                clearTimeout(ball.controller.effectTimeouts.weapon);
+                ball.controller.armor.push('weapon'); 
+                ball.controller.effectTimeouts.weapon = setTimeout(() => {
+                    const index = ball.controller.armor.indexOf('weapon');
+                    if (index > -1) {
+                        ball.controller.armor.splice(index, 1);
+                        updateLivesUI();
+                    }
+                }, 5000); // 5 seconds
+                updateLivesUI(); 
+                return true; 
+            },
             health: (ball) => { if (ball.controller.lives < 5) { ball.controller.lives++; updateLivesUI(); return true; } return false; },
-            bomb: (ball, itemData) => { const owner = itemData.owner; const isOpponent = ball.controller !== owner; if (owner === 'neutral' || isOpponent) { if (ball.controller.invincibleUntil && Date.now() < ball.controller.invincibleUntil) return false; const bombPos = { x: itemData.item.x, y: itemData.item.y }; triggerEffect(bombPos.x, bombPos.y, ITEM_COLORS.bomb, { count: 40, speed: 7, life: 60 }); ball.controller.takeDamage(ball); return true; } return false; },
-            shield: (ball) => { ball.controller.hasShield = true; ball.controller.shieldEndTime = Date.now() + 5000; return true; },
+            bomb: (ball, itemData) => { const owner = itemData.owner; const isOpponent = ball.controller !== owner; if (owner === 'neutral' || isOpponent) { const bombPos = { x: itemData.item.x, y: itemData.item.y }; triggerEffect(bombPos.x, bombPos.y, ITEM_COLORS.bomb, { count: 40, speed: 7, life: 60 }); ball.controller.takeDamage(ball, owner === 'neutral' ? null : owner); return true; } return false; },
+            shield: (ball) => { ball.controller.armor.push('shield'); updateLivesUI(); return true; },
+            reflectiveCloak: (ball) => { ball.controller.applyEffect('reflectiveCloak', 10000); return true; },
+            snare: (ball) => { 
+                const opponent = players.find(p => p !== ball.controller);
+                if (opponent) {
+                     const radius = canvas.width / 40; 
+                     const pos = getRandomPosition(radius); 
+                     items['snare_trap'] = { item: new Item(pos.x, pos.y, radius, 'snare_trap', ball.controller, 5000) };
+                }
+                return true; 
+            },
+            snare_trap: (ball, itemData) => {
+                const trapOwner = itemData.owner;
+                const steppingPlayer = ball.controller;
+
+                let trigger = false;
+                if (trapOwner === 'neutral') {
+                    // Bẫy chung tác dụng lên mọi người chơi
+                    trigger = true;
+                } else if (steppingPlayer !== trapOwner) {
+                    // Bẫy riêng chỉ tác dụng lên đối thủ
+                    trigger = true;
+                }
+
+                if (trigger) {
+                    steppingPlayer.applyEffect('snare', 3000); // 3 giây
+                    return true; 
+                }
+                
+                return false;
+            },
             grow: (ball) => { const opponent = players.find(p => p !== ball.controller); if (opponent) opponent.applyEffect('size', 10000, 'grow'); return true; },
             shrink: (ball) => { ball.controller.applyEffect('size', 10000, 'shrink'); return true; },
             speedBoost: (ball) => { ball.controller.applyEffect('speed', 5000, 1.5); return true; },
@@ -618,71 +792,89 @@ function updateLivesUI() {
             homingMissile: (ball) => { if(activeMissile) return false; const owner = ball.controller; const opponent = players.find(p => p !== owner); if (opponent) { activeMissile = new HomingMissile(owner, opponent); } return true;}
         };
 
-        function handleItemPickup(ball, type) { const itemData = items[type]; if (!itemData || !itemData.item || (ball.controller.cannotEatUntil && Date.now() < ball.controller.cannotEatUntil)) return; const itemOwner = itemData.owner; const itemType = ITEM_CONFIG[type].type; if (itemType === 'buff' && itemOwner !== ball.controller) return; if ((itemType === 'debuff' || itemType === 'map_effect') && itemOwner !== 'neutral' && itemOwner !== ball.controller) return; const logic = ITEM_PICKUP_LOGIC[type]; if (!logic) return; const pickupSuccessful = logic(ball, itemData); if (pickupSuccessful) { triggerEffect(ball.x, ball.y, ITEM_COLORS[type], { count: 15, speed: 2, life: 25 }); const respawnTime = itemData.currentRespawn; if (itemData.item.disappearTime) clearTimeout(itemDisappearTimeouts[type]); itemData.item = null; itemData.cooldownEndTime = Date.now() + respawnTime; itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); if (type === 'bomb' && ball.controller.lives <= 0) triggerDeath(ball.controller); } updatePlayerStatusUI(); }
+        function handleItemPickup(ball, type) { 
+            const itemData = items[type]; 
+            if (!itemData || !itemData.item || (ball.controller.cannotEatUntil && Date.now() < ball.controller.cannotEatUntil)) return; 
+            const itemOwner = itemData.owner; 
+            const configType = ITEM_CONFIG[type] ? ITEM_CONFIG[type].type : 'trap';
+            if (configType === 'buff' && itemOwner !== 'neutral' && itemOwner !== ball.controller) return; 
+            if ((configType === 'debuff' || configType === 'map_effect') && itemOwner !== 'neutral' && itemOwner !== ball.controller) return; 
+            const logic = ITEM_PICKUP_LOGIC[type]; 
+            if (!logic) return; 
+            const pickupSuccessful = logic(ball, itemData); 
+            if (pickupSuccessful) { 
+                triggerEffect(ball.x, ball.y, ITEM_COLORS[type], { count: 15, speed: 2, life: 25 }); 
+                const respawnTime = itemData.currentRespawn; 
+                if (itemData.item.disappearTime) clearTimeout(itemDisappearTimeouts[type]); 
+                itemData.item = null; 
+                if (respawnTime) {
+                    itemData.cooldownEndTime = Date.now() + respawnTime; 
+                    itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
+                }
+                if ((type === 'bomb' || type === 'snare_trap') && ball.controller.lives <= 0) triggerDeath(ball.controller); 
+            } 
+            updatePlayerStatusUI(); 
+        }
         
         function updateCooldownUI() {
-    const neutralDiv = document.getElementById('neutral-cooldown-timers');
-    const p1Div = document.getElementById('player1-cooldown-timers');
-    const p2Div = document.getElementById('player2-cooldown-timers');
-    
-    // Nếu các div chưa sẵn sàng thì thoát
-    if (!neutralDiv || !p1Div || !p2Div) return;
+            const neutralDiv = document.getElementById('neutral-cooldown-timers');
+            const p1Div = document.getElementById('player1-cooldown-timers');
+            const p2Div = document.getElementById('player2-cooldown-timers');
+            
+            if (!neutralDiv || !p1Div || !p2Div) return;
 
-    let neutralHtml = '', p1Html = '', p2Html = '';
+            let neutralHtml = '', p1Html = '', p2Html = '';
 
-    // Hàm helper để tạo một vòng tròn cooldown (giữ nguyên từ mã gốc)
-    const createTimerCircle = (type) => {
-        const itemData = items[type];
-        if (!itemData) return '';
-        const radius = 16;
-        const circumference = 2 * Math.PI * radius;
-        const endTime = itemData.cooldownEndTime;
-        const baseTime = (itemData.initialCooldownUsed) ? itemData.baseRespawn : INITIAL_SPAWN_TIME;
-        let textContent = '';
-        let strokeDashoffset = circumference;
-        let condition = true;
-        const ownerColor = itemData.owner === players[0] ? '#3b82f6' : (itemData.owner === players[1] ? '#ef4444' : '#a0aec0');
-        if (!condition) {
-            textContent = 'X';
-        } else if (endTime && Date.now() < endTime) {
-            const remaining = endTime - Date.now();
-            const progress = Math.max(0, remaining / baseTime);
-            strokeDashoffset = circumference * progress;
-            textContent = Math.ceil(remaining / 1000);
-        } else {
-            strokeDashoffset = 0;
+            const createTimerCircle = (type) => {
+                const itemData = items[type];
+                if (!itemData || !ITEM_CONFIG[type]) return ''; // Bỏ qua các item tạm thời như snare_trap
+                const radius = 16;
+                const circumference = 2 * Math.PI * radius;
+                const endTime = itemData.cooldownEndTime;
+                const baseTime = (itemData.initialCooldownUsed) ? itemData.currentRespawn : INITIAL_SPAWN_TIME;
+                let textContent = '';
+                let strokeDashoffset = circumference;
+                
+                const ownerColor = itemData.owner === players[0] ? '#3b82f6' : (itemData.owner === players[1] ? '#ef4444' : '#a0aec0');
+                if (endTime && Date.now() < endTime) {
+                    const remaining = endTime - Date.now();
+                    const progress = Math.max(0, remaining / baseTime);
+                    strokeDashoffset = circumference * progress;
+                    textContent = Math.ceil(remaining / 1000);
+                } else {
+                    strokeDashoffset = 0;
+                }
+                return ` <div class="cooldown-circle"> <svg class="w-full h-full"> <circle cx="18" cy="18" r="${radius}" stroke="#4a5568" stroke-width="3" fill="none" /> <circle cx="18" cy="18" r="${radius}" stroke="${ownerColor}" stroke-width="3" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" style="transition: stroke-dashoffset 0.25s linear;" /> </svg> <div class="icon">${!textContent ? ICONS[type].replace('h-8 w-8', 'h-5 w-5') : ''}</div> <div class="text">${textContent}</div> </div> `;
+            };
+            
+            Object.keys(items).forEach(type => {
+                const itemData = items[type];
+                if (!itemData || !ITEM_CONFIG[type]) return;
+                const circleHtml = createTimerCircle(type);
+
+                if (itemData.owner === 'neutral') {
+                    neutralHtml += circleHtml;
+                } else if (players[0] && itemData.owner === players[0]) {
+                    p1Html += circleHtml;
+                } else if (players[1] && itemData.owner === players[1]) {
+                    p2Html += circleHtml;
+                }
+            });
+
+            neutralDiv.innerHTML = neutralHtml;
+            p1Div.innerHTML = p1Html;
+            p2Div.innerHTML = p2Html;
         }
-        return ` <div class="cooldown-circle"> <svg class="w-full h-full"> <circle cx="18" cy="18" r="${radius}" stroke="#4a5568" stroke-width="3" fill="none" /> <circle cx="18" cy="18" r="${radius}" stroke="${ownerColor}" stroke-width="3" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" style="transition: stroke-dashoffset 0.25s linear;" /> </svg> <div class="icon">${!textContent && condition ? ICONS[type].replace('h-8 w-8', 'h-5 w-5') : ''}</div> <div class="text">${textContent}</div> </div> `;
-    };
-    
-    // Lặp qua tất cả các item và phân loại chúng
-    Object.keys(items).forEach(type => {
-        const itemData = items[type];
-        const circleHtml = createTimerCircle(type);
-
-        if (itemData.owner === 'neutral') {
-            neutralHtml += circleHtml;
-        } else if (players[0] && itemData.owner === players[0]) {
-            p1Html += circleHtml;
-        } else if (players[1] && itemData.owner === players[1]) {
-            p2Html += circleHtml;
-        }
-    });
-
-    // Cập nhật nội dung HTML cho từng khu vực
-    neutralDiv.innerHTML = neutralHtml;
-    p1Div.innerHTML = p1Html;
-    p2Div.innerHTML = p2Html;
-}
         function calculateCurrentMultiplier(remainingTime) { const stage2Start = 45000; const stage3Start = 15000; const stage4Start = 5000; if (remainingTime > stage2Start) { const progress = (TOTAL_GAME_TIME - remainingTime) / (TOTAL_GAME_TIME - stage2Start); return 1 + progress; } else if (remainingTime > stage3Start) { const progress = (stage2Start - remainingTime) / (stage2Start - stage3Start); return 2 + progress; } else if (remainingTime > stage4Start) { const progress = (stage3Start - remainingTime) / (stage3Start - stage4Start); return 3 + progress; } else { return 4; } }
         
         function drawTimer() { const remaining = Math.max(0, gameEndTime - Date.now()); const remainingPercent = remaining / TOTAL_GAME_TIME; if (remaining > 0) { let color = 'rgba(255, 255, 255, 0.08)'; if(remaining <= 5000) color = 'rgba(239, 68, 68, 0.2)'; else if(remaining <= 15000) color = 'rgba(239, 68, 68, 0.15)'; else if(remaining <= 45000) color = 'rgba(239, 68, 68, 0.1)'; ctx.fillStyle = color; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#2d3748'; const wipeHeight = canvas.height * (1 - remainingPercent); ctx.fillRect(0, 0, canvas.width, wipeHeight); } const seconds = Math.ceil(remaining / 1000); ctx.font = `bold ${canvas.width / 4}px Arial`; ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(seconds, canvas.width / 2, canvas.height / 2); }
         function drawSpikeWall() { if (!activeSpikeWall) return; ctx.fillStyle = ITEM_COLORS.wallSpikes; const spikeSize = canvas.width / 40; const numSpikes = Math.floor(canvas.width / spikeSize); for (let i = 0; i < numSpikes; i++) { const pos = i * spikeSize + spikeSize / 2; ctx.beginPath(); if (activeSpikeWall.side === 'top') { ctx.moveTo(pos - spikeSize / 2, 0); ctx.lineTo(pos, spikeSize); ctx.lineTo(pos + spikeSize / 2, 0); } else if (activeSpikeWall.side === 'bottom') { ctx.moveTo(pos - spikeSize / 2, canvas.height); ctx.lineTo(pos, canvas.height - spikeSize); ctx.lineTo(pos + spikeSize / 2, canvas.height); } else if (activeSpikeWall.side === 'left') { ctx.moveTo(0, pos - spikeSize / 2); ctx.lineTo(spikeSize, pos); ctx.lineTo(0, pos + spikeSize / 2); } else if (activeSpikeWall.side === 'right') { ctx.moveTo(canvas.width, pos - spikeSize / 2); ctx.lineTo(canvas.width - spikeSize, pos); ctx.lineTo(canvas.width, pos + spikeSize / 2); } ctx.fill(); } }
 
         function gameLoop() {
+            if (!animationFrameId) return; // Game đã dừng, không chạy nữa
             const remaining = Math.max(0, gameEndTime - Date.now());
             const currentMultiplier = calculateCurrentMultiplier(remaining);
-            for (const type in items) { items[type].currentRespawn = items[type].baseRespawn / currentMultiplier; }
+            for (const type in items) { if(items[type] && items[type].baseRespawn) items[type].currentRespawn = items[type].baseRespawn / currentMultiplier; }
             getAllPlayerBalls().forEach(b => { b.speed = b.baseSpeed * currentMultiplier * b.controller.speedMultiplier; updatePlayerVelocity(b); });
             if (remaining <= 0) { endGame(true); return; }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -693,7 +885,7 @@ function updateLivesUI() {
             if(activeLaser) {
                 activeLaser.draw();
                 const opponent = players.find(p => p !== activeLaser.owner);
-                if (opponent) { opponent.balls.forEach(ball => { if (activeLaser.checkCollision(ball)) { opponent.takeDamage(ball); activeLaser = null; return; } }); }
+                if (opponent) { opponent.balls.forEach(ball => { if (activeLaser && activeLaser.checkCollision(ball)) { opponent.takeDamage(ball, activeLaser.owner); activeLaser = null; } }); }
                 if (activeLaser && Date.now() > activeLaser.endTime) activeLaser = null;
             }
             if(activeMissile) { activeMissile.draw(); activeMissile.update(); }
@@ -702,7 +894,7 @@ function updateLivesUI() {
             getAllPlayerBalls().forEach(handleDiagonalWallCollision);
             handleCollisions();
             getAllPlayerBalls().forEach(ball => ball.draw());
-            for (const type in items) if(items[type].item) items[type].item.draw();
+            for (const type in items) if(items[type] && items[type].item) items[type].item.draw();
             particles.forEach((p, index) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(index, 1); });
             updateCooldownUI(); updatePlayerStatusUI();
             animationFrameId = requestAnimationFrame(gameLoop);
@@ -721,7 +913,7 @@ function updateLivesUI() {
                 const elapsed = Date.now() - startTime;
                 if(elapsed > duration) {
                     canvas.style.transform = '';
-                    gameLoop();
+                    animationFrameId = requestAnimationFrame(gameLoop); // Resume game
                     return;
                 }
                 if (shake > 0) {
@@ -734,29 +926,85 @@ function updateLivesUI() {
             effectLoop();
         }
 
-        function triggerDeath(deadPlayerController) { if (!animationFrameId && !effectLoopId) return; cancelAnimationFrame(animationFrameId); animationFrameId = null; cancelAnimationFrame(effectLoopId); effectLoopId = null; const lastBall = deadPlayerController.balls[0] || {x: canvas.width / 2, y: canvas.height/2}; triggerEffect(lastBall.x, lastBall.y, deadPlayerController.color, { count: 50, speed: 8, friction: 0.98, life: 80 }); players = players.filter(p => p !== deadPlayerController); pauseGameForEffect({duration: 1200, shake: 15}); deathAnimationLoop(); }
-        function deathAnimationLoop() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawTimer(); getAllPlayerBalls().forEach(p => p.draw()); for (const type in items) if(items[type].item) items[type].item.draw(); particles.forEach((p, index) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(index, 1); }); if (particles.length > 0) { requestAnimationFrame(deathAnimationLoop); } else { endGame(); } }
-        function endGame(isTimeUp = false) { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } restartButton.classList.add('hidden'); gameOverScreen.classList.remove('hidden'); document.getElementById('top-ui').classList.add('invisible');
-document.getElementById('bottom-ui').classList.add('invisible');
-; let winner = ''; const p1 = players.find(p => p.name === 'Người chơi 1'); const p2 = players.find(p => p.name === 'Người chơi 2'); const p1Lives = p1?.lives ?? 0; const p2Lives = p2?.lives ?? 0; if (isTimeUp) { if (p1Lives > p2Lives) winner = 'p1'; else if (p2Lives > p1Lives) winner = 'p2'; else winner = 'draw'; } else { if (!p1 || p1Lives <= 0) winner = 'p2'; else winner = 'p1'; } if (winner === 'p1') { winnerText.textContent = `Người chơi 1 chiến thắng!`; winnerText.classList.add('text-blue-500'); } else if (winner === 'p2') { winnerText.textContent = `Người chơi 2 chiến thắng!`; winnerText.classList.add('text-red-500'); } else { winnerText.textContent = `Hòa!`; } setTimeout(() => {
-        restartButton.classList.remove('hidden');
-    }, 3000); // Hiện nút sau 3 giây
-}
+        function triggerDeath(deadPlayerController) { 
+            const winner = players.find(p => p !== deadPlayerController);
+            const lastBall = deadPlayerController.balls[0] || {x: canvas.width / 2, y: canvas.height/2}; 
+            triggerEffect(lastBall.x, lastBall.y, deadPlayerController.color, { count: 50, speed: 8, friction: 0.98, life: 80 }); 
+            endGame(false, winner);
+        }
+       
+        function stopGame() {
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+            if (effectLoopId) { cancelAnimationFrame(effectLoopId); effectLoopId = null; }
+            itemSpawnTimeouts.forEach(clearTimeout);
+            itemSpawnTimeouts = [];
+            Object.values(itemDisappearTimeouts).forEach(clearTimeout);
+        }
+
+        function endGame(isTimeUp = false, winnerPlayer = null) { 
+            stopGame();
+            gameOverScreen.classList.remove('hidden'); 
+            document.getElementById('top-ui').classList.add('invisible');
+            document.getElementById('bottom-ui').classList.add('invisible');
+            
+            let winner = ''; 
+            const p1 = players.find(p => p.name === 'Người chơi 1'); 
+            const p2 = players.find(p => p.name === 'Người chơi 2'); 
+            const p1Lives = p1 ? Math.max(0, p1.lives) : 0; 
+            const p2Lives = p2 ? Math.max(0, p2.lives) : 0;
+            
+            if (winnerPlayer) {
+                 winner = winnerPlayer.name === 'Người chơi 1' ? 'p1' : 'p2';
+            } else {
+                 if (isTimeUp) { 
+                    if (p1Lives > p2Lives) winner = 'p1'; 
+                    else if (p2Lives > p1Lives) winner = 'p2'; 
+                    else winner = 'draw'; 
+                 } else { 
+                    if (!p1 || p1Lives <= 0) winner = 'p2'; 
+                    else if (!p2 || p2Lives <= 0) winner = 'p1';
+                 }
+            }
+           
+            winnerText.className = 'text-4xl font-bold mb-4';
+            if (winner === 'p1') { 
+                winnerText.textContent = `Người chơi 1 chiến thắng!`; 
+                winnerText.classList.add('text-blue-500'); 
+            } else if (winner === 'p2') { 
+                winnerText.textContent = `Người chơi 2 chiến thắng!`; 
+                winnerText.classList.add('text-red-500'); 
+            } else { 
+                winnerText.textContent = `Hòa!`; 
+            }
+            
+            const resultsDiv = document.getElementById('results-details');
+            resultsDiv.innerHTML = `
+                <div class="flex justify-around items-center">
+                    <div class="text-center p-4 bg-gray-800 rounded-lg">
+                        <p class="font-bold text-blue-500">Người chơi 1</p>
+                        <p>Mạng còn lại: <span class="font-bold text-2xl">${p1Lives}</span></p>
+                    </div>
+                    <div class="text-2xl font-bold px-4">VS</div>
+                    <div class="text-center p-4 bg-gray-800 rounded-lg">
+                        <p class="font-bold text-red-500">Người chơi 2</p>
+                        <p>Mạng còn lại: <span class="font-bold text-2xl">${p2Lives}</span></p>
+                    </div>
+                </div>
+            `;
+        }
         
         function init() {
+            stopGame();
             setCanvasSize();
+            players = [];
+            items = {};
             startScreen.classList.remove('hidden');
             banPickScreen.classList.add('hidden');
             gameOverScreen.classList.add('hidden');
             document.getElementById('top-ui').classList.add('invisible');
-document.getElementById('bottom-ui').classList.add('invisible');
+            document.getElementById('bottom-ui').classList.add('invisible');
             winnerText.textContent = ''; winnerText.className = 'text-4xl font-bold mb-4';
             particles = []; activeRainZone = null; activeSpikeWall = null; activeDiagonalWall = null; activeLaser = null; activeMissile = null;
-            itemSpawnTimeouts.forEach(clearTimeout);
-            itemSpawnTimeouts = [];
-            Object.values(itemDisappearTimeouts).forEach(clearTimeout);
-            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-            if (effectLoopId) { cancelAnimationFrame(effectLoopId); effectLoopId = null; }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.font = `bold ${canvas.width / 10}px Arial`; ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("Sẵn Sàng...", canvas.width / 2, canvas.height / 2);
         }
@@ -767,9 +1015,19 @@ document.getElementById('bottom-ui').classList.add('invisible');
             banPickState = { currentIndex: 0, p1Bans: [], p2Bans: [], p1Picks: [], p2Picks: [], selectionCandidate: null };
             
             const bannableItems = Object.keys(ITEM_CONFIG).filter(type => ITEM_CONFIG[type].type !== 'neutral');
+
+            const itemGroups = { buff: [], debuff: [], map_effect: [] };
+            bannableItems.forEach(type => {
+                const itemType = ITEM_CONFIG[type].type;
+                if (itemGroups[itemType]) {
+                    itemGroups[itemType].push(type);
+                }
+            });
+            const sortedItems = [...itemGroups.buff.sort(), ...itemGroups.debuff.sort(), ...itemGroups.map_effect.sort()];
+
             const grid = document.getElementById('ban-pick-grid');
             grid.innerHTML = '';
-            bannableItems.forEach(type => {
+            sortedItems.forEach(type => {
                 const itemDiv = document.createElement('div');
                 itemDiv.id = `bp-item-${type}`;
                 itemDiv.className = 'ban-pick-item selectable';
@@ -779,150 +1037,123 @@ document.getElementById('bottom-ui').classList.add('invisible');
                 else if (ITEM_CONFIG[type].type === 'map_effect') typeIcon = `<div class="type-icon text-yellow-400">♦</div>`
                 
                 itemDiv.innerHTML = `${ICONS[type]}${typeIcon}<div class="overlay">/</div>`;
-                // Thay thế bằng đoạn mã này
-const isTouchDevice = 'ontouchstart' in window;
-if (isTouchDevice) {
-    let pressTimer;
-    itemDiv.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        pressTimer = setTimeout(() => {
-            showTooltip(e.touches[0], type);
-        }, 500); // 500ms for long press
-    });
-    itemDiv.addEventListener('touchend', () => {
-        clearTimeout(pressTimer);
-        hideTooltip();
-        handleBanPickSelection(type);
-    });
-    itemDiv.addEventListener('touchmove', () => {
-        clearTimeout(pressTimer);
-        hideTooltip();
-    });
-} else {
-    itemDiv.onclick = () => handleBanPickSelection(type);
-    itemDiv.onmouseenter = (e) => showTooltip(e, type);
-    itemDiv.onmouseleave = hideTooltip;
-}
-grid.appendChild(itemDiv);
+
+                const isTouchDevice = 'ontouchstart' in window;
+                if (isTouchDevice) {
+                    itemDiv.addEventListener('click', () => handleBanPickSelection(type));
+                } else {
+                    itemDiv.onclick = () => handleBanPickSelection(type);
+                    itemDiv.onmouseenter = (e) => showTooltip(e, type);
+                    itemDiv.onmouseleave = hideTooltip;
+                }
+                grid.appendChild(itemDiv);
             });
             updateBanPickUI();
         }
         
-// Thay thế toàn bộ hàm này
-function showTooltip(event, type) {
-    const item = ITEM_CONFIG[type];
-    let statsHTML = `<p class="text-gray-400 text-sm mt-1">Hồi chiêu: ${item.baseRespawn / 1000}s</p>`;
-    if (item.stats && Object.keys(item.stats).length > 0) {
-        statsHTML += `<div class="mt-2 border-t border-gray-600 pt-2">`;
-        for (const [key, value] of Object.entries(item.stats)) {
-            statsHTML += `<p class="text-sm"><span class="font-semibold text-gray-300">${key}:</span> ${value}</p>`;
-        }
-        statsHTML += `</div>`;
-    }
-    tooltip.innerHTML = `<h4 class="font-bold mb-1">${item.name}</h4><p class="text-gray-400">${item.desc}</p>${statsHTML}`;
-    tooltip.style.opacity = '1';
-    
-    // --- LOGIC ĐIỀU CHỈNH VỊ TRÍ ---
-    const tooltipRect = tooltip.getBoundingClientRect();
-    const margin = 15;
-    let left = event.clientX + margin;
-    let top = event.clientY + margin;
+        function showTooltip(event, type) {
+            const item = ITEM_CONFIG[type];
+            let statsHTML = `<p class="text-gray-400 text-sm mt-1">Hồi chiêu: ${item.baseRespawn / 1000}s</p>`;
+            if (item.stats && Object.keys(item.stats).length > 0) {
+                statsHTML += `<div class="mt-2 border-t border-gray-600 pt-2">`;
+                for (const [key, value] of Object.entries(item.stats)) {
+                    statsHTML += `<p class="text-sm"><span class="font-semibold text-gray-300">${key}:</span> ${value}</p>`;
+                }
+                statsHTML += `</div>`;
+            }
+            tooltip.innerHTML = `<h4 class="font-bold mb-1">${item.name}</h4><p class="text-gray-400">${item.desc}</p>${statsHTML}`;
+            tooltip.style.opacity = '1';
+            
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const margin = 15;
+            let left = event.clientX + margin;
+            let top = event.clientY + margin;
 
-    if (left + tooltipRect.width > window.innerWidth) {
-        left = event.clientX - tooltipRect.width - margin;
-    }
-    if (top + tooltipRect.height > window.innerHeight) {
-        top = event.clientY - tooltipRect.height - margin;
-    }
-    if (left < 0) left = margin;
-    if (top < 0) top = margin;
-    // ------------------------------------
-    
-    tooltip.style.left = `${left}px`;
-    tooltip.style.top = `${top}px`;
-}
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = event.clientX - tooltipRect.width - margin;
+            }
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = event.clientY - tooltipRect.height - margin;
+            }
+            if (left < 0) left = margin;
+            if (top < 0) top = margin;
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }
         function hideTooltip() { tooltip.style.opacity = '0'; }
         
-// Thay thế toàn bộ hàm này
-function updateBanPickUI() {
-    const title = document.getElementById('ban-pick-title');
-    const p1PicksDiv = document.getElementById('p1-picks');
-    const p2PicksDiv = document.getElementById('p2-picks');
-    const p1BansDiv = document.getElementById('p1-bans');
-    const p2BansDiv = document.getElementById('p2-bans');
-    
-    document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot'));
-    document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400'));
+        function updateBanPickUI() {
+            const title = document.getElementById('ban-pick-title');
+            const mobileInfo = document.getElementById('ban-pick-info-mobile');
+            const p1PicksDiv = document.getElementById('p1-picks');
+            const p2PicksDiv = document.getElementById('p2-picks');
+            const p1BansDiv = document.getElementById('p1-bans');
+            const p2BansDiv = document.getElementById('p2-bans');
+            
+            document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot'));
+            document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400'));
 
-    const renderSlots = (container, items, maxSlots, isBan = false) => {
-        container.innerHTML = '';
-        for (let i = 0; i < maxSlots; i++) {
-            let content = '';
-            if (items[i]) {
-                content = ICONS[items[i]].replace('h-8 w-8', 'h-full w-full');
-                if (isBan) {
-                    content += '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">/</div>';
+            const renderSlots = (container, items, maxSlots, isBan = false) => {
+                container.innerHTML = '';
+                for (let i = 0; i < maxSlots; i++) {
+                    let content = '';
+                    if (items[i]) {
+                        content = ICONS[items[i]].replace('h-8 w-8', 'h-full w-full');
+                        if (isBan) {
+                            content += '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">/</div>';
+                        }
+                    }
+                    const banClass = isBan ? 'p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative' : 'p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center';
+                    container.innerHTML += `<div class="${banClass}">${content}</div>`;
+                }
+            };
+
+            renderSlots(p1BansDiv, banPickState.p1Bans, 2, true);
+            renderSlots(p2BansDiv, banPickState.p2Bans, 2, true);
+            renderSlots(p1PicksDiv, banPickState.p1Picks, 3);
+            renderSlots(p2PicksDiv, banPickState.p2Picks, 3);
+
+            const currentStep = banPickSequence[banPickState.currentIndex];
+            if (currentStep) {
+                const isP1 = currentStep.player === 1;
+                const phaseText = currentStep.phase === 'ban' ? 'Cấm' : 'Chọn';
+                title.className = 'text-2xl md:text-3xl font-bold';
+                title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500');
+                title.textContent = `Người chơi ${currentStep.player} - ${phaseText}`;
+
+                const container = currentStep.phase === 'ban' ? (isP1 ? p1BansDiv : p2BansDiv) : (isP1 ? p1PicksDiv : p2PicksDiv);
+                const itemsList = currentStep.phase === 'ban' ? (isP1 ? banPickState.p1Bans : banPickState.p2Bans) : (isP1 ? banPickState.p1Picks : banPickState.p2Picks);
+                const maxItems = currentStep.phase === 'ban' ? 2 : 3;
+
+                if (itemsList.length < maxItems) {
+                    const slot = container.children[itemsList.length];
+                    if(slot) slot.classList.add('pulsing-slot');
                 }
             }
-            const banClass = isBan ? 'p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative' : 'p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center';
-            container.innerHTML += `<div class="${banClass}">${content}</div>`;
+             // Handle mobile info display
+            const isTouchDevice = 'ontouchstart' in window;
+            if (isTouchDevice && banPickState.selectionCandidate) {
+                const item = ITEM_CONFIG[banPickState.selectionCandidate];
+                mobileInfo.innerHTML = `<p class="font-bold text-lg">${item.name}</p><p class="text-sm text-gray-400">${item.desc}</p>`;
+                mobileInfo.classList.remove('hidden');
+                title.classList.add('hidden');
+            } else {
+                mobileInfo.classList.add('hidden');
+                title.classList.remove('hidden');
+            }
+
+            const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
+            document.querySelectorAll('.ban-pick-item').forEach(el => {
+                const type = el.id.replace('bp-item-', '');
+                el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable', 'opacity-50');
+                if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400');
+                if (banned.includes(type)) el.classList.add('banned');
+                else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1');
+                else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2');
+                else el.classList.add('selectable');
+            });
         }
-    };
-
-    renderSlots(p1BansDiv, banPickState.p1Bans, 2, true);
-    renderSlots(p2BansDiv, banPickState.p2Bans, 2, true);
-    renderSlots(p1PicksDiv, banPickState.p1Picks, 3);
-    renderSlots(p2PicksDiv, banPickState.p2Picks, 3);
-
-    const currentStep = banPickSequence[banPickState.currentIndex];
-    if (currentStep) {
-        const isP1 = currentStep.player === 1;
-        title.className = 'text-3xl font-bold mb-4';
-        title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500');
-
-        const phase = currentStep.phase;
-        if(phase === 'ban') {
-            const bans = isP1 ? banPickState.p1Bans : banPickState.p2Bans;
-            const container = isP1 ? p1BansDiv : p2BansDiv;
-            if (bans.length < 2) {
-                const slot = container.children[bans.length];
-                slot.classList.add('pulsing-slot');
-                // --- THÊM LOGIC HIỂN THỊ "NHÁ" ---
-                if (banPickState.selectionCandidate) {
-                     slot.innerHTML = ICONS[banPickState.selectionCandidate].replace('h-8 w-8', 'h-full w-full') + '<div class="absolute inset-0 bg-red-800 bg-opacity-50 flex items-center justify-center text-white text-3xl font-bold"></div>';
-                }
-                // ------------------------------------
-            }
-            title.textContent = `Người chơi ${currentStep.player} - Cấm`;
-        } else { // Pick
-            const picks = isP1 ? banPickState.p1Picks : banPickState.p2Picks;
-            const container = isP1 ? p1PicksDiv : p2PicksDiv;
-            if(picks.length < 3) {
-                const slot = container.children[picks.length];
-                slot.classList.add('pulsing-slot');
-                // --- THÊM LOGIC HIỂN THỊ "NHÁ" ---
-                if (banPickState.selectionCandidate) {
-                    slot.innerHTML = ICONS[banPickState.selectionCandidate].replace('h-8 w-8', 'h-full w-full');
-                    slot.classList.add('opacity-50');
-                }
-                // ------------------------------------
-            }
-            title.textContent = `Người chơi ${currentStep.player} - Chọn`;
-        }
-    }
-
-    const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
-    const picked = [...banPickState.p1Picks, ...banPickState.p2Picks];
-    document.querySelectorAll('.ban-pick-item').forEach(el => {
-        const type = el.id.replace('bp-item-', '');
-        el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable');
-        if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400');
-        if (banned.includes(type)) el.classList.add('banned');
-        else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1');
-        else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2');
-        else el.classList.add('selectable');
-    });
-}
         
         function handleBanPickSelection(type) {
             const currentStep = banPickSequence[banPickState.currentIndex];
@@ -968,7 +1199,7 @@ function updateBanPickUI() {
             }
             
             const activeItemTypes = {};
-            ['weapon', 'health'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
+            ['health', 'weapon'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
             banPickState.p1Picks.forEach(type => activeItemTypes[type] = { owner: 'p1' });
             banPickState.p2Picks.forEach(type => activeItemTypes[type] = { owner: 'p2' });
             commonItems.forEach(type => activeItemTypes[type] = { owner: 'neutral' });
@@ -976,82 +1207,77 @@ function updateBanPickUI() {
             startCountdown(activeItemTypes);
         }
 
-        // Xóa hàm startGame cũ và thêm 2 hàm mới này vào
-function startCountdown(activeItemTypes) {
-    const countdownScreen = document.getElementById('countdown-screen');
-    const countdownText = document.getElementById('countdown-text');
-    countdownScreen.classList.remove('hidden');
+        function startCountdown(activeItemTypes) {
+            const countdownScreen = document.getElementById('countdown-screen');
+            const countdownText = document.getElementById('countdown-text');
+            countdownScreen.classList.remove('hidden');
+            setupGame(activeItemTypes);
 
-    // Thiết lập game nhưng chưa chạy gameLoop
-    setupGame(activeItemTypes);
-
-    let count = 3;
-    countdownText.textContent = count;
-
-    const interval = setInterval(() => {
-        count--;
-        if (count > 0) {
+            let count = 3;
             countdownText.textContent = count;
-        } else if (count === 0) {
-            countdownText.textContent = "Bắt Đầu!";
-            countdownText.classList.remove('text-9xl');
-            countdownText.classList.add('text-7xl');
-        } else {
-            clearInterval(interval);
-            countdownScreen.classList.add('hidden');
-            // Reset lại class cho lần sau
-            countdownText.classList.add('text-9xl');
-            countdownText.classList.remove('text-7xl');
-            startGame(); // Bắt đầu game sau khi đếm ngược xong
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownText.textContent = count;
+                } else if (count === 0) {
+                    countdownText.textContent = "Bắt Đầu!";
+                    countdownText.classList.remove('text-9xl');
+                    countdownText.classList.add('text-7xl');
+                } else {
+                    clearInterval(interval);
+                    countdownScreen.classList.add('hidden');
+                    countdownText.classList.add('text-9xl');
+                    countdownText.classList.remove('text-7xl');
+                    startGame(); 
+                }
+            }, 1000);
         }
-    }, 1000);
-}
 
-function setupGame(activeItemTypes) {
-    document.getElementById('top-ui').classList.remove('invisible');
-    document.getElementById('bottom-ui').classList.remove('invisible');
+        function setupGame(activeItemTypes) {
+            document.getElementById('top-ui').classList.remove('invisible');
+            document.getElementById('bottom-ui').classList.remove('invisible');
             
-    players = [];
-    const playerRadius = (canvas.width / 25) * 1.4 * 0.7;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const p1Spawn = { x: centerX + centerX / 2, y: centerY / 2 };
-    const p2Spawn = { x: centerX / 2, y: centerY + centerY / 2 };
-    
-    const p1 = new PlayerController('Người chơi 1', '#3b82f6', new PlayerBall(p1Spawn.x, p1Spawn.y, playerRadius));
-    p1.balls[0].controller = p1;
-    const p2 = new PlayerController('Người chơi 2', '#ef4444', new PlayerBall(p2Spawn.x, p2Spawn.y, playerRadius));
-    p2.balls[0].controller = p2;
-    players.push(p1, p2);
-
-    items = {};
-    for (const type in activeItemTypes) {
-        let owner = 'neutral';
-        if(activeItemTypes[type].owner === 'p1') owner = p1;
-        if(activeItemTypes[type].owner === 'p2') owner = p2;
-        items[type] = { ...ITEM_CONFIG[type], owner: owner, item: null, cooldownEndTime: Date.now() + INITIAL_SPAWN_TIME, initialCooldownUsed: false };
-    }
+            players = [];
+            const playerRadius = (canvas.width / 25) * 1.4 * 0.7;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const p1Spawn = { x: centerX + centerX / 2, y: centerY / 2 };
+            const p2Spawn = { x: centerX / 2, y: centerY + centerY / 2 };
             
-    updateLivesUI(); 
-    updatePlayerStatusUI();
-    updateCooldownUI();
+            const p1 = new PlayerController('Người chơi 1', '#3b82f6', new PlayerBall(p1Spawn.x, p1Spawn.y, playerRadius));
+            p1.balls[0].controller = p1;
+            const p2 = new PlayerController('Người chơi 2', '#ef4444', new PlayerBall(p2Spawn.x, p2Spawn.y, playerRadius));
+            p2.balls[0].controller = p2;
+            players.push(p1, p2);
 
-    // Vẽ trạng thái ban đầu lên canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    getAllPlayerBalls().forEach(ball => ball.draw());
-}
+            items = {};
+            for (const type in activeItemTypes) {
+                let owner = 'neutral';
+                if(activeItemTypes[type].owner === 'p1') owner = p1;
+                if(activeItemTypes[type].owner === 'p2') owner = p2;
+                items[type] = { ...ITEM_CONFIG[type], owner: owner, item: null, cooldownEndTime: Date.now() + INITIAL_SPAWN_TIME, initialCooldownUsed: false };
+            }
+            
+            updateLivesUI(); 
+            updatePlayerStatusUI();
+            updateCooldownUI();
 
-function startGame() {
-    gameEndTime = Date.now() + TOTAL_GAME_TIME;
-    for (const type in items) {
-        const timeoutId = setTimeout(() => {
-            spawnItem(type);
-            items[type].initialCooldownUsed = true;
-        }, INITIAL_SPAWN_TIME);
-        itemSpawnTimeouts.push(timeoutId);
-    }
-    gameLoop();
-}
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            getAllPlayerBalls().forEach(ball => ball.draw());
+        }
+
+        function startGame() {
+            gameEndTime = Date.now() + TOTAL_GAME_TIME;
+            for (const type in items) {
+                const timeoutId = setTimeout(() => {
+                    spawnItem(type);
+                    items[type].initialCooldownUsed = true;
+                }, INITIAL_SPAWN_TIME);
+                itemSpawnTimeouts.push(timeoutId);
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
 
         window.addEventListener('resize', init);
         startButton.addEventListener('click', showBanPickPhase);
@@ -1062,4 +1288,6 @@ function startGame() {
 
 </body>
 </html>
+
+
 
