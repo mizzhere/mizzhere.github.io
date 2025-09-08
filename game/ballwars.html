@@ -229,7 +229,7 @@
                     
                     <!-- Center Grid -->
                     <div class="w-1/2 px-4 flex flex-col">
-                        <div id="ban-pick-header-container" class="text-center mb-4">
+                        <div id="ban-pick-header-container" class="text-center mb-4 flex flex-col justify-center min-h-[112px] md:min-h-0">
                             <h2 id="ban-pick-title" class="text-2xl md:text-3xl font-bold text-gray-100"></h2>
                              <div id="ban-pick-info-mobile" class="hidden md:hidden p-2 bg-gray-900 rounded-lg text-left"></div>
                         </div>
@@ -1119,7 +1119,7 @@
             sortedItems.forEach(type => {
                 const itemDiv = document.createElement('div');
                 itemDiv.id = `bp-item-${type}`;
-                itemDiv.className = 'ban-pick-item selectable aspect-square';
+                itemDiv.className = 'ban-pick-item selectable';
                 let typeIcon = '';
                 if(ITEM_CONFIG[type].type === 'buff') typeIcon = `<div class="type-icon text-green-400">▲</div>`
                 else if (ITEM_CONFIG[type].type === 'debuff') typeIcon = `<div class="type-icon text-red-400">▼</div>`
