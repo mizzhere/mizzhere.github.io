@@ -309,7 +309,7 @@
 
         const ITEM_CONFIG = {
             weapon: { name: 'Vũ Khí Gai', baseRespawn: 10000, type: 'neutral', desc: 'Nhận một lớp gai tồn tại trong 5s. Va chạm với đối thủ sẽ gây sát thương và phá vỡ gai. Gai cũng sẽ vỡ khi chặn các sát thương khác.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '1 lần tấn công/phòng thủ' } }, 
-            health: { name: 'Hồi Máu', baseRespawn: 5000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
+            health: { name: 'Hồi Máu', baseRespawn: 10000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
             bomb: { name: 'Bom', baseRespawn: 5000, type: 'debuff', desc: 'Đặt một quả bom trên bản đồ. Đối thủ của người nhặt sẽ bị mất mạng nếu chạm phải.', stats: {} },
             shield: { name: 'Khiên', baseRespawn: 10000, type: 'neutral', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Hiệu ứng': 'Chặn 1 đòn' } }, 
             reflectiveCloak: { name: 'Áo Choàng Phản', baseRespawn: 15000, type: 'buff', desc: 'Tồn tại 10s hoặc đến khi bị tấn công, sẽ phản lại sát thương cho đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '1 lần phản đòn'} },
@@ -508,22 +508,29 @@
                 const now = Date.now();
                 if (this.invincibleUntil && now < this.invincibleUntil) return false;
 
-                if (this.armor.length > 0) {
-                    const armorType = this.armor.pop();
-                    if (armorType === 'reflectiveCloak') {
-                        clearTimeout(this.effectTimeouts.reflectiveCloak);
-                    }
-                    if (armorType === 'weapon') {
-                         clearTimeout(this.effectTimeouts.weapon);
-                    }
-                    triggerEffect(ball.x, ball.y, ITEM_COLORS[armorType] || this.color, { count: 25, speed: 5 });
-                    
-                    if (!isReflectedDamage && (armorType === 'reflectiveCloak') && attacker && attacker.balls.length > 0) {
-                        attacker.takeDamage(attacker.balls[0], this, true);
-                    }
-                    updateLivesUI();
-                    return false;
-                }
+                const realArmorIndex = this.armor.findIndex(type => type !== 'weapon');
+
+if (realArmorIndex > -1) {
+    // Gỡ bỏ loại giáp đã tìm thấy
+    const armorType = this.armor.splice(realArmorIndex, 1)[0]; 
+ if (armorType === 'shield') {
+        const shieldData = items['shield'];
+        if (shieldData) {
+            shieldData.cooldownEndTime = Date.now() + shieldData.currentRespawn;
+            itemSpawnTimeouts.push(setTimeout(() => spawnItem('shield'), shieldData.currentRespawn));
+        }
+    }
+    if (armorType === 'reflectiveCloak') {
+        clearTimeout(this.effectTimeouts.reflectiveCloak);
+    }
+    triggerEffect(ball.x, ball.y, ITEM_COLORS[armorType] || this.color, { count: 25, speed: 5 });
+    
+    if (!isReflectedDamage && (armorType === 'reflectiveCloak') && attacker && attacker.balls.length > 0) {
+        attacker.takeDamage(attacker.balls[0], this, true);
+    }
+    updateLivesUI();
+    return false;
+}
 
                 if (this.balls.length > 1) { 
                     this.removeBall(ball); 
@@ -693,7 +700,11 @@
         
         function getRandomPosition(radius) { return { x: Math.random() * (canvas.width - radius * 2) + radius, y: Math.random() * (canvas.height - radius * 2) + radius } }
         function triggerEffect(x, y, color, { count = 20, speed = 3, life = 40, friction = 0.95 } = {}) { for (let i = 0; i < count; i++) { const angle = Math.random() * Math.PI * 2; const currentSpeed = Math.random() * speed + 1; particles.push(new Particle( x, y, Math.cos(angle) * currentSpeed, Math.sin(angle) * currentSpeed, Math.random() * 2 + 1, color, life, friction )); } }
-        function spawnItem(type) { if (items[type] && items[type].item) return; const radius = canvas.width / 40; const pos = getRandomPosition(radius); let duration = null; if (type === 'health') duration = 7000; if (type === 'bomb' || type === 'snare_trap') duration = 5000; items[type].item = new Item(pos.x, pos.y, radius, type, items[type].owner, duration); items[type].cooldownEndTime = null; if (duration) { clearTimeout(itemDisappearTimeouts[type]); itemDisappearTimeouts[type] = setTimeout(() => { if (items[type] && items[type].item) { items[type].item = null; const respawnTime = items[type].currentRespawn; items[type].cooldownEndTime = Date.now() + respawnTime; itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); } }, duration); } }
+        function spawnItem(type) { if (type === 'shield' || type === 'weapon') {
+        const isHeld = players.some(p => p.armor.includes(type));
+        if (isHeld) return; // Nếu có người chơi đang giữ thì không tạo ra
+    };
+			if (items[type] && items[type].item) return; const radius = canvas.width / 40; const pos = getRandomPosition(radius); let duration = null; if (type === 'health') duration = 7000; if (type === 'bomb' || type === 'snare_trap') duration = 5000; items[type].item = new Item(pos.x, pos.y, radius, type, items[type].owner, duration); items[type].cooldownEndTime = null; if (duration) { clearTimeout(itemDisappearTimeouts[type]); itemDisappearTimeouts[type] = setTimeout(() => { if (items[type] && items[type].item) { items[type].item = null; const respawnTime = items[type].currentRespawn; items[type].cooldownEndTime = Date.now() + respawnTime; itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); } }, duration); } }
         function updatePlayerVelocity(playerBall) { const mag = Math.hypot(playerBall.dx, playerBall.dy); if (mag > 0) { playerBall.dx = (playerBall.dx / mag) * playerBall.speed; playerBall.dy = (playerBall.dy / mag) * playerBall.speed; } }
         const getAllPlayerBalls = () => players.flatMap(p => p.balls);
 
@@ -741,28 +752,35 @@
                         updatePlayerVelocity(b2);
 
                         const b1HasGai = b1.controller.armor.includes('weapon');
-                        const b2HasGai = b2.controller.armor.includes('weapon');
+const b2HasGai = b2.controller.armor.includes('weapon');
 
-                        if (b1HasGai && b2HasGai) {
-                            const b1GaiIndex = b1.controller.armor.lastIndexOf('weapon');
-                            if(b1GaiIndex > -1) b1.controller.armor.splice(b1GaiIndex, 1);
-                            const b2GaiIndex = b2.controller.armor.lastIndexOf('weapon');
-                            if(b2GaiIndex > -1) b2.controller.armor.splice(b2GaiIndex, 1);
-                            
-                            clearTimeout(b1.controller.effectTimeouts.weapon);
-                            clearTimeout(b2.controller.effectTimeouts.weapon);
-                            triggerEffect((b1.x + b2.x) / 2, (b1.y + b2.y) / 2, ITEM_COLORS.weapon, { count: 20 });
-                        } else if (b1HasGai) {
-                            b2.controller.takeDamage(b2, b1.controller);
-                            const b1GaiIndex = b1.controller.armor.lastIndexOf('weapon');
-                            if(b1GaiIndex > -1) b1.controller.armor.splice(b1GaiIndex, 1);
-                             clearTimeout(b1.controller.effectTimeouts.weapon);
-                        } else if (b2HasGai) {
-                            b1.controller.takeDamage(b1, b2.controller);
-                            const b2GaiIndex = b2.controller.armor.lastIndexOf('weapon');
-                             if(b2GaiIndex > -1) b2.controller.armor.splice(b2GaiIndex, 1);
-                             clearTimeout(b2.controller.effectTimeouts.weapon);
-                        }
+// Hàm trợ giúp để bắt đầu hồi chiêu Gai
+const startWeaponCooldown = () => {
+    const weaponData = items['weapon'];
+    if (weaponData) {
+        weaponData.cooldownEndTime = Date.now() + weaponData.currentRespawn;
+        itemSpawnTimeouts.push(setTimeout(() => spawnItem('weapon'), weaponData.currentRespawn));
+    }
+};
+
+if (b1HasGai) {
+    b2.controller.takeDamage(b2, b1.controller);
+    const b1GaiIndex = b1.controller.armor.lastIndexOf('weapon');
+    if (b1GaiIndex > -1) {
+        b1.controller.armor.splice(b1GaiIndex, 1);
+        clearTimeout(b1.controller.effectTimeouts.weapon);
+        startWeaponCooldown(); // Bắt đầu hồi chiêu khi vũ khí được dùng
+    }
+}
+if (b2HasGai) {
+    b1.controller.takeDamage(b1, b2.controller);
+    const b2GaiIndex = b2.controller.armor.lastIndexOf('weapon');
+    if (b2GaiIndex > -1) {
+        b2.controller.armor.splice(b2GaiIndex, 1);
+        clearTimeout(b2.controller.effectTimeouts.weapon);
+        startWeaponCooldown(); // Bắt đầu hồi chiêu khi vũ khí được dùng
+    }
+}
                         updateLivesUI();
                     }
                 }
@@ -894,10 +912,10 @@
                 const respawnTime = itemData.currentRespawn; 
                 if (itemData.item.disappearTime) clearTimeout(itemDisappearTimeouts[type]); 
                 itemData.item = null; 
-                if (respawnTime) {
-                    itemData.cooldownEndTime = Date.now() + respawnTime; 
-                    itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
-                }
+                if (respawnTime && type !== 'shield' && type !== 'weapon') {
+    itemData.cooldownEndTime = Date.now() + respawnTime; 
+    itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
+}
                 if ((type === 'bomb_trap' || type === 'snare_trap') && ball.controller.lives <= 0) {
                     triggerDeath(ball.controller);
                 }
