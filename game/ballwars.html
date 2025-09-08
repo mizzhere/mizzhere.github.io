@@ -183,12 +183,15 @@
     <div id="game-container">
       <div id="top-ui" class="w-full flex flex-col items-center invisible px-2 py-2 md:py-0">
     <div id="player1-info" class="w-full max-w-lg mb-2">
+    <div class="flex justify-between items-center">
         <h2 class="font-bold text-lg text-blue-500 flex items-center">
             <span>Người chơi 1</span>
             <span id="player1-status-icons" class="flex items-center ml-2 space-x-1"></span>
         </h2>
-        <div id="player1-lives" class="flex items-center space-x-1 mt-1"></div>
+        <span id="player1-score" class="font-bold text-2xl text-white bg-black/20 px-3 rounded-md">0</span>
     </div>
+    <div id="player1-lives" class="flex items-center space-x-1 mt-1"></div>
+</div>
     <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
 <div id="player1-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mb-1 text-sm text-gray-300"></div>
         <div id="neutral-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 text-sm text-gray-300"></div>
@@ -199,13 +202,16 @@
     <h1 id="countdown-text" class="text-9xl font-bold text-white" style="text-shadow: 0 0 20px rgba(0,0,0,0.5);"></h1>
 </div>
 <div id="bottom-ui" class="w-full flex flex-col items-center invisible px-2 py-2 md:py-0">
-    <div id="player2-info" class="w-full max-w-lg mt-2">
-         <h2 class="font-bold text-lg text-red-500 flex items-center">
+   <div id="player2-info" class="w-full max-w-lg mt-2">
+    <div class="flex justify-between items-center">
+        <h2 class="font-bold text-lg text-red-500 flex items-center">
             <span>Người chơi 2</span>
             <span id="player2-status-icons" class="flex items-center ml-2 space-x-1"></span>
         </h2>
-        <div id="player2-lives" class="flex items-center space-x-1 mt-1"></div>
+        <span id="player2-score" class="font-bold text-2xl text-white bg-black/20 px-3 rounded-md">0</span>
     </div>
+    <div id="player2-lives" class="flex items-center space-x-1 mt-1"></div>
+</div>
     <div id="player2-cooldown-timers" class="w-full max-w-lg flex justify-center flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-300"></div>
 </div>
 
@@ -502,7 +508,7 @@
         }
 
         class PlayerController {
-            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null, snare: null }; this.cannotEatUntil = null; this.snaredUntil = null;}
+            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null, snare: null }; this.cannotEatUntil = null; this.snaredUntil = null; this.score = 0; }
             
             takeDamage(ball, attacker = null, isReflectedDamage = false) {
                 const now = Date.now();
@@ -532,19 +538,27 @@ if (realArmorIndex > -1) {
     return false;
 }
 
-                if (this.balls.length > 1) { 
-                    this.removeBall(ball); 
-                    return false; 
-                } else { 
-                    this.lives--; 
-                    this.invincibleUntil = now + 2000; 
-                    updateLivesUI(); 
-                    if (this.lives <= 0) { 
-                        triggerDeath(this); 
-                    } else { 
-                        pauseGameForEffect({ duration: 1200, shake: 5 }); 
-                    } 
-                    return true; 
+               // Logic mới
+this.lives--; 
+this.invincibleUntil = now + 2000; 
+updateLivesUI();
+
+// Cộng điểm cho người tấn công
+if (attacker) {
+    attacker.score++;
+    updateScoreUI();
+    if (attacker.score >= 5) {
+        endGame(false, attacker); // Thắng ngay khi đủ 5 điểm
+        return true;
+    }
+}
+
+if (this.lives <= 0) { 
+    triggerDeath(this); 
+} else { 
+    pauseGameForEffect({ duration: 1200, shake: 5 }); 
+} 
+return true;
                 } 
             }
             addBall() {
@@ -679,6 +693,13 @@ if (realArmorIndex > -1) {
             renderLives(p1LivesDiv, players[0], 'bg-blue-500');
             renderLives(p2LivesDiv, players[1], 'bg-red-500');
         }
+		function updateScoreUI() {
+    if (!players[0] || !players[1]) return;
+    const p1ScoreDiv = document.getElementById('player1-score');
+    const p2ScoreDiv = document.getElementById('player2-score');
+    p1ScoreDiv.textContent = players[0].score;
+    p2ScoreDiv.textContent = players[1].score;
+}
         function updatePlayerStatusUI() {
             const p1_icons = document.getElementById('player1-status-icons');
             const p2_icons = document.getElementById('player2-status-icons');
@@ -1048,57 +1069,67 @@ if (b2HasGai) {
             Object.values(itemDisappearTimeouts).forEach(clearTimeout);
         }
 
-        function endGame(isTimeUp = false, winnerPlayer = null) { 
-            stopGame();
-            gameOverScreen.classList.remove('hidden'); 
-            document.getElementById('top-ui').classList.add('invisible');
-            document.getElementById('bottom-ui').classList.add('invisible');
-            
-            let winner = ''; 
-            const p1 = players.find(p => p.name === 'Người chơi 1'); 
-            const p2 = players.find(p => p.name === 'Người chơi 2'); 
-            const p1Lives = p1 ? Math.max(0, p1.lives) : 0; 
-            const p2Lives = p2 ? Math.max(0, p2.lives) : 0;
-            
-            if (winnerPlayer) {
-                 winner = winnerPlayer.name === 'Người chơi 1' ? 'p1' : 'p2';
-            } else {
-                 if (isTimeUp) { 
-                    if (p1Lives > p2Lives) winner = 'p1'; 
-                    else if (p2Lives > p1Lives) winner = 'p2'; 
-                    else winner = 'draw'; 
-                 } else { 
-                    if (!p1 || p1Lives <= 0) winner = 'p2'; 
-                    else if (!p2 || p2Lives <= 0) winner = 'p1';
-                 }
-            }
-           
-            winnerText.className = 'text-4xl font-bold mb-4';
-            if (winner === 'p1') { 
-                winnerText.textContent = `Người chơi 1 chiến thắng!`; 
-                winnerText.classList.add('text-blue-500'); 
-            } else if (winner === 'p2') { 
-                winnerText.textContent = `Người chơi 2 chiến thắng!`; 
-                winnerText.classList.add('text-red-500'); 
-            } else { 
-                winnerText.textContent = `Hòa!`; 
-            }
-            
-            const resultsDiv = document.getElementById('results-details');
-            resultsDiv.innerHTML = `
-                <div class="flex justify-around items-center">
-                    <div class="text-center p-4 bg-gray-800 rounded-lg">
-                        <p class="font-bold text-blue-500">Người chơi 1</p>
-                        <p>Mạng còn lại: <span class="font-bold text-2xl">${p1Lives}</span></p>
-                    </div>
-                    <div class="text-2xl font-bold px-4">VS</div>
-                    <div class="text-center p-4 bg-gray-800 rounded-lg">
-                        <p class="font-bold text-red-500">Người chơi 2</p>
-                        <p>Mạng còn lại: <span class="font-bold text-2xl">${p2Lives}</span></p>
-                    </div>
-                </div>
-            `;
+        // Hàm endGame đã được cập nhật
+function endGame(isTimeUp = false, winnerPlayer = null) { 
+    stopGame();
+    gameOverScreen.classList.remove('hidden'); 
+    document.getElementById('top-ui').classList.add('invisible');
+    document.getElementById('bottom-ui').classList.add('invisible');
+    
+    let winner = ''; 
+    const p1 = players.find(p => p.name === 'Người chơi 1'); 
+    const p2 = players.find(p => p.name === 'Người chơi 2'); 
+    const p1Lives = p1 ? Math.max(0, p1.lives) : 0; 
+    const p2Lives = p2 ? Math.max(0, p2.lives) : 0;
+    const p1Score = p1 ? p1.score : 0;
+    const p2Score = p2 ? p2.score : 0;
+
+    // Ưu tiên 1: Người thắng được xác định trước (do đủ 5 điểm hoặc hạ hết mạng đối thủ)
+    if (winnerPlayer) {
+         winner = winnerPlayer.name === 'Người chơi 1' ? 'p1' : 'p2';
+    } 
+    // Ưu tiên 2: Hết giờ thì xét điểm trước, sau đó tới mạng
+    else if (isTimeUp) { 
+        if (p1Score > p2Score) {
+            winner = 'p1';
+        } else if (p2Score > p1Score) {
+            winner = 'p2';
+        } else { // Nếu điểm bằng nhau, xét mạng
+            if (p1Lives > p2Lives) winner = 'p1'; 
+            else if (p2Lives > p1Lives) winner = 'p2'; 
+            else winner = 'draw'; // Bằng cả điểm và mạng thì hòa
         }
+    }
+   
+    winnerText.className = 'text-4xl font-bold mb-4';
+    if (winner === 'p1') { 
+        winnerText.textContent = `Người chơi 1 chiến thắng!`; 
+        winnerText.classList.add('text-blue-500'); 
+    } else if (winner === 'p2') { 
+        winnerText.textContent = `Người chơi 2 chiến thắng!`; 
+        winnerText.classList.add('text-red-500'); 
+    } else { 
+        winnerText.textContent = `Hòa!`; 
+    }
+    
+    // Cập nhật bảng kết quả để hiển thị cả điểm và mạng
+    const resultsDiv = document.getElementById('results-details');
+    resultsDiv.innerHTML = `
+        <div class="flex justify-around items-center text-center">
+            <div class="p-4 bg-gray-800 rounded-lg w-2/5">
+                <p class="font-bold text-blue-500">Người chơi 1</p>
+                <p>Điểm: <span class="font-bold text-2xl">${p1Score}</span></p>
+                <p class="text-sm">Mạng còn lại: <span class="font-bold">${p1Lives}</span></p>
+            </div>
+            <div class="text-2xl font-bold px-2">VS</div>
+            <div class="p-4 bg-gray-800 rounded-lg w-2/5">
+                <p class="font-bold text-red-500">Người chơi 2</p>
+                <p>Điểm: <span class="font-bold text-2xl">${p2Score}</span></p>
+                <p class="text-sm">Mạng còn lại: <span class="font-bold">${p2Lives}</span></p>
+            </div>
+        </div>
+    `;
+}
         
         function init() {
             stopGame();
@@ -1394,6 +1425,7 @@ if (b2HasGai) {
             updateLivesUI(); 
             updatePlayerStatusUI();
             updateCooldownUI();
+			 updateScoreUI();
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             getAllPlayerBalls().forEach(ball => ball.draw());
