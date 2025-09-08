@@ -162,9 +162,19 @@
                 justify-content: center;
             }
              #ban-pick-grid-container {
-                max-height: 40vh;
+                /* Height of 3 items (approx 65px) + 2 gaps (16px) */
+                max-height: 230px; 
                 overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: #4a5568 #1a1a1d;
              }
+            #ban-pick-grid-container::-webkit-scrollbar { width: 8px; }
+            #ban-pick-grid-container::-webkit-scrollbar-track { background: #1a1a1d; }
+            #ban-pick-grid-container::-webkit-scrollbar-thumb {
+                background-color: #4a5568;
+                border-radius: 4px;
+                border: 2px solid #1a1a1d;
+            }
         }
     </style>
 </head>
@@ -220,8 +230,8 @@
                     <!-- Center Grid -->
                     <div class="w-1/2 px-4 flex flex-col">
                         <div id="ban-pick-header-container" class="text-center mb-4">
-                            <h2 id="ban-pick-title" class="text-3xl font-bold text-gray-100"></h2>
-                             <div id="ban-pick-info-mobile" class="hidden md:hidden p-2 bg-gray-900 rounded-lg"></div>
+                            <h2 id="ban-pick-title" class="text-2xl md:text-3xl font-bold text-gray-100"></h2>
+                             <div id="ban-pick-info-mobile" class="hidden md:hidden p-2 bg-gray-900 rounded-lg text-left"></div>
                         </div>
                         <div id="ban-pick-grid-container" class="flex-grow">
                              <div id="ban-pick-grid" class="grid grid-cols-4 gap-4"></div>
@@ -263,7 +273,7 @@
         const ICONS = {
             weapon: `<svg class="h-8 w-8 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17 21l-5-3.5L7 21l1-7.5L3 9l6.5-.5L12 2z"/></svg>`,
             health: `<svg class="h-8 w-8 text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`,
-            bomb: `<svg class="h-8 w-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-7h2v2h-2v-2zm0-4h2v3h-2V9z"/></svg>`,
+            bomb: `<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="14" r="8" fill="#4a5568"/><rect x="10" y="3" width="4" height="4" rx="1" fill="#2d3748"/><circle cx="12" cy="2" r="1.5" fill="#ef4444"/></svg>`,
             shield: `<svg class="h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`,
             grow: `<svg class="h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 6h12l-6-6z"/></svg>`,
             shrink: `<svg class="h-8 w-8 text-orange-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l6-6H6l6 6z"/></svg>`,
@@ -301,21 +311,21 @@
             weapon: { name: 'Vũ Khí Gai', baseRespawn: 10000, type: 'neutral', desc: 'Nhận một lớp gai tồn tại trong 5s. Va chạm với đối thủ sẽ gây sát thương và phá vỡ gai. Gai cũng sẽ vỡ khi chặn các sát thương khác.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '1 lần tấn công/phòng thủ' } }, 
             health: { name: 'Hồi Máu', baseRespawn: 5000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
             bomb: { name: 'Bom', baseRespawn: 5000, type: 'debuff', desc: 'Đặt một quả bom trên bản đồ. Đối thủ của người nhặt sẽ bị mất mạng nếu chạm phải.', stats: {} },
-            shield: { name: 'Khiên', baseRespawn: 10000, type: 'buff', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Hiệu ứng': 'Chặn 1 đòn' } }, 
+            shield: { name: 'Khiên', baseRespawn: 10000, type: 'neutral', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Hiệu ứng': 'Chặn 1 đòn' } }, 
             reflectiveCloak: { name: 'Áo Choàng Phản', baseRespawn: 15000, type: 'buff', desc: 'Tồn tại 10s hoặc đến khi bị tấn công, sẽ phản lại sát thương cho đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '1 lần phản đòn'} },
             snare: { name: 'Trói Chân', baseRespawn: 15000, type: 'debuff', desc: 'Đặt một chiếc bẫy. Đối thủ của người nhặt sẽ bị trói chân trong 3 giây nếu dẫm phải.', stats: { 'Thời gian trói': '3s'} },
-            grow: { name: 'Phóng To', baseRespawn: 12000, type: 'debuff', desc: 'Phóng to kích thước của đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '+25% Kích thước' } }, 
-            shrink: { name: 'Thu Nhỏ', baseRespawn: 12000, type: 'buff', desc: 'Thu nhỏ kích thước bản thân.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '-25% Kích thước' } }, 
-            speedBoost: { name: 'Tăng Tốc', baseRespawn: 12000, type: 'buff', desc: 'Tăng mạnh tốc độ di chuyển.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '+50% Tốc độ' } }, 
-            slow: { name: 'Làm Chậm', baseRespawn: 12000, type: 'debuff', desc: 'Giảm tốc độ di chuyển của đối thủ.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '-50% Tốc độ'}},
+            grow: { name: 'Phóng To', baseRespawn: 12000, type: 'debuff', desc: 'Phóng to kích thước của đối thủ.', stats: { 'Thời gian': '10s', 'Kích thước': '+25%' } }, 
+            shrink: { name: 'Thu Nhỏ', baseRespawn: 12000, type: 'buff', desc: 'Thu nhỏ kích thước bản thân.', stats: { 'Thời gian': '10s', 'Kích thước': '-25%' } }, 
+            speedBoost: { name: 'Tăng Tốc', baseRespawn: 12000, type: 'buff', desc: 'Tăng mạnh tốc độ di chuyển.', stats: { 'Thời gian': '5s', 'Tốc độ': '+50%' } }, 
+            slow: { name: 'Làm Chậm', baseRespawn: 12000, type: 'debuff', desc: 'Giảm tốc độ di chuyển của đối thủ.', stats: { 'Thời gian': '5s', 'Tốc độ': '-50%'}},
             rain: { name: 'Mưa bom', baseRespawn: 10000, type: 'debuff', desc: 'Tạo một vùng mưa gây sát thương lên đối thủ.', stats: { 'Thời gian': '5s', 'Sát thương': '3 lần' } }, 
             invisibility: { name: 'Tàng Hình', baseRespawn: 15000, type: 'buff', desc: 'Trở nên bất tử, miễn nhiễm sát thương.', stats: { 'Thời gian': '3s' } },
-            wallSpikes: { name: 'Tường Gai', baseRespawn: 15000, type: 'map_effect', desc: 'Tạo gai trên một cạnh tường ngẫu nhiên. Người nhặt sẽ luôn miễn nhiễm.', stats: { 'Độ bền': '1 lần chạm (đối thủ)' } }, 
+            wallSpikes: { name: 'Tường Gai', baseRespawn: 15000, type: 'map_effect', desc: 'Tạo gai trên một cạnh tường ngẫu nhiên. Người nhặt sẽ luôn miễn nhiễm.', stats: { 'Độ bền': '1 lần chạm' } }, 
             diagonalWall: { name: 'Tường Chéo', baseRespawn: 20000, type: 'map_effect', desc: 'Tạo một bức tường chéo ở góc.', stats: { 'Độ bền': '5 lần chạm' } }, 
             clone: { name: 'Phân Thân', baseRespawn: 15000, type: 'buff', desc: 'Tạo ra một bản sao của bản thân. Các bản thể chia sẻ chung trạng thái.', stats: { 'Tối đa': '3 bản thể' } },
             cannotEat: { name: 'Cấm Ăn', baseRespawn: 10000, type: 'debuff', desc: 'Khiến đối thủ không thể nhặt vật phẩm.', stats: { 'Thời gian': '5s' } },
             laserGun: { name: 'Súng Laze', baseRespawn: 20000, type: 'debuff', desc: 'Bắn một tia laze bật tường gây sát thương cho đối thủ.', stats: { 'Thời gian': '2s', 'Bật tường': '5 lần' }},
-            homingMissile: { name: 'Tên Lửa', baseRespawn: 15000, type: 'debuff', desc: 'Bắn một tên lửa bám đuổi đối thủ. Nổ khi va chạm tường.', stats: {'Thời gian tồn tại': '10s'}}
+            homingMissile: { name: 'Tên Lửa', baseRespawn: 15000, type: 'debuff', desc: 'Bắn một tên lửa bám đuổi đối thủ. Nổ khi va chạm tường.', stats: {'Tồn tại': '10s'}}
         };
 
         const banPickSequence = [
@@ -356,7 +366,7 @@
                 if (currentDir.y < 0) { let t = -currentPos.y / currentDir.y; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: currentPos.x + t * currentDir.x, y: 0}; reflectionDir = {x: currentDir.x, y: -currentDir.y}; } }
                 if (currentDir.y > 0) { let t = (canvas.height - currentPos.y) / currentDir.y; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: currentPos.x + t * currentDir.x, y: canvas.height}; reflectionDir = {x: currentDir.x, y: -currentDir.y}; } }
                 if (currentDir.x < 0) { let t = -currentPos.x / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: 0, y: currentPos.y + t * currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
-                if (currentDir.x > 0) { let t = (canvas.width - currentPos.x) / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: canvas.width, y: currentPos.y + currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
+                if (currentDir.x > 0) { let t = (canvas.width - currentPos.x) / currentDir.x; if (t > 1e-5 && t < minT) { minT = t; endPoint = {x: canvas.width, y: currentPos.y + t * currentDir.y}; reflectionDir = {x: -currentDir.x, y: currentDir.y}; } }
                 if (endPoint) { this.segments.push({ p1: currentPos, p2: endPoint }); this.calculatePath(endPoint, reflectionDir); }
             }
             draw() { const lifeLeft = (this.endTime - Date.now()) / 2000; if (lifeLeft < 0) return; ctx.strokeStyle = this.owner.color; ctx.lineWidth = 4; ctx.shadowBlur = 10; ctx.shadowColor = this.owner.color; ctx.globalAlpha = lifeLeft; this.segments.forEach(seg => { ctx.beginPath(); ctx.moveTo(seg.p1.x, seg.p1.y); ctx.lineTo(seg.p2.x, seg.p2.y); ctx.stroke(); }); ctx.globalAlpha = 1; ctx.shadowBlur = 0; }
@@ -492,7 +502,7 @@
         }
 
         class PlayerController {
-            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null }; this.cannotEatUntil = null; this.snaredUntil = null;}
+            constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null, snare: null }; this.cannotEatUntil = null; this.snaredUntil = null;}
             
             takeDamage(ball, attacker = null, isReflectedDamage = false) {
                 const now = Date.now();
@@ -548,7 +558,9 @@
                     case 'cannotEat': this.cannotEatUntil = Date.now() + duration; break;
                     case 'snare': this.snaredUntil = Date.now() + duration; break;
                     case 'reflectiveCloak':
-                        this.armor.push('reflectiveCloak');
+                        if (!this.armor.includes('reflectiveCloak')) {
+                            this.armor.push('reflectiveCloak');
+                        }
                         this.effectTimeouts.reflectiveCloak = setTimeout(() => {
                            const index = this.armor.indexOf('reflectiveCloak');
                            if(index > -1) this.armor.splice(index, 1);
@@ -581,7 +593,22 @@
         const ITEM_DRAW_LOGIC = {
             weapon: (item) => { ctx.fillStyle = '#f6e05e'; ctx.strokeStyle = '#b7791f'; for (let i = 0; i < 8; i++) { let angle = (i / 8) * (Math.PI * 2); let outerRadius = item.radius * 1.4; ctx.beginPath(); ctx.moveTo(item.x, item.y); ctx.lineTo(item.x + Math.cos(angle) * outerRadius, item.y + Math.sin(angle) * outerRadius); ctx.stroke(); } ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.8, 0, Math.PI * 2); ctx.fill(); },
             health: (item) => { ctx.fillStyle = '#48bb78'; ctx.strokeStyle = '#2f855a'; const barWidth = item.radius * 1.5; const barHeight = item.radius * 0.5; ctx.fillRect(item.x - barWidth / 2, item.y - barHeight / 2, barWidth, barHeight); ctx.strokeRect(item.x - barWidth / 2, item.y - barHeight / 2, barWidth, barHeight); ctx.fillRect(item.x - barHeight / 2, item.y - barWidth / 2, barHeight, barWidth); ctx.strokeRect(item.x - barHeight / 2, item.y - barWidth / 2, barHeight, barWidth); },
-            bomb: (item) => { ctx.fillStyle = '#4a5568'; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#f56565'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.5, 0, Math.PI * 2); ctx.fill(); },
+            bomb: (item) => {
+                ctx.fillStyle = '#4a5568';
+                ctx.strokeStyle = '#1a202c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#2d3748';
+                ctx.fillRect(item.x - item.radius * 0.2, item.y - item.radius * 1.2, item.radius * 0.4, item.radius * 0.4);
+                const pulse = Math.abs(Math.sin(Date.now() / 150));
+                ctx.fillStyle = `rgba(255, ${150 + pulse * 105}, 0, ${0.8 + pulse * 0.2})`;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y - item.radius * 1.2, 3, 0, Math.PI * 2);
+                ctx.fill();
+            },
             shield: (item) => { ctx.fillStyle = '#38bdf8'; ctx.strokeStyle = '#0284c7'; ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius); ctx.lineTo(item.x - item.radius, item.y - item.radius * 0.3); ctx.lineTo(item.x - item.radius, item.y + item.radius * 0.5); ctx.arc(item.x, item.y + item.radius * 0.5, item.radius, Math.PI, 0, false); ctx.lineTo(item.x + item.radius, item.y - item.radius * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke(); },
             grow: (item) => { const isGrow = true; ctx.fillStyle = isGrow ? '#63b3ed' : '#f6ad55'; ctx.strokeStyle = isGrow ? '#3182ce' : '#dd6b20'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'white'; const arrowHeight = item.radius * 0.5; const arrowWidth = item.radius * 0.6; const direction = isGrow ? -1 : 1; ctx.beginPath(); ctx.moveTo(item.x - arrowWidth, item.y + direction * arrowHeight); ctx.lineTo(item.x, item.y - direction * arrowHeight); ctx.lineTo(item.x + arrowWidth, item.y + direction * arrowHeight); ctx.closePath(); ctx.fill(); },
             shrink: (item) => { const isGrow = false; ctx.fillStyle = isGrow ? '#63b3ed' : '#f6ad55'; ctx.strokeStyle = isGrow ? '#3182ce' : '#dd6b20'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'white'; const arrowHeight = item.radius * 0.5; const arrowWidth = item.radius * 0.6; const direction = isGrow ? -1 : 1; ctx.beginPath(); ctx.moveTo(item.x - arrowWidth, item.y + direction * arrowHeight); ctx.lineTo(item.x, item.y - direction * arrowHeight); ctx.lineTo(item.x + arrowWidth, item.y + direction * arrowHeight); ctx.closePath(); ctx.fill(); },
@@ -597,7 +624,25 @@
             homingMissile: (item) => { ctx.fillStyle = ITEM_COLORS.homingMissile; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.moveTo(item.x, item.y - item.radius); ctx.lineTo(item.x - item.radius, item.y + item.radius * 0.5); ctx.lineTo(item.x + item.radius, item.y + item.radius * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke(); },
             reflectiveCloak: (item) => { ctx.fillStyle = ITEM_COLORS.reflectiveCloak; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); },
             snare: (item) => { ctx.fillStyle = ITEM_COLORS.snare; ctx.strokeStyle = '#1a202c'; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); },
-            snare_trap: (item) => { ctx.strokeStyle = ITEM_COLORS.snare; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.5, 0, Math.PI * 2); ctx.stroke(); }
+            snare_trap: (item) => { ctx.strokeStyle = ITEM_COLORS.snare; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(item.x, item.y, item.radius * 0.5, 0, Math.PI * 2); ctx.stroke(); },
+            bomb_trap: (item) => {
+                ctx.fillStyle = '#4a5568';
+                ctx.strokeStyle = '#1a202c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.fillStyle = '#2d3748';
+                ctx.fillRect(item.x - item.radius * 0.2, item.y - item.radius * 1.2, item.radius * 0.4, item.radius * 0.4);
+
+                const pulse = Math.abs(Math.sin(Date.now() / 150));
+                ctx.fillStyle = `rgba(255, ${150 + pulse * 105}, 0, ${0.8 + pulse * 0.2})`;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y - item.radius * 1.2, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
         };
         
         function updateLivesUI() {
@@ -733,12 +778,17 @@
 
         const ITEM_PICKUP_LOGIC = {
             weapon: (ball) => { 
-                clearTimeout(ball.controller.effectTimeouts.weapon);
-                ball.controller.armor.push('weapon'); 
-                ball.controller.effectTimeouts.weapon = setTimeout(() => {
-                    const index = ball.controller.armor.indexOf('weapon');
+                const player = ball.controller;
+                clearTimeout(player.effectTimeouts.weapon); // Luôn làm mới thời gian
+
+                if (!player.armor.includes('weapon')) {
+                    player.armor.push('weapon'); // Chỉ thêm nếu chưa có
+                }
+                
+                player.effectTimeouts.weapon = setTimeout(() => {
+                    const index = player.armor.indexOf('weapon');
                     if (index > -1) {
-                        ball.controller.armor.splice(index, 1);
+                        player.armor.splice(index, 1);
                         updateLivesUI();
                     }
                 }, 5000); // 5 seconds
@@ -746,8 +796,42 @@
                 return true; 
             },
             health: (ball) => { if (ball.controller.lives < 5) { ball.controller.lives++; updateLivesUI(); return true; } return false; },
-            bomb: (ball, itemData) => { const owner = itemData.owner; const isOpponent = ball.controller !== owner; if (owner === 'neutral' || isOpponent) { const bombPos = { x: itemData.item.x, y: itemData.item.y }; triggerEffect(bombPos.x, bombPos.y, ITEM_COLORS.bomb, { count: 40, speed: 7, life: 60 }); ball.controller.takeDamage(ball, owner === 'neutral' ? null : owner); return true; } return false; },
-            shield: (ball) => { ball.controller.armor.push('shield'); updateLivesUI(); return true; },
+            bomb: (ball) => { 
+                const radius = canvas.width / 40; 
+                const pos = getRandomPosition(radius); 
+                // Tạo một bẫy bom tạm thời trên bản đồ
+                items['bomb_trap'] = { 
+                    item: new Item(pos.x, pos.y, radius, 'bomb_trap', ball.controller, 7000) // 7 giây tồn tại
+                };
+                return true; 
+            },
+            bomb_trap: (ball, itemData) => {
+                const trapOwner = itemData.item.owner;
+                const steppingPlayer = ball.controller;
+
+                let trigger = false;
+                if (trapOwner === 'neutral') { // Bom chung
+                    trigger = true;
+                } else if (steppingPlayer !== trapOwner) { // Bom của đối thủ
+                    trigger = true;
+                }
+
+                if (trigger) {
+                    const bombPos = { x: itemData.item.x, y: itemData.item.y };
+                    triggerEffect(bombPos.x, bombPos.y, ITEM_COLORS.bomb, { count: 40, speed: 7, life: 60 });
+                    steppingPlayer.takeDamage(ball, trapOwner === 'neutral' ? null : trapOwner);
+                    return true; // Kích hoạt và xóa bom
+                }
+                return false; // Người đặt dẫm phải, không có gì xảy ra
+            },
+            shield: (ball) => { 
+                if (ball.controller.armor.includes('shield')) {
+                    return false; // Đã có khiên, không nhặt thêm
+                }
+                ball.controller.armor.push('shield'); 
+                updateLivesUI(); 
+                return true; 
+            },
             reflectiveCloak: (ball) => { ball.controller.applyEffect('reflectiveCloak', 10000); return true; },
             snare: (ball) => { 
                 const opponent = players.find(p => p !== ball.controller);
@@ -759,7 +843,7 @@
                 return true; 
             },
             snare_trap: (ball, itemData) => {
-                const trapOwner = itemData.owner;
+                const trapOwner = itemData.item.owner;
                 const steppingPlayer = ball.controller;
 
                 let trigger = false;
@@ -795,7 +879,10 @@
         function handleItemPickup(ball, type) { 
             const itemData = items[type]; 
             if (!itemData || !itemData.item || (ball.controller.cannotEatUntil && Date.now() < ball.controller.cannotEatUntil)) return; 
-            const itemOwner = itemData.owner; 
+            
+            // Lấy chủ sở hữu từ item object, vì itemData.owner có thể là người chơi controller
+            const itemOwner = itemData.item.owner; 
+
             const configType = ITEM_CONFIG[type] ? ITEM_CONFIG[type].type : 'trap';
             if (configType === 'buff' && itemOwner !== 'neutral' && itemOwner !== ball.controller) return; 
             if ((configType === 'debuff' || configType === 'map_effect') && itemOwner !== 'neutral' && itemOwner !== ball.controller) return; 
@@ -811,7 +898,9 @@
                     itemData.cooldownEndTime = Date.now() + respawnTime; 
                     itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
                 }
-                if ((type === 'bomb' || type === 'snare_trap') && ball.controller.lives <= 0) triggerDeath(ball.controller); 
+                if ((type === 'bomb_trap' || type === 'snare_trap') && ball.controller.lives <= 0) {
+                    triggerDeath(ball.controller);
+                }
             } 
             updatePlayerStatusUI(); 
         }
@@ -1030,7 +1119,7 @@
             sortedItems.forEach(type => {
                 const itemDiv = document.createElement('div');
                 itemDiv.id = `bp-item-${type}`;
-                itemDiv.className = 'ban-pick-item selectable';
+                itemDiv.className = 'ban-pick-item selectable aspect-square';
                 let typeIcon = '';
                 if(ITEM_CONFIG[type].type === 'buff') typeIcon = `<div class="type-icon text-green-400">▲</div>`
                 else if (ITEM_CONFIG[type].type === 'debuff') typeIcon = `<div class="type-icon text-red-400">▼</div>`
@@ -1131,11 +1220,36 @@
                     if(slot) slot.classList.add('pulsing-slot');
                 }
             }
-             // Handle mobile info display
             const isTouchDevice = 'ontouchstart' in window;
             if (isTouchDevice && banPickState.selectionCandidate) {
                 const item = ITEM_CONFIG[banPickState.selectionCandidate];
-                mobileInfo.innerHTML = `<p class="font-bold text-lg">${item.name}</p><p class="text-sm text-gray-400">${item.desc}</p>`;
+                
+                let statsParts = [];
+                statsParts.push(`⏳ ${item.baseRespawn / 1000}s`);
+
+                if (item.stats) {
+                    for (const [key, value] of Object.entries(item.stats)) {
+                        let icon = '🔹'; // Default icon
+                        if (key.toLowerCase().includes('thời gian')) icon = '⏱️';
+                        if (key.toLowerCase().includes('hiệu ứng')) icon = '✨';
+                        if (key.toLowerCase().includes('sát thương')) icon = '💥';
+                        if (key.toLowerCase().includes('hồi phục')) icon = '💚';
+                        if (key.toLowerCase().includes('kích thước')) icon = '📏';
+                        if (key.toLowerCase().includes('tốc độ')) icon = '⚡️';
+                        if (key.toLowerCase().includes('độ bền')) icon = '🛠️';
+                        
+                        statsParts.push(`${icon} ${value}`);
+                    }
+                }
+                
+                const statsHTML = `<div class="mt-2 pt-2 border-t border-gray-700 text-sm text-gray-300">${statsParts.join(' • ')}</div>`;
+                
+                mobileInfo.innerHTML = `
+                    <p class="font-bold text-lg">${item.name}</p>
+                    <p class="text-xs text-gray-400 mb-1">${item.desc}</p>
+                    ${statsHTML}
+                `;
+
                 mobileInfo.classList.remove('hidden');
                 title.classList.add('hidden');
             } else {
@@ -1199,7 +1313,7 @@
             }
             
             const activeItemTypes = {};
-            ['health', 'weapon'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
+            ['health', 'weapon', 'shield'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
             banPickState.p1Picks.forEach(type => activeItemTypes[type] = { owner: 'p1' });
             banPickState.p2Picks.forEach(type => activeItemTypes[type] = { owner: 'p2' });
             commonItems.forEach(type => activeItemTypes[type] = { owner: 'neutral' });
@@ -1288,6 +1402,4 @@
 
 </body>
 </html>
-
-
 
