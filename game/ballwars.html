@@ -275,7 +275,7 @@
         const restartButton = document.getElementById('restart-button');
         const gameUI = document.getElementById('game-ui');
         const tooltip = document.getElementById('tooltip');
-
+let wakeLockSentinel = null; 
         const ICONS = {
             weapon: `<svg class="h-8 w-8 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17 21l-5-3.5L7 21l1-7.5L3 9l6.5-.5L12 2z"/></svg>`,
             health: `<svg class="h-8 w-8 text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`,
@@ -333,7 +333,38 @@
             laserGun: { name: 'Súng Laze', baseRespawn: 20000, type: 'debuff', desc: 'Bắn một tia laze bật tường gây sát thương cho đối thủ.', stats: { 'Thời gian': '2s', 'Bật tường': '5 lần' }},
             homingMissile: { name: 'Tên Lửa', baseRespawn: 15000, type: 'debuff', desc: 'Bắn một tên lửa bám đuổi đối thủ. Nổ khi va chạm tường.', stats: {'Tồn tại': '10s'}}
         };
+// ... sau hằng số ITEM_CONFIG
 
+// THÊM CẢ KHỐI CODE NÀY VÀO
+const requestWakeLock = async () => {
+    // Kiểm tra xem trình duyệt có hỗ trợ Wake Lock API không
+    if ('wakeLock' in navigator) {
+        try {
+            // Yêu cầu khóa màn hình
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            console.log('Screen Wake Lock đã được kích hoạt.');
+
+            // Lắng nghe sự kiện khi khóa bị hủy bởi hệ thống (ví dụ: pin yếu)
+            wakeLockSentinel.addEventListener('release', () => {
+                console.log('Screen Wake Lock đã bị hủy.');
+                wakeLockSentinel = null;
+            });
+        } catch (err) {
+            console.error(`Không thể kích hoạt Wake Lock: ${err.name}, ${err.message}`);
+        }
+    } else {
+        console.warn('Trình duyệt này không hỗ trợ Screen Wake Lock API.');
+    }
+};
+
+const releaseWakeLock = async () => {
+    if (wakeLockSentinel) {
+        await wakeLockSentinel.release();
+        wakeLockSentinel = null;
+    }
+};
+// KẾT THÚC KHỐI CODE CẦN THÊM
+					 
         const banPickSequence = [
             { phase: 'ban', player: 1 }, { phase: 'ban', player: 2 }, 
             { phase: 'pick', player: 1 }, { phase: 'pick', player: 2 }, { phase: 'pick', player: 1 }, 
@@ -1070,7 +1101,8 @@ if (b2HasGai) {
         }
 
         // Hàm endGame đã được cập nhật
-function endGame(isTimeUp = false, winnerPlayer = null) { 
+function endGame(isTimeUp = false, winnerPlayer = null) {
+	requestWakeLock();
     stopGame();
     gameOverScreen.classList.remove('hidden'); 
     document.getElementById('top-ui').classList.add('invisible');
@@ -1132,6 +1164,7 @@ function endGame(isTimeUp = false, winnerPlayer = null) {
 }
         
         function init() {
+			requestWakeLock();
             stopGame();
             setCanvasSize();
             players = [];
@@ -1432,6 +1465,7 @@ function endGame(isTimeUp = false, winnerPlayer = null) {
         }
 
         function startGame() {
+			requestWakeLock();
             gameEndTime = Date.now() + TOTAL_GAME_TIME;
             for (const type in items) {
                 const timeoutId = setTimeout(() => {
@@ -1446,7 +1480,12 @@ function endGame(isTimeUp = false, winnerPlayer = null) {
         window.addEventListener('resize', init);
         startButton.addEventListener('click', showBanPickPhase);
         restartButton.addEventListener('click', init);
-        
+        document.addEventListener('visibilitychange', async () => {
+  // Nếu người dùng quay lại tab và game đang chạy (animationFrameId tồn tại)
+  if (document.visibilityState === 'visible' && animationFrameId) {
+    await requestWakeLock();
+  }
+});
         init();
     </script>
 
