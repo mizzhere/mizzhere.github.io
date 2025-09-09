@@ -455,11 +455,11 @@
                     for(let i = 1; i < this.controller.trail.length; i++) {
                         const p = this.controller.trail[i];
                         const progress = i / this.controller.trail.length;
-                        ctx.globalAlpha = progress * 0.6;
+                        ctx.globalAlpha = progress * 0.4; // Made it more transparent
                         ctx.lineTo(p.x, p.y);
                     }
                     ctx.strokeStyle = ITEM_COLORS.speedBoost;
-                    ctx.lineWidth = this.radius * 0.8;
+                    ctx.lineWidth = this.radius * 0.6; // Made it thinner
                     ctx.lineCap = 'round';
                     ctx.stroke();
                     ctx.globalAlpha = 1;
@@ -819,7 +819,7 @@
                 }
                 ball.update();
                 // Update speed trail
-                if (player.speedMultiplier > 1) { player.trail.push({ x: ball.x, y: ball.y }); if (player.trail.length > 15) { player.trail.shift(); } } 
+                if (player.speedMultiplier > 1) { player.trail.push({ x: ball.x, y: ball.y }); if (player.trail.length > 10) { player.trail.shift(); } } // Reduced trail length
                 else if (player.trail.length > 0) { player.trail.shift(); }
             });
             
@@ -897,7 +897,92 @@
         function showTooltip(event, type) { const item = ITEM_CONFIG[type]; let statsHTML = `<p class="text-gray-400 text-sm mt-1">Hồi chiêu: ${item.baseRespawn / 1000}s</p>`; if (item.stats && Object.keys(item.stats).length > 0) { statsHTML += `<div class="mt-2 border-t border-gray-600 pt-2">`; for (const [key, value] of Object.entries(item.stats)) { statsHTML += `<p class="text-sm"><span class="font-semibold text-gray-300">${key}:</span> ${value}</p>`; } statsHTML += `</div>`; } tooltip.innerHTML = `<h4 class="font-bold mb-1">${item.name}</h4><p class="text-gray-400">${item.desc}</p>${statsHTML}`; tooltip.style.opacity = '1'; const tooltipRect = tooltip.getBoundingClientRect(); const margin = 15; let left = event.clientX + margin; let top = event.clientY + margin; if (left + tooltipRect.width > window.innerWidth) { left = event.clientX - tooltipRect.width - margin; } if (top + tooltipRect.height > window.innerHeight) { top = event.clientY - tooltipRect.height - margin; } if (left < 0) left = margin; if (top < 0) top = margin; tooltip.style.left = `${left}px`; tooltip.style.top = `${top}px`; }
         function hideTooltip() { tooltip.style.opacity = '0'; }
         
-        function updateBanPickUI() { const title = document.getElementById('ban-pick-title'); const mobileInfo = document.getElementById('ban-pick-info-mobile'); const p1PicksDiv = document.getElementById('p1-picks'); const p2PicksDiv = document.getElementById('p2-picks'); const p1BansDiv = document.getElementById('p1-bans'); const p2BansDiv = document.getElementById('p2-bans'); document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot')); document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400')); const renderSlots = (container, items, maxSlots, isBan = false) => { container.innerHTML = ''; for (let i = 0; i < maxSlots; i++) { let content = ''; if (items[i]) { content = ICONS[items[i]].replace('h-8 w-8', 'h-full w-full'); if (isBan) { content += '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">/</div>'; } } const banClass = isBan ? 'p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative' : 'p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center'; container.innerHTML += `<div class="${banClass}">${content}</div>`; } }; renderSlots(p1BansDiv, banPickState.p1Bans, 2, true); renderSlots(p2BansDiv, banPickState.p2Bans, 2, true); renderSlots(p1PicksDiv, banPickState.p1Picks, 3); renderSlots(p2PicksDiv, banPickState.p2Picks, 3); const currentStep = banPickSequence[banPickState.currentIndex]; if (currentStep) { const isP1 = currentStep.player === 1; const phaseText = currentStep.phase === 'ban' ? 'Cấm' : 'Chọn'; title.className = 'text-2xl md:text-3xl font-bold'; title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500'); title.textContent = `Người chơi ${currentStep.player} - ${phaseText}`; const container = currentStep.phase === 'ban' ? (isP1 ? p1BansDiv : p2BansDiv) : (isP1 ? p1PicksDiv : p2PicksDiv); const itemsList = currentStep.phase === 'ban' ? (isP1 ? banPickState.p1Bans : banPickState.p2Bans) : (isP1 ? banPickState.p1Picks : banPickState.p2Picks); const maxItems = currentStep.phase === 'ban' ? 2 : 3; if (itemsList.length < maxItems) { const slot = container.children[itemsList.length]; if(slot) slot.classList.add('pulsing-slot'); } } const banned = [...banPickState.p1Bans, ...banPickState.p2Bans]; document.querySelectorAll('.ban-pick-item').forEach(el => { const type = el.id.replace('bp-item-', ''); el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable', 'opacity-50'); if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400'); if (banned.includes(type)) el.classList.add('banned'); else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1'); else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2'); else el.classList.add('selectable'); }); }
+        function updateBanPickUI() {
+            const title = document.getElementById('ban-pick-title');
+            const mobileInfo = document.getElementById('ban-pick-info-mobile');
+            const p1PicksDiv = document.getElementById('p1-picks');
+            const p2PicksDiv = document.getElementById('p2-picks');
+            const p1BansDiv = document.getElementById('p1-bans');
+            const p2BansDiv = document.getElementById('p2-bans');
+            document.querySelectorAll('.pulsing-slot').forEach(el => el.classList.remove('pulsing-slot'));
+            document.querySelectorAll('.border-yellow-400').forEach(el => el.classList.remove('border-yellow-400'));
+            
+            const renderSlots = (container, items, maxSlots, isBan = false) => {
+                container.innerHTML = '';
+                for (let i = 0; i < maxSlots; i++) {
+                    let content = '';
+                    if (items[i]) {
+                        content = ICONS[items[i]].replace('h-8 w-8', 'h-full w-full');
+                        if (isBan) {
+                            content += '<div class="absolute inset-0 bg-red-800 bg-opacity-70 flex items-center justify-center text-white text-3xl font-bold">/</div>';
+                        }
+                    }
+                    const banClass = isBan ? 'p-1 aspect-square bg-gray-900 border-2 border-gray-700 rounded flex justify-center items-center relative' : 'p-1 aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded flex justify-center items-center';
+                    container.innerHTML += `<div class="${banClass}">${content}</div>`;
+                }
+            };
+            
+            renderSlots(p1BansDiv, banPickState.p1Bans, 2, true);
+            renderSlots(p2BansDiv, banPickState.p2Bans, 2, true);
+            renderSlots(p1PicksDiv, banPickState.p1Picks, 3);
+            renderSlots(p2PicksDiv, banPickState.p2Picks, 3);
+            
+            const currentStep = banPickSequence[banPickState.currentIndex];
+            if (currentStep) {
+                const isP1 = currentStep.player === 1;
+                const phaseText = currentStep.phase === 'ban' ? 'Cấm' : 'Chọn';
+                title.className = 'text-2xl md:text-3xl font-bold';
+                title.classList.add(isP1 ? 'text-blue-500' : 'text-red-500');
+                title.textContent = `Người chơi ${currentStep.player} - ${phaseText}`;
+                
+                const container = currentStep.phase === 'ban' ? (isP1 ? p1BansDiv : p2BansDiv) : (isP1 ? p1PicksDiv : p2PicksDiv);
+                const itemsList = currentStep.phase === 'ban' ? (isP1 ? banPickState.p1Bans : banPickState.p2Bans) : (isP1 ? banPickState.p1Picks : banPickState.p2Picks);
+                const maxItems = currentStep.phase === 'ban' ? 2 : 3;
+                if (itemsList.length < maxItems) {
+                    const slot = container.children[itemsList.length];
+                    if(slot) slot.classList.add('pulsing-slot');
+                }
+            }
+            
+            // --- LOGIC HIỂN THỊ INFO TRÊN DI ĐỘNG ĐÃ KHÔI PHỤC ---
+            const isTouchDevice = 'ontouchstart' in window;
+            if (isTouchDevice && banPickState.selectionCandidate) {
+                const item = ITEM_CONFIG[banPickState.selectionCandidate];
+                let statsParts = [];
+                statsParts.push(`⏳ ${item.baseRespawn / 1000}s`);
+                if (item.stats) {
+                    for (const [key, value] of Object.entries(item.stats)) {
+                        let icon = '🔹';
+                        if (key.toLowerCase().includes('thời gian')) icon = '⏱️';
+                        if (key.toLowerCase().includes('hiệu ứng')) icon = '✨';
+                        statsParts.push(`${icon} ${value}`);
+                    }
+                }
+                const statsHTML = `<div class="mt-1 pt-1 border-t border-gray-700 text-xs text-gray-300">${statsParts.join(' • ')}</div>`;
+                mobileInfo.innerHTML = `
+                    <p class="font-bold text-lg">${item.name}</p>
+                    <p class="text-xs text-gray-400 mb-1">${item.desc}</p>
+                    ${statsHTML}
+                `;
+                mobileInfo.classList.remove('hidden');
+                title.classList.add('hidden');
+            } else {
+                mobileInfo.classList.add('hidden');
+                title.classList.remove('hidden');
+            }
+            // --- KẾT THÚC LOGIC INFO TRÊN DI ĐỘNG ---
+
+            const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
+            document.querySelectorAll('.ban-pick-item').forEach(el => {
+                const type = el.id.replace('bp-item-', '');
+                el.classList.remove('banned', 'picked-p1', 'picked-p2', 'selectable', 'opacity-50');
+                if(banPickState.selectionCandidate === type) el.classList.add('border-yellow-400');
+                if (banned.includes(type)) el.classList.add('banned');
+                else if (banPickState.p1Picks.includes(type)) el.classList.add('picked-p1');
+                else if (banPickState.p2Picks.includes(type)) el.classList.add('picked-p2');
+                else el.classList.add('selectable');
+            });
+        }
         
         function handleBanPickSelection(type) {
             const currentStep = banPickSequence[banPickState.currentIndex]; if (!currentStep) return; const banned = [...banPickState.p1Bans, ...banPickState.p2Bans]; const picked = [...banPickState.p1Picks, ...banPickState.p2Picks]; if (banned.includes(type) || picked.includes(type)) return;
@@ -938,6 +1023,7 @@
 
         window.addEventListener('resize', init);
         startButton.addEventListener('click', async () => {
+            // --- KHỞI TẠO ÂM THANH KHI CLICK ---
             if (typeof Tone !== 'undefined' && !soundManager.isInitialized) {
                 try {
                     await Tone.start();
@@ -958,4 +1044,3 @@
 
 </body>
 </html>
-
