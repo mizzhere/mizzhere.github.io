@@ -620,7 +620,7 @@
             const p1_effects = document.getElementById('player1-active-effects');
             const p2_effects = document.getElementById('player2-active-effects');
 
-            const smallIcon = (svg) => svg.replace('h-8 w-8', 'h-4 w-4');
+            const smallIcon = (svg) => svg ? svg.replace('h-8 w-8', 'h-4 w-4') : '';
 
             const updateUIForPlayer = (player, iconContainer, effectContainer) => {
                 iconContainer.innerHTML = '';
@@ -636,14 +636,23 @@
                     const effect = player.timedEffects[type];
                     const remaining = effect.endTime - now;
                     if (remaining > 0) {
-                        const progress = (remaining / effect.duration) * 100;
-                        effectContainer.innerHTML += `
-                            <div class="flex items-center space-x-1 bg-black/30 rounded-full px-2 py-0.5 h-full">
-                                ${smallIcon(ICONS[type])}
-                                <div class="w-8 h-1 bg-gray-600 rounded-full overflow-hidden">
-                                    <div class="h-full bg-white rounded-full" style="width: ${progress}%"></div>
-                                </div>
-                            </div>`;
+                        let iconType = type;
+                        if (type === 'size') {
+                            iconType = player.sizeEffect; // 'grow' or 'shrink'
+                        } else if (type === 'speed') {
+                            iconType = player.speedMultiplier > 1 ? 'speedBoost' : 'slow';
+                        }
+                        
+                        if (ICONS[iconType]) {
+                            const progress = (remaining / effect.duration) * 100;
+                            effectContainer.innerHTML += `
+                                <div class="flex items-center space-x-1 bg-black/30 rounded-full px-2 py-0.5 h-full">
+                                    ${smallIcon(ICONS[iconType])}
+                                    <div class="w-8 h-1 bg-gray-600 rounded-full overflow-hidden">
+                                        <div class="h-full bg-white rounded-full" style="width: ${progress}%"></div>
+                                    </div>
+                                </div>`;
+                        }
                     }
                 }
             };
