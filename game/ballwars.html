@@ -578,7 +578,7 @@ updateLivesUI();
 if (attacker) {
     attacker.score++;
     updateScoreUI();
-    if (attacker.score >= 5) {
+    if (attacker.score >= 10) {
         endGame(false, attacker); // Thắng ngay khi đủ 5 điểm
         return true;
     }
@@ -609,13 +609,22 @@ return true;
                     case 'speed': this.speedMultiplier = value; break;
                     case 'cannotEat': this.cannotEatUntil = Date.now() + duration; break;
                     case 'snare': this.snaredUntil = Date.now() + duration; break;
-                    case 'reflectiveCloak':
+                        case 'reflectiveCloak':
                         if (!this.armor.includes('reflectiveCloak')) {
                             this.armor.push('reflectiveCloak');
                         }
                         this.effectTimeouts.reflectiveCloak = setTimeout(() => {
                            const index = this.armor.indexOf('reflectiveCloak');
                            if(index > -1) this.armor.splice(index, 1);
+                           // --- BẮT ĐẦU SỬA ---
+                           // Thêm logic bắt đầu hồi chiêu khi áo choàng hết hạn
+                           const itemData = items['reflectiveCloak'];
+                           if (itemData) {
+                               const respawnTime = itemData.currentRespawn;
+                               itemData.cooldownEndTime = Date.now() + respawnTime;
+                               itemSpawnTimeouts.push(setTimeout(() => spawnItem('reflectiveCloak'), respawnTime));
+                           }
+                           // --- KẾT THÚC SỬA ---
                            updateLivesUI();
                         }, duration);
                         updateLivesUI();
@@ -933,11 +942,48 @@ if (b2HasGai) {
                 return false;
             },
             grow: (ball) => { const opponent = players.find(p => p !== ball.controller); if (opponent) opponent.applyEffect('size', 10000, 'grow'); return true; },
-            shrink: (ball) => { ball.controller.applyEffect('size', 10000, 'shrink'); return true; },
-            speedBoost: (ball) => { ball.controller.applyEffect('speed', 5000, 1.5); return true; },
+            shrink: (ball) => { 
+                ball.controller.applyEffect('size', 10000, 'shrink'); 
+                // Thêm setTimeout riêng cho việc hồi chiêu
+                setTimeout(() => {
+                    const itemData = items['shrink'];
+                    if (itemData) {
+                        const respawnTime = itemData.currentRespawn;
+                        itemData.cooldownEndTime = Date.now() + respawnTime;
+                        itemSpawnTimeouts.push(setTimeout(() => spawnItem('shrink'), respawnTime));
+                    }
+                }, 10000);
+                return true; 
+            },
+            speedBoost: (ball) => { 
+                ball.controller.applyEffect('speed', 5000, 1.5);
+                // Thêm setTimeout riêng cho việc hồi chiêu
+                setTimeout(() => {
+                    const itemData = items['speedBoost'];
+                    if (itemData) {
+                        const respawnTime = itemData.currentRespawn;
+                        itemData.cooldownEndTime = Date.now() + respawnTime;
+                        itemSpawnTimeouts.push(setTimeout(() => spawnItem('speedBoost'), respawnTime));
+                    }
+                }, 5000);
+                return true; 
+            },
+            
             slow: (ball) => { const opponent = players.find(p => p !== ball.controller); if (opponent) opponent.applyEffect('speed', 5000, 0.5); return true; },
             rain: (ball) => { const rainRadius = (ball.baseRadius) * 5; const pos = getRandomPosition(rainRadius); activeRainZone = new RainZone(pos.x, pos.y, rainRadius, ball.controller); return true; },
-            invisibility: (ball) => { ball.controller.invincibleUntil = Date.now() + 3000; return true; },
+            invisibility: (ball) => { 
+                ball.controller.invincibleUntil = Date.now() + 3000; 
+                // Thêm setTimeout để bắt đầu hồi chiêu sau khi hết 3 giây tàng hình
+                setTimeout(() => {
+                    const itemData = items['invisibility'];
+                    if (itemData) {
+                        const respawnTime = itemData.currentRespawn;
+                        itemData.cooldownEndTime = Date.now() + respawnTime;
+                        itemSpawnTimeouts.push(setTimeout(() => spawnItem('invisibility'), respawnTime));
+                    }
+                }, 3000);
+                return true; 
+            },
             wallSpikes: (ball) => { const sides = ['top', 'right', 'bottom', 'left']; activeSpikeWall = { side: sides[Math.floor(Math.random() * 4)], owner: ball.controller }; return true; },
             diagonalWall: (ball) => { if (activeDiagonalWall) return false; activeDiagonalWall = new DiagonalWall(); return true; },
             clone: (ball) => { ball.controller.addBall(); return true; },
@@ -964,10 +1010,14 @@ if (b2HasGai) {
                 const respawnTime = itemData.currentRespawn; 
                 if (itemData.item.disappearTime) clearTimeout(itemDisappearTimeouts[type]); 
                 itemData.item = null; 
-                if (respawnTime && type !== 'shield' && type !== 'weapon') {
-    itemData.cooldownEndTime = Date.now() + respawnTime; 
-    itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
-}
+				
+ const cooldownOnExpireItems = ['shield', 'weapon', 'reflectiveCloak', 'shrink', 'speedBoost', 'invisibility'];
+
+                // Chỉ bắt đầu hồi chiêu ngay lập tức cho các vật phẩm KHÔNG có trong danh sách trên
+                if (respawnTime && !cooldownOnExpireItems.includes(type)) {
+                    itemData.cooldownEndTime = Date.now() + respawnTime; 
+                    itemSpawnTimeouts.push(setTimeout(() => spawnItem(type), respawnTime)); 
+                }
                 if ((type === 'bomb_trap' || type === 'snare_trap') && ball.controller.lives <= 0) {
                     triggerDeath(ball.controller);
                 }
