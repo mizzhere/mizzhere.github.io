@@ -414,7 +414,7 @@
                     this.selectedPlants = new Set(); // Track selected plant IDs
                     this.pressTimer = null;
                     this.isLongPressing = false;
-
+					this.isDragging = false;
                     this.initDataLists();
                     this.initDOMElements();
                     this.loadPlants();
@@ -1150,15 +1150,23 @@ loadPlants() {
                     }, 500);
                 }
 
-                handlePointerUp(e, plantId) {
-                    clearTimeout(this.pressTimer);
-                    if (this.isLongPressing) {
-                        if (e.cancelable) e.preventDefault();
-                    } else {
-                        this.handleCardClick(e, plantId);
-                    }
-                    this.isLongPressing = false;
-                }
+                // --- Thay thế toàn bộ phương thức handlePointerUp() ---
+handlePointerUp(e, plantId) {
+    clearTimeout(this.pressTimer);
+    
+    // Nếu phát hiện đang kéo/cuộn, thì không làm gì cả
+    if (this.isDragging) {
+        this.isDragging = false; // Reset lại
+        return; 
+    }
+
+    if (this.isLongPressing) {
+        if (e.cancelable) e.preventDefault();
+    } else {
+        this.handleCardClick(e, plantId);
+    }
+    this.isLongPressing = false;
+}
 
                 handlePointerLeave() {
                     clearTimeout(this.pressTimer);
