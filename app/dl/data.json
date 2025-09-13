@@ -1,0 +1,342 @@
+[
+  {
+    "id": "1",
+    "tenDuocLieu": "Ba gạc",
+    "hoCay": "Apocynaceae (Họ Trúc đào)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol",
+    "thanhPhanHoaHocChinh": "Reserpin, Ajmalin",
+    "boPhanDung": "Rễ",
+    "tacDung": "Reserpin: Hạ huyết áp, an thần; Ajmalin: Chữa loạn nhịp tim",
+    "congDung": "(Y học hiện đại): Chữa cao huyết áp, an thần, chữa loạn nhịp tim; (Y học cổ truyền): Thanh nhiệt, giải độc, trấn kinh"
+  },
+  {
+    "id": "2",
+    "tenDuocLieu": "Hòe",
+    "hoCay": "Fabaceae (Họ Đậu)",
+    "nhomChat": "Flavonoid > Flavonol",
+    "thanhPhanHoaHocChinh": "Rutin",
+    "boPhanDung": "Nụ hoa",
+    "tacDung": "Rutin: Tăng sức bền thành mạch, cầm máu, chống oxy hóa",
+    "congDung": "(Y học cổ truyền): Lương huyết, chỉ huyết; (Dược lý): Phòng xơ vữa động mạch, chữa trĩ, các chứng xuất huyết"
+  },
+  {
+    "id": "3",
+    "tenDuocLieu": "Mã tiền",
+    "hoCay": "Loganiaceae (Họ Mã tiền)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol",
+    "thanhPhanHoaHocChinh": "Strychnin, Brucin",
+    "boPhanDung": "Hạt",
+    "tacDung": "Strychnin: Kích thích thần kinh trung ương, kích thích phản xạ tủy; Brucin: Tác dụng tương tự Strychnin nhưng yếu hơn",
+    "congDung": "(Y học cổ truyền): Thông lạc chỉ thống, tiêu thũng tán kết; (Y học hiện đại): Dùng ngoài chữa đau nhức do phong thấp, làm thuốc xoa bóp"
+  },
+  {
+    "id": "4",
+    "tenDuocLieu": "Thuốc phiện",
+    "hoCay": "Papaveraceae (Họ Thuốc phiện)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+    "thanhPhanHoaHocChinh": "Morphin, Codein, Papaverin, Noscapin, Thebain",
+    "boPhanDung": "Nhựa từ quả, Quả, Hạt, Lá",
+    "tacDung": "Morphin: Giảm đau mạnh, gây ngủ, ức chế hô hấp; Codein: Giảm đau yếu, ức chế ho mạnh; Papaverin: Giảm co thắt cơ trơn",
+    "congDung": "(Y học hiện đại): Chiết xuất morphin làm thuốc giảm đau. Codein chữa ho. Papaverin chữa co thắt cơ trơn; (Y học cổ truyền): Giảm đau, gây ngủ, chữa ho, tiêu chảy, lỵ."
+  },
+  {
+    "id": "5",
+    "tenDuocLieu": "Bình vôi",
+    "hoCay": "Menispermaceae (Họ Tiết dê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+    "thanhPhanHoaHocChinh": "L-tetrahydropalmatin (Rotundin), Cepharanthin",
+    "boPhanDung": "Thân củ",
+    "tacDung": "L-tetrahydropalmatin: An thần, gây ngủ, hạ huyết áp; Cepharanthin: Chống giảm bạch cầu, tăng cường miễn dịch",
+    "congDung": "(Y học hiện đại): Rotundin làm thuốc an thần, gây ngủ. Cepharanthin chữa giảm bạch cầu; (Y học cổ truyền): Chữa mất ngủ, ho hen, sốt, đau bụng."
+  },
+  {
+    "id": "6",
+    "tenDuocLieu": "Hoàng liên",
+    "hoCay": "Ranunculaceae (Họ Hoàng liên)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin (bậc IV)",
+    "thanhPhanHoaHocChinh": "Berberin, Palmatin",
+    "boPhanDung": "Thân rễ",
+    "tacDung": "Berberin: Kháng khuẩn mạnh (lỵ, tả), hạ sốt, giảm cholesterol",
+    "congDung": "(Y học hiện đại): Dùng như kháng sinh thực vật chữa tiêu chảy, kiết lỵ, đau mắt; (Y học cổ truyền): Thanh nhiệt táo thấp, tả hỏa giải độc."
+  },
+  {
+    "id": "7",
+    "tenDuocLieu": "Vàng đắng",
+    "hoCay": "Menispermaceae (Họ Tiết dê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin (bậc IV)",
+    "thanhPhanHoaHocChinh": "Berberin, Palmatin",
+    "boPhanDung": "Thân và rễ",
+    "tacDung": "Berberin: Kháng khuẩn, hạ sốt, chống viêm",
+    "congDung": "(Y học hiện đại): Nguyên liệu chiết xuất Berberin chữa tiêu chảy, kiết lỵ, đau mắt."
+  },
+  {
+    "id": "8",
+    "tenDuocLieu": "Hoàng bá",
+    "hoCay": "Rutaceae (Họ Cam)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin (bậc IV)",
+    "thanhPhanHoaHocChinh": "Berberin, Palmatin",
+    "boPhanDung": "Vỏ thân",
+    "tacDung": "Berberin: Kháng khuẩn, chống viêm, hạ sốt",
+    "congDung": "(Y học hiện đại): Nguyên liệu chiết xuất Berberin; (Y học cổ truyền): Thanh nhiệt táo thấp, chữa các chứng vàng da, lỵ, tiểu ra máu."
+  },
+  {
+    "id": "9",
+    "tenDuocLieu": "Ipeca",
+    "hoCay": "Rubiaceae (Họ Cà phê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+    "thanhPhanHoaHocChinh": "Emetin",
+    "boPhanDung": "Rễ",
+    "tacDung": "Emetin: Diệt amip, liều nhỏ long đờm, liều cao gây nôn",
+    "congDung": "(Y học hiện đại): Chữa lỵ amip, dùng làm thuốc gây nôn trong các trường hợp ngộ độc."
+  },
+  {
+    "id": "10",
+    "tenDuocLieu": "Vông nem",
+    "hoCay": "Fabaceae (Họ Đậu)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+    "thanhPhanHoaHocChinh": "Erysopin, Erysodin",
+    "boPhanDung": "Lá, Vỏ thân",
+    "tacDung": "An thần, gây ngủ, ức chế thần kinh trung ương",
+    "congDung": "(Y học cổ truyền): Chữa mất ngủ, an thần, chữa trĩ (lá), trừ phong thấp (vỏ thân)."
+  },
+  {
+    "id": "11",
+    "tenDuocLieu": "Sen",
+    "hoCay": "Nelumbonaceae (Họ Sen)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+    "thanhPhanHoaHocChinh": "Nuciferin",
+    "boPhanDung": "Tâm sen (mầm hạt), Lá",
+    "tacDung": "An thần, hạ huyết áp, ổn định nhịp tim",
+    "congDung": "(Y học cổ truyền): Chữa mất ngủ, tim hồi hộp, an thần, thanh tâm, giải nhiệt."
+  },
+  {
+    "id": "12",
+    "tenDuocLieu": "Chè",
+    "hoCay": "Theaceae (Họ Chè)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Purin",
+    "thanhPhanHoaHocChinh": "Cafein, Theobromin, Theophyllin, Tanin (EGCG)",
+    "boPhanDung": "Búp và lá non",
+    "tacDung": "Kích thích thần kinh trung ương, lợi tiểu, chống oxy hóa, kháng khuẩn",
+    "congDung": "(Y học hiện đại): Làm đồ uống kích thích, hỗ trợ giảm cân, phòng ngừa bệnh tim mạch; (Y học cổ truyền): Chữa tiêu chảy, kiết lỵ."
+  },
+  {
+    "id": "13",
+    "tenDuocLieu": "Cà phê",
+    "hoCay": "Rubiaceae (Họ Cà phê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Purin",
+    "thanhPhanHoaHocChinh": "Cafein, Theobromin, Theophyllin",
+    "boPhanDung": "Hạt",
+    "tacDung": "Kích thích thần kinh trung ương, lợi tiểu, tăng cường hoạt động trí óc",
+    "congDung": "(Y học hiện đại): Làm đồ uống kích thích, phối hợp trong thuốc giảm đau, chữa hen."
+  },
+  {
+    "id": "14",
+    "tenDuocLieu": "Benladon",
+    "hoCay": "Solanaceae (Họ Cà)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Tropan",
+    "thanhPhanHoaHocChinh": "Atropin, L-hyoscyamin",
+    "boPhanDung": "Lá, Rễ, Quả và hạt",
+    "tacDung": "Liệt phó giao cảm: giảm tiết dịch, giảm co thắt cơ trơn, giãn đồng tử, chống nôn",
+    "congDung": "(Y học hiện đại): Giảm đau do co thắt (dạ dày, hen), thuốc nhỏ mắt, chống say tàu xe, giải độc thuốc trừ sâu phospho hữu cơ, chữa Parkinson."
+  },
+  {
+    "id": "15",
+    "tenDuocLieu": "Cà độc dược",
+    "hoCay": "Solanaceae (Họ Cà)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Tropan",
+    "thanhPhanHoaHocChinh": "Scopolamin, Hyoscyamin",
+    "boPhanDung": "Lá, Hoa, Hạt",
+    "tacDung": "Scopolamin: Ức chế thần kinh trung ương, gây mê, giảm co thắt, giảm tiết dịch",
+    "congDung": "(Y học hiện đại): Chống say tàu xe, giảm đau, tiền mê trong phẫu thuật; (Y học cổ truyền): Chữa ho, hen suyễn, đau bụng, thấp khớp."
+  },
+  {
+    "id": "16",
+    "tenDuocLieu": "Coca",
+    "hoCay": "Erythroxylaceae (Họ Coca)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Tropan",
+    "thanhPhanHoaHocChinh": "Cocain",
+    "boPhanDung": "Lá",
+    "tacDung": "Gây tê tại chỗ, co mạch, kích thích mạnh thần kinh trung ương, gây nghiện",
+    "congDung": "(Y học hiện đại): Dùng làm thuốc gây tê trong phẫu thuật Tai-Mũi-Họng, Mắt, Răng-Hàm-Mặt. Là chất ma túy bị cấm."
+  },
+  {
+    "id": "17",
+    "tenDuocLieu": "Canhkina",
+    "hoCay": "Rubiaceae (Họ Cà phê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Quinolin",
+    "thanhPhanHoaHocChinh": "Quinin, Quinidin, Cinchonin",
+    "boPhanDung": "Vỏ thân, vỏ cành, vỏ rễ",
+    "tacDung": "Quinin: Diệt ký sinh trùng sốt rét, hạ sốt; Quinidin: Chống loạn nhịp tim",
+    "congDung": "(Y học hiện đại): Chiết xuất quinin điều trị sốt rét (đặc biệt sốt rét kháng thuốc). Quinidin chữa loạn nhịp tim; (Y học cổ truyền): Dùng làm thuốc bổ đắng, hạ sốt."
+  },
+  {
+    "id": "18",
+    "tenDuocLieu": "Ma hoàng",
+    "hoCay": "Ephedraceae (Họ Ma hoàng)",
+    "nhomChat": "Alkaloid > Proto-alkaloid",
+    "thanhPhanHoaHocChinh": "Ephedrin, Pseudoephedrin",
+    "boPhanDung": "Bộ phận trên mặt đất (Ma hoàng), Rễ (Ma hoàng căn)",
+    "tacDung": "Ephedrin: Kích thích giao cảm, giãn phế quản, tăng huyết áp, hưng phấn TKTW; Rễ: tác dụng ngược lại, cầm mồ hôi",
+    "congDung": "(Y học hiện đại): Chiết xuất ephedrin chữa hen, sổ mũi, ngạt mũi. Là tiền chất sản xuất ma túy đá; (Y học cổ truyền): Chữa cảm mạo không ra mồ hôi, hen, viêm phế quản. Rễ chữa mồ hôi trộm."
+  },
+  {
+    "id": "19",
+    "tenDuocLieu": "Ớt",
+    "hoCay": "Solanaceae (Họ Cà)",
+    "nhomChat": "Alkaloid > Proto-alkaloid",
+    "thanhPhanHoaHocChinh": "Capsaicin",
+    "boPhanDung": "Quả, Lá",
+    "tacDung": "Capsaicin: Gây cảm giác cay nóng, giảm đau, kích thích tiêu hóa",
+    "congDung": "(Y học hiện đại): Dùng ngoài dạng cao dán, kem bôi để giảm đau do viêm khớp, đau dây thần kinh; (Y học cổ truyền): Làm gia vị, kích thích tiêu hóa, chữa đau bụng lạnh, đau khớp. Lá dùng ngoài chữa rắn rết cắn."
+  },
+  {
+    "id": "20",
+    "tenDuocLieu": "Tỏi độc",
+    "hoCay": "Liliaceae (Họ Loa kèn)",
+    "nhomChat": "Alkaloid > Proto-alkaloid",
+    "thanhPhanHoaHocChinh": "Colchicin, Demecolcin",
+    "boPhanDung": "Hạt chín, Giò (Thân hành)",
+    "tacDung": "Colchicin: Chống phân bào, chống viêm mạnh, ngăn tích tụ acid uric ở khớp",
+    "congDung": "(Y học hiện đại): Chiết xuất colchicin điều trị cấp tính bệnh Gút, bệnh bạch cầu, ung thư da; (Nông nghiệp): Gây đột biến đa bội để tạo giống cây trồng mới."
+  },
+  {
+    "id": "21",
+    "tenDuocLieu": "Ích mẫu",
+    "hoCay": "Lamiaceae (Họ Bạc hà)",
+    "nhomChat": "Alkaloid > Proto-alkaloid",
+    "thanhPhanHoaHocChinh": "Leonurin",
+    "boPhanDung": "Bộ phận trên mặt đất, Quả",
+    "tacDung": "Tăng co bóp tử cung, lợi tiểu, hạ huyết áp",
+    "congDung": "(Y học cổ truyền): Điều kinh, chữa rối loạn kinh nguyệt (đau kinh, bế kinh), chữa cao huyết áp, viêm thận, phù thũng, bổ huyết."
+  },
+  {
+    "id": "22",
+    "tenDuocLieu": "Hoàng nàn",
+    "hoCay": "Loganiaceae (Họ Mã tiền)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol",
+    "thanhPhanHoaHocChinh": "Strychnin, Brucin",
+    "boPhanDung": "Vỏ thân, vỏ cành",
+    "tacDung": "Tương tự Mã tiền: Kích thích thần kinh trung ương, liều cao gây co giật. Rất độc.",
+    "congDung": "(Y học cổ truyền): Sau khi chế biến dùng chữa chó dại cắn, phong, ghẻ, bệnh ngoài da, thấp khớp."
+  },
+  {
+    "id": "23",
+    "tenDuocLieu": "Dừa cạn",
+    "hoCay": "Apocynaceae (Họ Trúc đào)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol (dimer)",
+    "thanhPhanHoaHocChinh": "Vinblastin, Vincristin",
+    "boPhanDung": "Lá, Rễ",
+    "tacDung": "Hạ huyết áp, an thần; Vinblastin và Vincristin: chống ung thư, đặc biệt là bệnh bạch cầu",
+    "congDung": "(Y học hiện đại): Nguyên liệu chiết xuất Vinblastin và Vincristin để điều trị ung thư; (Y học cổ truyền): Chữa bế kinh, cao huyết áp, đái tháo đường, lỵ."
+  },
+  {
+    "id": "24",
+    "tenDuocLieu": "Cựa khỏa mạch",
+    "hoCay": "Clavicipitaceae (Nấm)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol (Ergot)",
+    "thanhPhanHoaHocChinh": "Ergotamin, Ergobasin",
+    "boPhanDung": "Hạch nấm",
+    "tacDung": "Co cơ trơn tử cung và mạch máu, gây ảo giác (LSD)",
+    "congDung": "(Y học hiện đại): Ergotamin chữa đau nửa đầu (migraine); Ergobasin dùng trong sản khoa để cầm máu sau sinh. Bán tổng hợp LSD (chất gây ảo giác)."
+  },
+  {
+    "id": "25",
+    "tenDuocLieu": "Lạc tiên",
+    "hoCay": "Passifloraceae (Họ Lạc tiên)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol (Harman)",
+    "thanhPhanHoaHocChinh": "Harman",
+    "boPhanDung": "Phần trên mặt đất",
+    "tacDung": "An thần, gây ngủ",
+    "congDung": "(Y học cổ truyền): Chữa mất ngủ, suy nhược thần kinh, tim hồi hộp. Quả dùng làm nước giải khát."
+  },
+  {
+    "id": "26",
+    "tenDuocLieu": "Dạ cẩm",
+    "hoCay": "Rubiaceae (Họ Cà phê)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Indol",
+    "thanhPhanHoaHocChinh": "Alkaloid, Tanin, Saponin",
+    "boPhanDung": "Phần trên mặt đất",
+    "tacDung": "Giảm đau, chống viêm, trung hòa acid dịch vị",
+    "congDung": "(Y học cổ truyền): Chữa viêm loét dạ dày - tá tràng, lở loét miệng lưỡi."
+  },
+  {
+    "id": "27",
+    "tenDuocLieu": "Hồ tiêu",
+    "hoCay": "Piperaceae (Họ Hồ tiêu)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Piperidin",
+    "thanhPhanHoaHocChinh": "Piperin, Tinh dầu",
+    "boPhanDung": "Quả",
+    "tacDung": "Kích thích tiêu hóa, làm ấm cơ thể, kháng khuẩn, giảm đau",
+    "congDung": "(Y học cổ truyền): Làm gia vị, chữa đau bụng lạnh, nôn, tiêu chảy, cảm lạnh."
+  },
+  {
+    "id": "28",
+    "tenDuocLieu": "Thuốc lá",
+    "hoCay": "Solanaceae (Họ Cà)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Pyridin",
+    "thanhPhanHoaHocChinh": "Nicotin",
+    "boPhanDung": "Lá",
+    "tacDung": "Gây nghiện, liều nhỏ kích thích, liều cao ức chế và gây liệt TKTW, tăng huyết áp",
+    "congDung": "(Y học hiện đại): Chiết nicotin làm thuốc trừ sâu, nguyên liệu sản xuất acid nicotinic (Vitamin PP); (Y học cổ truyền): Dùng ngoài trị ghẻ, chấy, cầm máu."
+  },
+  {
+    "id": "29",
+    "tenDuocLieu": "Cau",
+    "hoCay": "Arecaceae (Họ Cau)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Piperidin",
+    "thanhPhanHoaHocChinh": "Arecolin, Arecaidin, Guvacin",
+    "boPhanDung": "Hạt (Binh lang), Vỏ quả (Đại phúc bì)",
+    "tacDung": "Arecolin: Gây độc, làm tê liệt giun sán, tăng tiết dịch, co đồng tử",
+    "congDung": "(Y học cổ truyền): Hạt dùng tẩy sán. Vỏ quả chữa phù thũng, bụng trướng, tiểu tiện khó."
+  },
+  {
+    "id": "30",
+    "tenDuocLieu": "Lựu",
+    "hoCay": "Punicaceae (Họ Lựu)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Piperidin",
+    "thanhPhanHoaHocChinh": "Pseudopelletierin, Tanin",
+    "boPhanDung": "Vỏ rễ, vỏ thân, vỏ quả",
+    "tacDung": "Tẩy sán, săn da, sát khuẩn",
+    "congDung": "(Y học cổ truyền): Vỏ rễ, vỏ thân dùng chữa sán, ngậm chữa đau răng. Vỏ quả chữa lỵ, tiêu chảy, ngậm chữa viêm amidan."
+  },
+  {
+    "id": "31",
+    "tenDuocLieu": "Lôbêli",
+    "hoCay": "Campanulaceae (Họ Hoa chuông)",
+    "nhomChat": "Alkaloid > Alkaloid thực > Piperidin",
+    "thanhPhanHoaHocChinh": "Lobelin",
+    "boPhanDung": "Phần trên mặt đất",
+    "tacDung": "Kích thích trung tâm hô hấp ở hành tủy",
+    "congDung": "(Y học hiện đại): Dùng trong các trường hợp ngất do suy hô hấp, hỗ trợ cai thuốc lá."
+  },
+  {
+    "id": "32",
+    "tenDuocLieu": "Mức hoa trắng",
+    "hoCay": "Apocynaceae (Họ Trúc đào)",
+    "nhomChat": "Alkaloid > Pseudo-alkaloid > Steroid",
+    "thanhPhanHoaHocChinh": "Conessin",
+    "boPhanDung": "Vỏ thân, Hạt",
+    "tacDung": "Diệt kén và ký sinh trùng amip",
+    "congDung": "(Y học hiện đại): Chiết xuất conessin chữa lỵ amip; (Y học cổ truyền): Chữa lỵ amip, tiêu chảy."
+  },
+  {
+    "id": "33",
+    "tenDuocLieu": "Ô đầu",
+    "hoCay": "Ranunculaceae (Họ Hoàng liên)",
+    "nhomChat": "Alkaloid > Pseudo-alkaloid > Diterpen",
+    "thanhPhanHoaHocChinh": "Aconitin",
+    "boPhanDung": "Rễ củ (Ô đầu - củ mẹ, Phụ tử - củ con)",
+    "tacDung": "Rất độc. Gây tê, sau đó kích thích rồi làm liệt dây thần kinh. Độc tính giảm nhiều sau khi chế biến.",
+    "congDung": "(Y học hiện đại): Dùng ngoài dạng cồn xoa bóp chữa đau nhức, tê thấp; (Y học cổ truyền): Phụ tử chế dùng để hồi dương cứu nghịch, chữa các chứng suy tim mạch, chân tay lạnh."
+  },
+  {
+    "id": "34",
+    "tenDuocLieu": "Bách bộ",
+    "hoCay": "Stemonaceae (Họ Bách bộ)",
+    "nhomChat": "Alkaloid > Pseudo-alkaloid > Cấu trúc khác",
+    "thanhPhanHoaHocChinh": "Stemonin",
+    "boPhanDung": "Rễ củ",
+    "tacDung": "Trị ho, diệt côn trùng (giun, rận, rệp)",
+    "congDung": "(Y học cổ truyền): Chữa ho, đặc biệt ho lâu ngày, ho gà. Dùng ngoài luộc lấy nước gội đầu diệt chấy hoặc thụt rửa trị giun kim."
+  }
+]
