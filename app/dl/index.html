@@ -40,7 +40,6 @@
         .plant-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
         .plant-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
         
-        /* Cải tiến Animate-on-scroll */
         .animate-on-scroll {
             opacity: 0;
             transform: translateY(20px);
@@ -77,7 +76,6 @@
         .detail-actions-menu { transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
         .detail-actions-menu.hidden { opacity: 0; transform: scale(0.95) translateY(-10px); pointer-events: none; }
 
-        /* Search View Animation */
         #search-view { transition: transform 0.3s ease-in-out; }
 
         @media (max-width: 767px) {
@@ -85,7 +83,7 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden">
+<body class="h-[100dvh] w-screen overflow-hidden">
     <div class="flex h-full w-full">
         <!-- Sidebar -->
         <aside id="sidebar" class="hidden md:flex flex-col w-72 border-r border-[var(--border)] bg-[var(--card)] p-3">
@@ -199,6 +197,7 @@
             class MedicinalPlantApp {
                 constructor() {
                     this.plants = []; this.currentFilter = { group: 'all', search: '' }; this.activeAutocomplete = null; this.selectedPlants = new Set(); this.pressTimer = null; this.isLongPressing = false; this.isDragging = false; this.pointerStartPos = { x: 0, y: 0 }; this.isTransitioning = false; this.observer = null;
+                    this.currentView = { type: 'list' };
                     this.initDataLists(); this.initDOMElements(); this.initIntersectionObserver(); this.loadPlants(); this.initHistory(); this.initEventListeners(); this.initTheme(); this.initSidebarState();
                 }
 
@@ -360,9 +359,12 @@
                 }
                 
                 showPlantDetail(id, pushState = true) {
+                    if (this.currentView.type === 'detail' && this.currentView.id === id) return;
+
                     if (pushState) {
                         history.pushState({ view: 'detail', id: id }, '', `#detail/${id}`);
                     }
+                    this.currentView = { type: 'detail', id: id };
                     this.els.mobileHeader.classList.add('hidden');
                     const plant = this.plants.find(p => p.id === id); 
                     if (!plant) {
@@ -491,6 +493,7 @@
                 }
                 
                 showListView() {
+                    this.currentView = { type: 'list' };
                     this.els.mobileHeader.classList.remove('hidden');
                     if (this.handleDetailScroll) { this.els.plantDetailView.removeEventListener('scroll', this.handleDetailScroll); }
                     this.els.stickyHeader.classList.add('-translate-y-full');
@@ -505,6 +508,7 @@
                 }
                 
                 showSearchView(pushState = true, searchTerm = '') {
+                    this.currentView = { type: 'search' };
                     if (pushState) {
                         history.pushState({ view: 'search' }, '', '#search');
                     }
