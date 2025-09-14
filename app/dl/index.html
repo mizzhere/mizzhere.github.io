@@ -39,7 +39,12 @@
 
         .plant-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
         .plant-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
-        
+                .plant-card {
+  touch-action: pan-y;          /* vẫn cuộn dọc, hạn chế xung đột gesture */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
         .animate-on-scroll {
             opacity: 0;
             transform: translateY(20px);
@@ -227,27 +232,29 @@
                         if (e.state) {
                             this.handleStateChange(e.state);
                         } else {
+                            // This case handles the scenario where the user might go back past our initial state.
+                            // We can either try to go back again or show the confirm dialog.
                             this.showConfirm(
                                 'Bạn có muốn thoát khỏi trang này không?',
-                                () => { window.history.back(); },
-                                () => { history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list'); }
+                                () => { window.history.back(); }, // Allow exit
+                                () => { history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list'); } // Prevent exit
                             );
                         }
                     });
                 }
 
                 handleStateChange(state) {
-                    // Close any open modals or menus
                     this.closeModal();
                     this.els.mobileMenu.classList.add('hidden');
                     
+                    this.currentView = state; // Update current view immediately
+
                     switch(state.view) {
                         case 'detail':
-                            this.hideSearchView(false); // Ensure search is hidden without affecting history
+                            this.hideSearchView(false);
                             this.showPlantDetail(state.id, false);
                             break;
                         case 'search':
-                            this.hideSearchView(false); // Hide it first in case of state weirdness
                             this.showSearchView(false);
                             break;
                         case 'list':
@@ -277,7 +284,7 @@
                     [this.els.exportButtonDesktop, this.els.exportButtonDesktopCollapsed, this.els.exportButtonMobile].forEach(btn => btn.addEventListener('click', () => this.exportData())); 
                     this.els.themeToggles.forEach(btn => btn.addEventListener('click', () => this.toggleTheme())); 
                     this.els.deleteSelectedBtn.addEventListener('click', () => this.deleteSelectedPlants()); 
-                    this.els.mobileSearchButton.addEventListener('click', () => this.showSearchView()); 
+                    this.els.mobileSearchButton.addEventListener('click', () => this.navigateToSearch()); 
                     this.els.searchViewBackButton.addEventListener('click', () => window.history.back()); 
                     this.els.searchViewInput.addEventListener('input', (e) => this.renderSearchResults(e.target.value)); 
                     this.setupAutocomplete('hoCay', this.dataLists.families, { type: 'family' }); this.setupAutocomplete('nhomChat', () => this.getDynamicSuggestions('nhomChat'), { append: true, separator: '>' }); this.setupAutocomplete('thanhPhanHoaHocChinh', () => this.getDynamicSuggestions('thanhPhanHoaHocChinh'), { append: true }); this.setupAutocomplete('boPhanDung', () => this.getDynamicSuggestions('boPhanDung'), { append: true }); this.setupAutocomplete('tacDung', () => this.getDynamicSuggestions('tacDung'), { append: true }); this.setupAutocomplete('congDung', () => this.getDynamicSuggestions('congDung'), { append: true }); 
@@ -358,18 +365,30 @@
                     this.isTransitioning = false;
                 }
                 
-                showPlantDetail(id, pushState = true) {
+                navigateToDetail(id) {
                     if (this.currentView.type === 'detail' && this.currentView.id === id) return;
+                    const newState = { view: 'detail', id: id };
+                    history.pushState(newState, '', `#detail/${id}`);
+                    this.handleStateChange(newState);
+                }
 
-                    if (pushState) {
-                        history.pushState({ view: 'detail', id: id }, '', `#detail/${id}`);
+                navigateToSearch(searchTerm = '') {
+                    if (this.currentView.type === 'search') return;
+                    const newState = { view: 'search' };
+                    history.pushState(newState, '', `#search`);
+                    this.handleStateChange(newState);
+                    if (searchTerm) {
+                        this.els.searchViewInput.value = searchTerm;
+                        this.renderSearchResults(searchTerm);
                     }
-                    this.currentView = { type: 'detail', id: id };
+                }
+                
+                showPlantDetail(id, isPopped = false) {
                     this.els.mobileHeader.classList.add('hidden');
                     const plant = this.plants.find(p => p.id === id); 
                     if (!plant) {
                         this.showToast('Không tìm thấy dược liệu.', 'error');
-                        if(pushState) history.back();
+                        if(!isPopped) history.back();
                         return;
                     }
 
@@ -421,12 +440,7 @@
                         </div>
                     `;
 
-                    if(pushState) {
-                       this.transitionView(this.els.plantListContainer, this.els.plantDetailView);
-                    } else {
-                       this.els.plantListContainer.classList.add('hidden');
-                       this.els.plantDetailView.classList.remove('hidden');
-                    }
+                    this.transitionView(this.els.plantListContainer, this.els.plantDetailView);
                     
                     this.els.plantDetailView.scrollTop = 0;
                     if (this.handleDetailScroll) this.els.plantDetailView.removeEventListener('scroll', this.handleDetailScroll);
@@ -457,19 +471,19 @@
                             e.preventDefault();
                             const term = trigger.dataset.searchTerm;
                             if (this.isMobile()) {
-                                this.showSearchView(true, term);
+                                this.navigateToSearch(term);
                             } else {
                                 this.currentFilter.group = 'all';
                                 this.currentFilter.search = term.toLowerCase();
                                 this.els.searchInput.value = term;
-                                this.showListView();
                                 history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                                this.showListView();
                             }
                         }
 
                         const card = e.target.closest('#related-plants-grid .plant-card');
                         if (card) {
-                            this.showPlantDetail(card.dataset.id);
+                            this.navigateToDetail(card.dataset.id);
                         }
                     });
                     
@@ -507,31 +521,17 @@
                     this.els.plantDetailView.innerHTML = ''; 
                 }
                 
-                showSearchView(pushState = true, searchTerm = '') {
+                showSearchView(isPopped = false) {
                     this.currentView = { type: 'search' };
-                    if (pushState) {
-                        history.pushState({ view: 'search' }, '', '#search');
-                    }
                     this.els.mobileHeader.classList.add('hidden');
                     this.els.searchView.classList.remove('translate-x-full');
                     this.els.searchViewInput.focus();
-                    
-                    if (searchTerm) {
-                        this.els.searchViewInput.value = searchTerm;
-                        this.renderSearchResults(searchTerm);
-                    } else {
-                        this.renderSearchResults('');
-                    }
                 }
 
-                hideSearchView(pushState = true) {
-                    if (pushState && history.state && history.state.view === 'search') {
-                       window.history.back();
-                    } else {
-                        this.els.mobileHeader.classList.remove('hidden');
-                        this.els.searchView.classList.add('translate-x-full');
-                        this.els.searchViewInput.value = '';
-                    }
+                hideSearchView(isPopped = false) {
+                    this.els.mobileHeader.classList.remove('hidden');
+                    this.els.searchView.classList.add('translate-x-full');
+                    this.els.searchViewInput.value = '';
                 }
 
                 renderSearchResults(query) {
@@ -590,7 +590,9 @@
                     }
                     
                     if (fromSearch) {
-                        this.showPlantDetail(id);
+                        const newState = { view: 'detail', id: id };
+                        history.replaceState(newState, '', `#detail/${id}`);
+                        this.handleStateChange(newState);
                     } else {
                         if (this.isLongPressing) {
                             if (e.cancelable) e.preventDefault();
@@ -598,7 +600,7 @@
                             if (this.selectedPlants.size > 0) {
                                 this.togglePlantSelection(id);
                             } else {
-                                this.showPlantDetail(id);
+                                this.navigateToDetail(id);
                             }
                         }
                     }
@@ -655,3 +657,4 @@
     </script>
 </body>
 </html>
+
