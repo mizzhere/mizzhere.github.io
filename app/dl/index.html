@@ -454,7 +454,7 @@
                             this.renderSearchResults(searchTerm);
                         }
                         return;
-                    };
+                    }
                     const newState = { view: 'search', filter: this.currentFilter };
                     history.pushState(newState, '', `#search`);
                     this.handleStateChange(newState);
@@ -479,18 +479,30 @@
                     const prevPlant = currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
                     const nextPlant = currentIndex < currentFilteredList.length - 1 ? currentFilteredList[currentIndex + 1] : null;
 
-                    let relatedGroupPlants = [];
-                    let smallestGroupName = '';
-                    const primaryGroup = (plant.nhomChat || '').split(',')[0].trim();
-                    if (primaryGroup) {
-                        smallestGroupName = primaryGroup.split('>').pop().trim();
-                        relatedGroupPlants = this.plants.filter(p =>
-                            p.id !== plant.id &&
-                            p.nhomChat &&
-                            p.nhomChat.split(',').map(g => g.trim()).includes(primaryGroup)
-                        );
-                    }
                     const relatedFamilyPlants = this.plants.filter(p => p.hoCay === plant.hoCay && p.id !== plant.id);
+                    const relatedGroupsData = [];
+                    const primaryGroupPath = (plant.nhomChat || '').split(',')[0].trim();
+
+                    if (primaryGroupPath) {
+                        const groupParts = primaryGroupPath.split('>').map(p => p.trim());
+                        let currentPath = '';
+                        for (const part of groupParts) {
+                            currentPath = currentPath ? `${currentPath} > ${part}` : part;
+                            // Find plants that are in this group or sub-groups
+                            const relatedPlants = this.plants.filter(p =>
+                                p.id !== plant.id &&
+                                p.nhomChat &&
+                                p.nhomChat.split(',').some(g => g.trim().startsWith(currentPath))
+                            );
+                            if (relatedPlants.length > 0) {
+                                relatedGroupsData.push({
+                                    groupName: part,
+                                    fullPath: currentPath,
+                                    plants: relatedPlants
+                                });
+                            }
+                        }
+                    }
                     
                     const renderMultilineText = (s) => {
                         if (!s || s.trim() === '') return '<p>Chưa có thông tin</p>';
@@ -525,7 +537,14 @@
                         const items = s.split(/(?:;|\.\s*(?=\())/g).map(i => i.trim()).filter(Boolean);
                         return `<ul class="list-disc pl-5 space-y-2">${items.map(item => { 
                             const m = item.match(/^\((.*?)\):\s*(.*)/); 
-                            return m ? `<li><span class="font-semibold text-[var(--primary)]">${m[1].trim()}:</span> ${m[2].trim().replace(/\.$/, '')}</li>` : `<li>${item}</li>`; 
+                            if (m) {
+                                return `<li><span class="font-semibold text-[var(--primary)]">${m[1].trim()}:</span> ${m[2].trim().replace(/\.$/, '')}</li>`; 
+                            }
+                            const m2 = item.match(/^(Khác):\s*(.*)/);
+                             if (m2) {
+                                return `<li><span class="font-semibold text-[var(--primary)]">${m2[1].trim()}:</span> ${m2[2].trim().replace(/\.$/, '')}</li>`; 
+                            }
+                            return `<li>${item}</li>`; 
                         }).join('')}</ul>`;
                     };
                     
@@ -603,17 +622,17 @@
                             </div>
                             ` : ''}
 
-                            ${relatedGroupPlants.length > 0 ? `
+                            ${relatedGroupsData.map(groupData => `
                             <div class="detail-section animate-on-scroll mt-8">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-bold">Cây cùng nhóm ${smallestGroupName}</h3>
-                                    ${relatedGroupPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${primaryGroup}">Xem tất cả (${relatedGroupPlants.length})</button>` : ''}
+                                    <h3 class="text-xl font-bold">Cây cùng nhóm ${groupData.groupName}</h3>
+                                    ${groupData.plants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${groupData.fullPath}">Xem tất cả (${groupData.plants.length})</button>` : ''}
                                 </div>
-                                <div id="related-group-plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    ${relatedGroupPlants.slice(0, 3).map(p => this.createPlantCardHTML(p)).join('')}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    ${groupData.plants.slice(0, 3).map(p => this.createPlantCardHTML(p)).join('')}
                                 </div>
                             </div>
-                            ` : ''}
+                            `).join('')}
                         </div>
                     `;
 
@@ -928,3 +947,4 @@
     </script>
 </body>
 </html>
+
