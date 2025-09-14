@@ -325,7 +325,7 @@
                         plants.forEach(p => { let key = 'Các dược liệu khác'; if (p.nhomChat) { const relevantPath = (p.nhomChat.split(',').map(x => x.trim()).find(x => filter === 'all' || x.startsWith(filter)) || '').split('>').map(y => y.trim()); if (relevantPath.length > currentLevel) { key = relevantPath[currentLevel]; } } if (!groups[key]) groups[key] = []; groups[key].push(p); });
                         this.els.plantListGrid.innerHTML = Object.keys(groups).sort().map(key => `<div class="mb-8"><h2 class="text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mb-4">${key}</h2><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${groups[key].map(p => this.createPlantCardHTML(p)).join('')}</div></div>`).join('');
                     }
-                    this.addEventListenersToCards();
+                    this.addEventListenersToCards(this.els.plantListGrid);
                     this.els.plantListGrid.querySelectorAll('.animate-on-scroll').forEach(el => this.observer.observe(el));
                     lucide.createIcons();
                 }
@@ -545,13 +545,7 @@
                     
                     if(results.length > 0) {
                         this.els.searchResultsGrid.innerHTML = results.map(p => this.createPlantCardHTML(p)).join('');
-                        this.els.searchResultsGrid.querySelectorAll('.plant-card').forEach(card => {
-                            card.addEventListener('click', () => {
-                                // Don't call hideSearchView, as popstate will handle it.
-                                // Just show the detail view. The history API will take care of the rest.
-                                this.showPlantDetail(card.dataset.id);
-                            });
-                        });
+                        this.addEventListenersToCards(this.els.searchResultsGrid, true);
                         this.els.searchResultsGrid.querySelectorAll('.animate-on-scroll').forEach(el => this.observer.observe(el));
                     } else {
                         this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
@@ -573,9 +567,43 @@
                 handleFormSubmit(e) { e.preventDefault(); const id = this.els.plantIdInput.value; const data = { tenDuocLieu: this.els.tenDuocLieu.input.value, hoCay: this.els.hoCay.input.value, nhomChat: this.els.nhomChat.input.value, thanhPhanHoaHocChinh: this.els.thanhPhanHoaHocChinh.input.value, boPhanDung: this.els.boPhanDung.input.value, tacDung: this.els.tacDung.input.value, congDung: this.els.congDung.input.value, }; if (id) { this.updatePlant(id, data); } else { this.addPlant(data); } this.closeModal(); }
                 getFilteredPlants() { return this.plants.filter(p => { const groupMatch = this.currentFilter.group === 'all' || (p.nhomChat && this._normalizeText(p.nhomChat).split(',').some(c => c.trim().startsWith(this._normalizeText(this.currentFilter.group)))); const searchMatch = !this.currentFilter.search || Object.values(p).some(val => this._normalizeText(val).includes(this._normalizeText(this.currentFilter.search))); return groupMatch && searchMatch; }); }
                 createPlantCardHTML(plant) { const isSelected = this.selectedPlants.has(plant.id); return `<div class="plant-card animate-on-scroll ${isSelected ? 'selected' : ''}" data-id="${plant.id}"><div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col"><h3 class="font-bold text-lg text-[var(--card-foreground)]">${plant.tenDuocLieu}</h3><p class="text-sm text-[var(--muted-foreground)] mb-2 flex-grow">${plant.hoCay}</p><div class="flex flex-wrap gap-1 mt-2">${(plant.nhomChat || '').split(',').slice(0, 3).map(g => `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g.trim().split('>').pop()}</span>`).join('')}</div></div></div>`; }
-                addEventListenersToCards() { document.querySelectorAll('.plant-card').forEach(card => { const id = card.dataset.id; card.addEventListener('mousemove', (e) => this.handlePointerMove(e)); card.addEventListener('touchmove', (e) => this.handlePointerMove(e), { passive: true }); card.addEventListener('mousedown', (e) => this.handlePointerDown(e, id)); card.addEventListener('touchstart', (e) => this.handlePointerDown(e, id), { passive: true }); card.addEventListener('mouseup', (e) => this.handlePointerUp(e, id)); card.addEventListener('touchend', (e) => this.handlePointerUp(e, id)); card.addEventListener('mouseleave', () => this.handlePointerLeave()); card.addEventListener('touchcancel', () => this.handlePointerLeave()); card.addEventListener('contextmenu', (e) => { this.handlePointerLeave(); this.showContextMenu(e, id) }); }); }
+                addEventListenersToCards(container, fromSearch = false) { 
+                    container.querySelectorAll('.plant-card').forEach(card => { 
+                        const id = card.dataset.id; 
+                        card.addEventListener('mousemove', (e) => this.handlePointerMove(e)); 
+                        card.addEventListener('touchmove', (e) => this.handlePointerMove(e), { passive: true }); 
+                        card.addEventListener('mousedown', (e) => this.handlePointerDown(e, id)); 
+                        card.addEventListener('touchstart', (e) => this.handlePointerDown(e, id), { passive: true }); 
+                        card.addEventListener('mouseup', (e) => this.handlePointerUp(e, id, fromSearch)); 
+                        card.addEventListener('touchend', (e) => this.handlePointerUp(e, id, fromSearch)); 
+                        card.addEventListener('mouseleave', () => this.handlePointerLeave()); 
+                        card.addEventListener('touchcancel', () => this.handlePointerLeave()); 
+                        card.addEventListener('contextmenu', (e) => { this.handlePointerLeave(); this.showContextMenu(e, id) }); 
+                    }); 
+                }
                 handlePointerDown(e, id) { if (e.type === 'mousedown' && e.button === 2) return; this.isDragging = false; this.isLongPressing = false; this.pointerStartPos.y = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY; this.pressTimer = setTimeout(() => { this.isLongPressing = true; this.togglePlantSelection(id); }, 500); }
-                handlePointerUp(e, id) { clearTimeout(this.pressTimer); if (this.isDragging) { this.isDragging = false; return; } if (this.isLongPressing) { if (e.cancelable) e.preventDefault(); } else { if (this.selectedPlants.size > 0) { this.togglePlantSelection(id); } else { this.showPlantDetail(id); } } this.isLongPressing = false; }
+                handlePointerUp(e, id, fromSearch = false) {
+                    clearTimeout(this.pressTimer);
+                    if (this.isDragging) {
+                        this.isDragging = false;
+                        return;
+                    }
+                    
+                    if (fromSearch) {
+                        this.showPlantDetail(id);
+                    } else {
+                        if (this.isLongPressing) {
+                            if (e.cancelable) e.preventDefault();
+                        } else {
+                            if (this.selectedPlants.size > 0) {
+                                this.togglePlantSelection(id);
+                            } else {
+                                this.showPlantDetail(id);
+                            }
+                        }
+                    }
+                    this.isLongPressing = false;
+                }
                 handlePointerMove(e) { if (this.pressTimer) { const curY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY; if (Math.abs(curY - this.pointerStartPos.y) > 10) { this.isDragging = true; clearTimeout(this.pressTimer); } } }
                 handlePointerLeave() { clearTimeout(this.pressTimer); this.isLongPressing = false; }
                 togglePlantSelection(id) { const card = document.querySelector(`.plant-card[data-id="${id}"]`); if (this.selectedPlants.has(id)) { this.selectedPlants.delete(id); card && card.classList.remove('selected'); } else { this.selectedPlants.add(id); card && card.classList.add('selected'); } this.updateSelectionToolbar(); }
@@ -627,4 +655,3 @@
     </script>
 </body>
 </html>
-
