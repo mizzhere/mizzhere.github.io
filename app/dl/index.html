@@ -472,10 +472,28 @@
                         if(!isPoppedState) history.back();
                         return;
                     }
+
+                    // Get related data
+                    const currentFilteredList = this.getFilteredPlants();
+                    const currentIndex = currentFilteredList.findIndex(p => p.id === id);
+                    const prevPlant = currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
+                    const nextPlant = currentIndex < currentFilteredList.length - 1 ? currentFilteredList[currentIndex + 1] : null;
+
+                    let relatedGroupPlants = [];
+                    let smallestGroupName = '';
+                    const primaryGroup = (plant.nhomChat || '').split(',')[0].trim();
+                    if (primaryGroup) {
+                        smallestGroupName = primaryGroup.split('>').pop().trim();
+                        relatedGroupPlants = this.plants.filter(p =>
+                            p.id !== plant.id &&
+                            p.nhomChat &&
+                            p.nhomChat.split(',').map(g => g.trim()).includes(primaryGroup)
+                        );
+                    }
+                    const relatedFamilyPlants = this.plants.filter(p => p.hoCay === plant.hoCay && p.id !== plant.id);
                     
                     const renderMultilineText = (s) => {
                         if (!s || s.trim() === '') return '<p>Chưa có thông tin</p>';
-                        // Split by semicolon, or a period followed by whitespace, or a newline. This avoids splitting on decimal points.
                         const items = s.split(/(?:;|\.\s+|\n)/g).map(i => i.trim()).filter(Boolean);
                         if (items.length <= 1) return `<p>${s}</p>`;
                         return `<ul class="list-disc pl-5 space-y-1">${items.map(i => `<li>${i.replace(/\.$/, '')}</li>`).join('')}</ul>`;
@@ -501,9 +519,9 @@
                     };
                     
                     const renderTacDung = (s) => { if (!s || s.trim() === '') return '<p>Chưa có thông tin</p>'; return `<ul class="list-disc pl-5 space-y-2">${s.split(';').map(i => { const p = i.trim().split(':'); return p.length === 2 ? `<li><span class="font-semibold">${p[0].trim()}:</span> ${p[1].trim()}</li>` : `<li>${i.trim()}</li>`; }).join('')}</ul>`; };
+                    
                     const renderCongDung = (s) => {
                         if (!s || s.trim() === '') return '<p>Chưa có thông tin</p>';
-                        // Split by semicolon, or a period followed by whitespace and an opening parenthesis
                         const items = s.split(/(?:;|\.\s*(?=\())/g).map(i => i.trim()).filter(Boolean);
                         return `<ul class="list-disc pl-5 space-y-2">${items.map(item => { 
                             const m = item.match(/^\((.*?)\):\s*(.*)/); 
@@ -513,7 +531,6 @@
                     
                     this.els.stickyTitle.textContent = plant.tenDuocLieu;
                     this.els.stickySubtitle.textContent = plant.hoCay;
-                    const relatedPlants = this.plants.filter(p => p.hoCay === plant.hoCay && p.id !== plant.id);
 
                     this.els.plantDetailView.innerHTML = `
                         <div class="max-w-4xl mx-auto">
@@ -556,14 +573,44 @@
                                     </div>
                                 </div>
                             </div>
-                            ${relatedPlants.length > 0 ? `
+                            
+                            ${(prevPlant || nextPlant) ? `
+                            <div class="detail-section animate-on-scroll mt-8">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${prevPlant ? `
+                                    <a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group">
+                                        <p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Cây trước đó</p>
+                                        <h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4>
+                                    </a>` : '<div></div>'}
+                                    ${nextPlant ? `
+                                    <a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group">
+                                        <p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Cây tiếp theo <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p>
+                                        <h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4>
+                                    </a>` : '<div></div>'}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            ${relatedFamilyPlants.length > 0 ? `
                             <div class="detail-section animate-on-scroll mt-8">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-xl font-bold">Cây cùng họ</h3>
-                                    ${relatedPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedPlants.length})</button>` : ''}
+                                    ${relatedFamilyPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>` : ''}
                                 </div>
-                                <div id="related-plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    ${relatedPlants.slice(0, 3).map(p => this.createPlantCardHTML(p)).join('')}
+                                <div id="related-family-plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    ${relatedFamilyPlants.slice(0, 3).map(p => this.createPlantCardHTML(p)).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            ${relatedGroupPlants.length > 0 ? `
+                            <div class="detail-section animate-on-scroll mt-8">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-bold">Cây cùng nhóm ${smallestGroupName}</h3>
+                                    ${relatedGroupPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${primaryGroup}">Xem tất cả (${relatedGroupPlants.length})</button>` : ''}
+                                </div>
+                                <div id="related-group-plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    ${relatedGroupPlants.slice(0, 3).map(p => this.createPlantCardHTML(p)).join('')}
                                 </div>
                             </div>
                             ` : ''}
@@ -616,9 +663,13 @@
                             }
                         }
 
-                        const card = e.target.closest('#related-plants-grid .plant-card');
-                        if (card) {
-                            this.navigateToDetail(card.dataset.id);
+                        const link = e.target.closest('.nav-link, .plant-card');
+                        if (link) {
+                            const plantIdToNav = link.dataset.id;
+                            if (plantIdToNav && plantIdToNav !== plantId) {
+                                e.preventDefault();
+                                this.navigateToDetail(plantIdToNav);
+                            }
                         }
                     });
                     
@@ -877,5 +928,3 @@
     </script>
 </body>
 </html>
-
-
