@@ -39,8 +39,17 @@
 
         .plant-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
         .plant-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
-        .plant-card.animate-in { animation: card-scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; transform: scale(0.95); }
-        @keyframes card-scale-up { to { opacity: 1; transform: scale(1); } }
+        
+        /* Cải tiến Animate-on-scroll */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
         dialog { background-color: var(--card); color: var(--card-foreground); }
         dialog::backdrop { background: rgba(0, 0, 0, 0.5); transition: all 0.3s ease-out; }
@@ -189,13 +198,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             class MedicinalPlantApp {
                 constructor() {
-                    this.plants = []; this.currentFilter = { group: 'all', search: '' }; this.activeAutocomplete = null; this.selectedPlants = new Set(); this.pressTimer = null; this.isLongPressing = false; this.isDragging = false; this.pointerStartPos = { x: 0, y: 0 }; this.isTransitioning = false;
-                    this.initDataLists(); this.initDOMElements(); this.loadPlants(); this.initHistory(); this.initEventListeners(); this.initTheme(); this.initSidebarState();
+                    this.plants = []; this.currentFilter = { group: 'all', search: '' }; this.activeAutocomplete = null; this.selectedPlants = new Set(); this.pressTimer = null; this.isLongPressing = false; this.isDragging = false; this.pointerStartPos = { x: 0, y: 0 }; this.isTransitioning = false; this.observer = null;
+                    this.initDataLists(); this.initDOMElements(); this.initIntersectionObserver(); this.loadPlants(); this.initHistory(); this.initEventListeners(); this.initTheme(); this.initSidebarState();
                 }
 
                 _normalizeText(str) { if (!str) return ''; return str.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd'); }
                 
                 isMobile() { return window.innerWidth < 768; }
+                
+                initIntersectionObserver() {
+                    const options = { root: null, rootMargin: '0px', threshold: 0.1 };
+                    this.observer = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, options);
+                }
 
                 initDataLists() { this.dataLists = { families: [ { s: 'Acanthaceae', v: 'Họ Ô rô' }, { s: 'Amaranthaceae', v: 'Họ Dền' }, { s: 'Apiaceae', v: 'Họ Hoa tán' }, { s: 'Apocynaceae', v: 'Họ Trúc đào' }, { s: 'Araceae', v: 'Họ Ráy' }, { s: 'Araliaceae', v: 'Họ Nhân sâm' }, { s: 'Asteraceae', v: 'Họ Cúc' }, { s: 'Balsaminaceae', v: 'Họ Bóng nước' }, { s: 'Bignoniaceae', v: 'Họ Chùm ớt' }, { s: 'Boraginaceae', v: 'Họ Vòi voi' }, { s: 'Brassicaceae', v: 'Họ Cải' }, { s: 'Burseraceae', v: 'Họ Trám' }, { s: 'Caesalpiniaceae', v: 'Họ Vang' }, { s: 'Campanulaceae', v: 'Họ Hoa chuông' }, { s: 'Capparaceae', v: 'Họ Màn màn' }, { s: 'Celastraceae', v: 'Họ Dây gối' }, { s: 'Clusiaceae', v: 'Họ Bứa' }, { s: 'Combretaceae', v: 'Họ Bàng' }, { s: 'Convolvulaceae', v: 'Họ Bìm bìm' }, { s: 'Crassulaceae', v: 'Họ Thuốc bỏng' }, { s: 'Cucurbitaceae', v: 'Họ Bầu bí' }, { s: 'Cyperaceae', v: 'Họ Cói' }, { s: 'Dioscoreaceae', v: 'Họ Củ nâu' }, { s: 'Euphorbiaceae', v: 'Họ Thầu dầu' }, { s: 'Fabaceae', v: 'Họ Đậu' }, { s: 'Gentianaceae', v: 'Họ Long đởm' }, { s: 'Gesneriaceae', v: 'Họ Tai voi' }, { s: 'Lamiaceae', v: 'Họ Hoa môi' }, { s: 'Lauraceae', v: 'Họ Long não' }, { s: 'Lecythidaceae', v: 'Họ Lộc vừng' }, { s: 'Liliaceae', v: 'Họ Loa kèn' }, { s: 'Loganiaceae', v: 'Họ Mã tiền' }, { s: 'Lythraceae', v: 'Họ Bằng lăng' }, { s: 'Malvaceae', v: 'Họ Bông' }, { s: 'Melastomataceae', v: 'Họ Mua' }, { s: 'Meliaceae', v: 'Họ Xoan' }, { s: 'Menispermaceae', v: 'Họ Tiết dê' }, { s: 'Mimosaceae', v: 'Họ Trinh nữ' }, { s: 'Moraceae', v: 'Họ Dâu tằm' }, { s: 'Myrtaceae', v: 'Họ Sim' }, { s: 'Orchidaceae', v: 'Họ Lan' }, { s: 'Passifloraceae', v: 'Họ Lạc tiên' }, { s: 'Phyllanthaceae', v: 'Họ Diệp hạ châu' }, { s: 'Piperaceae', v: 'Họ Hồ tiêu' }, { s: 'Poaceae', v: 'Họ Lúa' }, { s: 'Polygonaceae', v: 'Họ Rau răm' }, { s: 'Ranunculaceae', v: 'Họ Hoàng liên' }, { s: 'Rhamnaceae', v: 'Họ Táo ta' }, { s: 'Rosaceae', v: 'Họ Hoa hồng' }, { s: 'Rubiaceae', v: 'Họ Cà phê' }, { s: 'Rutaceae', v: 'Họ Cam' }, { s: 'Sapindaceae', v: 'Họ Bồ hòn' }, { s: 'Scrophulariaceae', v: 'Họ Mõm sói' }, { s: 'Solanaceae', v: 'Họ Cà' }, { s: 'Sterculiaceae', v: 'Họ Trôm' }, { s: 'Thymelaeaceae', v: 'Họ Trầm' }, { s: 'Urticaceae', v: 'Họ Gai' }, { s: 'Verbenaceae', v: 'Họ Cỏ roi ngựa' }, { s: 'Violaceae', v: 'Họ Hoa tím' }, { s: 'Vitaceae', v: 'Họ Nho' }, { s: 'Zingiberaceae', v: 'Họ Gừng' } ].sort((a, b) => a.s.localeCompare(b.s)), }; }
 
@@ -306,7 +327,7 @@
                         this.els.plantListGrid.innerHTML = Object.keys(groups).sort().map(key => `<div class="mb-8"><h2 class="text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mb-4">${key}</h2><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${groups[key].map(p => this.createPlantCardHTML(p)).join('')}</div></div>`).join('');
                     }
                     this.addEventListenersToCards();
-                    this.els.plantListGrid.querySelectorAll('.plant-card').forEach((card, index) => { card.style.animationDelay = `${index * 40}ms`; card.classList.add('animate-in'); });
+                    this.els.plantListGrid.querySelectorAll('.animate-on-scroll').forEach(el => this.observer.observe(el));
                     lucide.createIcons();
                 }
 
@@ -359,32 +380,33 @@
 
                     this.els.plantDetailView.innerHTML = `
                         <div class="max-w-4xl mx-auto">
-                            <button id="back-to-list-desktop" class="hidden md:flex items-center gap-2 mb-6 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md p-1"><i data-lucide="arrow-left"></i>Quay lại</button>
-                            <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
-                                <div class="plant-title-block flex flex-col md:flex-row justify-between md:items-start mb-6">
-                                    <div>
-                                        <h2 class="text-3xl font-bold">${plant.tenDuocLieu}</h2>
-                                        <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(plant.hoCay)}</p>
-                                    </div>
-                                    <div class="relative mt-4 md:mt-0">
-                                        <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
-                                        <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
-                                            <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
-                                            <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                            <div class="detail-section animate-on-scroll">
+                                <button id="back-to-list-desktop" class="hidden md:flex items-center gap-2 mb-6 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md p-1"><i data-lucide="arrow-left"></i>Quay lại</button>
+                                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
+                                    <div class="plant-title-block flex flex-col md:flex-row justify-between md:items-start mb-6">
+                                        <div>
+                                            <h2 class="text-3xl font-bold">${plant.tenDuocLieu}</h2>
+                                            <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(plant.hoCay)}</p>
+                                        </div>
+                                        <div class="relative mt-4 md:mt-0">
+                                            <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
+                                            <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="space-y-6">
-                                    <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div class="flex flex-wrap gap-1">${(plant.nhomChat || '').split(',').map(g => `<span class="inline-block bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 rounded-full text-sm">${g.trim()}</span>`).join('')}</div></div>
-                                    <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div>${this._renderClickableItems(plant.thanhPhanHoaHocChinh)}</div></div>
-                                    <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div>${this._renderClickableItems(plant.boPhanDung)}</div></div>
-                                    <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng (theo hoạt chất)</h4>${renderTacDung(plant.tacDung)}</div>
-                                    <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4>${renderCongDung(plant.congDung)}</div>
+                                    <div class="space-y-6">
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div class="flex flex-wrap gap-1">${(plant.nhomChat || '').split(',').map(g => `<span class="inline-block bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 rounded-full text-sm">${g.trim()}</span>`).join('')}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div>${this._renderClickableItems(plant.thanhPhanHoaHocChinh)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div>${this._renderClickableItems(plant.boPhanDung)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng (theo hoạt chất)</h4>${renderTacDung(plant.tacDung)}</div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4>${renderCongDung(plant.congDung)}</div>
+                                    </div>
                                 </div>
                             </div>
-
                             ${relatedPlants.length > 0 ? `
-                            <div class="mt-8">
+                            <div class="detail-section animate-on-scroll mt-8">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-xl font-bold">Cây cùng họ</h3>
                                     ${relatedPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedPlants.length})</button>` : ''}
@@ -448,7 +470,11 @@
                             this.showPlantDetail(card.dataset.id);
                         }
                     });
-
+                    
+                    this.els.plantDetailView.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                        el.style.transitionDelay = `${index * 100}ms`;
+                        this.observer.observe(el);
+                    });
                     lucide.createIcons();
                 }
 
@@ -522,6 +548,7 @@
                                 this.showPlantDetail(card.dataset.id);
                             });
                         });
+                        this.els.searchResultsGrid.querySelectorAll('.animate-on-scroll').forEach(el => this.observer.observe(el));
                     } else {
                         this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
                     }
@@ -541,7 +568,7 @@
                 }
                 handleFormSubmit(e) { e.preventDefault(); const id = this.els.plantIdInput.value; const data = { tenDuocLieu: this.els.tenDuocLieu.input.value, hoCay: this.els.hoCay.input.value, nhomChat: this.els.nhomChat.input.value, thanhPhanHoaHocChinh: this.els.thanhPhanHoaHocChinh.input.value, boPhanDung: this.els.boPhanDung.input.value, tacDung: this.els.tacDung.input.value, congDung: this.els.congDung.input.value, }; if (id) { this.updatePlant(id, data); } else { this.addPlant(data); } this.closeModal(); }
                 getFilteredPlants() { return this.plants.filter(p => { const groupMatch = this.currentFilter.group === 'all' || (p.nhomChat && this._normalizeText(p.nhomChat).split(',').some(c => c.trim().startsWith(this._normalizeText(this.currentFilter.group)))); const searchMatch = !this.currentFilter.search || Object.values(p).some(val => this._normalizeText(val).includes(this._normalizeText(this.currentFilter.search))); return groupMatch && searchMatch; }); }
-                createPlantCardHTML(plant) { const isSelected = this.selectedPlants.has(plant.id); return `<div class="plant-card ${isSelected ? 'selected' : ''}" data-id="${plant.id}"><div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col"><h3 class="font-bold text-lg text-[var(--card-foreground)]">${plant.tenDuocLieu}</h3><p class="text-sm text-[var(--muted-foreground)] mb-2 flex-grow">${plant.hoCay}</p><div class="flex flex-wrap gap-1 mt-2">${(plant.nhomChat || '').split(',').slice(0, 3).map(g => `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g.trim().split('>').pop()}</span>`).join('')}</div></div></div>`; }
+                createPlantCardHTML(plant) { const isSelected = this.selectedPlants.has(plant.id); return `<div class="plant-card animate-on-scroll ${isSelected ? 'selected' : ''}" data-id="${plant.id}"><div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col"><h3 class="font-bold text-lg text-[var(--card-foreground)]">${plant.tenDuocLieu}</h3><p class="text-sm text-[var(--muted-foreground)] mb-2 flex-grow">${plant.hoCay}</p><div class="flex flex-wrap gap-1 mt-2">${(plant.nhomChat || '').split(',').slice(0, 3).map(g => `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g.trim().split('>').pop()}</span>`).join('')}</div></div></div>`; }
                 addEventListenersToCards() { document.querySelectorAll('.plant-card').forEach(card => { const id = card.dataset.id; card.addEventListener('mousemove', (e) => this.handlePointerMove(e)); card.addEventListener('touchmove', (e) => this.handlePointerMove(e), { passive: true }); card.addEventListener('mousedown', (e) => this.handlePointerDown(e, id)); card.addEventListener('touchstart', (e) => this.handlePointerDown(e, id), { passive: true }); card.addEventListener('mouseup', (e) => this.handlePointerUp(e, id)); card.addEventListener('touchend', (e) => this.handlePointerUp(e, id)); card.addEventListener('mouseleave', () => this.handlePointerLeave()); card.addEventListener('touchcancel', () => this.handlePointerLeave()); card.addEventListener('contextmenu', (e) => { this.handlePointerLeave(); this.showContextMenu(e, id) }); }); }
                 handlePointerDown(e, id) { if (e.type === 'mousedown' && e.button === 2) return; this.isDragging = false; this.isLongPressing = false; this.pointerStartPos.y = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY; this.pressTimer = setTimeout(() => { this.isLongPressing = true; this.togglePlantSelection(id); }, 500); }
                 handlePointerUp(e, id) { clearTimeout(this.pressTimer); if (this.isDragging) { this.isDragging = false; return; } if (this.isLongPressing) { if (e.cancelable) e.preventDefault(); } else { if (this.selectedPlants.size > 0) { this.togglePlantSelection(id); } else { this.showPlantDetail(id); } } this.isLongPressing = false; }
@@ -596,3 +623,4 @@
     </script>
 </body>
 </html>
+
