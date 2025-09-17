@@ -1,0 +1,21 @@
+{
+    "Giảm đau, hạ sốt": {
+        "title": "Nhóm thuốc Giảm đau, hạ sốt",
+        "definition": "Là các thuốc có tác dụng làm giảm hoặc mất cảm giác đau và hạ thân nhiệt khi bị sốt, nhưng không ảnh hưởng đến nguyên nhân gây bệnh.",
+        "mechanism": "Cơ chế chính là ức chế enzyme cyclooxygenase (COX), làm giảm tổng hợp prostaglandin (chất trung gian gây viêm, đau, sốt) ở cả trung ương và ngoại vi.",
+        "classification": [
+            "**Nhóm Anilin:** Tác động chủ yếu trên COX ở hệ thần kinh trung ương, ít tác dụng kháng viêm.",
+            "**Nhóm NSAID:** Ức chế COX ở cả trung ương và ngoại vi, có cả tác dụng kháng viêm."
+        ]
+    },
+    "Kháng sinh": {
+        "title": "Nhóm thuốc Kháng sinh",
+        "definition": "Là những chất có nguồn gốc từ vi sinh vật hoặc tổng hợp, có tác dụng ức chế sự phát triển hoặc tiêu diệt vi khuẩn ở nồng độ thấp.",
+        "mechanism": "Cơ chế đa dạng, bao gồm: Ức chế tổng hợp vách tế bào (Beta-lactam), ức chế tổng hợp protein (Macrolid, Aminoglycosid), ức chế tổng hợp acid nucleic (Quinolon), và chống chuyển hóa (Sulfamid).",
+        "classification": [
+            "**Beta-lactam:** Có vòng beta-lactam, ức chế tổng hợp vách vi khuẩn.",
+            "**Macrolid:** Vòng lacton lớn, ức chế tổng hợp protein.",
+            "**Quinolon:** Ức chế enzyme DNA gyrase, ngăn sự sao chép DNA của vi khuẩn."
+        ]
+    }
+}
