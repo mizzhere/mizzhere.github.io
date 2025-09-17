@@ -20,6 +20,25 @@
     },
     {
         "id": "2",
+        "tenHoatChat": "Ranitidin",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Thuốc kháng histamin H2",
+        "skeleton": [
+            "furan"
+        ],
+        "smiles": "CN(C)Cc1oc(CSCCNC(=C[N+](=O)[O-])NC)cc1",
+        "cauTrucThanhPhan": "Vòng Furan, Nhóm Nitromethylene",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Không có thông tin trong tài liệu.",
+        "tinhChat": "Không có thông tin trong tài liệu.",
+        "tacDung": "Tương tự Cimetidin, ức chế cạnh tranh trên thụ thể H2. Hoạt lực mạnh hơn cimetidine 4-10 lần và ít tác dụng phụ hơn.",
+        "phanUng": "Không có thông tin trong tài liệu.",
+        "dinhTinhDinhLuong": "Không có thông tin trong tài liệu.",
+        "chiDinh": "Loét dạ dày, tá tràng; trào ngược dạ dày thực quản.",
+        "tdkmm": "Bị FDA yêu cầu rút khỏi thị trường từ 01/04/2020 do chứa tạp chất N-nitrosodimethylamin (NDMA) có khả năng gây ung thư.",
+        "dangBaoChe": "Viên nén."
+    },
+    {
+        "id": "3",
         "tenHoatChat": "Omeprazol",
         "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Thuốc ức chế bơm proton (PPIs)",
         "skeleton": [
@@ -39,7 +58,41 @@
         "dangBaoChe": "Viên nang chứa các vi hạt bao tan trong ruột."
     },
     {
-        "id": "3",
+        "id": "4",
+        "tenHoatChat": "Hỗn hợp Nhôm-Magnesi hydroxyd",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Kháng acid dịch vị (Antacid)",
+        "skeleton": [],
+        "smiles": "[Al+3].[OH-].[OH-].[OH-].[Mg+2].[OH-].[OH-]",
+        "cauTrucThanhPhan": "Hợp chất vô cơ",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Là các base yếu, có khả năng phản ứng với acid HCl trong dịch vị.",
+        "tinhChat": "Không có thông tin trong tài liệu.",
+        "tacDung": "Trung hòa trực tiếp acid HCl trong dạ dày, làm tăng pH dịch vị, giúp giảm nhanh cơn đau do loét. **Nhôm hydroxyd** có thể gây táo bón, trong khi **Magnesi hydroxyd** có tác dụng nhuận tràng, do đó việc kết hợp giúp cân bằng tác dụng phụ này.",
+        "phanUng": "Phản ứng trung hòa: Al(OH)3 + 3HCl -> AlCl3 + 3H2O; Mg(OH)2 + 2HCl -> MgCl2 + 2H2O.",
+        "dinhTinhDinhLuong": "Không có thông tin trong tài liệu.",
+        "chiDinh": "Giảm đau tạm thời do tăng acid dạ dày, loét dạ dày-tá tràng.",
+        "tdkmm": "Nhôm hydroxyd gây táo bón, Magnesi hydroxyd gây tiêu chảy.",
+        "dangBaoChe": "Hỗn dịch (gel), viên nhai."
+    },
+    {
+        "id": "5",
+        "tenHoatChat": "Sucralfat",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Thuốc bảo vệ niêm mạc",
+        "skeleton": [],
+        "smiles": "Không có thông tin",
+        "cauTrucThanhPhan": "Phức hợp của sucrose octasulfat và poly-nhôm hydroxyd",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Không có thông tin trong tài liệu.",
+        "tinhChat": "Không tan trong nước. Tan trong các acid đặc và dung dịch hydroxyd kiềm đặc.",
+        "tacDung": "Trong môi trường acid của dạ dày (pH < 4), thuốc tạo thành một lớp gel dính bao lấy ổ loét, tạo thành hàng rào vật lý bảo vệ niêm mạc khỏi sự tấn công của acid, pepsin và mật.",
+        "phanUng": "Không có thông tin trong tài liệu.",
+        "dinhTinhDinhLuong": "Không có thông tin trong tài liệu.",
+        "chiDinh": "Điều trị loét dạ dày - tá tràng.",
+        "tdkmm": "Táo bón là tác dụng phụ thường gặp nhất.",
+        "dangBaoChe": "Viên nén, hỗn dịch."
+    },
+    {
+        "id": "6",
         "tenHoatChat": "Bisacodyl",
         "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc nhuận tràng và tẩy > Gây kích thích",
         "skeleton": [
@@ -59,7 +112,7 @@
         "dangBaoChe": "Viên bao tan trong ruột."
     },
     {
-        "id": "4",
+        "id": "7",
         "tenHoatChat": "Loperamid",
         "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị tiêu chảy",
         "skeleton": [
@@ -78,4 +131,3 @@
         "dangBaoChe": "Viên nang."
     }
 ]
-
