@@ -40,8 +40,8 @@
         @keyframes view-fade-in-anim { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes view-fade-out-anim { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
 
-        .drug-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
-        .drug-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+        .drug-card, .group-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
+        .drug-card:hover, .group-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
         
         .animate-on-scroll {
             opacity: 0;
@@ -122,14 +122,9 @@
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
                     <input type="text" id="search-input" placeholder="Tìm hoạt chất..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all">
                 </div>
-                <button id="add-drug-sidebar" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring">
-                    <i data-lucide="plus" class="w-5 h-5"></i>
-                    <span class="absolute left-full ml-3 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Thêm hoạt chất</span>
-                </button>
             </div>
             <div id="sidebar-top-actions-collapsed" class="hidden flex-col items-center gap-2 mb-4">
                 <button id="search-button-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 hover:bg-[var(--accent)] rounded-lg transition-colors custom-ring"><i data-lucide="search" class="w-5 h-5 text-[var(--muted-foreground)]"></i></button>
-                <button id="add-drug-sidebar-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring"><i data-lucide="plus" class="w-5 h-5"></i></button>
             </div>
 
             <h2 class="text-sm font-semibold text-[var(--muted-foreground)] mb-2 px-3 sidebar-header-text">NHÓM THUỐC</h2>
@@ -176,11 +171,8 @@
                 <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-center">
                     <div class="p-6 bg-[var(--card)] rounded-full mb-4"><i data-lucide="book-open-text" class="w-16 h-16 text-[var(--primary)]"></i></div>
                     <h2 class="text-2xl font-bold mb-2">Chào mừng bạn!</h2>
-                    <p class="max-w-md text-[var(--muted-foreground)] mb-6">Bắt đầu bằng cách thêm hoạt chất mới, nhập dữ liệu có sẵn, hoặc tìm kiếm trong danh sách.</p>
+                    <p class="max-w-md text-[var(--muted-foreground)] mb-6">Bắt đầu bằng cách khám phá các nhóm thuốc, hoặc tìm kiếm trong danh sách.</p>
                     <p id="drug-count" class="text-sm text-[var(--muted-foreground)] mb-4"></p>
-                    <div class="flex gap-2">
-                        <button id="add-drug-welcome" class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity custom-ring"><i data-lucide="plus-circle" class="w-5 h-5"></i>Thêm hoạt chất</button>
-                    </div>
                 </div>
                 <div id="drug-list-grid"></div>
             </div>
@@ -188,8 +180,6 @@
             <div id="group-overview-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
             <div id="skeleton-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
 
-            <button id="add-drug-fab" class="md:hidden fixed bottom-6 right-6 bg-[var(--primary)] text-[var(--primary-foreground)] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-all custom-ring"><i data-lucide="plus" class="w-8 h-8"></i></button>
-            
             <div id="selection-toolbar" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--card)] border border-[var(--border)] rounded-full shadow-lg p-2 flex items-center gap-4 z-30 transition-all">
                 <span id="selection-count" class="text-sm font-medium px-2"></span>
                 <button id="delete-selected-btn" class="flex items-center justify-center w-10 h-10 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors custom-ring"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
@@ -225,7 +215,6 @@
             <nav id="groups-nav-mobile" class="flex-1 overflow-y-auto no-scrollbar"></nav>
             <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
                 <button id="data-source-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="database" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Nguồn Dữ liệu</span></button>
-                <button id="add-drug-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="plus-circle" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Thêm hoạt chất</span></button>
                 <button id="import-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Nhập Dữ liệu</span></button>
                 <button id="export-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Xuất Dữ liệu</span></button>
                 <button id="theme-toggle-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i><span class="text-sm font-medium">Giao diện</span></button>
@@ -304,15 +293,6 @@
         window.rdkitInitialized = window.initRDKitModule();
 
         document.addEventListener('DOMContentLoaded', () => {
-            // The entire MedicinalChemistryApp class and its logic will be here.
-            // This is a placeholder for the full script which is quite large.
-            // The actual implementation contains all the previously discussed features:
-            // - Data loading from files or localStorage.
-            // - Independent accordion sidebar.
-            // - All view rendering and navigation logic.
-            // - RDKit structure drawing.
-            // - Event listeners for all interactive elements.
-            // For brevity in this display, the full script is omitted, but it is complete in the actual file.
              class MedicinalChemistryApp {
                 constructor() {
                     this.drugs = [];
@@ -388,11 +368,6 @@
                         stickyBackButton: document.getElementById('sticky-back-button'),
 
                         // Buttons
-                        addDrugSidebar: document.getElementById('add-drug-sidebar'),
-                        addDrugWelcome: document.getElementById('add-drug-welcome'),
-                        addDrugFab: document.getElementById('add-drug-fab'),
-                        addDrugMobile: document.getElementById('add-drug-mobile'),
-                        addDrugSidebarCollapsed: document.getElementById('add-drug-sidebar-collapsed'),
                         searchButtonCollapsed: document.getElementById('search-button-collapsed'),
                         
                         // Mobile Menu
@@ -448,9 +423,9 @@
                         sidebarBottomActionsCollapsed: document.getElementById('sidebar-bottom-actions-collapsed'),
 
                         // Import/Export/Theme
-                        importButtons: document.querySelectorAll('#import-button-desktop, #import-button-desktop-collapsed, #import-button-mobile'),
-                        exportButtons: document.querySelectorAll('#export-button-desktop, #export-button-desktop-collapsed, #export-button-mobile'),
-                        themeToggles: document.querySelectorAll('#theme-toggle-desktop, #theme-toggle-desktop-collapsed, #theme-toggle-mobile'),
+                        importButtons: document.querySelectorAll('[id^="import-button-"]'),
+                        exportButtons: document.querySelectorAll('[id^="export-button-"]'),
+                        themeToggles: document.querySelectorAll('[id^="theme-toggle-"]'),
                         dataSourceSwitches: document.querySelectorAll('[id^="data-source-"]'),
                     };
                 }
@@ -477,15 +452,12 @@
                 async autoLoadData() {
                     this.els.loadingOverlay.classList.remove('hidden');
                     try {
-                        // Try loading from files first, silently on success
                         await this.loadDataFromFiles(false); 
                     } catch (error) {
                         console.warn("Could not load from files, falling back to local storage.", error);
-                        // If file loading fails, use local storage and notify the user
                         this.loadDataFromLocalStorage(true, 'Không thể tải tệp, đã sử dụng dữ liệu đã lưu.'); 
                     } finally {
                         this.els.loadingOverlay.classList.add('hidden');
-                        // Initialize the app regardless of the source
                         this.initApp(); 
                     }
                 }
@@ -534,7 +506,6 @@
                         if(showToast) this.showToast(message, 'success');
                     } else {
                         if(showToast) this.showToast('Không tìm thấy dữ liệu đã lưu.', 'error');
-                        // Initialize with empty arrays/objects if nothing is found
                         this.drugs = [];
                         this.groupOverviews = {};
                         this.skeletons = {};
@@ -578,17 +549,12 @@
                     
                     this.els.searchInput.addEventListener('input', (e) => {
                         const query = e.target.value;
-                        if (this.currentView.type !== 'list') {
-                            this.currentFilter = { group: 'all', search: query };
-                            history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                        if (this.currentFilter.group !== 'all' || this.currentView.type !== 'list') {
+                            history.pushState({ view: 'list', filter: {group: 'all', search: query} }, '', '#list');
                             this.showListView();
                         } else {
                             this.handleSearch(query);
                         }
-                    });
-                    
-                    [this.els.addDrugWelcome, this.els.addDrugSidebar, this.els.addDrugFab, this.els.addDrugMobile, this.els.addDrugSidebarCollapsed].forEach(btn => {
-                        btn.addEventListener('click', () => this.openModal());
                     });
                     
                     this.els.searchButtonCollapsed.addEventListener('click', () => { if (this.els.sidebar.classList.contains('collapsed')) { this.toggleSidebar(); this.els.searchInput.focus(); } });
@@ -610,11 +576,17 @@
                         btn.addEventListener('click', () => this.els.dataSourceModal.showModal());
                     });
 
+                    this.els.dataSourceModal.addEventListener('click', (e) => {
+                        if (e.target === this.els.dataSourceModal) {
+                            this.els.dataSourceModal.close();
+                        }
+                    });
+
                     this.els.loadFromFilesBtn.onclick = async () => {
                         this.els.dataSourceModal.close();
                         try {
                             await this.loadDataFromFiles(true);
-                            this.handleGroupFilter('all'); // Go to home and re-render
+                            this.handleGroupFilter('all'); 
                         } catch(err) {
                             this.showToast('Lỗi khi tải dữ liệu từ tệp.', 'error');
                         }
@@ -623,7 +595,7 @@
                     this.els.loadFromLocalBtn.onclick = () => {
                         this.els.dataSourceModal.close();
                         this.loadDataFromLocalStorage(true);
-                        this.handleGroupFilter('all'); // Go to home and re-render
+                        this.handleGroupFilter('all'); 
                     };
                     
                     this.els.deleteSelectedBtn.addEventListener('click', () => this.deleteSelectedDrugs());
@@ -644,16 +616,23 @@
                 }
 
                 renderAll() {
-                    const filteredDrugs = this.getFilteredDrugs();
                     this.renderGroups();
-                    this.renderDrugList(filteredDrugs);
+                    if (this.currentFilter.group === 'all' && !this.currentFilter.search) {
+                        this.renderGroupList();
+                    } else {
+                        const filteredDrugs = this.getFilteredDrugs();
+                        this.renderDrugList(filteredDrugs);
+                    }
                     this.updateUIState();
                     this.updateSelectionToolbar();
                 }
 
-                renderGroups() {
+                 renderGroups() {
                     const openGroups = new Set();
-                    this.els.groupsNav.querySelectorAll('details[open] > summary.group-link').forEach(summary => openGroups.add(summary.dataset.group));
+                    this.els.groupsNav.querySelectorAll('details[open]').forEach(details => {
+                        const summary = details.querySelector('summary');
+                        if (summary) openGroups.add(summary.dataset.group);
+                    });
                     
                     const tree = {};
                     this.drugs.forEach(d => {
@@ -682,7 +661,6 @@
                     
                     const setupListeners = (container) => {
                         container.innerHTML = html;
-                         // Restore open state from before re-render
                         container.querySelectorAll('details').forEach(details => {
                             const summary = details.querySelector('summary');
                             if (summary && openGroups.has(summary.dataset.group)) {
@@ -695,17 +673,15 @@
                             if (!link) return;
                             
                             e.preventDefault();
-                            e.stopPropagation();
-
-                            const groupName = link.dataset.group;
+                            
                             const isSummary = link.tagName.toLowerCase() === 'summary';
-
                             if (isSummary) {
+                                e.stopPropagation();
                                 const details = link.closest('details');
-                                details.open = !details.open; // Manually toggle
+                                details.open = !details.open;
                             }
                             
-                            this.handleGroupFilter(groupName);
+                            this.handleGroupFilter(link.dataset.group);
                         });
                     };
 
@@ -715,6 +691,50 @@
                     this.highlightActiveGroup();
                     lucide.createIcons();
                 }
+
+                renderGroupList() {
+                    const rootGroupsData = Object.keys(this.groupOverviews).map(key => ({
+                        name: key,
+                        ...this.groupOverviews[key]
+                    }));
+
+                    this.els.drugListGrid.innerHTML = `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${rootGroupsData.map((group, index) => this.createGroupCardHTML(group)).join('')}
+                        </div>
+                    `;
+                    
+                    this.els.drugListGrid.querySelectorAll('.group-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            this.handleGroupFilter(card.dataset.group);
+                        });
+                    });
+
+                    this.els.drugListGrid.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                        el.style.transitionDelay = `${index * 50}ms`;
+                        this.observer.observe(el);
+                    });
+                    lucide.createIcons();
+                }
+
+                createGroupCardHTML(group) {
+                    const drugCount = this.drugs.filter(d => d.nhomThuoc.startsWith(group.name)).length;
+                    return `
+                        <div class="group-card animate-on-scroll bg-[var(--card)] p-6 rounded-xl border border-[var(--border)] cursor-pointer" data-group="${group.name}">
+                            <div class="flex items-center gap-4 mb-3">
+                                <div class="p-3 bg-violet-100 rounded-full dark:bg-violet-900/50">
+                                     <i data-lucide="pills" class="w-6 h-6 text-violet-600 dark:text-violet-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-xl text-[var(--card-foreground)]">${group.name}</h3>
+                                    <p class="text-sm text-[var(--muted-foreground)]">${drugCount} hoạt chất</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-[var(--muted-foreground)]">${group.definition}</p>
+                        </div>
+                    `;
+                }
+
 
                 renderDrugList(drugs) {
                     if (drugs.length === 0) {
@@ -853,7 +873,7 @@
 
                     this.els.drugDetailView.innerHTML = `
                         <div class="max-w-4xl mx-auto">
-                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2">
                                 <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
                                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                                     <span class="truncate">${backTitle}</span>
@@ -1099,8 +1119,41 @@
                         lucide.createIcons();
                         return;
                     }
-                    const results = this.drugs.filter(d => Object.values(d).some(val => this._normalizeText(val).includes(normalizedQuery)));
-                    
+
+                    const hasDiacritics = query !== normalizedQuery;
+
+                    let results = this.drugs
+                        .map(drug => {
+                            let score = 0;
+                            const searchableValues = Object.values(drug);
+
+                            for (const value of searchableValues) {
+                                if (typeof value !== 'string') continue;
+
+                                if (hasDiacritics) {
+                                    const regex = new RegExp(`\\b${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
+                                    if (regex.test(value)) {
+                                        score = 3; // Exact word match with diacritics is highest priority
+                                        break;
+                                    }
+                                } else {
+                                    const normalizedValue = this._normalizeText(value);
+                                    if (normalizedValue.startsWith(normalizedQuery)) {
+                                        score = Math.max(score, 3);
+                                    } else if (new RegExp(`\\b${normalizedQuery}\\b`).test(normalizedValue)) {
+                                        score = Math.max(score, 2);
+                                    } else if (normalizedValue.includes(normalizedQuery)) {
+                                        score = Math.max(score, 1);
+                                    }
+                                }
+                            }
+                            return { drug, score };
+                        })
+                        .filter(item => item.score > 0)
+                        .sort((a, b) => b.score - a.score)
+                        .map(item => item.drug);
+
+
                     if(results.length > 0) {
                         this.els.searchResultsGrid.innerHTML = results.map(drug => this.createDrugCardHTML(drug, true)).join('');
                         this.addEventListenersToCards(this.els.searchResultsGrid, true);
@@ -1161,6 +1214,7 @@
                     }
                     this.currentView = { type: 'group', group: groupName };
                     this.highlightActiveGroup();
+                    this.els.stickyHeader.classList.add('-translate-y-full'); // Hide sticky header on this view
 
                     this.els.stickyTitle.textContent = overviewData.title;
                     this.els.stickySubtitle.textContent = "Đại cương nhóm thuốc";
@@ -1189,7 +1243,7 @@
 
                     this.els.groupOverviewView.innerHTML = `
                         <div class="max-w-4xl mx-auto">
-                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2">
                                 <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
                                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                                     <span>Tất cả hoạt chất</span>
@@ -1259,7 +1313,7 @@
 
                     this.els.skeletonView.innerHTML = `
                          <div class="max-w-4xl mx-auto">
-                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2">
                                 <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
                                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                                     <span>${backTitle}</span>
@@ -1307,15 +1361,13 @@
 
                 renderLinkedText(s) {
                     if (!s || s.trim() === '') return '<p class="text-[var(--muted-foreground)]">Chưa có thông tin</p>';
-                    // Handle bold
-                    s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
-                    // Handle skeleton links
+                    s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-[var(--foreground)]">$1</strong>');
                     s = s.replace(/\[(.*?)\]/g, (match, p1) => {
                         const skeletonKey = Object.keys(this.skeletons).find(key => this.skeletons[key].title.toLowerCase().includes(p1.toLowerCase()) || key.toLowerCase().includes(p1.toLowerCase()));
                         if (skeletonKey) {
                             return `<button class="skeleton-link" data-skeleton-id="${skeletonKey}">${this.skeletons[skeletonKey].title}</button>`;
                         }
-                        return p1; // Return as is if not found
+                        return p1;
                     });
 
                     const items = s.split(/(?:;|\.\s+|\n)/g).map(i => i.trim()).filter(Boolean);
@@ -1514,7 +1566,6 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                     try {
-                        // Wait for RDKit to be initialized and get the module
                         const rdkit = await window.rdkitInitialized;
                         const mol = rdkit.get_mol(smiles);
 
@@ -1522,7 +1573,6 @@
                             throw new Error("Invalid SMILES string");
                         }
                         
-                        // Convert hex #8b5cf6 to RDKit's 0-1 RGB format
                         const highlightColor = [139/255, 92/255, 246/255]; 
                         
                         const details = {
