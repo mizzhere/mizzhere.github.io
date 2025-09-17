@@ -4,64 +4,57 @@
         "definition": "Bao gồm các loại thuốc được sử dụng để điều trị các rối loạn và bệnh lý liên quan đến hệ tiêu hóa, từ dạ dày đến ruột.",
         "mechanism": "Cơ chế tác dụng rất đa dạng, tùy thuộc vào từng phân nhóm cụ thể, bao gồm việc điều chỉnh sự tiết acid, bảo vệ niêm mạc, điều hòa nhu động ruột, hoặc bù nước và điện giải.",
         "classification": [
-            "**Thuốc điều trị loét dạ dày - tá tràng**",
-            "**Thuốc nhuận tràng và tẩy**",
-            "**Thuốc điều trị tiêu chảy**"
+            {
+                "title": "Nhóm thuốc điều trị loét dạ dày - tá tràng",
+                "definition": "Là các thuốc được sử dụng để điều trị và phòng ngừa các vết loét ở niêm mạc dạ dày và tá tràng.",
+                "mechanism": "Cơ chế chính là tái lập sự cân bằng giữa các yếu tố tấn công (acid dịch vị, vi khuẩn HP) và các yếu tố bảo vệ (lớp niêm mạc, màng nhầy, prostaglandin).",
+                "classification": [
+                    {
+                        "title": "Nhóm thuốc kháng acid dịch vị (Antacid)",
+                        "definition": "Là những chất có khả năng trung hòa acid HCl ở dạ dày.",
+                        "mechanism": "Tác động trực tiếp bằng phản ứng hóa học trung hòa acid dịch vị, làm tăng pH dạ dày, qua đó giảm nhanh các triệu chứng đau do loét. Tác dụng nhanh nhưng thời gian tác dụng ngắn.",
+                        "classification": []
+                    },
+                    {
+                        "title": "Nhóm thuốc kháng histamin H2",
+                        "definition": "Là các thuốc ức chế cạnh tranh với histamin tại thụ thể H2 của tế bào viền ở dạ dày, làm giảm tiết acid.",
+                        "mechanism": "Histamin là một trong những chất chính kích thích tế bào viền tiết acid. Các thuốc này có cấu trúc tương tự histamin, cạnh tranh gắn vào thụ thể H2, từ đó ngăn chặn con đường tín hiệu gây tiết acid.",
+                        "classification": []
+                    },
+                    {
+                        "title": "Nhóm thuốc ức chế bơm proton (PPIs)",
+                        "definition": "Là nhóm thuốc có tác dụng ức chế mạnh và kéo dài sự bài tiết acid dịch vị.",
+                        "mechanism": "Ức chế không thuận nghịch bơm H+/K+-ATPase (bơm proton), là giai đoạn cuối cùng trong quá trình tiết acid của tế bào viền dạ dày. Các thuốc này thường ở dạng tiền thuốc và được hoạt hóa trong môi trường acid.",
+                        "classification": []
+                    },
+                    {
+                        "title": "Nhóm thuốc bảo vệ niêm mạc",
+                        "definition": "Là các thuốc tạo ra một lớp màng bảo vệ trên bề mặt niêm mạc hoặc tại vị trí vết loét, giúp ngăn cản sự tấn công của các yếu tố gây hại.",
+                        "mechanism": "Trong môi trường acid, các thuốc này được hoạt hóa, polymer hóa tạo thành một lớp gel dính, bao phủ lấy ổ loét và niêm mạc xung quanh, tạo thành một hàng rào vật lý.",
+                        "classification": []
+                    }
+                ]
+            },
+            {
+                "title": "Nhóm thuốc nhuận tràng và tẩy",
+                "definition": "Là những chất giúp cho việc đại tiện được dễ dàng, dùng để điều trị táo bón.",
+                "mechanism": "Cơ chế đa dạng, bao gồm tăng áp suất thẩm thấu, làm mềm phân, bôi trơn, hoặc kích thích trực tiếp lên niêm mạc ruột để tăng nhu động.",
+                "classification": [
+                    {
+                        "title": "Nhóm thuốc nhuận tràng gây kích thích",
+                        "definition": "Là các thuốc tác động trực tiếp lên các đầu mút thần kinh ở niêm mạc ruột.",
+                        "mechanism": "Kích thích đám rối thần kinh tại chỗ, làm tăng nhu động ruột, đặc biệt là ở ruột già, giúp thúc đẩy quá trình tống phân ra ngoài.",
+                        "classification": []
+                    }
+                ]
+            },
+            {
+                "title": "Nhóm thuốc điều trị tiêu chảy",
+                "definition": "Là các thuốc được sử dụng để làm giảm triệu chứng của tình trạng đi ngoài phân lỏng.",
+                "mechanism": "Cơ chế chính là bù nước và điện giải (Oresol) hoặc làm giảm nhu động ruột thông qua việc tác động lên các thụ thể opiat ở thành ruột (Loperamid).",
+                "classification": []
+            }
         ]
-    },
-    "Thuốc điều trị loét dạ dày - tá tràng": {
-        "title": "Nhóm thuốc điều trị loét dạ dày - tá tràng",
-        "definition": "Là các thuốc được sử dụng để điều trị và phòng ngừa các vết loét ở niêm mạc dạ dày và tá tràng.",
-        "mechanism": "Cơ chế chính là tái lập sự cân bằng giữa các yếu tố tấn công (acid dịch vị, vi khuẩn HP) và các yếu tố bảo vệ (lớp niêm mạc, màng nhầy, prostaglandin).",
-        "classification": [
-            "**Kháng acid dịch vị (Antacid)**",
-            "**Thuốc kháng histamin H2**",
-            "**Thuốc ức chế bơm proton (PPIs)**",
-            "**Thuốc bảo vệ niêm mạc**"
-        ]
-    },
-    "Kháng acid dịch vị (Antacid)": {
-        "title": "Nhóm thuốc kháng acid dịch vị (Antacid)",
-        "definition": "Là những chất có khả năng trung hòa acid HCl ở dạ dày.",
-        "mechanism": "Tác động trực tiếp bằng phản ứng hóa học trung hòa acid dịch vị, làm tăng pH dạ dày, qua đó giảm nhanh các triệu chứng đau do loét. Tác dụng nhanh nhưng thời gian tác dụng ngắn.",
-        "classification": []
-    },
-    "Thuốc kháng histamin H2": {
-        "title": "Nhóm thuốc kháng histamin H2",
-        "definition": "Là các thuốc ức chế cạnh tranh với histamin tại thụ thể H2 của tế bào viền ở dạ dày, làm giảm tiết acid.",
-        "mechanism": "Histamin là một trong những chất chính kích thích tế bào viền tiết acid. Các thuốc này có cấu trúc tương tự histamin, cạnh tranh gắn vào thụ thể H2, từ đó ngăn chặn con đường tín hiệu gây tiết acid.",
-        "classification": []
-    },
-    "Thuốc ức chế bơm proton (PPIs)": {
-        "title": "Nhóm thuốc ức chế bơm proton (PPIs)",
-        "definition": "Là nhóm thuốc có tác dụng ức chế mạnh và kéo dài sự bài tiết acid dịch vị.",
-        "mechanism": "Ức chế không thuận nghịch bơm H+/K+-ATPase (bơm proton), là giai đoạn cuối cùng trong quá trình tiết acid của tế bào viền dạ dày. Các thuốc này thường ở dạng tiền thuốc và được hoạt hóa trong môi trường acid.",
-        "classification": []
-    },
-    "Thuốc bảo vệ niêm mạc": {
-        "title": "Nhóm thuốc bảo vệ niêm mạc",
-        "definition": "Là các thuốc tạo ra một lớp màng bảo vệ trên bề mặt niêm mạc hoặc tại vị trí vết loét, giúp ngăn cản sự tấn công của các yếu tố gây hại.",
-        "mechanism": "Trong môi trường acid, các thuốc này được hoạt hóa, polymer hóa tạo thành một lớp gel dính, bao phủ lấy ổ loét và niêm mạc xung quanh, tạo thành một hàng rào vật lý.",
-        "classification": []
-    },
-    "Thuốc nhuận tràng và tẩy": {
-        "title": "Nhóm thuốc nhuận tràng và tẩy",
-        "definition": "Là những chất giúp cho việc đại tiện được dễ dàng, dùng để điều trị táo bón.",
-        "mechanism": "Cơ chế đa dạng, bao gồm tăng áp suất thẩm thấu, làm mềm phân, bôi trơn, hoặc kích thích trực tiếp lên niêm mạc ruột để tăng nhu động.",
-        "classification": [
-            "**Gây kích thích**"
-        ]
-    },
-    "Gây kích thích": {
-        "title": "Nhóm thuốc nhuận tràng gây kích thích",
-        "definition": "Là các thuốc tác động trực tiếp lên các đầu mút thần kinh ở niêm mạc ruột.",
-        "mechanism": "Kích thích đám rối thần kinh tại chỗ, làm tăng nhu động ruột, đặc biệt là ở ruột già, giúp thúc đẩy quá trình tống phân ra ngoài.",
-        "classification": []
-    },
-    "Thuốc điều trị tiêu chảy": {
-        "title": "Nhóm thuốc điều trị tiêu chảy",
-        "definition": "Là các thuốc được sử dụng để làm giảm triệu chứng của tình trạng đi ngoài phân lỏng.",
-        "mechanism": "Cơ chế chính là bù nước và điện giải (Oresol) hoặc làm giảm nhu động ruột thông qua việc tác động lên các thụ thể opiat ở thành ruột (Loperamid).",
-        "classification": []
     }
 }
+
