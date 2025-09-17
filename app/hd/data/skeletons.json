@@ -1,22 +1,32 @@
 {
-    "p-aminophenol": {
-        "title": "Khung p-Aminophenol",
-        "smiles": "NC1=CC=C(O)C=C1",
-        "description": "Là cấu trúc cơ bản cho các thuốc giảm đau hạ sốt nhóm anilin như Paracetamol. Nhóm hydroxyl phenol và nhóm amin ở vị trí para là đặc điểm nhận dạng chính."
+    "imidazole": {
+        "title": "Vòng Imidazole",
+        "smiles": "c1cn[nH]c1",
+        "description": "Là dị vòng thơm 5 cạnh chứa 2 nguyên tử Nitơ ở vị trí 1 và 3. Đây là cấu trúc dị vòng trung tâm trong Cimetidin, đóng vai trò quan trọng trong việc tương tác với thụ thể H2."
     },
-    "acid-salicylic": {
-        "title": "Khung Acid Salicylic",
-        "smiles": "OC1=CC=CC=C1C(=O)O",
-        "description": "Là cấu trúc nền tảng cho Aspirin và nhiều NSAID khác. Đặc trưng bởi nhóm hydroxyl và nhóm carboxyl gắn vào nhân thơm ở vị trí ortho."
+    "furan": {
+        "title": "Vòng Furan",
+        "smiles": "c1ccoc1",
+        "description": "Là dị vòng thơm 5 cạnh chứa một nguyên tử Oxy. Đây là cấu trúc dị vòng có trong Ranitidin, thay thế cho vòng Imidazole trong Cimetidin."
     },
-    "beta-lactam": {
-        "title": "Vòng Beta-lactam",
-        "smiles": "C1C(=O)NC1",
-        "description": "Là cấu trúc vòng 4 cạnh chứa liên kết amid, có sức căng lớn và hoạt tính cao. Đây là cấu trúc farmacofor chính của các kháng sinh họ Beta-lactam, chịu trách nhiệm cho việc ức chế tổng hợp vách tế bào vi khuẩn."
+    "benzimidazol": {
+        "title": "Nhân Benzimidazol",
+        "smiles": "c1ccc2c(c1)nc[nH]2",
+        "description": "Là cấu trúc được tạo thành từ sự ngưng tụ của benzen và imidazol. Đây là khung cấu trúc cốt lõi của các thuốc ức chế bơm proton (PPIs) như Omeprazol, không bền và dễ bị chuyển hóa trong môi trường acid."
     },
-    "morphinan": {
-        "title": "Khung Morphinan",
-        "smiles": "C1CCN2C3C1CC4=C(C=C(O)C=C4)OC23",
-        "description": "Là khung sườn đa vòng phức tạp của Morphin và các thuốc giảm đau opioid khác. Cấu trúc không gian đặc thù cho phép nó tương tác hiệu quả với các thụ thể opioid trong hệ thần kinh."
+    "pyridin": {
+        "title": "Vòng Pyridin",
+        "smiles": "c1ccncc1",
+        "description": "Là dị vòng thơm 6 cạnh chứa một nguyên tử Nitơ, có tính base. Vòng Pyridine là một phần quan trọng trong cấu trúc của các thuốc PPIs và Bisacodyl."
+    },
+    "diphenylmethan": {
+        "title": "Khung Diphenylmethan",
+        "smiles": "c1ccccc1Cc2ccccc2",
+        "description": "Là cấu trúc gồm hai vòng phenyl liên kết với cùng một nguyên tử carbon. Đây là một phần trong cấu trúc của Bisacodyl, góp phần vào tác dụng nhuận tràng của thuốc."
+    },
+    "piperidin": {
+        "title": "Vòng Piperidin",
+        "smiles": "C1CCNCC1",
+        "description": "Là dị vòng no 6 cạnh chứa một nguyên tử Nitơ. Đây là cấu trúc chính trong Loperamid, giúp thuốc có khả năng gắn vào thụ thể opiat ở thành ruột tương tự như các opioid khác nhưng ít tác dụng trên thần kinh trung ương."
     }
 }
