@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Từ điển Hóa Dược Thông minh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Thư viện vẽ cấu trúc hóa học RDKit.js -->
+    <script src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
+
+    <style>
+        :root {
+            --background: #f8fafc; --foreground: #020817; --card: #ffffff; --card-foreground: #020817;
+            --popover: #ffffff; --popover-foreground: #020817; --primary: #8b5cf6; --primary-foreground: #f8fafc; /* Màu tím chủ đạo */
+            --secondary: #f1f5f9; --secondary-foreground: #0f172a; --muted: #f1f5f9; --muted-foreground: #64748b;
+            --accent: #f1f5f9; --accent-foreground: #0f172a; --border: #e2e8f0; --input: #e2e8f0; --ring: #8b5cf6; /* Ring màu tím */
+        }
+
+        html.dark {
+            --background: #020817; --foreground: #f8fafc; --card: #0f172a; --card-foreground: #f8fafc;
+            --popover: #020817; --popover-foreground: #f8fafc; --primary: #8b5cf6; --primary-foreground: #f8fafc;
+            --secondary: #1e293b; --secondary-foreground: #f8fafc; --muted: #1e293b; --muted-foreground: #94a3b8;
+            --accent: #1e293b; --accent-foreground: #f8fafc; --border: #1e293b; --input: #1e293b; --ring: #8b5cf6;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background-color: var(--background); color: var(--foreground); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .lucide { stroke-width: 2; }
+        .custom-ring:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+        /* --- UI & ANIMATION --- */
+        .view-container { animation-duration: 250ms; animation-timing-function: ease-in-out; animation-fill-mode: forwards; }
+        .view-fade-in { animation-name: view-fade-in-anim; }
+        .view-fade-out { animation-name: view-fade-out-anim; }
+        @keyframes view-fade-in-anim { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes view-fade-out-anim { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
+        .drug-card { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out; }
+        .drug-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        dialog { background-color: var(--card); color: var(--card-foreground); }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); transition: all 0.3s ease-out; }
+        dialog[open] { animation: modal-scale-in 0.3s ease-out forwards; }
+        dialog[open]::backdrop { backdrop-filter: blur(4px); }
+        @keyframes modal-scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        #toast-container { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; }
+        .toast { display: flex; align-items: center; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); animation: toast-in 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; min-width: 320px; }
+        .toast.success { background-color: #ede9fe; color: #5b21b6; } .toast.error { background-color: #fee2e2; color: #991b1b; }
+        html.dark .toast.success { background-color: #4c1d95; color: #f5f3ff; } html.dark .toast.error { background-color: #7f1d1d; color: #fef2f2; }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        
+        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #sidebar.collapsed { width: 72px; }
+        #sidebar.collapsed .sidebar-text, #sidebar.collapsed .sidebar-header-text, #sidebar.collapsed #groups-nav { display: none; }
+        .group-details summary::-webkit-details-marker { display: none; }
+        .group-details summary { list-style: none; }
+        .group-details summary .chevron { transition: transform 0.2s; }
+        .group-details[open] > summary .chevron { transform: rotate(90deg); }
+        .drug-card.selected { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+
+        .detail-actions-menu { transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+        .detail-actions-menu.hidden { opacity: 0; transform: scale(0.95) translateY(-10px); pointer-events: none; }
+
+        #search-view { transition: transform 0.3s ease-in-out; }
+
+        .search-highlight { background-color: #fef08a; color: #713f12; font-weight: 600; padding: 0 2px; border-radius: 3px; }
+        html.dark .search-highlight { background-color: #a16207; color: #fefce8; }
+        .search-context { font-size: 0.8rem; color: var(--muted-foreground); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--border); -webkit-box-orient: vertical; -webkit-line-clamp: 2;line-clamp: 2; overflow: hidden; display: -webkit-box; }
+        .search-context strong { color: var(--card-foreground); }
+        
+        .sticky-group-header { position: sticky; top: 0; z-index: 10; background-color: var(--background); padding: 0.75rem 0; }
+        
+        #structure-canvas, #skeleton-structure-canvas { max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 0.5rem; background-color: white; }
+
+        .highlight-trigger.active {
+            background-color: var(--primary) !important;
+            color: var(--primary-foreground) !important;
+        }
+
+        .skeleton-link {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px dotted transparent;
+            transition: border-color 0.2s;
+        }
+        .skeleton-link:hover {
+             border-color: var(--primary);
+        }
+        
+        @media (max-width: 767px) {
+            #list-view-container, #drug-detail-view, #search-results-container, #group-overview-view, #skeleton-view { padding-bottom: 80px; }
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen overflow-hidden">
+    <div class="flex h-full w-full">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="hidden md:flex flex-col w-72 border-r border-[var(--border)] bg-[var(--card)] p-3">
+            <div class="flex items-center gap-2 mb-4 px-2">
+                <i data-lucide="flask-conical" class="text-[var(--primary)] flex-shrink-0"></i>
+                <h1 class="text-xl font-bold sidebar-text">Hóa Dược</h1>
+            </div>
+            <div id="sidebar-top-actions" class="flex items-center gap-2 mb-4 px-1">
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
+                    <input type="text" id="search-input" placeholder="Tìm hoạt chất..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all">
+                </div>
+                <button id="add-drug-sidebar" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span class="absolute left-full ml-3 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Thêm hoạt chất</span>
+                </button>
+            </div>
+            <div id="sidebar-top-actions-collapsed" class="hidden flex-col items-center gap-2 mb-4">
+                <button id="search-button-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 hover:bg-[var(--accent)] rounded-lg transition-colors custom-ring"><i data-lucide="search" class="w-5 h-5 text-[var(--muted-foreground)]"></i></button>
+                <button id="add-drug-sidebar-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring"><i data-lucide="plus" class="w-5 h-5"></i></button>
+            </div>
+
+            <h2 class="text-sm font-semibold text-[var(--muted-foreground)] mb-2 px-3 sidebar-header-text">NHÓM THUỐC</h2>
+            <nav id="groups-nav" class="flex-1 overflow-y-auto no-scrollbar"></nav>
+            <div class="mt-auto pt-4 border-t border-[var(--border)]">
+                 <div id="sidebar-bottom-actions" class="flex items-center justify-around">
+                    <button id="data-source-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="database" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Nguồn Dữ liệu</span></button>
+                    <button id="import-button-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Nhập</span></button>
+                    <button id="export-button-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Xuất</span></button>
+                    <button id="theme-toggle-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i><span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Giao diện</span></button>
+                    <button id="sidebar-toggle" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="chevrons-left" class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"></i><span class="tooltip-text absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Thu gọn</span></button>
+                </div>
+                <div id="sidebar-bottom-actions-collapsed" class="hidden space-y-1">
+                     <button id="data-source-desktop-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="database" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium sidebar-text">Nguồn Dữ liệu</span></button>
+                     <button id="import-button-desktop-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium sidebar-text">Nhập Dữ liệu</span></button>
+                    <button id="export-button-desktop-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium sidebar-text">Xuất Dữ liệu</span></button>
+                    <button id="theme-toggle-desktop-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i><span class="text-sm font-medium sidebar-text">Giao diện</span></button>
+                     <button id="sidebar-toggle-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="chevrons-right" class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"></i><span class="text-sm font-medium sidebar-text">Mở rộng</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col relative overflow-hidden">
+            <header id="mobile-header" class="flex md:hidden items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="flask-conical" class="text-[var(--primary)]"></i>
+                    <h1 class="text-xl font-bold">Hóa Dược</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="mobile-search-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="search"></i></button>
+                    <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="menu"></i></button>
+                </div>
+            </header>
+            <div id="sticky-header" class="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center gap-4 p-2 border-b border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-sm transition-transform duration-300 ease-in-out -translate-y-full">
+                <button id="sticky-back-button" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="arrow-left"></i></button>
+                <div class="flex-1 text-center overflow-hidden pr-12">
+                    <h3 id="sticky-title" class="font-bold text-base truncate"></h3>
+                    <p id="sticky-subtitle" class="text-xs text-[var(--muted-foreground)] truncate"></p>
+                </div>
+            </div>
+
+            <div id="list-view-container" class="flex-1 overflow-y-auto p-4 md:p-8">
+                <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-center">
+                    <div class="p-6 bg-[var(--card)] rounded-full mb-4"><i data-lucide="book-open-text" class="w-16 h-16 text-[var(--primary)]"></i></div>
+                    <h2 class="text-2xl font-bold mb-2">Chào mừng bạn!</h2>
+                    <p class="max-w-md text-[var(--muted-foreground)] mb-6">Bắt đầu bằng cách thêm hoạt chất mới, nhập dữ liệu có sẵn, hoặc tìm kiếm trong danh sách.</p>
+                    <p id="drug-count" class="text-sm text-[var(--muted-foreground)] mb-4"></p>
+                    <div class="flex gap-2">
+                        <button id="add-drug-welcome" class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity custom-ring"><i data-lucide="plus-circle" class="w-5 h-5"></i>Thêm hoạt chất</button>
+                    </div>
+                </div>
+                <div id="drug-list-grid"></div>
+            </div>
+            <div id="drug-detail-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
+            <div id="group-overview-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
+            <div id="skeleton-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
+
+            <button id="add-drug-fab" class="md:hidden fixed bottom-6 right-6 bg-[var(--primary)] text-[var(--primary-foreground)] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-all custom-ring"><i data-lucide="plus" class="w-8 h-8"></i></button>
+            
+            <div id="selection-toolbar" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--card)] border border-[var(--border)] rounded-full shadow-lg p-2 flex items-center gap-4 z-30 transition-all">
+                <span id="selection-count" class="text-sm font-medium px-2"></span>
+                <button id="delete-selected-btn" class="flex items-center justify-center w-10 h-10 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors custom-ring"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Search View (Mobile) -->
+    <div id="search-view" class="md:hidden fixed inset-0 bg-[var(--background)] z-50 transform translate-x-full flex flex-col">
+        <header class="flex-shrink-0 flex items-center gap-2 p-2 border-b border-[var(--border)] bg-[var(--card)]">
+            <button id="search-view-back-button" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="arrow-left"></i></button>
+            <div class="relative flex-grow">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
+                <input type="text" id="search-view-input" placeholder="Tìm kiếm hoạt chất..." class="w-full pl-10 pr-4 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none">
+            </div>
+        </header>
+        <div id="search-results-container" class="flex-1 overflow-y-auto p-4">
+             <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/40 z-40 hidden">
+        <aside class="absolute inset-y-0 left-0 w-72 bg-[var(--card)] p-4 flex flex-col">
+            <div class="flex items-center justify-between gap-2 mb-6">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="flask-conical" class="text-[var(--primary)]"></i>
+                    <h1 class="text-xl font-bold">Hóa Dược</h1>
+                </div>
+                <button id="close-mobile-menu" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="x"></i></button>
+            </div>
+            <h2 class="text-sm font-semibold text-[var(--muted-foreground)] mb-2 px-2">NHÓM THUỐC</h2>
+            <nav id="groups-nav-mobile" class="flex-1 overflow-y-auto no-scrollbar"></nav>
+            <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
+                <button id="data-source-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="database" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Nguồn Dữ liệu</span></button>
+                <button id="add-drug-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="plus-circle" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Thêm hoạt chất</span></button>
+                <button id="import-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Nhập Dữ liệu</span></button>
+                <button id="export-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Xuất Dữ liệu</span></button>
+                <button id="theme-toggle-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"><i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i><span class="text-sm font-medium">Giao diện</span></button>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Modals -->
+    <div id="context-menu" class="hidden fixed bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-50 text-sm w-40"></div>
+
+    <dialog id="drug-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-2xl">
+        <form id="drug-form" class="p-6 md:p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-bold">Thêm hoạt chất</h2>
+                <button type="button" id="close-modal-button" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="x"></i></button>
+            </div>
+            <input type="hidden" id="drug-id">
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <div><label class="block text-sm font-medium mb-1">Tên hoạt chất</label><input type="text" id="ten-hoat-chat-input" required class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+                <div><label class="block text-sm font-medium mb-1">Nhóm thuốc (Phân cấp bằng '>')</label><input type="text" id="nhom-thuoc-input" placeholder="Vd: Kháng sinh > Beta-lactam > Penicillin" required class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+                 <div><label class="block text-sm font-medium mb-1">Khung cấu trúc (Phân cách bằng ',')</label><input type="text" id="skeleton-input" placeholder="Vd: p-aminophenol, beta-lactam" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+                <div><label class="block text-sm font-medium mb-1">Chuỗi SMILES</label><input type="text" id="smiles-input" placeholder="Vd: CC(=O)OC1=CC=CC=C1C(=O)O" required class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+                <div><label class="block text-sm font-medium mb-1">Thành phần cấu trúc (Phân cách bằng ',')</label><input type="text" id="cau-truc-thanh-phan-input" placeholder="Vd: Nhân thơm, Nhóm carboxyl, Nhóm ester" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+                <div><label class="block text-sm font-medium mb-1">Ánh xạ cấu trúc (JSON)</label><textarea id="cau-truc-mapping-input" rows="3" class="w-full p-2 font-mono text-sm rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none" placeholder='{ "Nhân thơm": [5,6,7,8,9,10], "Nhóm ester": [0,1,2,3,4] }'></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Tính chất Hóa học</label><textarea id="tinh-hoa-hoc-input" rows="2" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Tính chất Lý Hóa</label><textarea id="tinh-chat-input" rows="3" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Phản ứng đặc trưng (Dùng **chữ đậm** và **[khung]**)</label><textarea id="phan-ung-input" rows="3" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Tác dụng (Dùng **chữ đậm** và **[khung]**)</label><textarea id="tac-dung-input" rows="3" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Định tính - Định lượng (Dùng **chữ đậm** và **[khung]**)</label><textarea id="dinh-tinh-dinh-luong-input" rows="3" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Chỉ định</label><textarea id="chi-dinh-input" rows="3" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Tác dụng không mong muốn</label><textarea id="tdkmm-input" rows="2" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></textarea></div>
+                <div><label class="block text-sm font-medium mb-1">Dạng bào chế</label><input type="text" id="dang-bao-che-input" placeholder="Vd: Viên nén, viên nang, dung dịch tiêm" class="w-full p-2 rounded-lg border bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"></div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" id="cancel-button" class="px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Lưu</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="import-options-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-md"><div class="p-6"><div class="flex items-start gap-4"><div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-violet-100"><i data-lucide="file-down" class="h-6 w-6 text-violet-600"></i></div><div><h3 class="text-lg font-medium leading-6">Tùy chọn Nhập Dữ liệu</h3><p id="import-info" class="mt-1 text-sm text-[var(--muted-foreground)]"></p></div></div><div class="mt-6 flex flex-col gap-3"><button id="import-overwrite-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]"><p class="font-semibold">Ghi đè toàn bộ</p><p class="text-sm text-[var(--muted-foreground)]">Xóa dữ liệu hiện tại và thay thế.</p></button><button id="import-merge-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]"><p class="font-semibold">Hợp nhất (Chỉ thêm mới)</p><p class="text-sm text-[var(--muted-foreground)]">Giữ lại dữ liệu cũ, chỉ thêm mục mới.</p></button><button id="import-cancel-btn" class="mt-4 w-full px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button></div></div></dialog>
+    <dialog id="confirm-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-sm"><div class="p-6 text-center"><div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4"><i data-lucide="alert-triangle" class="h-6 w-6 text-yellow-600"></i></div><h3 class="text-lg font-medium">Bạn có chắc không?</h3><p id="confirm-message" class="mt-2 text-sm text-[var(--muted-foreground)]"></p><div class="mt-6 flex justify-center gap-3"><button id="confirm-cancel" class="px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button><button id="confirm-proceed" class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors custom-ring">Xác nhận</button></div></div></dialog>
+    
+    <dialog id="data-source-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-md">
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-violet-100"><i data-lucide="database" class="h-6 w-6 text-violet-600"></i></div>
+                <div>
+                    <h3 class="text-lg font-medium leading-6">Chọn Nguồn Dữ liệu</h3>
+                    <p class="mt-1 text-sm text-[var(--muted-foreground)]">Vui lòng chọn nguồn dữ liệu để tải cho ứng dụng.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex flex-col gap-3">
+                <button id="load-from-files-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]">
+                    <p class="font-semibold">Tải từ tệp (data/*.json)</p>
+                    <p class="text-sm text-[var(--muted-foreground)]">Khuyến nghị, tải dữ liệu mới nhất từ các tệp.</p>
+                </button>
+                <button id="load-from-local-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]">
+                    <p class="font-semibold">Dùng dữ liệu đã lưu (Trình duyệt)</p>
+                    <p class="text-sm text-[var(--muted-foreground)]">Sử dụng dữ liệu từ lần làm việc trước đó.</p>
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black/30 z-[1001] flex items-center justify-center">
+        <div class="bg-[var(--card)] p-4 rounded-lg flex items-center gap-4 shadow-xl">
+            <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-[var(--primary)]"></i>
+            <span class="font-medium">Đang tải dữ liệu...</span>
+        </div>
+    </div>
+    
+    <div id="toast-container"></div>
+
+    <script>
+        // Initialize RDKit Module
+        window.rdkitInitialized = window.initRDKitModule();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // The entire MedicinalChemistryApp class and its logic will be here.
+            // This is a placeholder for the full script which is quite large.
+            // The actual implementation contains all the previously discussed features:
+            // - Data loading from files or localStorage.
+            // - Independent accordion sidebar.
+            // - All view rendering and navigation logic.
+            // - RDKit structure drawing.
+            // - Event listeners for all interactive elements.
+            // For brevity in this display, the full script is omitted, but it is complete in the actual file.
+             class MedicinalChemistryApp {
+                constructor() {
+                    this.drugs = [];
+                    this.groupOverviews = {};
+                    this.skeletons = {};
+                    this.currentFilter = { group: 'all', search: '' };
+                    this.selectedDrugs = new Set();
+                    this.pressTimer = null;
+                    this.isLongPressing = false;
+                    this.isDragging = false;
+                    this.pointerStartPos = { x: 0, y: 0 };
+                    this.isTransitioning = false;
+                    this.observer = null;
+                    this.currentView = { type: 'list' };
+                    this.currentListTitle = 'Tất cả hoạt chất';
+
+                    this.initDOMElements();
+                    this.initIntersectionObserver();
+                    this.initTheme();
+                    this.initSidebarState();
+                    this.autoLoadData();
+                }
+
+                _normalizeText(str) {
+                    if (!str) return '';
+                    return str.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+                }
+                
+                isMobile() { return window.innerWidth < 768; }
+
+                initIntersectionObserver() {
+                    const options = { root: null, rootMargin: '0px', threshold: 0.1 };
+                    this.observer = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, options);
+                }
+
+                initDOMElements() {
+                    this.els = {
+                        // Main layout
+                        sidebar: document.getElementById('sidebar'),
+                        sidebarToggle: document.getElementById('sidebar-toggle'),
+                        sidebarToggleCollapsed: document.getElementById('sidebar-toggle-collapsed'),
+                        groupsNav: document.getElementById('groups-nav'),
+                        groupsNavMobile: document.getElementById('groups-nav-mobile'),
+                        listViewContainer: document.getElementById('list-view-container'),
+                        drugListGrid: document.getElementById('drug-list-grid'),
+                        drugDetailView: document.getElementById('drug-detail-view'),
+                        groupOverviewView: document.getElementById('group-overview-view'),
+                        skeletonView: document.getElementById('skeleton-view'),
+                        welcomeScreen: document.getElementById('welcome-screen'),
+                        drugCount: document.getElementById('drug-count'),
+                        toastContainer: document.getElementById('toast-container'),
+
+                        // Search
+                        searchInput: document.getElementById('search-input'),
+                        mobileSearchButton: document.getElementById('mobile-search-button'),
+                        searchView: document.getElementById('search-view'),
+                        searchViewBackButton: document.getElementById('search-view-back-button'),
+                        searchViewInput: document.getElementById('search-view-input'),
+                        searchResultsGrid: document.getElementById('search-results-grid'),
+
+                        // Headers
+                        mobileHeader: document.getElementById('mobile-header'),
+                        stickyHeader: document.getElementById('sticky-header'),
+                        stickyTitle: document.getElementById('sticky-title'),
+                        stickySubtitle: document.getElementById('sticky-subtitle'),
+                        stickyBackButton: document.getElementById('sticky-back-button'),
+
+                        // Buttons
+                        addDrugSidebar: document.getElementById('add-drug-sidebar'),
+                        addDrugWelcome: document.getElementById('add-drug-welcome'),
+                        addDrugFab: document.getElementById('add-drug-fab'),
+                        addDrugMobile: document.getElementById('add-drug-mobile'),
+                        addDrugSidebarCollapsed: document.getElementById('add-drug-sidebar-collapsed'),
+                        searchButtonCollapsed: document.getElementById('search-button-collapsed'),
+                        
+                        // Mobile Menu
+                        mobileMenuButton: document.getElementById('mobile-menu-button'),
+                        mobileMenu: document.getElementById('mobile-menu'),
+                        closeMobileMenu: document.getElementById('close-mobile-menu'),
+                        
+                        // Selection
+                        selectionToolbar: document.getElementById('selection-toolbar'),
+                        selectionCount: document.getElementById('selection-count'),
+                        deleteSelectedBtn: document.getElementById('delete-selected-btn'),
+
+                        // Context Menu
+                        contextMenu: document.getElementById('context-menu'),
+
+                        // Modals
+                        drugModal: document.getElementById('drug-modal'),
+                        drugForm: document.getElementById('drug-form'),
+                        modalTitle: document.getElementById('modal-title'),
+                        closeModalButton: document.getElementById('close-modal-button'),
+                        cancelButton: document.getElementById('cancel-button'),
+                        drugIdInput: document.getElementById('drug-id'),
+                        confirmModal: document.getElementById('confirm-modal'),
+                        confirmMessage: document.getElementById('confirm-message'),
+                        confirmCancel: document.getElementById('confirm-cancel'),
+                        confirmProceed: document.getElementById('confirm-proceed'),
+                        dataSourceModal: document.getElementById('data-source-modal'),
+                        loadFromFilesBtn: document.getElementById('load-from-files-btn'),
+                        loadFromLocalBtn: document.getElementById('load-from-local-btn'),
+                        loadingOverlay: document.getElementById('loading-overlay'),
+
+
+                        // Form Inputs
+                        tenHoatChatInput: document.getElementById('ten-hoat-chat-input'),
+                        nhomThuocInput: document.getElementById('nhom-thuoc-input'),
+                        skeletonInput: document.getElementById('skeleton-input'),
+                        smilesInput: document.getElementById('smiles-input'),
+                        cauTrucThanhPhanInput: document.getElementById('cau-truc-thanh-phan-input'),
+                        cauTrucMappingInput: document.getElementById('cau-truc-mapping-input'),
+                        tinhHoaHocInput: document.getElementById('tinh-hoa-hoc-input'),
+                        tinhChatInput: document.getElementById('tinh-chat-input'),
+                        phanUngInput: document.getElementById('phan-ung-input'),
+                        tacDungInput: document.getElementById('tac-dung-input'),
+                        dinhTinhDinhLuongInput: document.getElementById('dinh-tinh-dinh-luong-input'),
+                        chiDinhInput: document.getElementById('chi-dinh-input'),
+                        tdkmmInput: document.getElementById('tdkmm-input'),
+                        dangBaoCheInput: document.getElementById('dang-bao-che-input'),
+
+                        // Sidebar Actions
+                        sidebarTopActions: document.getElementById('sidebar-top-actions'),
+                        sidebarTopActionsCollapsed: document.getElementById('sidebar-top-actions-collapsed'),
+                        sidebarBottomActions: document.getElementById('sidebar-bottom-actions'),
+                        sidebarBottomActionsCollapsed: document.getElementById('sidebar-bottom-actions-collapsed'),
+
+                        // Import/Export/Theme
+                        importButtons: document.querySelectorAll('#import-button-desktop, #import-button-desktop-collapsed, #import-button-mobile'),
+                        exportButtons: document.querySelectorAll('#export-button-desktop, #export-button-desktop-collapsed, #export-button-mobile'),
+                        themeToggles: document.querySelectorAll('#theme-toggle-desktop, #theme-toggle-desktop-collapsed, #theme-toggle-mobile'),
+                        dataSourceSwitches: document.querySelectorAll('[id^="data-source-"]'),
+                    };
+                }
+
+                initApp() {
+                    this.initHistory();
+                    this.initEventListeners();
+                    if (history.state) {
+                        this.handleStateChange(history.state);
+                    } else {
+                        this.renderAll();
+                    }
+                }
+
+                initHistory() {
+                    history.replaceState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                    window.addEventListener('popstate', (e) => {
+                        if (e.state) {
+                            this.handleStateChange(e.state);
+                        }
+                    });
+                }
+                
+                async autoLoadData() {
+                    this.els.loadingOverlay.classList.remove('hidden');
+                    try {
+                        // Try loading from files first, silently on success
+                        await this.loadDataFromFiles(false); 
+                    } catch (error) {
+                        console.warn("Could not load from files, falling back to local storage.", error);
+                        // If file loading fails, use local storage and notify the user
+                        this.loadDataFromLocalStorage(true, 'Không thể tải tệp, đã sử dụng dữ liệu đã lưu.'); 
+                    } finally {
+                        this.els.loadingOverlay.classList.add('hidden');
+                        // Initialize the app regardless of the source
+                        this.initApp(); 
+                    }
+                }
+
+                async loadDataFromFiles(showToast = true) {
+                    this.els.loadingOverlay.classList.remove('hidden'); 
+                    try {
+                        const [drugsRes, groupsRes, skeletonsRes] = await Promise.all([
+                            fetch('./data/drugs.json'),
+                            fetch('./data/groups.json'),
+                            fetch('./data/skeletons.json')
+                        ]);
+
+                        if (!drugsRes.ok || !groupsRes.ok || !skeletonsRes.ok) {
+                            throw new Error('Không thể tải tệp dữ liệu.');
+                        }
+
+                        this.drugs = await drugsRes.json();
+                        this.groupOverviews = await groupsRes.json();
+                        this.skeletons = await skeletonsRes.json();
+
+                        this.saveData('drugs', this.drugs);
+                        this.saveData('groupOverviews', this.groupOverviews);
+                        this.saveData('skeletons', this.skeletons);
+                        
+                        if (showToast) {
+                            this.showToast('Tải dữ liệu từ tệp thành công!', 'success');
+                        }
+                    } catch (error) {
+                        this.els.loadingOverlay.classList.add('hidden');
+                        throw error; 
+                    } finally {
+                        this.els.loadingOverlay.classList.add('hidden');
+                    }
+                }
+
+                loadDataFromLocalStorage(showToast = true, message = 'Đã tải dữ liệu từ bộ nhớ trình duyệt.') {
+                    const drugsData = localStorage.getItem('medicinalChemistryDrugs');
+                    const groupsData = localStorage.getItem('medicinalChemistryGroupOverviews');
+                    const skeletonsData = localStorage.getItem('medicinalChemistrySkeletons');
+
+                    if (drugsData && groupsData && skeletonsData) {
+                        this.drugs = JSON.parse(drugsData);
+                        this.groupOverviews = JSON.parse(groupsData);
+                        this.skeletons = JSON.parse(skeletonsData);
+                        if(showToast) this.showToast(message, 'success');
+                    } else {
+                        if(showToast) this.showToast('Không tìm thấy dữ liệu đã lưu.', 'error');
+                        // Initialize with empty arrays/objects if nothing is found
+                        this.drugs = [];
+                        this.groupOverviews = {};
+                        this.skeletons = {};
+                    }
+                }
+
+
+                handleStateChange(state) {
+                    this.closeModal();
+                    this.els.mobileMenu.classList.add('hidden');
+                    this.currentView = state; 
+
+                    switch(state.view) {
+                        case 'detail':
+                            this.hideSearchView(false);
+                            this.showDrugDetail(state.id, true, state.backTitle);
+                            break;
+                        case 'group':
+                             this.hideSearchView(false);
+                             this.showGroupOverview(state.group, true, state.backTitle);
+                             break;
+                        case 'skeleton':
+                            this.hideSearchView(false);
+                            this.showSkeletonView(state.id, true, state.backTitle);
+                            break;
+                        case 'search':
+                            this.showSearchView(true);
+                            break;
+                        case 'list':
+                        default:
+                            this.currentFilter = state.filter;
+                            this.els.searchInput.value = this.currentFilter.search || '';
+                            this.hideSearchView(false);
+                            this.showListView();
+                            break;
+                    }
+                }
+
+                initEventListeners() {
+                    [this.els.sidebarToggle, this.els.sidebarToggleCollapsed].forEach(btn => btn.addEventListener('click', () => this.toggleSidebar()));
+                    
+                    this.els.searchInput.addEventListener('input', (e) => {
+                        const query = e.target.value;
+                        if (this.currentView.type !== 'list') {
+                            this.currentFilter = { group: 'all', search: query };
+                            history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                            this.showListView();
+                        } else {
+                            this.handleSearch(query);
+                        }
+                    });
+                    
+                    [this.els.addDrugWelcome, this.els.addDrugSidebar, this.els.addDrugFab, this.els.addDrugMobile, this.els.addDrugSidebarCollapsed].forEach(btn => {
+                        btn.addEventListener('click', () => this.openModal());
+                    });
+                    
+                    this.els.searchButtonCollapsed.addEventListener('click', () => { if (this.els.sidebar.classList.contains('collapsed')) { this.toggleSidebar(); this.els.searchInput.focus(); } });
+                    this.els.drugForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+                    this.els.closeModalButton.addEventListener('click', () => this.closeModal());
+                    this.els.cancelButton.addEventListener('click', () => this.closeModal());
+                    this.els.drugModal.addEventListener('click', (e) => { if (e.target === this.els.drugModal) this.closeModal(); });
+                    
+                    this.els.mobileMenuButton.addEventListener('click', () => this.els.mobileMenu.classList.remove('hidden'));
+                    this.els.closeMobileMenu.addEventListener('click', () => this.els.mobileMenu.classList.add('hidden'));
+                    this.els.mobileMenu.addEventListener('click', (e) => { if (e.target === this.els.mobileMenu) this.els.mobileMenu.classList.add('hidden'); });
+                    
+                    this.els.stickyBackButton.addEventListener('click', () => window.history.back());
+                    
+                    this.els.importButtons.forEach(btn => btn.addEventListener('click', () => this.importData()));
+                    this.els.exportButtons.forEach(btn => btn.addEventListener('click', () => this.exportData()));
+                    this.els.themeToggles.forEach(btn => btn.addEventListener('click', () => this.toggleTheme()));
+                     this.els.dataSourceSwitches.forEach(btn => {
+                        btn.addEventListener('click', () => this.els.dataSourceModal.showModal());
+                    });
+
+                    this.els.loadFromFilesBtn.onclick = async () => {
+                        this.els.dataSourceModal.close();
+                        try {
+                            await this.loadDataFromFiles(true);
+                            this.handleGroupFilter('all'); // Go to home and re-render
+                        } catch(err) {
+                            this.showToast('Lỗi khi tải dữ liệu từ tệp.', 'error');
+                        }
+                    };
+
+                    this.els.loadFromLocalBtn.onclick = () => {
+                        this.els.dataSourceModal.close();
+                        this.loadDataFromLocalStorage(true);
+                        this.handleGroupFilter('all'); // Go to home and re-render
+                    };
+                    
+                    this.els.deleteSelectedBtn.addEventListener('click', () => this.deleteSelectedDrugs());
+                    this.els.mobileSearchButton.addEventListener('click', () => this.navigateToSearch());
+                    this.els.searchViewBackButton.addEventListener('click', () => window.history.back());
+                    this.els.searchViewInput.addEventListener('input', (e) => this.renderSearchResults(e.target.value));
+                    
+                    document.addEventListener('click', () => { this.hideContextMenu(); });
+                }
+
+                saveData(key, data) {
+                    const dataKeyMap = {
+                        'drugs': 'medicinalChemistryDrugs',
+                        'groupOverviews': 'medicinalChemistryGroupOverviews',
+                        'skeletons': 'medicinalChemistrySkeletons'
+                    };
+                    localStorage.setItem(dataKeyMap[key], JSON.stringify(data));
+                }
+
+                renderAll() {
+                    const filteredDrugs = this.getFilteredDrugs();
+                    this.renderGroups();
+                    this.renderDrugList(filteredDrugs);
+                    this.updateUIState();
+                    this.updateSelectionToolbar();
+                }
+
+                renderGroups() {
+                    const openGroups = new Set();
+                    this.els.groupsNav.querySelectorAll('details[open] > summary.group-link').forEach(summary => openGroups.add(summary.dataset.group));
+                    
+                    const tree = {};
+                    this.drugs.forEach(d => {
+                        if (!d.nhomThuoc) return;
+                        const path = d.nhomThuoc.split('>').map(part => part.trim());
+                        let node = tree;
+                        path.forEach(part => {
+                            if (!node[part]) node[part] = {};
+                            node = node[part];
+                        });
+                    });
+
+                    const buildHTML = (node, path = '') => {
+                        return Object.keys(node).sort().map(key => {
+                            const children = node[key];
+                            const currentPath = path ? `${path} > ${key}` : key;
+                            if (Object.keys(children).length > 0) {
+                                return `<li><details class="group-details"><summary class="group-link flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}"><span class="flex-grow font-medium">${key}</span><i data-lucide="chevron-right" class="chevron w-4 h-4"></i></summary><ul class="pl-4">${buildHTML(children, currentPath)}</ul></details></li>`;
+                            }
+                            return `<li><a href="#" class="group-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}">${key}</a></li>`;
+                        }).join('');
+                    };
+                    
+                    const allLink = `<li><a href="#" class="group-link flex items-center gap-3 px-3 py-2 rounded-lg" data-group="Tất cả"><i data-lucide="library" class="w-5 h-5"></i><span class="sidebar-text">Tất cả</span></a></li>`;
+                    const html = `<ul class="space-y-1">${allLink}${buildHTML(tree)}</ul>`;
+                    
+                    const setupListeners = (container) => {
+                        container.innerHTML = html;
+                         // Restore open state from before re-render
+                        container.querySelectorAll('details').forEach(details => {
+                            const summary = details.querySelector('summary');
+                            if (summary && openGroups.has(summary.dataset.group)) {
+                                details.open = true;
+                            }
+                        });
+
+                       container.addEventListener('click', (e) => {
+                            const link = e.target.closest('.group-link');
+                            if (!link) return;
+                            
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const groupName = link.dataset.group;
+                            const isSummary = link.tagName.toLowerCase() === 'summary';
+
+                            if (isSummary) {
+                                const details = link.closest('details');
+                                details.open = !details.open; // Manually toggle
+                            }
+                            
+                            this.handleGroupFilter(groupName);
+                        });
+                    };
+
+                    setupListeners(this.els.groupsNav);
+                    setupListeners(this.els.groupsNavMobile);
+
+                    this.highlightActiveGroup();
+                    lucide.createIcons();
+                }
+
+                renderDrugList(drugs) {
+                    if (drugs.length === 0) {
+                         this.els.drugListGrid.innerHTML = `<div class="col-span-full text-center text-[var(--muted-foreground)] py-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả</p></div>`;
+                         lucide.createIcons();
+                         return;
+                    }
+
+                    const filter = this.currentFilter.group;
+                    const filterParts = filter === 'all' ? [] : filter.split(' > ');
+                    const currentLevel = filterParts.length;
+
+                    const groups = {};
+                    drugs.forEach(d => {
+                        let key = 'Các hoạt chất khác';
+                        if (d.nhomThuoc) {
+                            const relevantPath = (d.nhomThuoc.split(',').map(x => x.trim()).find(x => filter === 'all' || x.startsWith(filter)) || '').split('>').map(y => y.trim());
+                            if (relevantPath.length > currentLevel) {
+                                key = relevantPath[currentLevel];
+                            }
+                        }
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(d);
+                    });
+
+                    this.els.drugListGrid.innerHTML = Object.keys(groups).sort().map(key => `
+                        <div class="group-container mb-4">
+                            <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${key}</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                                ${groups[key].map(drug => this.createDrugCardHTML(drug)).join('')}
+                            </div>
+                        </div>`).join('');
+
+                    this.addEventListenersToCards(this.els.drugListGrid);
+                    this.els.drugListGrid.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                        el.style.transitionDelay = `${(index % 20) * 30}ms`;
+                        this.observer.observe(el);
+                    });
+                }
+                
+                async transitionView(fromEl, toEl, onTransitionCallback = null) {
+                    if (this.isTransitioning) return;
+                    this.isTransitioning = true;
+                    
+                    const activeViews = [this.els.listViewContainer, this.els.drugDetailView, this.els.groupOverviewView, this.els.skeletonView].filter(v => !v.classList.contains('hidden'));
+                    const currentFromEl = fromEl || (activeViews.length > 0 ? activeViews[0] : null);
+
+                    if (!currentFromEl || currentFromEl === toEl) {
+                        toEl.classList.remove('hidden');
+                        if (onTransitionCallback) onTransitionCallback();
+                        this.isTransitioning = false;
+                        return;
+                    }
+
+                    currentFromEl.classList.add('view-fade-out');
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                    currentFromEl.classList.add('hidden');
+                    currentFromEl.classList.remove('view-fade-out');
+
+                    toEl.classList.remove('hidden');
+                    if (onTransitionCallback) onTransitionCallback();
+                    toEl.classList.add('view-fade-in');
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                    toEl.classList.remove('view-fade-in');
+                    this.isTransitioning = false;
+                }
+
+                navigateToDetail(id) {
+                    if (this.currentView.type === 'detail' && this.currentView.id === id) return;
+
+                    let backTitle = this.currentListTitle;
+                    if (this.currentView.type === 'detail') {
+                        const previousDrug = this.drugs.find(d => d.id === this.currentView.id);
+                        if (previousDrug) backTitle = `Quay lại ${previousDrug.tenHoatChat.split('(')[0].trim()}`;
+                    } else if (this.currentView.type === 'group') {
+                        backTitle = `Quay lại nhóm ${this.currentView.group}`;
+                    } else if (this.currentView.type === 'skeleton') {
+                        backTitle = `Quay lại khung ${this.skeletons[this.currentView.id].title}`;
+                    }
+
+                    const newState = { view: 'detail', id: id, filter: this.currentFilter, backTitle: backTitle };
+                    history.pushState(newState, '', `#detail/${id}`);
+                    this.handleStateChange(newState);
+                }
+                
+                navigateToSkeleton(id) {
+                    if (this.currentView.type === 'skeleton' && this.currentView.id === id) return;
+                    
+                    let backTitle = 'Quay lại';
+                     if (this.currentView.type === 'detail') {
+                        const drug = this.drugs.find(d => d.id === this.currentView.id);
+                        if (drug) backTitle = `Quay lại ${drug.tenHoatChat.split('(')[0].trim()}`;
+                    } else if (this.currentView.type === 'group') {
+                        backTitle = `Quay lại nhóm ${this.currentView.group}`;
+                    }
+
+                    const newState = { view: 'skeleton', id, filter: this.currentFilter, backTitle: backTitle };
+                    history.pushState(newState, '', `#skeleton/${id}`);
+                    this.handleStateChange(newState);
+                }
+
+                navigateToSearch(searchTerm = '') {
+                    if (this.currentView.type === 'search') {
+                        if (searchTerm) {
+                            this.els.searchViewInput.value = searchTerm;
+                            this.renderSearchResults(searchTerm);
+                        }
+                        return;
+                    }
+                    const newState = { view: 'search', filter: this.currentFilter };
+                    history.pushState(newState, '', `#search`);
+                    this.handleStateChange(newState);
+                    if (searchTerm) {
+                        this.els.searchViewInput.value = searchTerm;
+                        this.renderSearchResults(searchTerm);
+                    }
+                }
+
+                showDrugDetail(id, isPoppedState = false, backTitle = 'Quay lại') {
+                    this.els.mobileHeader.classList.add('hidden');
+                    const drug = this.drugs.find(d => d.id === id); 
+                    if (!drug) {
+                        this.showToast('Không tìm thấy hoạt chất.', 'error');
+                        if(!isPoppedState) history.back();
+                        return;
+                    }
+                    this.currentView = { type: 'detail', id };
+
+                    const currentFilteredList = this.getFilteredDrugs();
+                    const currentIndex = currentFilteredList.findIndex(d => d.id === id);
+                    const prevDrug = currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
+                    const nextDrug = currentIndex < currentFilteredList.length - 1 ? currentFilteredList[currentIndex + 1] : null;
+
+                    this.els.stickyTitle.textContent = drug.tenHoatChat;
+                    this.els.stickySubtitle.textContent = drug.nhomThuoc.split('>')[0].trim();
+
+                    this.els.drugDetailView.innerHTML = `
+                        <div class="max-w-4xl mx-auto">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                                <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
+                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                    <span class="truncate">${backTitle}</span>
+                                </button>
+                            </div>
+                            <button id="back-button-desktop" class="hidden md:flex items-center gap-2 mb-4 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                                <i data-lucide="arrow-left"></i>
+                                <span>${backTitle}</span>
+                            </button>
+
+                            <div class="detail-section animate-on-scroll">
+                                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
+                                    <div class="drug-title-block flex flex-col md:flex-row justify-between md:items-start mb-6">
+                                        <div>
+                                            <h2 class="text-3xl font-bold">${drug.tenHoatChat}</h2>
+                                            <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(drug.nhomThuoc, false, ' > ')}</p>
+                                        </div>
+                                        <div class="relative mt-4 md:mt-0">
+                                            <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
+                                            <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)]">Cấu trúc hóa học</h4>
+                                                    <button id="reset-structure-view" class="p-1 rounded-md hover:bg-[var(--accent)]" title="Bỏ tô sáng">
+                                                        <i data-lucide="refresh-cw" class="w-4 h-4 text-[var(--muted-foreground)]"></i>
+                                                    </button>
+                                                </div>
+                                                <canvas id="structure-canvas" width="400" height="300"></canvas>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần cấu trúc</h4>
+                                                <div id="highlight-triggers-container" class="flex flex-wrap gap-2">
+                                                    ${this._renderClickableItems(drug.cauTrucThanhPhan, 'highlight')}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Dạng bào chế</h4>
+                                                <div class="flex flex-wrap gap-2">
+                                                    ${this._renderClickableItems(drug.dangBaoChe, 'search')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-6">
+                                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tính chất Hóa học</h4><p>${this.renderLinkedText(drug.tinhHoaHoc)}</p></div>
+                                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tính chất Lý Hóa</h4>${this.renderLinkedText(drug.tinhChat)}</div>
+                                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Phản ứng đặc trưng</h4>${this.renderLinkedText(drug.phanUng)}</div>
+                                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Định tính - Định lượng</h4>${this.renderLinkedText(drug.dinhTinhDinhLuong)}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8 pt-6 border-t border-[var(--border)] space-y-6">
+                                        <div><h3 class="text-xl font-bold mb-4">Thông tin Dược lý</h3></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng</h4>${this.renderLinkedText(drug.tacDung)}</div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Chỉ định</h4>${this.renderLinkedText(drug.chiDinh)}</div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng không mong muốn</h4>${this.renderLinkedText(drug.tdkmm)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${(prevDrug || nextDrug) ? `
+                            <div class="detail-section animate-on-scroll mt-8">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${prevDrug ? `<a href="#detail/${prevDrug.id}" data-id="${prevDrug.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Trước đó</p><h4 class="font-semibold text-lg">${prevDrug.tenHoatChat}</h4></a>` : '<div></div>'}
+                                    ${nextDrug ? `<a href="#detail/${nextDrug.id}" data-id="${nextDrug.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Tiếp theo <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg">${nextDrug.tenHoatChat}</h4></a>` : '<div></div>'}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    this.transitionView(null, this.els.drugDetailView);
+                    this.els.drugDetailView.scrollTop = 0;
+                    if (this.handleDetailScroll) this.els.drugDetailView.removeEventListener('scroll', this.handleDetailScroll);
+                    this.handleDetailScroll = this.handleDetailScroll.bind(this);
+                    this.els.drugDetailView.addEventListener('scroll', this.handleDetailScroll);
+                    
+                    this.renderStructure(drug.smiles, 'structure-canvas');
+                    this.setupDetailViewEventListeners(id);
+                }
+
+                setupDetailViewEventListeners(drugId) {
+                    const detailContent = this.els.drugDetailView.querySelector('.max-w-4xl');
+                    if (!detailContent) return;
+                    
+                    const drug = this.drugs.find(d => d.id === drugId);
+                    if (!drug) return;
+
+                    const componentKeys = (drug.cauTrucThanhPhan || '').split(',').map(k => k.trim());
+
+                    detailContent.querySelector('#back-button-desktop')?.addEventListener('click', () => window.history.back());
+                    detailContent.querySelector('#back-button-mobile')?.addEventListener('click', () => window.history.back());
+                    
+                    const actionsBtn = detailContent.querySelector('#detail-actions-btn');
+                    const actionsMenu = detailContent.querySelector('#detail-actions-menu');
+                    if (actionsBtn && actionsMenu) {
+                        actionsBtn.addEventListener('click', (e) => { e.stopPropagation(); actionsMenu.classList.toggle('hidden'); });
+                        actionsMenu.querySelector('[data-action="edit"]').addEventListener('click', () => this.openModal(drugId));
+                        actionsMenu.querySelector('[data-action="delete"]').addEventListener('click', () => this.deleteDrug(drugId));
+                        document.addEventListener('click', () => actionsMenu.classList.add('hidden'), { once: true });
+                    }
+
+                    detailContent.addEventListener('click', (e) => {
+                        const searchTrigger = e.target.closest('.search-trigger');
+                        if (searchTrigger) {
+                            e.preventDefault();
+                            const term = searchTrigger.dataset.searchTerm;
+                            if (this.isMobile()) {
+                                this.navigateToSearch(term);
+                            } else {
+                                this.currentFilter.group = 'all';
+                                this.currentFilter.search = term;
+                                this.els.searchInput.value = term;
+                                history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                                this.showListView();
+                            }
+                        }
+                        
+                        const skeletonLink = e.target.closest('.skeleton-link');
+                        if(skeletonLink) {
+                            e.preventDefault();
+                            const skeletonId = skeletonLink.dataset.skeletonId;
+                            this.navigateToSkeleton(skeletonId);
+                        }
+
+                        const navLink = e.target.closest('.nav-link, .drug-card');
+                        if (navLink) {
+                            const drugIdToNav = navLink.dataset.id;
+                            if (drugIdToNav && drugIdToNav !== drugId) {
+                                e.preventDefault();
+                                this.navigateToDetail(drugIdToNav);
+                            }
+                        }
+                    });
+                    
+                    const triggersContainer = detailContent.querySelector('#highlight-triggers-container');
+                    if(triggersContainer) {
+                        triggersContainer.addEventListener('click', (e) => {
+                            const button = e.target.closest('.highlight-trigger');
+                            if (!button) return;
+
+                            const index = parseInt(button.dataset.highlightIndex, 10);
+                             if (isNaN(index)) return;
+                             
+                            const key = componentKeys[index];
+                            
+                            triggersContainer.querySelectorAll('.highlight-trigger').forEach(btn => btn.classList.remove('active'));
+                            button.classList.add('active');
+
+                            if (key && drug.cauTrucMapping && drug.cauTrucMapping[key]) {
+                                this.renderStructure(drug.smiles, 'structure-canvas', drug.cauTrucMapping[key]);
+                            }
+                        });
+                    }
+                    
+                    const resetBtn = detailContent.querySelector('#reset-structure-view');
+                    if (resetBtn) {
+                        resetBtn.addEventListener('click', () => {
+                            this.renderStructure(drug.smiles, 'structure-canvas');
+                            triggersContainer.querySelectorAll('.highlight-trigger').forEach(btn => btn.classList.remove('active'));
+                        });
+                    }
+
+                    this.els.drugDetailView.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                        el.style.transitionDelay = `${index * 50}ms`;
+                        this.observer.observe(el);
+                    });
+                    lucide.createIcons();
+                }
+
+                _createSearchTrigger(term, isTag = false, separator = ',') {
+                    if (!term || !term.trim()) return '';
+                    const parts = term.split(separator);
+                    return parts.map(part => {
+                        const cleanPart = part.trim();
+                        if (!cleanPart) return '';
+                        const baseClasses = 'search-trigger inline-block cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded';
+                        const linkClasses = 'text-[var(--primary)] hover:underline';
+                        return `<button class="${baseClasses} ${linkClasses}" data-search-term="${cleanPart}">${cleanPart}</button>`;
+                    }).join(isTag ? '' : `<span class="mx-1 text-[var(--muted-foreground)]">${separator.trim()}</span>`);
+                }
+
+                _renderClickableItems(text, type = 'search') {
+                    if (!text || text.trim() === '') return '<p class="text-sm text-[var(--muted-foreground)]">Chưa có thông tin</p>';
+                    
+                    return text.split(/,/).map((item, index) => {
+                        const cleanItem = item.trim();
+                        if (!cleanItem) return '';
+
+                        const triggerClass = type === 'highlight' ? 'highlight-trigger' : 'search-trigger';
+                        const dataAttribute = type === 'highlight' ? `data-highlight-index="${index}"` : `data-search-term="${cleanItem}"`;
+
+                        const baseClasses = 'inline-block cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded';
+                        const tagClasses = 'bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-sm mr-1 mb-1 hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]';
+                        
+                        return `<button class="${triggerClass} ${baseClasses} ${tagClasses}" ${dataAttribute}>${cleanItem}</button>`;
+                    }).join('');
+                }
+
+                showListView() {
+                    this.currentView = { type: 'list' };
+                    this.els.mobileHeader.classList.remove('hidden');
+                    if (this.handleDetailScroll) { this.els.drugDetailView.removeEventListener('scroll', this.handleDetailScroll); }
+                    this.els.stickyHeader.classList.add('-translate-y-full');
+                    
+                    this.transitionView(null, this.els.listViewContainer, () => {
+                        this.renderAll();
+                    });
+
+                    this.els.drugDetailView.innerHTML = ''; 
+                    this.els.groupOverviewView.innerHTML = '';
+                    this.els.skeletonView.innerHTML = '';
+                }
+
+                showSearchView(isPopped = false) {
+                    this.currentView = { type: 'search' };
+                    this.els.mobileHeader.classList.add('hidden');
+                    this.els.searchView.classList.remove('translate-x-full');
+                    if (!isPopped) {
+                        this.els.searchViewInput.focus();
+                    }
+                }
+
+                hideSearchView(isPopped = false) {
+                    this.els.mobileHeader.classList.remove('hidden');
+                    this.els.searchView.classList.add('translate-x-full');
+                    if (!isPopped) {
+                        this.els.searchViewInput.value = '';
+                    }
+                }
+
+                renderSearchResults(query) {
+                    const normalizedQuery = this._normalizeText(query);
+                    if (!normalizedQuery) {
+                        this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm hoạt chất theo tên, nhóm, chỉ định...</p></div>`;
+                        lucide.createIcons();
+                        return;
+                    }
+                    const results = this.drugs.filter(d => Object.values(d).some(val => this._normalizeText(val).includes(normalizedQuery)));
+                    
+                    if(results.length > 0) {
+                        this.els.searchResultsGrid.innerHTML = results.map(drug => this.createDrugCardHTML(drug, true)).join('');
+                        this.addEventListenersToCards(this.els.searchResultsGrid, true);
+                        this.els.searchResultsGrid.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                            el.style.transitionDelay = `${(index % 20) * 30}ms`;
+                            this.observer.observe(el);
+                        });
+                    } else {
+                        this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
+                    }
+                    lucide.createIcons();
+                }
+
+                handleDetailScroll() { 
+                    const t = this.els.drugDetailView.querySelector('.drug-title-block'); 
+                    if (!t) return; 
+                    this.els.stickyHeader.classList.toggle('-translate-y-full', this.els.drugDetailView.scrollTop <= t.offsetHeight); 
+                }
+
+                handleSearch(q) { 
+                    this.currentFilter.search = q;
+                    history.replaceState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                    this.renderAll(); 
+                }
+
+                handleGroupFilter(g) {
+                    this.currentFilter.group = g;
+                    this.currentListTitle = g === 'all' ? 'Tất cả hoạt chất' : g;
+                    this.currentFilter.search = '';
+                    this.els.searchInput.value = '';
+                    this.clearSelection();
+                    
+                    if(g !== 'all' && this.groupOverviews[g.split(' > ')[0]]) {
+                        const rootGroup = g.split(' > ')[0];
+                         history.pushState({ view: 'group', group: rootGroup, filter: this.currentFilter }, '', `#group/${rootGroup.replace(/\s/g, '_')}`);
+                        this.showGroupOverview(rootGroup);
+                    } else {
+                        history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list');
+                        this.showListView();
+                    }
+                    this.els.mobileMenu.classList.add('hidden');
+                }
+                
+                getFilteredDrugs(group = null) {
+                    const filterGroup = group || this.currentFilter.group;
+                    return this.drugs.filter(d => {
+                        const groupMatch = filterGroup === 'all' || (d.nhomThuoc && this._normalizeText(d.nhomThuoc).startsWith(this._normalizeText(filterGroup)));
+                        const searchMatch = !this.currentFilter.search || Object.values(d).some(val => this._normalizeText(val).includes(this._normalizeText(this.currentFilter.search)));
+                        return groupMatch && searchMatch;
+                    });
+                }
+                
+                showGroupOverview(groupName, isPoppedState = false, backTitle = 'Quay lại') {
+                    const overviewData = this.groupOverviews[groupName];
+                    if (!overviewData) {
+                        this.showListView();
+                        return;
+                    }
+                    this.currentView = { type: 'group', group: groupName };
+                    this.highlightActiveGroup();
+
+                    this.els.stickyTitle.textContent = overviewData.title;
+                    this.els.stickySubtitle.textContent = "Đại cương nhóm thuốc";
+                    
+                    const drugsInGroup = this.getFilteredDrugs(groupName);
+
+                    const uniqueSkeletons = [...new Set(drugsInGroup.flatMap(d => d.skeleton || []))];
+                    
+                    let classificationHtml = (overviewData.classification || []).map(classificationText => {
+                        const subGroupMatch = classificationText.match(/\*\*(.*?)\*\*/);
+                        const subGroupName = subGroupMatch ? subGroupMatch[1].replace('Nhóm ', '').split(':')[0].trim() : '';
+                        
+                        const drugsInSubgroup = subGroupName 
+                            ? drugsInGroup.filter(d => d.nhomThuoc.includes(subGroupName))
+                            : [];
+
+                        const drugsHtml = drugsInSubgroup.length > 0 
+                            ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                                   ${drugsInSubgroup.map(drug => this.createDrugCardHTML(drug)).join('')}
+                               </div>`
+                            : '';
+                            
+                        return `<li class="mt-4">${this.renderLinkedText(classificationText)}${drugsHtml}</li>`;
+                    }).join('');
+
+
+                    this.els.groupOverviewView.innerHTML = `
+                        <div class="max-w-4xl mx-auto">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                                <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
+                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                    <span>Tất cả hoạt chất</span>
+                                </button>
+                            </div>
+                            <button id="back-button-desktop" class="hidden md:flex items-center gap-2 mb-4 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                                <i data-lucide="arrow-left"></i>
+                                <span>Tất cả hoạt chất</span>
+                            </button>
+
+                            <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8 space-y-6">
+                                <h2 class="text-3xl font-bold">${overviewData.title}</h2>
+                                
+                                <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Định nghĩa</h4><p>${this.renderLinkedText(overviewData.definition)}</p></div>
+                                <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Cơ chế tác dụng chung</h4><p>${this.renderLinkedText(overviewData.mechanism)}</p></div>
+
+                                ${uniqueSkeletons.length > 0 ? `
+                                <div class="pt-6 border-t border-[var(--border)]">
+                                     <h3 class="text-xl font-bold mb-4">Khung cấu trúc chung</h3>
+                                     <div class="flex flex-wrap gap-2">
+                                        ${uniqueSkeletons.map(id => `<button class="skeleton-link bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-sm rounded hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-colors" data-skeleton-id="${id}">${this.skeletons[id].title}</button>`).join('')}
+                                     </div>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="pt-6 border-t border-[var(--border)]">
+                                     <h3 class="text-xl font-bold mb-4">Phân loại và các thuốc trong nhóm</h3>
+                                     <ul class="list-disc pl-5 space-y-2">${classificationHtml}</ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.transitionView(null, this.els.groupOverviewView, () => {
+                        this.els.groupOverviewView.scrollTop = 0;
+                        this.addEventListenersToCards(this.els.groupOverviewView);
+                        this.els.groupOverviewView.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                            el.style.transitionDelay = `${(index % 20) * 30}ms`;
+                            this.observer.observe(el);
+                        });
+                        this.els.groupOverviewView.querySelector('#back-button-desktop')?.addEventListener('click', () => { this.currentFilter.group = 'all'; history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list'); this.showListView();});
+                        this.els.groupOverviewView.querySelector('#back-button-mobile')?.addEventListener('click', () => { this.currentFilter.group = 'all'; history.pushState({ view: 'list', filter: this.currentFilter }, '', '#list'); this.showListView();});
+                        this.els.groupOverviewView.addEventListener('click', (e) => {
+                            const skeletonLink = e.target.closest('.skeleton-link');
+                            if (skeletonLink) {
+                                e.preventDefault();
+                                this.navigateToSkeleton(skeletonLink.dataset.skeletonId);
+                            }
+                        });
+                        lucide.createIcons();
+                    });
+                }
+                
+                showSkeletonView(id, isPoppedState = false, backTitle = 'Quay lại') {
+                    const skeleton = this.skeletons[id];
+                    if (!skeleton) {
+                        this.showToast('Không tìm thấy khung cấu trúc.', 'error');
+                        if (!isPoppedState) history.back();
+                        return;
+                    }
+                    this.currentView = { type: 'skeleton', id };
+
+                    this.els.stickyTitle.textContent = skeleton.title;
+                    this.els.stickySubtitle.textContent = "Chi tiết khung cấu trúc";
+                    
+                    const drugsWithSkeleton = this.drugs.filter(d => d.skeleton?.includes(id));
+
+                    this.els.skeletonView.innerHTML = `
+                         <div class="max-w-4xl mx-auto">
+                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 sticky top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
+                                <button id="back-button-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
+                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                    <span>${backTitle}</span>
+                                </button>
+                            </div>
+                            <button id="back-button-desktop" class="hidden md:flex items-center gap-2 mb-4 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                                <i data-lucide="arrow-left"></i>
+                                <span>${backTitle}</span>
+                            </button>
+
+                            <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8 space-y-6">
+                                <h2 class="text-3xl font-bold">${skeleton.title}</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                    <div>
+                                        <canvas id="skeleton-structure-canvas" width="300" height="250"></canvas>
+                                    </div>
+                                    <p>${skeleton.description}</p>
+                                </div>
+                                
+                                ${drugsWithSkeleton.length > 0 ? `
+                                <div class="pt-6 border-t border-[var(--border)]">
+                                     <h3 class="text-xl font-bold mb-4">Các thuốc chứa khung này</h3>
+                                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                         ${drugsWithSkeleton.map(drug => this.createDrugCardHTML(drug)).join('')}
+                                     </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.transitionView(null, this.els.skeletonView, () => {
+                        this.els.skeletonView.scrollTop = 0;
+                        this.renderStructure(skeleton.smiles, 'skeleton-structure-canvas');
+                        this.addEventListenersToCards(this.els.skeletonView);
+                        this.els.skeletonView.querySelectorAll('.animate-on-scroll').forEach((el, index) => {
+                            el.style.transitionDelay = `${(index % 20) * 30}ms`;
+                            this.observer.observe(el);
+                        });
+                        this.els.skeletonView.querySelector('#back-button-desktop')?.addEventListener('click', () => window.history.back());
+                        this.els.skeletonView.querySelector('#back-button-mobile')?.addEventListener('click', () => window.history.back());
+                        lucide.createIcons();
+                    });
+                }
+
+                renderLinkedText(s) {
+                    if (!s || s.trim() === '') return '<p class="text-[var(--muted-foreground)]">Chưa có thông tin</p>';
+                    // Handle bold
+                    s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+                    // Handle skeleton links
+                    s = s.replace(/\[(.*?)\]/g, (match, p1) => {
+                        const skeletonKey = Object.keys(this.skeletons).find(key => this.skeletons[key].title.toLowerCase().includes(p1.toLowerCase()) || key.toLowerCase().includes(p1.toLowerCase()));
+                        if (skeletonKey) {
+                            return `<button class="skeleton-link" data-skeleton-id="${skeletonKey}">${this.skeletons[skeletonKey].title}</button>`;
+                        }
+                        return p1; // Return as is if not found
+                    });
+
+                    const items = s.split(/(?:;|\.\s+|\n)/g).map(i => i.trim()).filter(Boolean);
+                    if (items.length <= 1) return `<p>${s}</p>`;
+                    return `<ul class="list-disc pl-5 space-y-1">${items.map(i => `<li>${i.replace(/\.$/, '')}</li>`).join('')}</ul>`;
+                }
+
+                _findMatchContext(drug, normalizedQuery) {
+                    if (this._normalizeText(drug.tenHoatChat).includes(normalizedQuery)) return null;
+                    
+                    const searchableFields = [ { key: 'nhomThuoc', label: 'Nhóm' }, { key: 'chiDinh', label: 'Chỉ định' }, { key: 'tinhChat', label: 'Tính chất' }];
+                    for (const { key, label } of searchableFields) {
+                        const text = drug[key];
+                        if (text && this._normalizeText(text).includes(normalizedQuery)) {
+                            const matchIndex = this._normalizeText(text).search(normalizedQuery);
+                            const start = Math.max(0, matchIndex - 25);
+                            const end = Math.min(text.length, matchIndex + normalizedQuery.length + 25);
+                            let snippet = text.substring(start, end);
+                            if (start > 0) snippet = '...' + snippet;
+                            if (end < text.length) snippet = snippet + '...';
+                            return { query: this.currentFilter.search, field: label, context: snippet };
+                        }
+                    }
+                    return null;
+                }
+
+                _highlightText(text, query) {
+                    if (!query || !text) return text;
+                    const regex = new RegExp(`(${query.replace(/[\.\*\+\?\^\$\{\}\(\)\|\[\]\\]/g, '\\$&')})`, 'gi');
+                    return text.replace(regex, `<mark class="search-highlight">$1</mark>`);
+                }
+
+                createDrugCardHTML(drug, fromSearch = false) {
+                    const isSelected = this.selectedDrugs.has(drug.id);
+                    const normalizedQuery = this._normalizeText((fromSearch ? this.els.searchViewInput.value : this.currentFilter.search) || '');
+                    const context = normalizedQuery ? this._findMatchContext(drug, normalizedQuery) : null;
+                    
+                    let tenHoatChatHTML = drug.tenHoatChat;
+                    let contextHTML = '';
+
+                    if (normalizedQuery) {
+                        tenHoatChatHTML = this._highlightText(drug.tenHoatChat, normalizedQuery);
+                        if (context && context.context) {
+                            const highlightedContext = this._highlightText(context.context, normalizedQuery);
+                            contextHTML = `<p class="search-context"><strong>${context.field}:</strong> ${highlightedContext}</p>`;
+                        }
+                    }
+                    const mainGroup = drug.nhomThuoc.split('>')[0].trim();
+
+                    return `
+                        <div class="drug-card animate-on-scroll ${isSelected ? 'selected' : ''}" data-id="${drug.id}">
+                            <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col">
+                                <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenHoatChatHTML}</h3>
+                                <p class="text-sm text-[var(--muted-foreground)] mb-2">${mainGroup}</p>
+                                <div class="flex-grow"></div>
+                                ${contextHTML}
+                            </div>
+                        </div>`;
+                }
+
+                addEventListenersToCards(container, fromSearch = false) { 
+                    container.querySelectorAll('.drug-card').forEach(card => { 
+                        const id = card.dataset.id; 
+                        card.addEventListener('mousemove', (e) => this.handlePointerMove(e)); 
+                        card.addEventListener('touchmove', (e) => this.handlePointerMove(e), { passive: true }); 
+                        card.addEventListener('mousedown', (e) => this.handlePointerDown(e, id)); 
+                        card.addEventListener('touchstart', (e) => this.handlePointerDown(e, id), { passive: true }); 
+                        card.addEventListener('mouseup', (e) => this.handlePointerUp(e, id, fromSearch)); 
+                        card.addEventListener('touchend', (e) => this.handlePointerUp(e, id, fromSearch)); 
+                        card.addEventListener('mouseleave', () => this.handlePointerLeave()); 
+                        card.addEventListener('touchcancel', () => this.handlePointerLeave()); 
+                        card.addEventListener('contextmenu', (e) => { this.handlePointerLeave(); this.showContextMenu(e, id) }); 
+                    }); 
+                }
+
+                handlePointerDown(e, id) { if (e.type === 'mousedown' && e.button === 2) return; this.isDragging = false; this.isLongPressing = false; this.pointerStartPos.y = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY; this.pressTimer = setTimeout(() => { this.isLongPressing = true; this.toggleDrugSelection(id); }, 500); }
+                handlePointerUp(e, id, fromSearch = false) {
+                    if (e.type === 'touchend' && e.cancelable) e.preventDefault();
+                    clearTimeout(this.pressTimer);
+                    if (this.isDragging) { this.isDragging = false; return; }
+                    
+                    if (fromSearch) {
+                        this.navigateToDetail(id);
+                    } else {
+                        if (this.isLongPressing) {
+                            if (e.cancelable) e.preventDefault();
+                        } else {
+                            if (this.selectedDrugs.size > 0) {
+                                this.toggleDrugSelection(id);
+                            } else {
+                                this.navigateToDetail(id);
+                            }
+                        }
+                    }
+                    this.isLongPressing = false;
+                }
+                handlePointerMove(e) { if (this.pressTimer) { const curY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY; if (Math.abs(curY - this.pointerStartPos.y) > 10) { this.isDragging = true; clearTimeout(this.pressTimer); } } }
+                handlePointerLeave() { clearTimeout(this.pressTimer); this.isLongPressing = false; }
+                toggleDrugSelection(id) { const card = document.querySelector(`.drug-card[data-id="${id}"]`); if (this.selectedDrugs.has(id)) { this.selectedDrugs.delete(id); card && card.classList.remove('selected'); } else { this.selectedDrugs.add(id); card && card.classList.add('selected'); } this.updateSelectionToolbar(); }
+
+                updateSelectionToolbar() { const c = this.selectedDrugs.size; this.els.selectionCount.textContent = `${c} mục đã chọn`; this.els.selectionToolbar.classList.toggle('hidden', c === 0); }
+                clearSelection() { this.selectedDrugs.clear(); document.querySelectorAll('.drug-card.selected').forEach(c => c.classList.remove('selected')); this.updateSelectionToolbar(); }
+                
+                showContextMenu(e, id) { e.preventDefault(); this.hideContextMenu(); const isSel = this.selectedDrugs.has(id); this.els.contextMenu.innerHTML = `<button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="select" data-id="${id}"><i data-lucide="${isSel ? 'check-square' : 'square'}" class="w-4 h-4"></i><span>${isSel ? 'Bỏ chọn' : 'Chọn'}</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="edit" data-id="${id}"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete" data-id="${id}"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>`; lucide.createIcons(); this.els.contextMenu.style.top = `${e.pageY}px`; this.els.contextMenu.style.left = `${e.pageX}px`; this.els.contextMenu.classList.remove('hidden'); this.els.contextMenu.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => { const { action, id } = e.currentTarget.dataset; if (action === 'select') this.toggleDrugSelection(id); if (action === 'edit') this.openModal(id); if (action === 'delete') this.deleteDrug(id); this.hideContextMenu(); })); }
+                hideContextMenu() { this.els.contextMenu.classList.add('hidden'); }
+                
+                handleFormSubmit(e) {
+                    e.preventDefault();
+                    const id = this.els.drugIdInput.value;
+                    let cauTrucMapping;
+                    try {
+                        cauTrucMapping = JSON.parse(this.els.cauTrucMappingInput.value || '{}');
+                    } catch (err) {
+                        this.showToast('Lỗi định dạng JSON trong Ánh xạ cấu trúc.', 'error');
+                        return;
+                    }
+                    const data = { 
+                        tenHoatChat: this.els.tenHoatChatInput.value, 
+                        nhomThuoc: this.els.nhomThuocInput.value, 
+                        skeleton: (this.els.skeletonInput.value || '').split(',').map(s => s.trim()).filter(Boolean),
+                        smiles: this.els.smilesInput.value, 
+                        cauTrucThanhPhan: this.els.cauTrucThanhPhanInput.value, 
+                        cauTrucMapping: cauTrucMapping, 
+                        tinhHoaHoc: this.els.tinhHoaHocInput.value,
+                        tinhChat: this.els.tinhChatInput.value, 
+                        phanUng: this.els.phanUngInput.value, 
+                        tacDung: this.els.tacDungInput.value, 
+                        dinhTinhDinhLuong: this.els.dinhTinhDinhLuongInput.value, 
+                        chiDinh: this.els.chiDinhInput.value, 
+                        tdkmm: this.els.tdkmmInput.value, 
+                        dangBaoChe: this.els.dangBaoCheInput.value 
+                    };
+                    if (id) { this.updateDrug(id, data); } else { this.addDrug(data); }
+                    this.closeModal();
+                }
+
+                addDrug(data) { this.drugs.push({ id: Date.now().toString(), ...data }); this.saveData('drugs', this.drugs); this.renderAll(); this.showToast('Thêm hoạt chất thành công!', 'success'); }
+                updateDrug(id, data) { this.drugs = this.drugs.map(d => d.id === id ? { ...d, ...data } : d); this.saveData('drugs', this.drugs); this.renderAll(); this.showDrugDetail(id, false); this.showToast('Cập nhật thành công!', 'success'); }
+                deleteDrug(id) { this.showConfirm('Bạn có chắc chắn muốn xóa hoạt chất này không?', () => { this.drugs = this.drugs.filter(d => d.id !== id); this.selectedDrugs.delete(id); this.saveData('drugs', this.drugs); this.showListView(); history.replaceState({ view: 'list', filter: this.currentFilter }, '', '#list'); this.showToast('Đã xóa hoạt chất.', 'success'); }); }
+                deleteSelectedDrugs() { const c = this.selectedDrugs.size; if (c === 0) return; this.showConfirm(`Bạn có chắc muốn xóa ${c} mục đã chọn không?`, () => { this.drugs = this.drugs.filter(d => !this.selectedDrugs.has(d.id)); this.selectedDrugs.clear(); this.saveData('drugs', this.drugs); this.renderAll(); this.showToast(`Đã xóa ${c} hoạt chất.`, 'success'); }); }
+
+                updateUIState() { const hasDrugs = this.drugs.length > 0; this.els.welcomeScreen.classList.toggle('hidden', hasDrugs); this.els.drugCount.textContent = `Hiện có ${this.drugs.length} hoạt chất trong cơ sở dữ liệu.`; this.els.drugListGrid.classList.toggle('hidden', !hasDrugs || this.els.listViewContainer.classList.contains('hidden')); }
+                
+                openModal(id = null) {
+                    this.els.drugForm.reset();
+                    if (id) {
+                        const drug = this.drugs.find(p => p.id === id);
+                        if (drug) {
+                            this.els.modalTitle.textContent = "Chỉnh sửa hoạt chất";
+                            this.els.drugIdInput.value = drug.id;
+                            this.els.tenHoatChatInput.value = drug.tenHoatChat || ''; 
+                            this.els.nhomThuocInput.value = drug.nhomThuoc || ''; 
+                            this.els.skeletonInput.value = (drug.skeleton || []).join(', ');
+                            this.els.smilesInput.value = drug.smiles || ''; 
+                            this.els.cauTrucThanhPhanInput.value = drug.cauTrucThanhPhan || ''; 
+                            this.els.cauTrucMappingInput.value = JSON.stringify(drug.cauTrucMapping || {}, null, 2);
+                            this.els.tinhHoaHocInput.value = drug.tinhHoaHoc || '';
+                            this.els.tinhChatInput.value = drug.tinhChat || ''; 
+                            this.els.phanUngInput.value = drug.phanUng || ''; 
+                            this.els.tacDungInput.value = drug.tacDung || ''; 
+                            this.els.dinhTinhDinhLuongInput.value = drug.dinhTinhDinhLuong || ''; 
+                            this.els.chiDinhInput.value = drug.chiDinh || ''; 
+                            this.els.tdkmmInput.value = drug.tdkmm || ''; 
+                            this.els.dangBaoCheInput.value = drug.dangBaoChe || '';
+                        }
+                    } else {
+                        this.els.modalTitle.textContent = "Thêm hoạt chất mới";
+                        this.els.drugIdInput.value = '';
+                    }
+                    this.els.drugModal.showModal();
+                }
+                closeModal() { this.els.drugModal.close(); }
+
+                highlightActiveGroup() { document.querySelectorAll('.group-link').forEach(link => { const groupName = link.dataset.group === 'Tất cả' ? 'all' : link.dataset.group; const isActive = groupName === this.currentFilter.group; link.classList.toggle('bg-[var(--primary)]', isActive); link.classList.toggle('text-[var(--primary-foreground)]', isActive); }); }
+                
+                initSidebarState() { const c = localStorage.getItem('sidebarState') === 'collapsed'; if (c) { this.els.sidebar.classList.add('collapsed'); } this.updateSidebarToggleButton(c); }
+                toggleSidebar() { const c = this.els.sidebar.classList.toggle('collapsed'); localStorage.setItem('sidebarState', c ? 'collapsed' : 'expanded'); this.updateSidebarToggleButton(c); }
+                updateSidebarToggleButton(isCollapsed) { const tip = this.els.sidebarToggle.querySelector('.tooltip-text'); if (tip) { tip.textContent = isCollapsed ? 'Mở rộng' : 'Thu gọn'; } this.els.sidebarTopActions.classList.toggle('hidden', isCollapsed); this.els.sidebarTopActionsCollapsed.classList.toggle('hidden', !isCollapsed); this.els.sidebarBottomActions.classList.toggle('hidden', isCollapsed); this.els.sidebarBottomActionsCollapsed.classList.toggle('hidden', !isCollapsed); lucide.createIcons(); }
+                
+                initTheme() { const theme = localStorage.getItem('theme') || 'light'; this.setTheme(theme); }
+                setTheme(theme) { localStorage.setItem('theme', theme); document.documentElement.classList.toggle('dark', theme === 'dark'); document.querySelectorAll('.light-icon').forEach(i => i.classList.toggle('hidden', theme === 'dark')); document.querySelectorAll('.dark-icon').forEach(i => i.classList.toggle('hidden', theme !== 'dark')); }
+                toggleTheme() { this.setTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'); }
+
+                showToast(message, type = 'success') { const t = document.createElement('div'); t.className = `toast ${type}`; t.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-6 h-6 mr-3"></i><span>${message}</span>`; this.els.toastContainer.appendChild(t); lucide.createIcons(); setTimeout(() => { t.remove(); }, 4000); }
+                showConfirm(message, onConfirm) { this.els.confirmMessage.textContent = message; this.els.confirmModal.showModal(); this.els.confirmProceed.onclick = () => { onConfirm(); this.els.confirmModal.close(); }; this.els.confirmCancel.onclick = () => this.els.confirmModal.close(); }
+                
+                importData() { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.readAsText(file, 'UTF-8'); reader.onload = re => { try { const data = JSON.parse(re.target.result); if (!Array.isArray(data)) throw new Error('Invalid format'); this.showImportOptions(data); } catch (err) { this.showToast('Tệp không hợp lệ hoặc bị lỗi.', 'error'); } } }; input.click(); this.els.mobileMenu.classList.add('hidden'); }
+                showImportOptions(data) { this.els.importInfo.textContent = `Tệp chứa ${data.length} hoạt chất. Vui lòng chọn cách nhập.`; this.els.importOptionsModal.showModal(); this.els.importOverwriteBtn.onclick = () => { this.drugs = data; this.clearSelection(); this.saveData('drugs', this.drugs); this.renderAll(); this.showListView(); this.showToast(`Đã ghi đè và nhập ${data.length} hoạt chất.`, 'success'); this.els.importOptionsModal.close(); }; this.els.importMergeBtn.onclick = () => { const existing = new Set(this.drugs.map(p => p.tenHoatChat.toLowerCase().trim())); let added = 0; let newId = Date.now(); data.forEach(p => { if (!p.tenHoatChat || !existing.has(p.tenHoatChat.toLowerCase().trim())) { this.drugs.push({ ...p, id: (newId++).toString() }); added++; } }); if (added > 0) { this.saveData('drugs', this.drugs); this.renderAll(); this.showListView(); this.showToast(`Đã hợp nhất và thêm mới ${added} hoạt chất.`, 'success'); } else { this.showToast('Không có hoạt chất mới nào để thêm.', 'success'); } this.els.importOptionsModal.close(); }; this.els.importCancelBtn.onclick = () => this.els.importOptionsModal.close(); }
+                exportData() { if (this.drugs.length === 0) { this.showToast('Không có dữ liệu để xuất.', 'error'); return; } const dataStr = JSON.stringify(this.drugs, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `hoaduoc_data_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url); this.els.mobileMenu.classList.add('hidden'); this.showToast('Xuất dữ liệu thành công!', 'success'); }
+
+                async renderStructure(smiles, canvasId, highlights = []) {
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas || !smiles) return;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    try {
+                        // Wait for RDKit to be initialized and get the module
+                        const rdkit = await window.rdkitInitialized;
+                        const mol = rdkit.get_mol(smiles);
+
+                        if (!mol) {
+                            throw new Error("Invalid SMILES string");
+                        }
+                        
+                        // Convert hex #8b5cf6 to RDKit's 0-1 RGB format
+                        const highlightColor = [139/255, 92/255, 246/255]; 
+                        
+                        const details = {
+                            width: canvas.width,
+                            height: canvas.height,
+                            bondLineWidth: 1,
+                            addAtomIndices: false,
+                            atoms: highlights,
+                            highlightAtomColors: {},
+                            highlightBondColors: {}
+                        };
+
+                        if (highlights && highlights.length > 0) {
+                            highlights.forEach(atomIdx => {
+                                details.highlightAtomColors[atomIdx] = highlightColor;
+                            });
+                        }
+
+                        mol.draw_to_canvas_with_highlights(canvas, JSON.stringify(details));
+                        mol.delete();
+
+                    } catch (err) {
+                        console.error("RDKit error:", err);
+                        ctx.font = "14px Arial";
+                        ctx.fillStyle = "red";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Lỗi chuỗi SMILES", canvas.width / 2, canvas.height / 2);
+                    }
+                }
+            }
+            
+            new MedicinalChemistryApp();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
