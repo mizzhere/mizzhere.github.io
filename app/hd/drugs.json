@@ -1,0 +1,178 @@
+[
+    {
+        "id": "1",
+        "tenHoatChat": "Paracetamol (Acetaminophen)",
+        "nhomThuoc": "Giảm đau, hạ sốt > Anilin",
+        "skeleton": [
+            "p-aminophenol"
+        ],
+        "smiles": "CC(=O)NC1=CC=C(O)C=C1",
+        "cauTrucThanhPhan": "Nhân thơm, Nhóm hydroxyl, Nhóm amid",
+        "cauTrucMapping": {
+            "Nhân thơm": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "Nhóm hydroxyl": [
+                9,
+                10
+            ],
+            "Nhóm amid": [
+                0,
+                1,
+                2,
+                3
+            ]
+        },
+        "tinhHoaHoc": "Tính acid yếu do nhóm hydroxyl phenol (pKa ≈ 9.5), tính base rất yếu do nhóm amid.",
+        "tinhChat": "Bột kết tinh trắng, không mùi, vị hơi đắng. Khó tan trong nước lạnh, tan nhiều hơn trong nước nóng, dễ tan trong ethanol.",
+        "tacDung": "Do có cấu trúc **[p-aminophenol]**, Paracetamol có tác dụng ức chế cyclooxygenase (COX) ở hệ thần kinh trung ương, giúp giảm tổng hợp prostaglandin, gây ra tác dụng hạ sốt và giảm đau.",
+        "phanUng": "Phản ứng Indophenol: Thủy phân bằng acid, sản phẩm p-aminophenol tạo phức màu xanh với thuốc thử indophenol. Phản ứng diazo hóa: Tạo phẩm màu azoic màu đỏ cam. Đây là các phản ứng của khung **[p-aminophenol]**.",
+        "dinhTinhDinhLuong": "Đo quang sau khi tạo phức màu với thuốc thử. HPLC.",
+        "chiDinh": "Điều trị các chứng đau và sốt từ nhẹ đến vừa.",
+        "tdkmm": "Hiếm gặp, nhưng có thể gây phát ban. Liều cao gây độc cho gan do chất chuyển hóa N-acetyl-p-benzoquinone imine (NAPQI).",
+        "dangBaoChe": "Viên nén, Viên sủi, Siro, Thuốc đạn"
+    },
+    {
+        "id": "2",
+        "tenHoatChat": "Aspirin (Acid acetylsalicylic)",
+        "nhomThuoc": "Giảm đau, hạ sốt > NSAID > Dẫn xuất acid salicylic",
+        "skeleton": [
+            "acid-salicylic"
+        ],
+        "smiles": "CC(=O)OC1=CC=CC=C1C(=O)O",
+        "cauTrucThanhPhan": "Nhân thơm, Nhóm carboxyl, Nhóm ester",
+        "cauTrucMapping": {
+            "Nhân thơm": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+            ],
+            "Nhóm carboxyl": [
+                10,
+                11,
+                12
+            ],
+            "Nhóm ester": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ]
+        },
+        "tinhHoaHoc": "Tính acid do nhóm carboxyl (pKa ≈ 3.5).",
+        "tacDung": "**Nhóm acetyl** trong Aspirin acetyl hóa không thuận nghịch enzyme COX, ức chế sản xuất prostaglandin, gây ra tác dụng giảm đau, hạ sốt, kháng viêm. Tác dụng chống kết tập tiểu cầu cũng do ức chế COX-1 trên tiểu cầu.",
+        "phanUng": "Thủy phân **nhóm ester** trong môi trường kiềm hoặc acid tạo thành **[acid-salicylic]** và acid acetic. Phản ứng với FeCl3 cho màu tím đặc trưng của chức phenol (sau khi thủy phân).",
+        "dinhTinhDinhLuong": "Chuẩn độ acid-base trực tiếp bằng dung dịch NaOH. Chuẩn độ thừa trừ sau khi thủy phân bằng lượng thừa NaOH.",
+        "tinhChat": "Tinh thể hình kim không màu hoặc bột kết tinh trắng, vị chua. Khó tan trong nước, dễ tan trong cồn.",
+        "chiDinh": "Đau, sốt, viêm khớp. Dự phòng nhồi máu cơ tim, đột quỵ.",
+        "tdkmm": "Kích ứng đường tiêu hóa, loét dạ dày, xuất huyết.",
+        "dangBaoChe": "Viên nén, Viên bao tan trong ruột"
+    },
+    {
+        "id": "3",
+        "tenHoatChat": "Amoxicillin",
+        "nhomThuoc": "Kháng sinh > Beta-lactam > Penicillin Phổ rộng",
+        "skeleton": [
+            "beta-lactam"
+        ],
+        "smiles": "CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C",
+        "cauTrucThanhPhan": "Vòng beta-lactam, Vòng thiazolidin, Mạch nhánh acyl",
+        "cauTrucMapping": {
+            "Vòng beta-lactam": [
+                7,
+                8,
+                9,
+                5
+            ],
+            "Vòng thiazolidin": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "Mạch nhánh acyl": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                21,
+                22
+            ]
+        },
+        "tinhHoaHoc": "Lưỡng tính: tính acid do nhóm carboxyl, tính base do nhóm amin ở mạch nhánh.",
+        "tacDung": "**[Vòng beta-lactam]** có cấu trúc tương tự D-alanyl-D-alanin, ức chế enzyme transpeptidase của vi khuẩn, ngăn cản tổng hợp vách tế bào peptidoglycan, gây ly giải vi khuẩn.",
+        "phanUng": "**[Vòng beta-lactam]** không bền, dễ bị thủy phân mở vòng bởi enzyme beta-lactamase của vi khuẩn (cơ chế đề kháng) hoặc trong môi trường kiềm.",
+        "tinhChat": "Bột kết tinh trắng, vị đắng. Bền trong môi trường acid dịch vị do có nhóm amin trên mạch nhánh.",
+        "dinhTinhDinhLuong": "HPLC, phương pháp vi sinh vật.",
+        "chiDinh": "Nhiễm khuẩn đường hô hấp, tai mũi họng, da, đường tiết niệu.",
+        "tdkmm": "Tiêu chảy, buồn nôn, phát ban. Phản ứng dị ứng (sốc phản vệ).",
+        "dangBaoChe": "Viên nang, Viên nén, Bột pha hỗn dịch uống"
+    },
+    {
+        "id": "4",
+        "tenHoatChat": "Morphine",
+        "nhomThuoc": "Giảm đau > Opioid",
+        "skeleton": [
+            "morphinan"
+        ],
+        "smiles": "CN1CCC23C4C1CC(C2C(C=C4)O)OC3O",
+        "cauTrucThanhPhan": "Khung Morphinan, Nhóm amin bậc 3, Cầu ether",
+        "cauTrucMapping": {
+            "Khung Morphinan": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "Nhóm amin bậc 3": [
+                0,
+                1,
+                2,
+                10
+            ],
+            "Cầu ether": [
+                8,
+                14,
+                15
+            ]
+        },
+        "tinhHoaHoc": "Tính base do **nhóm amin bậc 3**, có thể tạo muối với các acid. Tính acid yếu do nhóm hydroxyl phenol.",
+        "tacDung": "**[Khung Morphinan]** có cấu trúc không gian phù hợp để gắn vào các thụ thể opioid (μ, κ, δ) trong hệ thần kinh trung ương và ngoại vi, bắt chước tác dụng của endorphin, gây giảm đau mạnh.",
+        "phanUng": "Phản ứng với acid Marquis cho màu tím. Phản ứng với thuốc thử Frohde cho màu tím chuyển dần sang xanh.",
+        "tinhChat": "Bột kết tinh trắng, không mùi, vị rất đắng. Tan trong nước sôi, khó tan trong nước lạnh và ether.",
+        "dinhTinhDinhLuong": "HPLC, Sắc ký khí khối phổ (GC-MS).",
+        "chiDinh": "Đau dữ dội sau phẫu thuật, chấn thương, hoặc trong bệnh ung thư giai đoạn cuối.",
+        "tdkmm": "Buồn nôn, nôn, táo bón, ức chế hô hấp, gây nghiện.",
+        "dangBaoChe": "Dung dịch tiêm, Viên nén"
+    }
+]
