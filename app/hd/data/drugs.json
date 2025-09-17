@@ -1,178 +1,81 @@
 [
     {
         "id": "1",
-        "tenHoatChat": "Paracetamol (Acetaminophen)",
-        "nhomThuoc": "Giảm đau, hạ sốt > Anilin",
+        "tenHoatChat": "Cimetidin",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Thuốc kháng histamin H2",
         "skeleton": [
-            "p-aminophenol"
+            "imidazole"
         ],
-        "smiles": "CC(=O)NC1=CC=C(O)C=C1",
-        "cauTrucThanhPhan": "Nhân thơm, Nhóm hydroxyl, Nhóm amid",
-        "cauTrucMapping": {
-            "Nhân thơm": [
-                3,
-                4,
-                5,
-                6,
-                7,
-                8
-            ],
-            "Nhóm hydroxyl": [
-                9,
-                10
-            ],
-            "Nhóm amid": [
-                0,
-                1,
-                2,
-                3
-            ]
-        },
-        "tinhHoaHoc": "Tính acid yếu do nhóm hydroxyl phenol (pKa ≈ 9.5), tính base rất yếu do nhóm amid.",
-        "tinhChat": "Bột kết tinh trắng, không mùi, vị hơi đắng. Khó tan trong nước lạnh, tan nhiều hơn trong nước nóng, dễ tan trong ethanol.",
-        "tacDung": "Do có cấu trúc **[p-aminophenol]**, Paracetamol có tác dụng ức chế cyclooxygenase (COX) ở hệ thần kinh trung ương, giúp giảm tổng hợp prostaglandin, gây ra tác dụng hạ sốt và giảm đau.",
-        "phanUng": "Phản ứng Indophenol: Thủy phân bằng acid, sản phẩm p-aminophenol tạo phức màu xanh với thuốc thử indophenol. Phản ứng diazo hóa: Tạo phẩm màu azoic màu đỏ cam. Đây là các phản ứng của khung **[p-aminophenol]**.",
-        "dinhTinhDinhLuong": "Đo quang sau khi tạo phức màu với thuốc thử. HPLC.",
-        "chiDinh": "Điều trị các chứng đau và sốt từ nhẹ đến vừa.",
-        "tdkmm": "Hiếm gặp, nhưng có thể gây phát ban. Liều cao gây độc cho gan do chất chuyển hóa N-acetyl-p-benzoquinone imine (NAPQI).",
-        "dangBaoChe": "Viên nén, Viên sủi, Siro, Thuốc đạn"
+        "smiles": "CNC(=NC#N)SCCc1nc[nH]c1C",
+        "cauTrucThanhPhan": "Vòng Imidazole, Nhóm Cyanoguanidine, Cầu nối Thioether",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Có **tính base** do dị vòng **[imidazole]** và nhóm guanidine, có thể tạo muối HCl dễ tan trong nước. Phản ứng với acid silicovolframic tạo tủa.",
+        "tinhChat": "Không có thông tin trong tài liệu.",
+        "tacDung": "Hoạt chất có chứa khung **[imidazole]** tương tự histamin, giúp nó ức chế cạnh tranh với histamin trên thụ thể H2 ở thành dạ dày, làm giảm tiết acid HCl.",
+        "phanUng": "Phản ứng định tính đặc trưng cho dị vòng **[imidazole]** là quét phổ UV. Hòa tan trong nước tạo hỗn dịch, thêm acid HCl sẽ trong suốt.",
+        "dinhTinhDinhLuong": "Định tính bằng phương pháp quét phổ UV. Định lượng bằng phương pháp đo quang hoặc chuẩn độ acid trong môi trường khan.",
+        "chiDinh": "Điều trị ngắn hạn loét dạ dày, tá tràng; trào ngược dạ dày thực quản; các trạng thái tăng tiết dịch vị bệnh lý như hội chứng Zollinger-Ellison.",
+        "tdkmm": "Gây chậm chuyển hóa một số thuốc khi dùng cùng. Liều cao kéo dài có thể gây rối loạn nội tiết (chứng vú to ở nam, chảy sữa không do sinh đẻ ở nữ).",
+        "dangBaoChe": "Viên nén, dung dịch tiêm, uống."
     },
     {
         "id": "2",
-        "tenHoatChat": "Aspirin (Acid acetylsalicylic)",
-        "nhomThuoc": "Giảm đau, hạ sốt > NSAID > Dẫn xuất acid salicylic",
+        "tenHoatChat": "Omeprazol",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị loét dạ dày - tá tràng > Thuốc ức chế bơm proton (PPIs)",
         "skeleton": [
-            "acid-salicylic"
+            "benzimidazol",
+            "pyridin"
         ],
-        "smiles": "CC(=O)OC1=CC=CC=C1C(=O)O",
-        "cauTrucThanhPhan": "Nhân thơm, Nhóm carboxyl, Nhóm ester",
-        "cauTrucMapping": {
-            "Nhân thơm": [
-                4,
-                5,
-                6,
-                7,
-                8,
-                9
-            ],
-            "Nhóm carboxyl": [
-                10,
-                11,
-                12
-            ],
-            "Nhóm ester": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ]
-        },
-        "tinhHoaHoc": "Tính acid do nhóm carboxyl (pKa ≈ 3.5).",
-        "tacDung": "**Nhóm acetyl** trong Aspirin acetyl hóa không thuận nghịch enzyme COX, ức chế sản xuất prostaglandin, gây ra tác dụng giảm đau, hạ sốt, kháng viêm. Tác dụng chống kết tập tiểu cầu cũng do ức chế COX-1 trên tiểu cầu.",
-        "phanUng": "Thủy phân **nhóm ester** trong môi trường kiềm hoặc acid tạo thành **[acid-salicylic]** và acid acetic. Phản ứng với FeCl3 cho màu tím đặc trưng của chức phenol (sau khi thủy phân).",
-        "dinhTinhDinhLuong": "Chuẩn độ acid-base trực tiếp bằng dung dịch NaOH. Chuẩn độ thừa trừ sau khi thủy phân bằng lượng thừa NaOH.",
-        "tinhChat": "Tinh thể hình kim không màu hoặc bột kết tinh trắng, vị chua. Khó tan trong nước, dễ tan trong cồn.",
-        "chiDinh": "Đau, sốt, viêm khớp. Dự phòng nhồi máu cơ tim, đột quỵ.",
-        "tdkmm": "Kích ứng đường tiêu hóa, loét dạ dày, xuất huyết.",
-        "dangBaoChe": "Viên nén, Viên bao tan trong ruột"
+        "smiles": "CC1=CN=C(C(=C1OC)C)CS(=O)C2=NC3=C(N2)C=C(C=C3)OC",
+        "cauTrucThanhPhan": "Nhân Benzimidazol, Vòng Pyridine, Cầu nối Methylsulfinyl",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Nhân **[benzimidazol]** không bền trong môi trường acid. Vòng **[pyridin]** có tính base. Toàn phân tử có tính acid yếu, có thể định lượng bằng phương pháp đo base.",
+        "tinhChat": "Không có thông tin trong tài liệu.",
+        "tacDung": "Là một tiền thuốc, được hoạt hóa trong môi trường acid của tế bào viền. Dạng hoạt hóa sẽ gắn không thuận nghịch vào bơm H+/K+-ATPase (bơm proton) thông qua cầu nối disulfide, ức chế giai đoạn cuối của sự bài tiết acid dịch vị.",
+        "phanUng": "Phổ UV có 2 cực đại ở 276nm và 305nm. Hòa chế phẩm vào nước tạo hỗn dịch đục, thêm HCl lắc thì trong, sau đó thêm thuốc thử chung Alcaloid sẽ tạo tủa.",
+        "dinhTinhDinhLuong": "Định lượng bằng phương pháp chuẩn độ đo base.",
+        "chiDinh": "Loét dạ dày-tá tràng, trào ngược dạ dày-thực quản, hội chứng Zollinger-Ellison.",
+        "tdkmm": "Không có thông tin trong tài liệu.",
+        "dangBaoChe": "Viên nang chứa các vi hạt bao tan trong ruột."
     },
     {
         "id": "3",
-        "tenHoatChat": "Amoxicillin",
-        "nhomThuoc": "Kháng sinh > Beta-lactam > Penicillin Phổ rộng",
+        "tenHoatChat": "Bisacodyl",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc nhuận tràng và tẩy > Gây kích thích",
         "skeleton": [
-            "beta-lactam"
+            "pyridin",
+            "diphenylmethan"
         ],
-        "smiles": "CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C",
-        "cauTrucThanhPhan": "Vòng beta-lactam, Vòng thiazolidin, Mạch nhánh acyl",
-        "cauTrucMapping": {
-            "Vòng beta-lactam": [
-                7,
-                8,
-                9,
-                5
-            ],
-            "Vòng thiazolidin": [
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            "Mạch nhánh acyl": [
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                21,
-                22
-            ]
-        },
-        "tinhHoaHoc": "Lưỡng tính: tính acid do nhóm carboxyl, tính base do nhóm amin ở mạch nhánh.",
-        "tacDung": "**[Vòng beta-lactam]** có cấu trúc tương tự D-alanyl-D-alanin, ức chế enzyme transpeptidase của vi khuẩn, ngăn cản tổng hợp vách tế bào peptidoglycan, gây ly giải vi khuẩn.",
-        "phanUng": "**[Vòng beta-lactam]** không bền, dễ bị thủy phân mở vòng bởi enzyme beta-lactamase của vi khuẩn (cơ chế đề kháng) hoặc trong môi trường kiềm.",
-        "tinhChat": "Bột kết tinh trắng, vị đắng. Bền trong môi trường acid dịch vị do có nhóm amin trên mạch nhánh.",
-        "dinhTinhDinhLuong": "HPLC, phương pháp vi sinh vật.",
-        "chiDinh": "Nhiễm khuẩn đường hô hấp, tai mũi họng, da, đường tiết niệu.",
-        "tdkmm": "Tiêu chảy, buồn nôn, phát ban. Phản ứng dị ứng (sốc phản vệ).",
-        "dangBaoChe": "Viên nang, Viên nén, Bột pha hỗn dịch uống"
+        "smiles": "CC(=O)OC1=CC=C(C=C1)C(c2ccccc2)c3ccccn3",
+        "cauTrucThanhPhan": "Nhân thơm, Nhóm Ester, Dẫn chất Pyridine",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Có tính base do nhân **[pyridin]**. Có 2 **nhóm ester** dễ bị thủy phân trong môi trường kiềm tạo thành diphenol tương ứng và acid acetic.",
+        "tinhChat": "Khó tan trong nước, tan được trong acid vô cơ.",
+        "tacDung": "Sau khi được thủy phân bởi các enzyme trong ruột, dạng diphenol tự do sẽ tác động trực tiếp lên niêm mạc, kích thích các đầu mút thần kinh và làm tăng nhu động của ruột già.",
+        "phanUng": "Phản ứng thủy phân **nhóm ester** bằng NaOH. Sản phẩm diphenol cho phản ứng với FeCl3. Sản phẩm acid acetic cho phản ứng tạo ethyl acetat có mùi thơm.",
+        "dinhTinhDinhLuong": "Không có thông tin trong tài liệu.",
+        "chiDinh": "Điều trị táo bón, dùng để làm sạch ruột trước khi thực hiện các thủ thuật chẩn đoán hoặc phẫu thuật.",
+        "tdkmm": "Không có thông tin trong tài liệu.",
+        "dangBaoChe": "Viên bao tan trong ruột."
     },
     {
         "id": "4",
-        "tenHoatChat": "Morphine",
-        "nhomThuoc": "Giảm đau > Opioid",
+        "tenHoatChat": "Loperamid",
+        "nhomThuoc": "Thuốc tác động lên chức năng dạ dày - ruột > Thuốc điều trị tiêu chảy",
         "skeleton": [
-            "morphinan"
+            "piperidin"
         ],
-        "smiles": "CN1CCC23C4C1CC(C2C(C=C4)O)OC3O",
-        "cauTrucThanhPhan": "Khung Morphinan, Nhóm amin bậc 3, Cầu ether",
-        "cauTrucMapping": {
-            "Khung Morphinan": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17
-            ],
-            "Nhóm amin bậc 3": [
-                0,
-                1,
-                2,
-                10
-            ],
-            "Cầu ether": [
-                8,
-                14,
-                15
-            ]
-        },
-        "tinhHoaHoc": "Tính base do **nhóm amin bậc 3**, có thể tạo muối với các acid. Tính acid yếu do nhóm hydroxyl phenol.",
-        "tacDung": "**[Khung Morphinan]** có cấu trúc không gian phù hợp để gắn vào các thụ thể opioid (μ, κ, δ) trong hệ thần kinh trung ương và ngoại vi, bắt chước tác dụng của endorphin, gây giảm đau mạnh.",
-        "phanUng": "Phản ứng với acid Marquis cho màu tím. Phản ứng với thuốc thử Frohde cho màu tím chuyển dần sang xanh.",
-        "tinhChat": "Bột kết tinh trắng, không mùi, vị rất đắng. Tan trong nước sôi, khó tan trong nước lạnh và ether.",
-        "dinhTinhDinhLuong": "HPLC, Sắc ký khí khối phổ (GC-MS).",
-        "chiDinh": "Đau dữ dội sau phẫu thuật, chấn thương, hoặc trong bệnh ung thư giai đoạn cuối.",
-        "tdkmm": "Buồn nôn, nôn, táo bón, ức chế hô hấp, gây nghiện.",
-        "dangBaoChe": "Dung dịch tiêm, Viên nén"
+        "smiles": "CCN(CC)C(=O)C(c1ccccc1)(c1ccccc1)CCN2CCC(O)(c3ccc(Cl)cc3)CC2",
+        "cauTrucThanhPhan": "Nhóm Amid, Dẫn chất Piperidine, Nhóm Hydroxyl bậc 3",
+        "cauTrucMapping": "Không có thông tin",
+        "tinhHoaHoc": "Có tính base do nhân **[piperidin]**, có thể bào chế dưới dạng muối HCl bền vững. **Nhóm chức amid** có thể bị thủy phân trong dung dịch kiềm để giải phóng diethyl amin.",
+        "tinhChat": "Không có thông tin trong tài liệu.",
+        "tacDung": "Cấu trúc có chứa khung **[piperidin]** giúp thuốc gắn vào thụ thể opiat tại thành ruột, ức chế giải phóng acetylcholin và prostaglandin, qua đó làm giảm nhu động ruột và tăng tái hấp thu nước, điện giải.",
+        "phanUng": "Phản ứng thủy phân **nhóm amid** trong dung dịch kiềm.",
+        "dinhTinhDinhLuong": "Không có thông tin trong tài liệu.",
+        "chiDinh": "Điều trị triệu chứng của tiêu chảy cấp không đặc hiệu.",
+        "tdkmm": "Không có thông tin trong tài liệu.",
+        "dangBaoChe": "Viên nang."
     }
 ]
+
