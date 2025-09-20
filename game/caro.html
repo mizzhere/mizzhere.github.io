@@ -1,983 +1,1603 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Tic-Tac-Toe Recall</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --grid-bg: #ffffff;
-            --text-color: #202124;
-            --text-color-light: #5f6368;
-            --accent-color: #1a73e8;
-            --accent-light: #e8f0fe;
-            --x-color: #ea4335;
-            --o-color: #34a853;
-            --system-color: #fbbc05;
-            --border-color: #dadce0;
-            --shadow: 0 4px 6px rgba(32, 33, 36, 0.08);
-            --shadow-lg: 0 10px 15px rgba(32, 33, 36, 0.1);
-        }
+      :root {
+        --bg-color: #f8f9fa;
+        --grid-bg: #ffffff;
+        --text-color: #202124;
+        --text-color-light: #5f6368;
+        --accent-color: #1a73e8;
+        --accent-light: #e8f0fe;
+        --x-color: #ea4335;
+        --o-color: #34a853;
+        --system-color: #fbbc05;
+        --border-color: #dadce0;
+        --draw-color: #5f6368;
+        --shadow: 0 4px 6px rgba(32, 33, 36, 0.08);
+        --shadow-lg: 0 10px 15px rgba(32, 33, 36, 0.1);
+      }
 
-        body.dark-mode {
-            --bg-color: #202124;
-            --grid-bg: #2d2e30;
-            --text-color: #e8eaed;
-            --text-color-light: #9aa0a6;
-            --accent-light: #303b50;
-            --border-color: #3c4043;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-        }
+      body.dark-mode {
+        --bg-color: #202124;
+        --grid-bg: #2d2e30;
+        --text-color: #e8eaed;
+        --text-color-light: #9aa0a6;
+        --accent-light: #303b50;
+        --border-color: #3c4043;
+        --draw-color: #9aa0a6;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+      }
 
-        html, body {
-            height: 100%;
-            height: 100dvh;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .main-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            padding: 16px;
-        }
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 1 / 1;
-            gap: 10px;
-            background-color: var(--border-color);
-            border-radius: 16px;
-            padding: 10px;
-            box-shadow: var(--shadow);
-            transition: background-color 0.4s ease;
-        }
-        .game-board.trap-setting { background-color: var(--accent-light); }
-        .game-board.turn-x { background-color: rgba(234, 67, 53, 0.15); }
-        .game-board.turn-o { background-color: rgba(52, 168, 83, 0.15); }
+      html,
+      body {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 16px;
+      }
+      .game-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 1 / 1;
+        gap: 10px;
+        background-color: var(--border-color);
+        border-radius: 16px;
+        padding: 10px;
+        box-shadow: var(--shadow);
+        transition: background-color 0.4s ease;
+      }
+      .game-board.trap-setting {
+        background-color: var(--accent-light);
+      }
+      .game-board.turn-x {
+        background-color: rgba(234, 67, 53, 0.15);
+      }
+      .game-board.turn-o {
+        background-color: rgba(52, 168, 83, 0.15);
+      }
+      .game-board.no-click {
+        pointer-events: none;
+      }
+      .cell {
+        background-color: var(--grid-bg);
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        position: relative;
+      }
+      .cell:hover:not(.triggered-trap-x):not(.triggered-trap-o):not(
+          .triggered-trap-system
+        ) {
+        background-color: rgba(128, 128, 128, 0.1);
+      }
+      .cell.trap-setting-hover {
+        background-color: var(--accent-light);
+        border: 2px dashed var(--accent-color);
+      }
+      .cell .preview-symbol {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+      .trap-set-indicator {
+        background-color: var(--accent-light) !important;
+        border: 2px solid var(--accent-color);
+      }
+      .player-trap-visible::after {
+        content: "";
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 10px;
+        height: 10px;
+        background-color: var(--accent-color);
+        border-radius: 50%;
+        box-shadow: 0 0 6px var(--accent-color);
+      }
+      .triggered-trap-x {
+        background-color: rgba(234, 67, 53, 0.15) !important;
+      }
+      .triggered-trap-o {
+        background-color: rgba(52, 168, 83, 0.15) !important;
+      }
+      .triggered-trap-system {
+        background-color: rgba(251, 188, 5, 0.15) !important;
+      }
+      .cell svg {
+        width: 60%;
+        height: 60%;
+        stroke-width: 8;
+        animation: draw 0.3s ease-in-out forwards;
+      }
 
-        .cell {
-            background-color: var(--grid-bg);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            position: relative;
+      /* Animations */
+      @keyframes draw {
+        from {
+          stroke-dasharray: 1000;
+          stroke-dashoffset: 1000;
         }
-        .cell:hover:not(.triggered-trap-x):not(.triggered-trap-o):not(.triggered-trap-system) {
-            background-color: rgba(128, 128, 128, 0.1);
+        to {
+          stroke-dasharray: 1000;
+          stroke-dashoffset: 0;
         }
-        .cell.trap-setting-hover {
-             background-color: var(--accent-light);
-             border: 2px dashed var(--accent-color);
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translate3d(-1px, 0, 0);
         }
-        .cell .preview-symbol {
-            opacity: 0.3;
-            pointer-events: none;
+        20%,
+        80% {
+          transform: translate3d(2px, 0, 0);
         }
-        .trap-set-indicator {
-             background-color: var(--accent-light) !important;
-             border: 2px solid var(--accent-color);
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-4px, 0, 0);
         }
-        .player-trap-visible::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 10px;
-            height: 10px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
-            box-shadow: 0 0 6px var(--accent-color);
+        40%,
+        60% {
+          transform: translate3d(4px, 0, 0);
         }
-        .triggered-trap-x {
-            background-color: rgba(234, 67, 53, 0.15) !important;
+      }
+      .trap-hit-animation {
+        animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: scale(1);
         }
-        .triggered-trap-o {
-            background-color: rgba(52, 168, 83, 0.15) !important;
+        to {
+          opacity: 0;
+          transform: scale(0.5);
         }
-        .triggered-trap-system {
-            background-color: rgba(251, 188, 5, 0.15) !important;
-        }
-        .cell svg {
-            width: 60%;
-            height: 60%;
-            stroke-width: 8;
-            animation: draw 0.3s ease-in-out forwards;
-        }
+      }
+      .symbol-fade-out {
+        animation: fadeOut 0.5s ease-in-out forwards;
+      }
 
-        /* Animations */
-        @keyframes draw {
-            from { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
-            to { stroke-dasharray: 1000; stroke-dashoffset: 0; }
-        }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-        .trap-hit-animation {
-            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(0.5); }
-        }
-        .symbol-fade-out {
-            animation: fadeOut 0.5s ease-in-out forwards;
-        }
-        
-        .cell svg.no-animation {
-            animation: none !important;
-        }
-        
-        header.game-header {
-            background-color: var(--grid-bg);
-            border-radius: 999px;
-            padding: 8px;
-            box-shadow: var(--shadow);
-        }
+      .cell svg.no-animation {
+        animation: none !important;
+      }
 
-        /* Scoreboard & Trap Counter styles */
-        .score-display {
-            display: flex; flex-direction: row; align-items: center;
-            gap: 12px; padding: 4px 16px; border-radius: 999px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .score-display.active {
-            transform: scale(1.05);
-        }
-        #score-x-display.active { box-shadow: 0 0 12px var(--x-color); }
-        #score-o-display.active { box-shadow: 0 0 12px var(--o-color); }
-        
-        .trap-display {
-            display: flex; flex-direction: row; align-items: center;
-            gap: 12px; padding: 4px 16px; border-radius: 999px;
-        }
-        .score-dots, .trap-dots { display: flex; gap: 6px; }
-        .score-dot, .trap-dot {
-            width: 12px; height: 12px; border-radius: 50%;
-            border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        .score-dot.filled.x, .trap-dot.filled.x { background-color: var(--x-color); border-color: var(--x-color); }
-        .score-dot.filled.o, .trap-dot.filled.o { background-color: var(--o-color); border-color: var(--o-color); }
-        .trap-dot.filled.system { background-color: var(--system-color); border-color: var(--system-color); }
+      header.game-header {
+        background-color: var(--grid-bg);
+        border-radius: 999px;
+        padding: 8px;
+        box-shadow: var(--shadow);
+        transition: background-color 0.4s ease;
+      }
 
-        .x-symbol { stroke: var(--x-color); }
-        .o-symbol { stroke: var(--o-color); }
-        
-        .hidden { display: none !important; }
+      header.game-header.win-x {
+        background-color: var(--x-color);
+      }
+      header.game-header.win-o {
+        background-color: var(--o-color);
+      }
+      header.game-header.draw {
+        background-color: var(--draw-color);
+      }
 
-        .modal-content, .welcome-card {
-            background-color: var(--grid-bg);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            width: 90%;
-            max-width: 400px;
-            animation: slideUp 0.4s ease;
-        }
-        .welcome-card { padding: 32px; max-width: 420px; }
-        
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 100; animation: fadeIn 0.3s ease;
-        }
-        #toast {
-            position: fixed; bottom: -100px; left: 50%;
-            transform: translateX(-50%);
-            background-color: #323232; color: white;
-            padding: 12px 24px; border-radius: 24px;
-            font-weight: 500; z-index: 200;
-            transition: bottom 0.5s ease-in-out;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        #toast.show { bottom: 30px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-        .btn { padding: 12px 24px; border-radius: 999px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s ease; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn:disabled { background-color: var(--border-color); color: var(--text-color-light); cursor: not-allowed; }
-        .btn-primary { background-color: var(--accent-color); color: white; box-shadow: var(--shadow); }
-        .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 6px 10px rgba(26, 115, 232, 0.2); }
-        .btn-secondary { background-color: var(--accent-light); color: var(--accent-color); }
-        .btn-secondary:hover { filter: brightness(0.95); }
-        .btn-icon { padding: 10px; width: 44px; height: 44px; }
-       
-        .theme-toggle-btn {
-            position: fixed; top: 16px; right: 16px; z-index: 50;
-            background: var(--grid-bg); border-radius: 50%;
-            width: 44px; height: 44px; display: flex;
-            justify-content: center; align-items: center;
-            cursor: pointer; box-shadow: var(--shadow); border: none;
-            color: var(--text-color-light);
-        }
-        .theme-toggle-btn svg { width: 24px; height: 24px; }
+      header.game-header.win-x *,
+      header.game-header.win-o *,
+      header.game-header.draw * {
+        color: white !important;
+      }
+      header.game-header.win-x .score-dot,
+      header.game-header.win-o .score-dot,
+      header.game-header.draw .score-dot {
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+      header.game-header.win-x .score-dot.filled,
+      header.game-header.win-o .score-dot.filled,
+      header.game-header.draw .score-dot.filled {
+        background-color: white;
+        border-color: white;
+      }
 
-        /* New Welcome Screen Styles */
-        .config-group { display: flex; justify-content: space-between; align-items: center; }
-        .config-label { font-weight: 500; color: var(--text-color-light); }
-        .toggle-switch {
-            display: flex; background-color: var(--bg-color);
-            border-radius: 999px; padding: 4px; border: 1px solid var(--border-color);
+      /* Scoreboard & Trap Counter styles */
+      .score-display {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 16px;
+        border-radius: 999px;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .score-display.active {
+        transform: scale(1.05);
+      }
+      #score-x-display.active {
+        box-shadow: 0 0 12px var(--x-color);
+      }
+      #score-o-display.active {
+        box-shadow: 0 0 12px var(--o-color);
+      }
+      header.game-header .score-display.active {
+        box-shadow: none;
+        transform: scale(1);
+      }
+
+      .trap-display {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 16px;
+        border-radius: 999px;
+      }
+      .score-dots,
+      .trap-dots {
+        display: flex;
+        gap: 6px;
+      }
+      .score-dot,
+      .trap-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+      .score-dot.filled.x,
+      .trap-dot.filled.x {
+        background-color: var(--x-color);
+        border-color: var(--x-color);
+      }
+      .score-dot.filled.o,
+      .trap-dot.filled.o {
+        background-color: var(--o-color);
+        border-color: var(--o-color);
+      }
+      .trap-dot.filled.system {
+        background-color: var(--system-color);
+        border-color: var(--system-color);
+      }
+
+      .x-symbol {
+        stroke: var(--x-color);
+      }
+      .o-symbol {
+        stroke: var(--o-color);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .modal-content,
+      .welcome-card {
+        background-color: var(--grid-bg);
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        width: 90%;
+        max-width: 400px;
+        animation: slideUp 0.4s ease;
+      }
+      .welcome-card {
+        padding: 32px;
+        max-width: 420px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        animation: fadeIn 0.3s ease;
+      }
+      #toast {
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #323232;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: 500;
+  z-index: 200;
+  transition: bottom 0.5s ease-in-out;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  text-align: center; /* Thêm dòng này vào */
+}
+      #toast.show {
+        bottom: 30px;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
-        .toggle-option {
-            padding: 8px 16px; border-radius: 999px; border: none;
-            background-color: transparent; color: var(--text-color-light);
-            font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+        to {
+          opacity: 1;
         }
-        #choose-x.selected { background-color: var(--x-color); color: white; }
-        #choose-o.selected { background-color: var(--o-color); color: white; }
-        #go-first.selected, #go-second.selected { background-color: var(--accent-color); color: white; }
-        #mode-pvp.selected, #mode-pvcpu.selected { background-color: var(--accent-color); color: white; }
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(30px) scale(0.95);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+      .btn {
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:disabled {
+        background-color: var(--border-color);
+        color: var(--text-color-light);
+        cursor: not-allowed;
+      }
+      .btn-primary {
+        background-color: var(--accent-color);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+      .btn-primary:hover:not(:disabled) {
+        filter: brightness(1.1);
+        box-shadow: 0 6px 10px rgba(26, 115, 232, 0.2);
+      }
+      .btn-secondary {
+        background-color: var(--accent-light);
+        color: var(--accent-color);
+      }
+      .btn-secondary:hover {
+        filter: brightness(0.95);
+      }
+      .btn-icon {
+        padding: 10px;
+        width: 44px;
+        height: 44px;
+      }
+
+      #confirm-traps-btn {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 0;
+        transform: scale(0.8);
+        pointer-events: none;
+      }
+      #confirm-traps-btn.visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+
+      #proceed-btn, #full-confirm-btn {
+        width: 100%;
+        height: 100%;
+        border-radius: 999px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .theme-toggle-btn {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 50;
+        background: var(--grid-bg);
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        border: none;
+        color: var(--text-color-light);
+      }
+      .theme-toggle-btn svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* New Welcome Screen Styles */
+      .config-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .config-label {
+        font-weight: 500;
+        color: var(--text-color-light);
+      }
+      .toggle-switch {
+        display: flex;
+        background-color: var(--bg-color);
+        border-radius: 999px;
+        padding: 4px;
+        border: 1px solid var(--border-color);
+      }
+      .toggle-option {
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: none;
+        background-color: transparent;
+        color: var(--text-color-light);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      #choose-x.selected {
+        background-color: var(--x-color);
+        color: white;
+      }
+      #choose-o.selected {
+        background-color: var(--o-color);
+        color: white;
+      }
+      #go-first.selected,
+      #go-second.selected {
+        background-color: var(--accent-color);
+        color: white;
+      }
+      #mode-pvp.selected,
+      #mode-pvcpu.selected {
+        background-color: var(--accent-color);
+        color: white;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <button id="theme-toggle-btn" class="theme-toggle-btn">
-        <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-        <svg id="theme-icon-moon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25c0 5.385 4.365 9.75 9.75 9.75 2.572 0 4.92-.99 6.697-2.648z" /></svg>
+      <svg
+        id="theme-icon-sun"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+        />
+      </svg>
+      <svg
+        id="theme-icon-moon"
+        class="hidden"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25c0 5.385 4.365 9.75 9.75 9.75 2.572 0 4.92-.99 6.697-2.648z"
+        />
+      </svg>
     </button>
-    
+
     <div id="welcome-screen" class="main-container">
-        <div class="welcome-card">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl md:text-5xl font-bold mb-2">Tic-Tac-Toe Recall</h1>
-                <p style="color: var(--text-color-light);">Cờ ca-rô chiến thuật với cơ chế bẫy độc đáo.</p>
-            </div>
-
-            <div class="space-y-6 mb-8">
-                 <div class="config-group">
-                    <p class="config-label">Chế độ chơi</p>
-                    <div class="toggle-switch">
-                        <button id="mode-pvp" class="toggle-option selected">Người vs Người</button>
-                        <button id="mode-pvcpu" class="toggle-option">Người vs Máy</button>
-                    </div>
-                </div>
-                <div class="config-group">
-                    <p class="config-label">Chọn phe (Bạn)</p>
-                    <div class="toggle-switch">
-                        <button id="choose-x" class="toggle-option selected" style="color: var(--x-color);">X</button>
-                        <button id="choose-o" class="toggle-option" style="color: var(--o-color);">O</button>
-                    </div>
-                </div>
-                <div class="config-group">
-                    <p class="config-label">Chọn lượt đi</p>
-                    <div class="toggle-switch">
-                        <button id="go-first" class="toggle-option selected">Đi trước</button>
-                        <button id="go-second" class="toggle-option">Đi sau</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-3">
-                <button id="start-game-btn" class="btn btn-primary w-full text-lg">Bắt đầu mới</button>
-                <button id="continue-game-btn" class="btn btn-secondary w-full text-lg hidden">Tiếp tục chơi</button>
-            </div>
+      <div class="welcome-card">
+        <div class="text-center mb-8">
+          <h1 class="text-4xl md:text-5xl font-bold mb-2">
+            Tic-Tac-Toe Recall
+          </h1>
+          <p style="color: var(--text-color-light)">
+            Cờ ca-rô chiến thuật với cơ chế bẫy độc đáo.
+          </p>
         </div>
+
+        <div class="space-y-6 mb-8">
+          <div class="config-group">
+            <p class="config-label">Chế độ chơi</p>
+            <div class="toggle-switch">
+              <button id="mode-pvp" class="toggle-option selected">
+                Người vs Người
+              </button>
+              <button id="mode-pvcpu" class="toggle-option">
+                Người vs Máy
+              </button>
+            </div>
+          </div>
+          <div class="config-group">
+            <p class="config-label">Chọn phe (Bạn)</p>
+            <div class="toggle-switch">
+              <button
+                id="choose-x"
+                class="toggle-option selected"
+                style="color: var(--x-color)"
+              >
+                X
+              </button>
+              <button
+                id="choose-o"
+                class="toggle-option"
+                style="color: var(--o-color)"
+              >
+                O
+              </button>
+            </div>
+          </div>
+          <div class="config-group">
+            <p class="config-label">Chọn lượt đi</p>
+            <div class="toggle-switch">
+              <button id="go-first" class="toggle-option selected">
+                Đi trước
+              </button>
+              <button id="go-second" class="toggle-option">Đi sau</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button id="start-game-btn" class="btn btn-primary w-full text-lg">
+            Bắt đầu mới
+          </button>
+          <button
+            id="continue-game-btn"
+            class="btn btn-secondary w-full text-lg hidden"
+          >
+            Tiếp tục chơi
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="game-screen" class="main-container flex-col hidden">
-        <header class="game-header w-full max-w-md mx-auto mb-6">
-            <div class="flex justify-between items-center w-full">
-                 <div id="score-x-display" class="score-display">
-                    <span id="player-x-label" class="font-bold text-2xl" style="color: var(--x-color);">X</span>
-                    <div id="score-x-dots" class="score-dots"></div>
-                </div>
-                <div id="round-number-display" class="text-xl font-bold text-[var(--text-color-light)]">Ván 1</div>
-                <div id="score-o-display" class="score-display">
-                    <div id="score-o-dots" class="score-dots"></div>
-                    <span id="player-o-label" class="font-bold text-2xl" style="color: var(--o-color);">O</span>
-                </div>
-            </div>
-        </header>
-        <div id="game-board" class="game-board"></div>
-        
-        <div id="trap-counter-container" class="flex justify-between items-center w-full max-w-xs mx-auto p-2 rounded-full bg-[var(--grid-bg)] shadow-md mt-4 hidden">
-            <div class="trap-display flex items-center gap-2 px-3">
-                <span class="font-bold text-lg" style="color: var(--x-color);">X</span>
-                <div id="trap-dots-x" class="trap-dots"></div>
-            </div>
-            <div class="trap-display flex items-center gap-2">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: var(--system-color);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                 </svg>
-                <div id="trap-dots-system" class="trap-dots"></div>
-            </div>
-            <div class="trap-display flex items-center gap-2 px-3">
-                <div id="trap-dots-o" class="trap-dots"></div>
-                <span class="font-bold text-lg" style="color: var(--o-color);">O</span>
-            </div>
+      <header id="game-header" class="game-header w-full max-w-md mx-auto mb-6">
+        <div class="flex justify-between items-center w-full">
+          <div id="score-x-display" class="score-display">
+            <span
+              id="player-x-label"
+              class="font-bold text-2xl"
+              style="color: var(--x-color)"
+              >X</span
+            >
+            <div id="score-x-dots" class="score-dots"></div>
+          </div>
+          <div
+            id="round-number-display"
+            class="text-xl font-bold text-center text-[var(--text-color-light)] min-w-[120px]"
+          >
+            Ván 1
+          </div>
+          <div id="score-o-display" class="score-display">
+            <div id="score-o-dots" class="score-dots"></div>
+            <span
+              id="player-o-label"
+              class="font-bold text-2xl"
+              style="color: var(--o-color)"
+              >O</span
+            >
+          </div>
         </div>
-        
-        <div class="mt-6 flex items-center justify-center gap-4">
-            <button id="pause-btn" class="btn btn-secondary btn-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" /></svg>
-            </button>
-            <button id="confirm-traps-btn" class="btn btn-primary btn-icon hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-            </button>
-        </div>
+      </header>
+      <div id="game-board" class="game-board"></div>
+
+      <div
+        class="mt-4 flex flex-col items-center gap-4 w-full max-w-xs mx-auto"
+      >
+        <div
+  id="bottom-bar"
+  class="relative flex justify-center items-center w-full p-2 h-[52px] rounded-full bg-[var(--grid-bg)] shadow-md"
+>
+  <div
+    id="trap-displays-wrapper"
+    class="flex justify-between items-center w-full"
+  >
+    <div class="trap-display flex items-center gap-2 px-3">
+      <span class="font-bold text-lg" style="color: var(--x-color)">X</span>
+      <div id="trap-dots-x" class="trap-dots"></div>
     </div>
-    
-    <div id="pause-overlay" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">Tạm dừng</h2>
-            <div class="flex flex-col gap-4">
-                <button id="resume-btn" class="btn btn-primary">Tiếp tục</button>
-                <button id="restart-series-btn" class="btn btn-secondary">Chơi lại từ đầu</button>
-            </div>
-        </div>
+    <div class="trap-display flex items-center gap-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        style="color: var(--system-color)"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <div id="trap-dots-system" class="trap-dots"></div>
+    </div>
+    <div class="trap-display flex items-center gap-2 px-3">
+      <div id="trap-dots-o" class="trap-dots"></div>
+      <span class="font-bold text-lg" style="color: var(--o-color)">O</span>
+    </div>
+  </div>
+  <div
+    id="end-round-controls-wrapper"
+    class="hidden absolute inset-0 p-0 m-0 w-full h-full"
+  >
+    <button id="proceed-btn" class="btn btn-primary"></button>
+  </div>
+
+  <div
+    id="confirm-trap-controls-wrapper"
+    class="hidden absolute inset-0 p-0 m-0 w-full h-full"
+  >
+    <button id="full-confirm-btn" class="btn btn-primary">
+      Xác nhận Bẫy
+    </button>
+  </div>
+</div>
+<div class="flex items-center justify-center gap-4">
+  <button id="pause-btn" class="btn btn-secondary btn-icon">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="2.5"
+      stroke="currentColor"
+      class="w-6 h-6"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M15.75 5.25v13.5m-6-13.5v13.5"
+      />
+    </svg>
+  </button>
+  </div>
+      </div>
     </div>
 
-    <div id="end-game-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 id="end-game-title" class="text-2xl font-bold mb-2"></h2>
-            <p id="end-game-message" class="text-gray-600 mb-6" style="color: var(--text-color-light);"></p>
-            <button id="next-round-btn" class="btn btn-primary w-full">Ván tiếp theo</button>
-            <button id="new-series-btn" class="btn btn-primary w-full hidden">Chơi serie mới</button>
+    <div id="pause-overlay" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2 class="text-2xl font-bold mb-4">Tạm dừng</h2>
+        <div class="flex flex-col gap-4">
+          <button id="resume-btn" class="btn btn-primary">Tiếp tục</button>
+          <button id="restart-series-btn" class="btn btn-secondary">
+            Chơi lại từ đầu
+          </button>
         </div>
+      </div>
     </div>
 
     <div id="toast"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Element selectors
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const gameScreen = document.getElementById('game-screen');
-            const startGameBtn = document.getElementById('start-game-btn');
-            const continueGameBtn = document.getElementById('continue-game-btn');
-            const chooseXBtn = document.getElementById('choose-x');
-            const chooseOBtn = document.getElementById('choose-o');
-            const goFirstBtn = document.getElementById('go-first');
-            const goSecondBtn = document.getElementById('go-second');
-            const modePvpBtn = document.getElementById('mode-pvp');
-            const modePvcpuBtn = document.getElementById('mode-pvcpu');
-            const boardElement = document.getElementById('game-board');
-            const scoreXDisplay = document.getElementById('score-x-display');
-            const scoreODisplay = document.getElementById('score-o-display');
-            const scoreXDots = document.getElementById('score-x-dots');
-            const scoreODots = document.getElementById('score-o-dots');
-            const playerXLabel = document.getElementById('player-x-label');
-            const playerOLabel = document.getElementById('player-o-label');
-            const roundNumberDisplay = document.getElementById('round-number-display');
-            const pauseBtn = document.getElementById('pause-btn');
-            const confirmTrapsBtn = document.getElementById('confirm-traps-btn');
-            const trapCounterContainer = document.getElementById('trap-counter-container');
-            const trapDotsX = document.getElementById('trap-dots-x');
-            const trapDotsO = document.getElementById('trap-dots-o');
-            const trapDotsSystem = document.getElementById('trap-dots-system');
-            const pauseOverlay = document.getElementById('pause-overlay');
-            const resumeBtn = document.getElementById('resume-btn');
-            const restartSeriesBtn = document.getElementById('restart-series-btn');
-            const endGameModal = document.getElementById('end-game-modal');
-            const endGameTitle = document.getElementById('end-game-title');
-            const endGameMessage = document.getElementById('end-game-message');
-            const nextRoundBtn = document.getElementById('next-round-btn');
-            const newSeriesBtn = document.getElementById('new-series-btn');
-            const toast = document.getElementById('toast');
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const themeIconSun = document.getElementById('theme-icon-sun');
-            const themeIconMoon = document.getElementById('theme-icon-moon');
+      document.addEventListener("DOMContentLoaded", () => {
+        // Element selectors
+        const welcomeScreen = document.getElementById("welcome-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const startGameBtn = document.getElementById("start-game-btn");
+        const continueGameBtn = document.getElementById("continue-game-btn");
+        const chooseXBtn = document.getElementById("choose-x");
+        const chooseOBtn = document.getElementById("choose-o");
+        const goFirstBtn = document.getElementById("go-first");
+        const goSecondBtn = document.getElementById("go-second");
+        const modePvpBtn = document.getElementById("mode-pvp");
+        const modePvcpuBtn = document.getElementById("mode-pvcpu");
+        const gameHeader = document.getElementById("game-header");
+        const boardElement = document.getElementById("game-board");
+        const scoreXDisplay = document.getElementById("score-x-display");
+        const scoreODisplay = document.getElementById("score-o-display");
+        const scoreXDots = document.getElementById("score-x-dots");
+        const scoreODots = document.getElementById("score-o-dots");
+        const playerXLabel = document.getElementById("player-x-label");
+        const playerOLabel = document.getElementById("player-o-label");
+        const roundNumberDisplay = document.getElementById(
+          "round-number-display"
+        );
+        const pauseBtn = document.getElementById("pause-btn");
+        const confirmTrapControlsWrapper = document.getElementById(
+  "confirm-trap-controls-wrapper"
+);
+const fullConfirmBtn = document.getElementById("full-confirm-btn");
 
-            let state = {};
-            const SAVE_KEY = 'ticTacToeRecallState';
+        const trapDisplaysWrapper = document.getElementById(
+          "trap-displays-wrapper"
+        );
+        const endRoundControlsWrapper = document.getElementById(
+          "end-round-controls-wrapper"
+        );
+        const proceedBtn = document.getElementById("proceed-btn");
 
-            const initialState = () => ({
-                gameState: 'welcome',
-                gameMode: 'pvp',
-                board: Array(9).fill(null),
-                player1Mark: 'X',
-                cpuMark: null,
-                player1GoesFirst: true,
-                currentPlayer: 'X',
-                traps: { 'X': [], 'O': [], 'system': [] },
-                trapSetter: null,
-                trapsSetCount: 0,
-                moveHistory: { 'X': null, 'O': null },
-                immuneCells: [],
-                triggeredTraps: [],
-                scores: { 'X': 0, 'O': 0 },
-                round: 1,
-                lastMoveIndex: -1,
-                seriesWinner: null,
-            });
+        const trapDotsX = document.getElementById("trap-dots-x");
+        const trapDotsO = document.getElementById("trap-dots-o");
+        const trapDotsSystem = document.getElementById("trap-dots-system");
+        const pauseOverlay = document.getElementById("pause-overlay");
+        const resumeBtn = document.getElementById("resume-btn");
+        const restartSeriesBtn = document.getElementById("restart-series-btn");
+        const toast = document.getElementById("toast");
+        const themeToggleBtn = document.getElementById("theme-toggle-btn");
+        const themeIconSun = document.getElementById("theme-icon-sun");
+        const themeIconMoon = document.getElementById("theme-icon-moon");
 
-            function init() {
-                loadTheme();
-                const savedState = localStorage.getItem(SAVE_KEY);
-                if (savedState) {
-                    continueGameBtn.classList.remove('hidden');
-                }
-                state = initialState();
-                setupListeners();
-                setPlayerMark('X');
-                setGameMode('pvp');
-            }
-            
-            function setupListeners() {
-                chooseXBtn.addEventListener('click', () => setPlayerMark('X'));
-                chooseOBtn.addEventListener('click', () => setPlayerMark('O'));
-                goFirstBtn.addEventListener('click', () => setPlayerTurn(true));
-                goSecondBtn.addEventListener('click', () => setPlayerTurn(false));
-                modePvpBtn.addEventListener('click', () => setGameMode('pvp'));
-                modePvcpuBtn.addEventListener('click', () => setGameMode('pvcpu'));
-                startGameBtn.addEventListener('click', () => {
-                    localStorage.removeItem(SAVE_KEY);
-                    startGameSeries();
-                });
-                continueGameBtn.addEventListener('click', continueGame);
-                pauseBtn.addEventListener('click', togglePause);
-                confirmTrapsBtn.addEventListener('click', handleConfirmTraps);
-                resumeBtn.addEventListener('click', togglePause);
-                restartSeriesBtn.addEventListener('click', () => {
-                    togglePause();
-                    localStorage.removeItem(SAVE_KEY);
-                    welcomeScreen.classList.remove('hidden');
-                    gameScreen.classList.add('hidden');
-                    endGameModal.classList.add('hidden');
-                    continueGameBtn.classList.add('hidden');
-                    init();
-                });
-                nextRoundBtn.addEventListener('click', startNextRound);
-                newSeriesBtn.addEventListener('click', () => {
-                    localStorage.removeItem(SAVE_KEY);
-                    welcomeScreen.classList.remove('hidden');
-                    gameScreen.classList.add('hidden');
-                    endGameModal.classList.add('hidden');
-                    continueGameBtn.classList.add('hidden');
-                    init();
-                });
-                boardElement.addEventListener('click', handleBoardClick);
-                themeToggleBtn.addEventListener('click', toggleTheme);
-            }
+        let state = {};
+        const SAVE_KEY = "ticTacToeRecallState";
 
-            function setGameMode(mode) {
-                state.gameMode = mode;
-                modePvpBtn.classList.toggle('selected', mode === 'pvp');
-                modePvcpuBtn.classList.toggle('selected', mode === 'pvcpu');
-            }
-
-            function setPlayerMark(mark) {
-                state.player1Mark = mark;
-                chooseXBtn.classList.toggle('selected', mark === 'X');
-                chooseOBtn.classList.toggle('selected', mark === 'O');
-                chooseXBtn.style.color = (mark === 'X') ? 'white' : 'var(--x-color)';
-                chooseOBtn.style.color = (mark === 'O') ? 'white' : 'var(--o-color)';
-            }
-            function setPlayerTurn(isFirst) {
-                state.player1GoesFirst = isFirst;
-                goFirstBtn.classList.toggle('selected', isFirst);
-                goSecondBtn.classList.toggle('selected', !isFirst);
-            }
-
-
-            function continueGame() {
-                const savedState = JSON.parse(localStorage.getItem(SAVE_KEY));
-                if (savedState) {
-                    state = savedState;
-                    welcomeScreen.classList.add('hidden');
-                    gameScreen.classList.remove('hidden');
-                    updateScoreboard();
-                    updateBoardAppearance();
-                    updateTrapCounter();
-                    renderBoard();
-                    trapCounterContainer.style.visibility = 'visible';
-                    if (state.gameState === 'trap_setting') {
-                        confirmTrapsBtn.classList.remove('hidden');
-                        confirmTrapsBtn.disabled = state.traps[state.trapSetter].length !== 2;
-                    }
-                    showToast('Đã tải lại ván chơi trước đó!');
-                }
-            }
-
-            function startGameSeries() {
-                state.round = 1;
-                state.scores = { 'X': 0, 'O': 0 };
-                if (state.gameMode === 'pvcpu') {
-                    state.cpuMark = state.player1Mark === 'X' ? 'O' : 'X';
-                } else {
-                    state.cpuMark = null;
-                }
-                welcomeScreen.classList.add('hidden');
-                gameScreen.classList.remove('hidden');
-                updateScoreboard();
-                startRound();
-            }
-            
-            function startNextRound() { endGameModal.classList.add('hidden'); state.round++; startRound(); }
-
-            function startRound() {
-                // Reset state for a new round
-                Object.assign(state, {
-                    board: Array(9).fill(null),
-                    traps: { 'X': [], 'O': [], 'system': [] },
-                    moveHistory: { 'X': null, 'O': null },
-                    triggeredTraps: [],
-                    immuneCells: [],
-                    gameState: 'trap_setting',
-                });
-
-                const firstPlayer = state.player1GoesFirst ? state.player1Mark : (state.player1Mark === 'X' ? 'O' : 'X');
-                state.currentPlayer = state.round % 2 === 1 ? firstPlayer : (firstPlayer === 'X' ? 'O' : 'X');
-                
-                if (state.gameMode === 'pvcpu') {
-                    state.trapSetter = state.player1Mark;
-                    state.trapsSetCount = 1; // Only player sets traps manually
-                } else {
-                    state.trapSetter = state.currentPlayer;
-                    state.trapsSetCount = 0;
-                }
-                
-                updateUiForNewRound();
-
-                // If CPU goes first in PvCPU mode
-                if (state.gameMode === 'pvcpu' && state.currentPlayer === state.cpuMark) {
-                    showToast(`Bắt đầu ván ${state.round}. Bạn đặt bẫy trước.`);
-                } else {
-                    showToast(`Bắt đầu ván ${state.round}. Người chơi ${state.trapSetter} đặt bẫy.`);
-                }
-                saveState();
-            }
-
-            function updateUiForNewRound() {
-                updateScoreboard();
-                updateBoardAppearance();
-                updateTrapCounter();
-                renderBoard();
-                confirmTrapsBtn.classList.remove('hidden');
-                confirmTrapsBtn.disabled = true;
-                trapCounterContainer.classList.remove('hidden');
-                trapCounterContainer.style.visibility = 'visible';
-            }
-
-            function createSvgForMark(mark, animate = true) {
-                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svg.setAttribute("viewBox", "0 0 100 100");
-                svg.innerHTML = mark === 'X' ? `<line x1="10" y1="10" x2="90" y2="90" /><line x1="90" y1="10" x2="10" y2="90" />` : `<circle cx="50" cy="50" r="40" fill="none" />`;
-                svg.classList.add(mark === 'X' ? 'x-symbol' : 'o-symbol');
-                if (!animate) {
-                    svg.classList.add('no-animation');
-                }
-                return svg;
-            }
-            
-            function renderBoard() {
-                boardElement.innerHTML = '';
-                state.board.forEach((value, index) => {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.dataset.index = index;
-                    if (value) {
-                        const shouldAnimate = (index === state.lastMoveIndex);
-                        cell.appendChild(createSvgForMark(value, shouldAnimate));
-                    }
-                    
-                    if (state.gameMode === 'pvcpu' && state.traps[state.player1Mark].includes(index) && !value) {
-                         cell.classList.add('player-trap-visible');
-                    }
-
-                    if (state.gameState === 'trap_setting' && state.traps[state.trapSetter]?.includes(index)) {
-                        cell.classList.add('trap-set-indicator');
-                    }
-                    const triggeredTrap = state.triggeredTraps.find(t => t.index === index);
-                    if (triggeredTrap) {
-                        cell.classList.add(`triggered-trap-${triggeredTrap.owner.toLowerCase()}`);
-                    }
-                    if (state.gameState === 'trap_setting' && !state.board[index] && (state.gameMode === 'pvp' || state.trapSetter === state.player1Mark)) {
-                         cell.addEventListener('mouseover', () => cell.classList.add('trap-setting-hover'));
-                         cell.addEventListener('mouseout', () => cell.classList.remove('trap-setting-hover'));
-                    } else if (state.gameState === 'playing' && !value) {
-                        cell.addEventListener('mouseover', () => {
-                            if (!cell.querySelector('svg')) {
-                                const previewSvg = createSvgForMark(state.currentPlayer);
-                                previewSvg.classList.add('preview-symbol');
-                                cell.appendChild(previewSvg);
-                            }
-                        });
-                        cell.addEventListener('mouseout', () => {
-                            const preview = cell.querySelector('.preview-symbol');
-                            if (preview) cell.removeChild(preview);
-                        });
-                    }
-                    boardElement.appendChild(cell);
-                });
-                state.lastMoveIndex = -1; // Reset after render
-            }
-            
-            function updateScoreboard() {
-                roundNumberDisplay.textContent = `Ván ${state.round}`;
-                playerXLabel.textContent = (state.gameMode === 'pvcpu' && state.cpuMark === 'X') ? 'Máy' : 'X';
-                playerOLabel.textContent = (state.gameMode === 'pvcpu' && state.cpuMark === 'O') ? 'Máy' : 'O';
-
-                scoreXDots.innerHTML = '';
-                scoreODots.innerHTML = '';
-                for (let i = 0; i < 3; i++) {
-                    const dotX = document.createElement('div'); dotX.classList.add('score-dot');
-                    if (i < state.scores.X) dotX.classList.add('filled', 'x'); scoreXDots.appendChild(dotX);
-                    const dotO = document.createElement('div'); dotO.classList.add('score-dot');
-                    if (i < state.scores.O) dotO.classList.add('filled', 'o'); scoreODots.appendChild(dotO);
-                }
-                scoreXDisplay.classList.remove('active');
-                scoreODisplay.classList.remove('active');
-                if (state.gameState === 'playing' && state.currentPlayer !== state.cpuMark) {
-                    if (state.currentPlayer === 'X') scoreXDisplay.classList.add('active');
-                    else scoreODisplay.classList.add('active');
-                }
-            }
-
-            function updateBoardAppearance() {
-                boardElement.classList.remove('trap-setting', 'turn-x', 'turn-o');
-                if (state.gameState === 'trap_setting') {
-                    boardElement.classList.add('trap-setting');
-                } else if (state.gameState === 'playing') {
-                    boardElement.classList.add(state.currentPlayer === 'X' ? 'turn-x' : 'turn-o');
-                }
-            }
-
-            function updateTrapCounter() {
-                const trapData = [
-                    { dotsEl: trapDotsX, count: 2, filled: state.traps.X.length, type: 'x' },
-                    { dotsEl: trapDotsO, count: 2, filled: state.traps.O.length, type: 'o' },
-                    { dotsEl: trapDotsSystem, count: 1, filled: state.traps.system.length, type: 'system' }
-                ];
-
-                trapData.forEach(({ dotsEl, count, filled, type }) => {
-                    dotsEl.innerHTML = '';
-                    for (let i = 0; i < count; i++) {
-                        const dot = document.createElement('div');
-                        dot.classList.add('trap-dot');
-                        if (i < filled) dot.classList.add('filled', type);
-                        dotsEl.appendChild(dot);
-                    }
-                });
-            }
-            
-            function showToast(message) {
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 2500);
-            }
-
-            function handleBoardClick(e) {
-                const cell = e.target.closest('.cell');
-                if (!cell || state.gameState === 'paused' || state.gameState.includes('over') || boardElement.classList.contains('no-click')) return;
-                const index = parseInt(cell.dataset.index);
-                if (state.gameState === 'trap_setting' && (state.gameMode === 'pvp' || state.trapSetter === state.player1Mark)) handleTrapSetting(index);
-                else if (state.gameState === 'playing' && state.currentPlayer !== state.cpuMark) handlePlayerMove(index);
-            }
-
-            function handleTrapSetting(index) {
-                const playerTraps = state.traps[state.trapSetter];
-                const trapIndex = playerTraps.indexOf(index);
-
-                if (trapIndex > -1) { playerTraps.splice(trapIndex, 1); } 
-                else if (playerTraps.length < 2) { playerTraps.push(index); }
-                
-                renderBoard();
-                confirmTrapsBtn.disabled = playerTraps.length !== 2;
-                saveState();
-            }
-
-            function handleConfirmTraps() {
-                boardElement.classList.add('no-click');
-                confirmTrapsBtn.classList.add('hidden');
-                
-                if (state.gameMode === 'pvcpu') {
-                    cpuSetTraps();
-                    placeSystemTrap();
-                    showToast('Bắt đầu ván đấu!');
-                    setTimeout(() => {
-                        state.gameState = 'playing';
-                        renderBoard();
-                        updateScoreboard();
-                        updateBoardAppearance();
-                        boardElement.classList.remove('no-click');
-                        if (state.currentPlayer === state.cpuMark) {
-                            makeCpuMove();
-                        }
-                    }, 1200);
-                } else { // PvP mode
-                    state.trapsSetCount++;
-                    if (state.trapsSetCount < 2) {
-                        const nextPlayer = state.trapSetter === 'X' ? 'O' : 'X';
-                        showToast(`Lượt đặt bẫy của người chơi ${nextPlayer}`);
-                        setTimeout(() => {
-                            state.trapSetter = nextPlayer;
-                            renderBoard();
-                            updateTrapCounter();
-                            confirmTrapsBtn.classList.remove('hidden');
-                            confirmTrapsBtn.disabled = true;
-                            boardElement.classList.remove('no-click');
-                        }, 1200);
-                    } else {
-                        placeSystemTrap();
-                        showToast('Bắt đầu ván đấu!');
-                        setTimeout(() => {
-                            state.gameState = 'playing';
-                            renderBoard();
-                            updateScoreboard();
-                            updateBoardAppearance();
-                            boardElement.classList.remove('no-click');
-                        }, 1200);
-                    }
-                }
-                saveState();
-            }
-            
-            function cpuSetTraps() {
-                const playerTraps = state.traps[state.player1Mark];
-                let availableCells = Array.from({length: 9}, (_, i) => i).filter(i => !playerTraps.includes(i));
-                
-                for(let i=0; i<2; i++) {
-                    const randomIndex = Math.floor(Math.random() * availableCells.length);
-                    state.traps[state.cpuMark].push(availableCells[randomIndex]);
-                    availableCells.splice(randomIndex, 1);
-                }
-                updateTrapCounter();
-                showToast(`Máy đã đặt bẫy!`);
-            }
-
-            function placeSystemTrap() {
-                const playerTraps = [...state.traps.X, ...state.traps.O];
-                let availableCells = Array.from({length: 9}, (_, i) => i).filter(i => !playerTraps.includes(i));
-                if(availableCells.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * availableCells.length);
-                    state.traps.system.push(availableCells[randomIndex]);
-                }
-                updateTrapCounter();
-            }
-
-            function handlePlayerMove(index) {
-                if (state.board[index]) return;
-                state.lastMoveIndex = index;
-
-                let trapTriggered = false, trapOwner = null;
-                const opponent = state.currentPlayer === 'X' ? 'O' : 'X';
-
-                if (state.traps[opponent].includes(index)) { trapTriggered = true; trapOwner = opponent; state.traps[opponent] = state.traps[opponent].filter(t => t !== index); }
-                else if (state.traps[state.currentPlayer].includes(index)) { trapTriggered = true; trapOwner = state.currentPlayer; state.traps[state.currentPlayer] = state.traps[state.currentPlayer].filter(t => t !== index); }
-                else if (state.traps.system.includes(index)) { trapTriggered = true; trapOwner = 'system'; state.traps.system = state.traps.system.filter(t => t !== index); }
-                
-                if (trapOwner) updateTrapCounter();
-
-                if (trapTriggered) handleTrapActivation(index, trapOwner);
-                else { state.board[index] = state.currentPlayer; state.moveHistory[state.currentPlayer] = index; renderBoard(); checkGameState(); }
-            }
-            
-            function handleTrapActivation(trapIndex, trapOwner) {
-                 const lastMoveIndex = state.moveHistory[state.currentPlayer];
-                 boardElement.classList.add('no-click');
-                 state.triggeredTraps.push({ index: trapIndex, owner: trapOwner });
-                 showToast(`Người chơi ${state.currentPlayer} đã dẫm phải bẫy!`);
-                 const trapCell = boardElement.querySelector(`[data-index='${trapIndex}']`);
-                 if(trapCell) { trapCell.classList.add('trap-hit-animation'); trapCell.addEventListener('animationend', () => trapCell.classList.remove('trap-hit-animation'), { once: true }); }
-                 
-                 state.lastMoveIndex = trapIndex;
-
-                 const finishActivation = () => {
-                     if (lastMoveIndex === null) {
-                         showToast('Đây là nước đi đầu tiên, bạn bị mất lượt!');
-                         renderBoard(); // Show the triggered trap color
-                         setTimeout(() => { checkGameState(true); boardElement.classList.remove('no-click'); }, 500);
-                     } else {
-                         state.board[trapIndex] = state.currentPlayer;
-                         state.immuneCells.push(trapIndex);
-                         if (!state.immuneCells.includes(lastMoveIndex)) {
-                            const cellToRemove = boardElement.querySelector(`[data-index='${lastMoveIndex}']`);
-                            const svgToRemove = cellToRemove?.querySelector('svg');
-                            if(svgToRemove) svgToRemove.classList.add('symbol-fade-out');
-                            showToast('Nước đi trước đó đã bị xóa!');
-                            setTimeout(() => {
-                               state.board[lastMoveIndex] = null;
-                               state.moveHistory[state.currentPlayer] = trapIndex;
-                               renderBoard();
-                               checkGameState();
-                               boardElement.classList.remove('no-click');
-                            }, 500);
-                         } else {
-                            showToast('Nước đi trước đó được bảo vệ khỏi bẫy!');
-                            state.moveHistory[state.currentPlayer] = trapIndex;
-                            renderBoard();
-                            checkGameState();
-                            boardElement.classList.remove('no-click');
-                         }
-                     }
-                 };
-                 
-                 setTimeout(finishActivation, 800);
-            }
-            
-            function checkGameState(forceSwitchPlayer = false) {
-                if (forceSwitchPlayer) { switchPlayerAndUpdate(); return; }
-                const winner = checkWinner();
-                if (winner) { endRound(winner); return; }
-                if (state.board.every(cell => cell)) { endRound('Hòa'); return; }
-                switchPlayerAndUpdate();
-            }
-
-            function switchPlayerAndUpdate() {
-                switchPlayer();
-                updateScoreboard();
-                updateBoardAppearance();
-
-                if (state.gameMode === 'pvcpu' && state.currentPlayer === state.cpuMark && state.gameState === 'playing') {
-                    makeCpuMove();
-                }
-                saveState();
-            }
-            
-            function switchPlayer() { state.currentPlayer = state.currentPlayer === 'X' ? 'O' : 'X'; }
-            
-            function checkWinner() {
-                const combos = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-                for (const combo of combos) {
-                    const [a, b, c] = combo;
-                    if (state.board[a] && state.board[a] === state.board[b] && state.board[a] === state.board[c]) return state.board[a];
-                }
-                return null;
-            }
-            
-            function endRound(result) {
-                state.gameState = 'round_over';
-                updateBoardAppearance();
-                trapCounterContainer.style.visibility = 'hidden';
-                confirmTrapsBtn.classList.add('hidden');
-                let title, message;
-                if(result === 'Hòa') { title = 'Ván đấu hòa!'; message = 'Không có ai thắng trong ván này.'; }
-                else { state.scores[result]++; title = `${(state.gameMode === 'pvcpu' && result === state.cpuMark) ? 'Máy' : `Người chơi ${result}`} thắng ván ${state.round}!`; message = `Tỉ số hiện tại là ${state.scores.X} - ${state.scores.O}.`; }
-                updateScoreboard();
-                if (state.scores.X === 3 || state.scores.O === 3) endSeries(result);
-                else showEndGameModal(title, message, false);
-                saveState();
-            }
-
-            function endSeries(winner) {
-                state.gameState = 'series_over';
-                const title = `${(state.gameMode === 'pvcpu' && winner === state.cpuMark) ? 'Máy' : `Người chơi ${winner}`} chiến thắng chung cuộc!`;
-                const message = `Chúc mừng bạn đã thắng với tỉ số ${state.scores.X} - ${state.scores.O}.`;
-                showEndGameModal(title, message, true);
-                localStorage.removeItem(SAVE_KEY); 
-            }
-            
-            function showEndGameModal(title, message, isSeriesOver) {
-                endGameTitle.textContent = title;
-                endGameMessage.textContent = message;
-                nextRoundBtn.classList.toggle('hidden', isSeriesOver);
-                newSeriesBtn.classList.toggle('hidden', !isSeriesOver);
-                endGameModal.classList.remove('hidden');
-            }
-
-            function togglePause() {
-                const isPaused = state.gameState === 'paused';
-                state.gameState = isPaused ? state.previousState : 'paused';
-                if(!isPaused) state.previousState = state.gameState;
-
-                updateBoardAppearance();
-                updateScoreboard();
-                
-                if(state.gameState === 'trap_setting' && !isPaused) confirmTrapsBtn.classList.remove('hidden');
-                else confirmTrapsBtn.classList.add('hidden');
-
-                pauseOverlay.classList.toggle('hidden');
-            }
-
-            // CPU Logic
-            function makeCpuMove() {
-                boardElement.classList.add('no-click');
-                showToast("Máy đang suy nghĩ...");
-                setTimeout(() => {
-                    const move = findBestMove();
-                    handlePlayerMove(move);
-                    boardElement.classList.remove('no-click');
-                }, 1200);
-            }
-
-            function findBestMove() {
-                const cpu = state.cpuMark;
-                const player = state.player1Mark;
-
-                // 1. Check for a winning move for CPU
-                for (let i = 0; i < 9; i++) {
-                    if (state.board[i] === null) {
-                        state.board[i] = cpu;
-                        if (checkWinner() === cpu) { state.board[i] = null; return i; }
-                        state.board[i] = null;
-                    }
-                }
-                // 2. Check to block player's winning move
-                for (let i = 0; i < 9; i++) {
-                    if (state.board[i] === null) {
-                        state.board[i] = player;
-                        if (checkWinner() === player) { state.board[i] = null; return i; }
-                        state.board[i] = null;
-                    }
-                }
-                // 3. Take center
-                if (state.board[4] === null) return 4;
-                // 4. Take opposite corner
-                const corners = [0, 2, 6, 8];
-                const opposites = { 0: 8, 2: 6, 6: 2, 8: 0 };
-                for (const corner of corners) {
-                    if (state.board[corner] === player && state.board[opposites[corner]] === null) {
-                        return opposites[corner];
-                    }
-                }
-                // 5. Take any empty corner
-                const emptyCorners = corners.filter(c => state.board[c] === null);
-                if (emptyCorners.length > 0) return emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
-                // 6. Take any empty side
-                const sides = [1, 3, 5, 7];
-                const emptySides = sides.filter(s => state.board[s] === null);
-                if (emptySides.length > 0) return emptySides[Math.floor(Math.random() * emptySides.length)];
-                
-                return state.board.findIndex(cell => cell === null); // Fallback
-            }
-
-
-            function saveState() {
-                if(state.gameState !== 'welcome' && state.gameState !== 'series_over') {
-                    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-                }
-            }
-
-            function toggleTheme() {
-                document.body.classList.toggle('dark-mode');
-                const isDarkMode = document.body.classList.contains('dark-mode');
-                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-                themeIconSun.classList.toggle('hidden', isDarkMode);
-                themeIconMoon.classList.toggle('hidden', !isDarkMode);
-            }
-            
-            function loadTheme() {
-                const theme = localStorage.getItem('theme');
-                if (theme === 'dark') document.body.classList.add('dark-mode');
-                const isDarkMode = document.body.classList.contains('dark-mode');
-                themeIconSun.classList.toggle('hidden', isDarkMode);
-                themeIconMoon.classList.toggle('hidden', !isDarkMode);
-            }
-
-            init();
+        const initialState = () => ({
+          gameState: "welcome",
+          gameMode: "pvp",
+          board: Array(9).fill(null),
+          player1Mark: "X",
+          cpuMark: null,
+          player1GoesFirst: true,
+          currentPlayer: "X",
+          traps: { X: [], O: [], system: [] },
+          trapSetter: null,
+          trapsSetCount: 0,
+          moveHistory: { X: null, O: null },
+          immuneStates: { X: null, O: null },
+          triggeredTraps: [],
+          scores: { X: 0, O: 0 },
+          round: 1,
+          lastMoveIndex: -1,
+          seriesWinner: null,
         });
+
+        function init() {
+          loadTheme();
+          const savedState = localStorage.getItem(SAVE_KEY);
+          if (savedState) {
+            continueGameBtn.classList.remove("hidden");
+          }
+          state = initialState();
+          setupListeners();
+          setPlayerMark("X");
+          setGameMode("pvp");
+        }
+
+        function setupListeners() {
+          chooseXBtn.addEventListener("click", () => setPlayerMark("X"));
+          chooseOBtn.addEventListener("click", () => setPlayerMark("O"));
+          goFirstBtn.addEventListener("click", () => setPlayerTurn(true));
+          goSecondBtn.addEventListener("click", () => setPlayerTurn(false));
+          modePvpBtn.addEventListener("click", () => setGameMode("pvp"));
+          modePvcpuBtn.addEventListener("click", () => setGameMode("pvcpu"));
+          startGameBtn.addEventListener("click", () => {
+            localStorage.removeItem(SAVE_KEY);
+            startGameSeries();
+          });
+          continueGameBtn.addEventListener("click", continueGame);
+          pauseBtn.addEventListener("click", togglePause);
+          fullConfirmBtn.addEventListener("click", handleConfirmTraps); 
+          resumeBtn.addEventListener("click", togglePause);
+          restartSeriesBtn.addEventListener("click", () => {
+            togglePause();
+            restartGameFromScratch();
+          });
+          boardElement.addEventListener("click", handleBoardClick);
+          themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
+        function restartGameFromScratch() {
+          localStorage.removeItem(SAVE_KEY);
+          welcomeScreen.classList.remove("hidden");
+          gameScreen.classList.add("hidden");
+          continueGameBtn.classList.add("hidden");
+          init();
+        }
+
+        function setGameMode(mode) {
+          state.gameMode = mode;
+          modePvpBtn.classList.toggle("selected", mode === "pvp");
+          modePvcpuBtn.classList.toggle("selected", mode === "pvcpu");
+        }
+
+        function setPlayerMark(mark) {
+          state.player1Mark = mark;
+          chooseXBtn.classList.toggle("selected", mark === "X");
+          chooseOBtn.classList.toggle("selected", mark === "O");
+          chooseXBtn.style.color = mark === "X" ? "white" : "var(--x-color)";
+          chooseOBtn.style.color = mark === "O" ? "white" : "var(--o-color)";
+        }
+        function setPlayerTurn(isFirst) {
+          state.player1GoesFirst = isFirst;
+          goFirstBtn.classList.toggle("selected", isFirst);
+          goSecondBtn.classList.toggle("selected", !isFirst);
+        }
+
+function continueGame() {
+  const savedState = JSON.parse(localStorage.getItem(SAVE_KEY));
+  if (savedState) {
+    state = savedState;
+    welcomeScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    roundNumberDisplay.textContent = `Ván ${state.round}`;
+    updateScoreboard();
+    updateBoardAppearance();
+    updateTrapCounter();
+    renderBoard();
+
+    if (state.gameState.includes("over")) {
+      const winner = state.seriesWinner || checkWinner() || "Hòa";
+      if (state.seriesWinner) {
+        endSeries(winner);
+      } else {
+        endRound(winner);
+      }
+    } else {
+      endRoundControlsWrapper.classList.add("hidden");
+      if (state.gameState === "trap_setting") {
+        // Sửa logic ở đây để dùng wrapper mới
+        const readyToConfirm = state.traps[state.trapSetter].length === 2;
+        trapDisplaysWrapper.classList.toggle("hidden", readyToConfirm);
+        confirmTrapControlsWrapper.classList.toggle("hidden", !readyToConfirm);
+      } else {
+        trapDisplaysWrapper.classList.remove("hidden");
+        confirmTrapControlsWrapper.classList.add("hidden");
+      }
+    }
+    showToast("Đã tải lại ván chơi trước đó!");
+  }
+}
+        function startGameSeries() {
+          state.round = 1;
+          state.scores = { X: 0, O: 0 };
+          if (state.gameMode === "pvcpu") {
+            state.cpuMark = state.player1Mark === "X" ? "O" : "X";
+          } else {
+            state.cpuMark = null;
+          }
+          welcomeScreen.classList.add("hidden");
+          gameScreen.classList.remove("hidden");
+          updateScoreboard();
+          startRound();
+        }
+
+        function startNextRound() {
+          state.round++;
+          startRound();
+        }
+
+        function startRound() {
+          Object.assign(state, {
+            board: Array(9).fill(null),
+            traps: { X: [], O: [], system: [] },
+            moveHistory: { X: null, O: null },
+            triggeredTraps: [],
+
+            immuneStates: { X: null, O: null },
+            gameState: "trap_setting",
+            seriesWinner: null,
+          });
+
+          const firstPlayer = state.player1GoesFirst
+            ? state.player1Mark
+            : state.player1Mark === "X"
+            ? "O"
+            : "X";
+          state.currentPlayer =
+            state.round % 2 === 1
+              ? firstPlayer
+              : firstPlayer === "X"
+              ? "O"
+              : "X";
+
+          if (state.gameMode === "pvcpu") {
+            state.trapSetter = state.player1Mark;
+            state.trapsSetCount = 1;
+          } else {
+            state.trapSetter = state.currentPlayer;
+            state.trapsSetCount = 0;
+          }
+
+          updateUiForNewRound();
+
+          if (
+            state.gameMode === "pvcpu" &&
+            state.currentPlayer !== state.player1Mark
+          ) {
+            showToast(`Bắt đầu ván ${state.round}. Bạn đặt bẫy trước.`);
+          } else {
+            showToast(
+              `Bắt đầu ván ${state.round}. Người chơi ${state.trapSetter} đặt bẫy.`
+            );
+          }
+          saveState();
+        }
+
+        function updateUiForNewRound() {
+          // Xóa trạng thái thắng/thua/hòa trên thanh điểm
+          gameHeader.classList.remove("win-x", "win-o", "draw");
+
+          // Cập nhật lại số hiệu ván đấu
+          roundNumberDisplay.textContent = `Ván ${state.round}`;
+
+          // Cập nhật bảng điểm
+          updateScoreboard();
+
+          // Cập nhật lại màu nền của bàn cờ cho giai đoạn đặt bẫy
+          updateBoardAppearance();
+
+          // Reset lại hiển thị số bẫy
+          updateTrapCounter();
+
+          // QUAN TRỌNG: Vẽ lại một bàn cờ trống hoàn toàn.
+          // Hàm renderBoard() sẽ tự động xóa mọi ký hiệu và màu nền của ván cũ.
+          renderBoard();
+
+          // Hiển thị lại nút xác nhận bẫy
+          trapDisplaysWrapper.classList.remove("hidden"); // Đảm bảo thanh bẫy hiện
+    confirmTrapControlsWrapper.classList.add("hidden"); // Đảm bảo nút xác nhận ẩn
+    endRoundControlsWrapper.classList.add("hidden");
+        }
+
+        function createSvgForMark(mark, animate = true) {
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("viewBox", "0 0 100 100");
+          svg.innerHTML =
+            mark === "X"
+              ? `<line x1="10" y1="10" x2="90" y2="90" /><line x1="90" y1="10" x2="10" y2="90" />`
+              : `<circle cx="50" cy="50" r="40" fill="none" />`;
+          svg.classList.add(mark === "X" ? "x-symbol" : "o-symbol");
+          if (!animate) {
+            svg.classList.add("no-animation");
+          }
+          return svg;
+        }
+
+        function renderBoard() {
+          boardElement.innerHTML = "";
+          state.board.forEach((value, index) => {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.dataset.index = index;
+            if (value) {
+              const shouldAnimate = index === state.lastMoveIndex;
+              cell.appendChild(createSvgForMark(value, shouldAnimate));
+            }
+
+            if (
+              state.gameMode === "pvcpu" &&
+              state.traps[state.player1Mark].includes(index) &&
+              !value
+            ) {
+              cell.classList.add("player-trap-visible");
+            }
+
+            if (
+              state.gameState === "trap_setting" &&
+              state.traps[state.trapSetter]?.includes(index)
+            ) {
+              cell.classList.add("trap-set-indicator");
+            }
+
+            if (state.immuneStates["X"]?.index === index) {
+              cell.classList.add(
+                `triggered-trap-${state.immuneStates["X"].owner.toLowerCase()}`
+              );
+            }
+            if (state.immuneStates["O"]?.index === index) {
+              cell.classList.add(
+                `triggered-trap-${state.immuneStates["O"].owner.toLowerCase()}`
+              );
+            }
+
+            if (
+              state.gameState === "trap_setting" &&
+              !state.board[index] &&
+              (state.gameMode === "pvp" ||
+                state.trapSetter === state.player1Mark)
+            ) {
+              cell.addEventListener("mouseover", () =>
+                cell.classList.add("trap-setting-hover")
+              );
+              cell.addEventListener("mouseout", () =>
+                cell.classList.remove("trap-setting-hover")
+              );
+            } else if (state.gameState === "playing" && !value) {
+              cell.addEventListener("mouseover", () => {
+                if (!cell.querySelector("svg")) {
+                  const previewSvg = createSvgForMark(state.currentPlayer);
+                  previewSvg.classList.add("preview-symbol");
+                  cell.appendChild(previewSvg);
+                }
+              });
+              cell.addEventListener("mouseout", () => {
+                const preview = cell.querySelector(".preview-symbol");
+                if (preview) cell.removeChild(preview);
+              });
+            }
+            boardElement.appendChild(cell);
+          });
+          state.lastMoveIndex = -1; // Reset after render
+        }
+
+        function updateScoreboard() {
+          playerXLabel.textContent = "X";
+          playerOLabel.textContent = "O";
+
+          scoreXDots.innerHTML = "";
+          scoreODots.innerHTML = "";
+          for (let i = 0; i < 3; i++) {
+            const dotX = document.createElement("div");
+            dotX.classList.add("score-dot");
+            if (i < state.scores.X) dotX.classList.add("filled", "x");
+            scoreXDots.appendChild(dotX);
+            const dotO = document.createElement("div");
+            dotO.classList.add("score-dot");
+            if (i < state.scores.O) dotO.classList.add("filled", "o");
+            scoreODots.appendChild(dotO);
+          }
+          scoreXDisplay.classList.remove("active");
+          scoreODisplay.classList.remove("active");
+          if (
+            state.gameState === "playing" &&
+            state.currentPlayer !== state.cpuMark
+          ) {
+            if (state.currentPlayer === "X")
+              scoreXDisplay.classList.add("active");
+            else scoreODisplay.classList.add("active");
+          }
+        }
+
+        function updateBoardAppearance() {
+          boardElement.classList.remove("trap-setting", "turn-x", "turn-o");
+          if (state.gameState === "trap_setting") {
+            boardElement.classList.add("trap-setting");
+          } else if (state.gameState === "playing") {
+            boardElement.classList.add(
+              state.currentPlayer === "X" ? "turn-x" : "turn-o"
+            );
+          }
+        }
+
+        function updateTrapCounter() {
+          const trapData = [
+            {
+              dotsEl: trapDotsX,
+              count: 2,
+              filled: state.traps.X.length,
+              type: "x",
+            },
+            {
+              dotsEl: trapDotsO,
+              count: 2,
+              filled: state.traps.O.length,
+              type: "o",
+            },
+            {
+              dotsEl: trapDotsSystem,
+              count: 1,
+              filled: state.traps.system.length,
+              type: "system",
+            },
+          ];
+
+          trapData.forEach(({ dotsEl, count, filled, type }) => {
+            dotsEl.innerHTML = "";
+            for (let i = 0; i < count; i++) {
+              const dot = document.createElement("div");
+              dot.classList.add("trap-dot");
+              if (i < filled) dot.classList.add("filled", type);
+              dotsEl.appendChild(dot);
+            }
+          });
+        }
+
+        function showToast(message) {
+          toast.textContent = message;
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 2500);
+        }
+
+        function handleBoardClick(e) {
+          const cell = e.target.closest(".cell");
+          if (
+            !cell ||
+            state.gameState === "paused" ||
+            state.gameState.includes("over") ||
+            boardElement.classList.contains("no-click")
+          )
+            return;
+          const index = parseInt(cell.dataset.index);
+          if (
+            state.gameState === "trap_setting" &&
+            (state.gameMode === "pvp" || state.trapSetter === state.player1Mark)
+          )
+            handleTrapSetting(index);
+          else if (
+            state.gameState === "playing" &&
+            state.currentPlayer !== state.cpuMark
+          )
+            handlePlayerMove(index);
+        }
+
+        function handleTrapSetting(index) {
+  const playerTraps = state.traps[state.trapSetter];
+  const trapIndex = playerTraps.indexOf(index);
+
+  if (trapIndex > -1) {
+    playerTraps.splice(trapIndex, 1);
+  } else if (playerTraps.length < 2) {
+    playerTraps.push(index);
+  }
+
+  renderBoard(); // Vẽ lại để cập nhật indicator
+
+  // Logic mới: Ẩn/hiện các thanh điều khiển
+  const readyToConfirm = playerTraps.length === 2;
+  trapDisplaysWrapper.classList.toggle("hidden", readyToConfirm);
+  confirmTrapControlsWrapper.classList.toggle("hidden", !readyToConfirm);
+  
+  saveState();
+}
+
+function handleConfirmTraps() {
+  boardElement.classList.add("no-click");
+  confirmTrapControlsWrapper.classList.add("hidden"); // Ẩn nút xác nhận
+
+  // SỬA LỖI Ở ĐÂY: Hiển thị lại thanh đếm bẫy ngay lập tức
+  trapDisplaysWrapper.classList.remove("hidden");
+
+  if (state.gameMode === "pvcpu") {
+    cpuSetTraps();
+    placeSystemTrap();
+    showToast("Bắt đầu ván đấu!");
+    setTimeout(() => {
+      state.gameState = "playing";
+      renderBoard();
+      updateScoreboard();
+      updateBoardAppearance();
+      boardElement.classList.remove("no-click");
+      if (state.currentPlayer === state.cpuMark) {
+        makeCpuMove();
+      }
+    }, 1200);
+  } else {
+    // PvP mode
+    state.trapsSetCount++;
+    if (state.trapsSetCount < 2) {
+      const nextPlayer = state.trapSetter === "X" ? "O" : "X";
+      showToast(`Lượt đặt bẫy của người chơi ${nextPlayer}`);
+      setTimeout(() => {
+        state.trapSetter = nextPlayer;
+        renderBoard();
+        updateTrapCounter();
+        // Dòng code hiển thị thanh bẫy ở đây không còn cần thiết nữa
+        boardElement.classList.remove("no-click");
+      }, 1200);
+    } else {
+      placeSystemTrap();
+      showToast("Bắt đầu ván đấu!");
+      setTimeout(() => {
+        state.gameState = "playing";
+        renderBoard();
+        updateScoreboard();
+        updateBoardAppearance();
+        boardElement.classList.remove("no-click");
+      }, 1200);
+    }
+  }
+  saveState();
+}
+        function cpuSetTraps() {
+          const playerTraps = state.traps[state.player1Mark];
+          let availableCells = Array.from({ length: 9 }, (_, i) => i).filter(
+            (i) => !playerTraps.includes(i)
+          );
+
+          for (let i = 0; i < 2; i++) {
+            const randomIndex = Math.floor(
+              Math.random() * availableCells.length
+            );
+            state.traps[state.cpuMark].push(availableCells[randomIndex]);
+            availableCells.splice(randomIndex, 1);
+          }
+          updateTrapCounter();
+          showToast(`Máy đã đặt bẫy!`);
+        }
+
+        function placeSystemTrap() {
+          const playerTraps = [...state.traps.X, ...state.traps.O];
+          let availableCells = Array.from({ length: 9 }, (_, i) => i).filter(
+            (i) => !playerTraps.includes(i)
+          );
+          if (availableCells.length > 0) {
+            const randomIndex = Math.floor(
+              Math.random() * availableCells.length
+            );
+            state.traps.system.push(availableCells[randomIndex]);
+          }
+          updateTrapCounter();
+        }
+
+        function handlePlayerMove(index) {
+          if (state.board[index]) return;
+
+          // THAY ĐỔI: Logic xóa bảo vệ của đối thủ khi dính bẫy ở lượt đầu tiên
+          const opponent = state.currentPlayer === "X" ? "O" : "X";
+          if (state.immuneStates[opponent]?.isFirstMove) {
+            state.immuneStates[opponent] = null;
+          }
+
+          state.lastMoveIndex = index;
+
+          let trapTriggered = false,
+            trapOwner = null;
+
+          if (state.traps[opponent].includes(index)) {
+            trapTriggered = true;
+            trapOwner = opponent;
+            state.traps[opponent] = state.traps[opponent].filter(
+              (t) => t !== index
+            );
+          } else if (state.traps[state.currentPlayer].includes(index)) {
+            trapTriggered = true;
+            trapOwner = state.currentPlayer;
+            state.traps[state.currentPlayer] = state.traps[
+              state.currentPlayer
+            ].filter((t) => t !== index);
+          } else if (state.traps.system.includes(index)) {
+            trapTriggered = true;
+            trapOwner = "system";
+            state.traps.system = state.traps.system.filter((t) => t !== index);
+          }
+
+          if (trapOwner) updateTrapCounter();
+
+          if (trapTriggered) {
+            handleTrapActivation(index, trapOwner);
+          } else {
+            // THAY ĐỔI: Chỉ xóa trạng thái bảo vệ của chính người chơi hiện tại
+            if (state.immuneStates[state.currentPlayer]) {
+              state.immuneStates[state.currentPlayer] = null;
+            }
+
+            state.board[index] = state.currentPlayer;
+            state.moveHistory[state.currentPlayer] = index;
+            renderBoard();
+            checkGameState();
+          }
+        }
+
+        function handleTrapActivation(trapIndex, trapOwner) {
+    const lastMoveIndex = state.moveHistory[state.currentPlayer];
+    boardElement.classList.add('no-click');
+    state.triggeredTraps.push({ index: trapIndex, owner: trapOwner });
+    showToast(`Người chơi ${state.currentPlayer} đã dẫm phải bẫy!`);
+    
+    const isFirstMoveTrap = (lastMoveIndex === null);
+
+    if (isFirstMoveTrap) {
+        // Logic cho lần đi đầu dính bẫy không đổi vì nó đã đúng
+        showToast('Đây là nước đi đầu tiên, bạn bị mất lượt!');
+        state.immuneStates[state.currentPlayer] = { index: trapIndex, owner: trapOwner, isFirstMove: true };
+        renderBoard(); 
+        setTimeout(() => { checkGameState(true); boardElement.classList.remove('no-click'); }, 500);
+        return;
+    }
+
+    // --- LOGIC MỚI CHO CÁC LẦN DÍNH BẪY SAU ---
+
+    // 1. Kiểm tra trạng thái bảo vệ TRƯỚC KHI thay đổi state
+    const isProtected = (state.immuneStates[state.currentPlayer]?.index === lastMoveIndex);
+
+    // 2. Cập nhật state cho nước đi MỚI ngay lập tức
+    state.board[trapIndex] = state.currentPlayer;
+    state.moveHistory[state.currentPlayer] = trapIndex;
+    state.immuneStates[state.currentPlayer] = { index: trapIndex, owner: trapOwner, isFirstMove: false };
+    state.lastMoveIndex = trapIndex; // Để kích hoạt animation vẽ quân cờ mới
+
+    // 3. Vẽ lại bàn cờ để HIỂN THỊ quân cờ mới và BẮT ĐẦU hiệu ứng rung
+    renderBoard();
+    const trapCell = boardElement.querySelector(`[data-index='${trapIndex}']`);
+    if (trapCell) {
+        trapCell.classList.add('trap-hit-animation');
+        trapCell.addEventListener('animationend', () => trapCell.classList.remove('trap-hit-animation'), { once: true });
+    }
+
+    // 4. Xử lý HẬU QUẢ của bẫy (xóa quân cũ hoặc thông báo được bảo vệ)
+    if (!isProtected) {
+        // Dùng setTimeout để tạo độ trễ cho việc xóa quân cờ cũ
+        setTimeout(() => {
+            showToast('Nước đi trước đó đã bị xóa!');
+            const cellToRemove = boardElement.querySelector(`[data-index='${lastMoveIndex}']`);
+            const svgToRemove = cellToRemove?.querySelector('svg');
+            if (svgToRemove) {
+                svgToRemove.classList.add('symbol-fade-out');
+            }
+            
+            // Sau khi animation mờ dần kết thúc (500ms), cập nhật lại state và bàn cờ
+            setTimeout(() => {
+                state.board[lastMoveIndex] = null;
+                renderBoard(); // Vẽ lại lần cuối để xác nhận quân cờ đã bị xóa
+                checkGameState();
+                boardElement.classList.remove('no-click');
+            }, 500);
+        }, 400); // Đợi 1 chút rồi mới bắt đầu xóa
+    } else {
+        // Nếu được bảo vệ, chỉ cần đợi 1 chút rồi mở khóa bàn cờ
+        setTimeout(() => {
+            showToast('Nước đi trước đó được bảo vệ khỏi bẫy!');
+            checkGameState();
+            boardElement.classList.remove('no-click');
+        }, 800);
+    }
+}
+
+        function checkGameState(forceSwitchPlayer = false) {
+          if (forceSwitchPlayer) {
+            switchPlayerAndUpdate();
+            return;
+          }
+          const winner = checkWinner();
+          if (winner) {
+            endRound(winner);
+            return;
+          }
+          if (state.board.every((cell) => cell)) {
+            endRound("Hòa");
+            return;
+          }
+          switchPlayerAndUpdate();
+        }
+
+        function switchPlayerAndUpdate() {
+          switchPlayer();
+          updateScoreboard();
+          updateBoardAppearance();
+
+          if (
+            state.gameMode === "pvcpu" &&
+            state.currentPlayer === state.cpuMark &&
+            state.gameState === "playing"
+          ) {
+            makeCpuMove();
+          }
+          saveState();
+        }
+
+        function switchPlayer() {
+          state.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
+        }
+
+        function checkWinner() {
+          const combos = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+          ];
+          for (const combo of combos) {
+            const [a, b, c] = combo;
+            if (
+              state.board[a] &&
+              state.board[a] === state.board[b] &&
+              state.board[a] === state.board[c]
+            )
+              return state.board[a];
+          }
+          return null;
+        }
+
+        function endRound(result) {
+          state.gameState = "round_over";
+          updateBoardAppearance();
+         
+
+          let isPlayerWinner = false;
+          if (result === "Hòa") {
+            roundNumberDisplay.textContent = "Hòa!";
+            gameHeader.classList.add("draw");
+          } else {
+            state.scores[result]++;
+            isPlayerWinner = result === state.player1Mark;
+
+            if (state.gameMode === "pvcpu") {
+              roundNumberDisplay.textContent = isPlayerWinner
+                ? "Thắng!"
+                : "Thua!";
+            } else {
+              roundNumberDisplay.textContent = `${result} Thắng!`;
+            }
+            gameHeader.classList.add(`win-${result.toLowerCase()}`);
+          }
+
+          updateScoreboard();
+          trapDisplaysWrapper.classList.add("hidden");
+          endRoundControlsWrapper.classList.remove("hidden");
+
+          if (state.scores.X === 3 || state.scores.O === 3) {
+            endSeries(result);
+          } else {
+            proceedBtn.textContent = "Ván tiếp theo";
+            proceedBtn.onclick = startNextRound;
+          }
+          saveState();
+        }
+
+        function endSeries(winner) {
+          state.gameState = "series_over";
+          state.seriesWinner = winner;
+          const isPlayerWinner = winner === state.player1Mark;
+
+          if (state.gameMode === "pvcpu") {
+            roundNumberDisplay.textContent = isPlayerWinner
+              ? "Bạn thắng!"
+              : "Máy thắng!";
+          } else {
+            roundNumberDisplay.textContent = `${winner} THẮNG!`;
+          }
+
+          proceedBtn.textContent = "Chơi serie mới";
+          proceedBtn.onclick = restartGameFromScratch;
+
+          localStorage.removeItem(SAVE_KEY);
+        }
+
+function togglePause() {
+  const isPaused = state.gameState === "paused";
+
+  if (isPaused) {
+    // Khi tiếp tục, khôi phục lại trạng thái game trước đó
+    state.gameState = state.previousState;
+  } else {
+    // Khi tạm dừng, lưu trạng thái hiện tại và chuyển sang 'paused'
+    state.previousState = state.gameState;
+    state.gameState = "paused";
+  }
+
+  updateBoardAppearance();
+  updateScoreboard();
+  
+  // Khi tạm dừng, ẩn nút xác nhận đi
+  if (!isPaused) {
+      confirmTrapControlsWrapper.classList.add('hidden');
+  }
+
+  pauseOverlay.classList.toggle("hidden");
+
+  // Khi tiếp tục, cập nhật lại giao diện thanh điều khiển
+  if (isPaused && state.gameState === 'trap_setting') {
+      const readyToConfirm = state.traps[state.trapSetter].length === 2;
+      trapDisplaysWrapper.classList.toggle("hidden", readyToConfirm);
+      confirmTrapControlsWrapper.classList.toggle("hidden", !readyToConfirm);
+  }
+}
+        // CPU Logic
+        function makeCpuMove() {
+          boardElement.classList.add("no-click");
+          showToast("Máy đang suy nghĩ...");
+          setTimeout(() => {
+            const move = findBestMove();
+            handlePlayerMove(move);
+            boardElement.classList.remove("no-click");
+          }, 1200);
+        }
+
+        function findBestMove() {
+          const cpu = state.cpuMark;
+          const player = state.player1Mark;
+
+          // 1. Check for a winning move for CPU
+          for (let i = 0; i < 9; i++) {
+            if (state.board[i] === null) {
+              state.board[i] = cpu;
+              if (checkWinner() === cpu) {
+                state.board[i] = null;
+                return i;
+              }
+              state.board[i] = null;
+            }
+          }
+          // 2. Check to block player's winning move
+          for (let i = 0; i < 9; i++) {
+            if (state.board[i] === null) {
+              state.board[i] = player;
+              if (checkWinner() === player) {
+                state.board[i] = null;
+                return i;
+              }
+              state.board[i] = null;
+            }
+          }
+          // 3. Take center
+          if (state.board[4] === null) return 4;
+          // 4. Take opposite corner
+          const corners = [0, 2, 6, 8];
+          const opposites = { 0: 8, 2: 6, 6: 2, 8: 0 };
+          for (const corner of corners) {
+            if (
+              state.board[corner] === player &&
+              state.board[opposites[corner]] === null
+            ) {
+              return opposites[corner];
+            }
+          }
+          // 5. Take any empty corner
+          const emptyCorners = corners.filter((c) => state.board[c] === null);
+          if (emptyCorners.length > 0)
+            return emptyCorners[
+              Math.floor(Math.random() * emptyCorners.length)
+            ];
+          // 6. Take any empty side
+          const sides = [1, 3, 5, 7];
+          const emptySides = sides.filter((s) => state.board[s] === null);
+          if (emptySides.length > 0)
+            return emptySides[Math.floor(Math.random() * emptySides.length)];
+
+          return state.board.findIndex((cell) => cell === null); // Fallback
+        }
+
+        function saveState() {
+          if (state.gameState !== "welcome") {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+          }
+        }
+
+        function toggleTheme() {
+          document.body.classList.toggle("dark-mode");
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+          themeIconSun.classList.toggle("hidden", isDarkMode);
+          themeIconMoon.classList.toggle("hidden", !isDarkMode);
+        }
+
+        function loadTheme() {
+          const theme = localStorage.getItem("theme");
+          if (theme === "dark") document.body.classList.add("dark-mode");
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          themeIconSun.classList.toggle("hidden", isDarkMode);
+          themeIconMoon.classList.toggle("hidden", !isDarkMode);
+        }
+
+        init();
+      });
     </script>
-</body>
+  </body>
 </html>
