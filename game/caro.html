@@ -146,25 +146,29 @@
         stroke-width: 8;
         animation: draw 0.3s ease-in-out forwards;
       }
- .winning-line {
+.winning-pill-wrapper {
         position: absolute;
-        height: 14px; /* Độ dày của viên thuốc */
-        border-radius: 7px; /* Bo tròn để tạo hình viên thuốc */
-        transform-origin: left center;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        opacity: 0;
-        transform: scaleX(0) rotate(0deg); /* Hiệu ứng xuất hiện */
+        /* Wrapper này chỉ là một điểm neo để xoay, không cần kích thước */
+        transform-origin: center center;
+        transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: rotate(0deg) scale(0); /* Hiệu ứng xuất hiện */
       }
-      .winning-line.visible {
-        opacity: 1;
-        transform: scaleX(1) var(--rotation, rotate(0deg));
+      .winning-pill-wrapper.visible {
+         transform: var(--rotation, rotate(0deg)) scale(1);
       }
-      .winning-line.win-x {
-        background-color: var(--x-color);
+      .winning-pill {
+        position: absolute;
+        box-sizing: border-box; /* Rất quan trọng để viền không làm thay đổi kích thước */
+        border: 5px solid; /* Độ dày của viền */
+        background-color: transparent; /* Rỗng ở giữa */
       }
-      .winning-line.win-o {
-        background-color: var(--o-color);
+      .winning-pill.win-x {
+        border-color: var(--x-color);
+        box-shadow: 0 0 15px var(--x-color); /* Thêm hiệu ứng phát sáng */
+      }
+      .winning-pill.win-o {
+        border-color: var(--o-color);
+        box-shadow: 0 0 15px var(--o-color); /* Thêm hiệu ứng phát sáng */
       }
       /* Animations */
       @keyframes draw {
@@ -870,39 +874,43 @@ const fullConfirmBtn = document.getElementById("full-confirm-btn");
         }
 
 function continueGame() {
-  const savedState = JSON.parse(localStorage.getItem(SAVE_KEY));
-  if (savedState) {
-    state = savedState;
-    welcomeScreen.classList.add("hidden");
-    gameScreen.classList.remove("hidden");
-    roundNumberDisplay.textContent = `Ván ${state.round}`;
-    updateScoreboard();
-    updateHeaderAndBoard();
-    updateTrapCounter();
-    renderBoard();
+          const savedState = JSON.parse(localStorage.getItem(SAVE_KEY));
+          if (savedState) {
+            state = savedState;
+            welcomeScreen.classList.add("hidden");
+            gameScreen.classList.remove("hidden");
+            roundNumberDisplay.textContent = `Ván ${state.round}`;
+            updateScoreboard();
+            updateHeaderAndBoard();
+            updateTrapCounter();
+            renderBoard();
 
-    if (state.gameState.includes("over")) {
-      const winner = state.seriesWinner || checkWinner() || "Hòa";
-      if (state.seriesWinner) {
-        endSeries(winner);
-      } else {
-        endRound(winner);
-      }
-    } else {
-      endRoundControlsWrapper.classList.add("hidden");
-      if (state.gameState === "trap_setting") {
-        // Sửa logic ở đây để dùng wrapper mới
-        const readyToConfirm = state.traps[state.trapSetter].length === 2;
-        trapDisplaysWrapper.classList.toggle("hidden", readyToConfirm);
-        confirmTrapControlsWrapper.classList.toggle("hidden", !readyToConfirm);
-      } else {
-        trapDisplaysWrapper.classList.remove("hidden");
-        confirmTrapControlsWrapper.classList.add("hidden");
-      }
-    }
-    showToast("Đã tải lại ván chơi trước đó!");
-  }
-}
+            if (state.gameState.includes("over")) {
+              // SỬA LỖI: Lấy đúng người chiến thắng từ object trả về
+              const { winner } = checkWinner();
+              const result = state.seriesWinner || winner || "Hòa";
+              
+              if (state.seriesWinner) {
+                endSeries(result);
+              } else {
+                // Phải truyền cả combo để vẽ lại line chiến thắng khi tải lại game
+                const { combo } = checkWinner();
+                endRound(result, combo);
+              }
+            } else {
+              endRoundControlsWrapper.classList.add("hidden");
+              if (state.gameState === "trap_setting") {
+                const readyToConfirm = state.traps[state.trapSetter].length === 2;
+                trapDisplaysWrapper.classList.toggle("hidden", readyToConfirm);
+                confirmTrapControlsWrapper.classList.toggle("hidden", !readyToConfirm);
+              } else {
+                trapDisplaysWrapper.classList.remove("hidden");
+                confirmTrapControlsWrapper.classList.add("hidden");
+              }
+            }
+            showToast("Đã tải lại ván chơi trước đó!");
+          }
+        }
         function startGameSeries() {
           state.round = 1;
           state.scores = { X: 0, O: 0 };
@@ -966,8 +974,7 @@ function startRound() {
 }
 
        function updateUiForNewRound() {
-  // Xóa đường kẻ chiến thắng của ván trước nếu có
-  const oldLine = boardElement.querySelector('.winning-line');
+  const oldLine = boardElement.querySelector('.winning-pill-wrapper');
   if (oldLine) {
     oldLine.remove();
   }
@@ -984,49 +991,55 @@ function startRound() {
   endRoundControlsWrapper.classList.add("hidden");
 }
 function drawWinningLine(winner, combo) {
-      const line = document.createElement('div');
-      line.classList.add('winning-line');
-      line.classList.add(winner === 'X' ? 'win-x' : 'win-o');
+      const wrapper = document.createElement('div');
+      const pill = document.createElement('div');
+      
+      pill.classList.add('winning-pill');
+      pill.classList.add(winner === 'X' ? 'win-x' : 'win-o');
+      
+      wrapper.classList.add('winning-pill-wrapper');
+      wrapper.appendChild(pill);
 
       const boardRect = boardElement.getBoundingClientRect();
       const cellElements = Array.from(boardElement.querySelectorAll('.cell'));
       
-      // Lấy ô bắt đầu và ô kết thúc của đường thắng
       const startCell = cellElements[combo[0]];
+      const middleCell = cellElements[combo[1]];
       const endCell = cellElements[combo[2]];
 
       const startRect = startCell.getBoundingClientRect();
+      const middleRect = middleCell.getBoundingClientRect();
       const endRect = endCell.getBoundingClientRect();
-      const lineThickness = 14;
 
-      // Tính toán vị trí tâm của ô bắt đầu và kết thúc so với bàn cờ
-      const startX = startRect.left + startRect.width / 2 - boardRect.left;
-      const startY = startRect.top + startRect.height / 2 - boardRect.top;
-      const endX = endRect.left + endRect.width / 2 - boardRect.left;
-      const endY = endRect.top + endRect.height / 2 - boardRect.top;
+      // THAY ĐỔI QUAN TRỌNG: Thu nhỏ độ dày của viên thuốc
+      const pillThickness = startRect.height * 0.6; // Chỉ dày bằng 80% ô cờ
 
-      // Dùng định lý Pytago để tính chiều dài của đường kẻ
-      const dx = endX - startX;
-      const dy = endY - startY;
-      const length = Math.sqrt(dx * dx + dy * dy);
-
-      // Dùng atan2 để tính góc xoay
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-      // Áp dụng các giá trị vào style của đường kẻ
-      line.style.width = `${length}px`;
-      line.style.top = `${startY - lineThickness / 2}px`;
-      line.style.left = `${startX}px`;
+      const dx = (endRect.left + endRect.width / 2) - (startRect.left + startRect.width / 2);
+      const dy = (endRect.top + endRect.height / 2) - (startRect.top + startRect.height / 2);
       
-      // Lưu giá trị xoay vào biến CSS để dùng trong animation
-      line.style.setProperty('--rotation', `rotate(${angle}deg)`);
+      const pillLength = Math.sqrt(dx * dx + dy * dy) + startRect.width; // Chiều dài vẫn bao trọn 3 ô
 
-      boardElement.appendChild(line);
+      // Áp dụng kích thước mới
+      pill.style.width = `${pillLength}px`;
+      pill.style.height = `${pillThickness}px`; // Độ dày mới
+      pill.style.borderRadius = `${pillThickness / 2}px`; // Bo tròn theo độ dày mới
+      
+      pill.style.top = `-${pillThickness / 2}px`;
+      pill.style.left = `-${pillLength / 2}px`;
 
-      // Thêm class 'visible' sau một khoảng trễ nhỏ để kích hoạt hiệu ứng
+      const middleX = middleRect.left + middleRect.width / 2 - boardRect.left;
+      const middleY = middleRect.top + middleRect.height / 2 - boardRect.top;
+      wrapper.style.top = `${middleY}px`;
+      wrapper.style.left = `${middleX}px`;
+
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      wrapper.style.setProperty('--rotation', `rotate(${angle}deg)`);
+
+      boardElement.appendChild(wrapper);
+
       setTimeout(() => {
-        line.classList.add('visible');
-      }, 100);
+        wrapper.classList.add('visible');
+      }, 50);
     }
         function createSvgForMark(mark, animate = true) {
           const svg = document.createElementNS(
