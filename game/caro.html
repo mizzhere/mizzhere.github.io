@@ -32,15 +32,15 @@
       }
 
       body.dark-mode {
-        --bg-color: #202124;
-        --grid-bg: #2d2e30;
-        --text-color: #e8eaed;
-        --text-color-light: #9aa0a6;
-        --accent-light: #303b50;
-        --border-color: #3c4043;
-        --draw-color: #9aa0a6;
-        --shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
-        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+        --bg-color: #121212; /* Nền đen sâu hơn, tiêu chuẩn Material Design */
+        --grid-bg: #1E1E1E; /* Nền ô đấu tối nhưng vẫn nổi bật */
+        --text-color: #EAEAEA; /* Chữ trắng ngà, dễ đọc hơn */
+        --text-color-light: #A0A0A0; /* Chữ phụ sáng hơn */
+        --accent-light: #2a3a5a; /* Màu nền phụ khi hover, tương phản tốt hơn */
+        --border-color: #444444; /* Đường kẻ bàn cờ rõ nét hơn hẳn */
+        --draw-color: #888888;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
       }
 
       html,
@@ -76,6 +76,12 @@
       }
       .game-board.trap-setting {
         background-color: var(--accent-light);
+      }
+      .game-board.trap-setting-x {
+        background-color: rgba(234, 67, 53, 0.1);
+      }
+      .game-board.trap-setting-o {
+        background-color: rgba(52, 168, 83, 0.1);
       }
       .game-board.turn-x {
         background-color: rgba(234, 67, 53, 0.15);
@@ -896,52 +902,48 @@ function continueGame() {
           startRound();
         }
 
-        function startRound() {
-          Object.assign(state, {
-            board: Array(9).fill(null),
-            traps: { X: [], O: [], system: [] },
-            moveHistory: { X: null, O: null },
-            triggeredTraps: [],
+function startRound() {
+  Object.assign(state, {
+    board: Array(9).fill(null),
+    traps: { X: [], O: [], system: [] },
+    moveHistory: { X: null, O: null },
+    triggeredTraps: [],
+    immuneStates: { X: null, O: null },
+    gameState: "trap_setting",
+    seriesWinner: null,
+  });
 
-            immuneStates: { X: null, O: null },
-            gameState: "trap_setting",
-            seriesWinner: null,
-          });
+  const firstPlayer = state.player1GoesFirst ?
+    state.player1Mark :
+    state.player1Mark === "X" ? "O" : "X";
+  state.currentPlayer =
+    state.round % 2 === 1 ?
+    firstPlayer :
+    firstPlayer === "X" ? "O" : "X";
 
-          const firstPlayer = state.player1GoesFirst
-            ? state.player1Mark
-            : state.player1Mark === "X"
-            ? "O"
-            : "X";
-          state.currentPlayer =
-            state.round % 2 === 1
-              ? firstPlayer
-              : firstPlayer === "X"
-              ? "O"
-              : "X";
+  if (state.gameMode === "pvcpu") {
+    state.trapSetter = state.player1Mark;
+    state.trapsSetCount = 1;
+  } else {
+    state.trapSetter = state.currentPlayer;
+    state.trapsSetCount = 0;
+  }
 
-          if (state.gameMode === "pvcpu") {
-            state.trapSetter = state.player1Mark;
-            state.trapsSetCount = 1;
-          } else {
-            state.trapSetter = state.currentPlayer;
-            state.trapsSetCount = 0;
-          }
+  updateUiForNewRound();
+  updateHeaderAndBoard(); // <-- SỬ DỤNG HÀM MỚI
 
-          updateUiForNewRound();
-
-          if (
-            state.gameMode === "pvcpu" &&
-            state.currentPlayer !== state.player1Mark
-          ) {
-            showToast(`Bắt đầu ván ${state.round}. Bạn đặt bẫy trước.`);
-          } else {
-            showToast(
-              `Bắt đầu ván ${state.round}. Người chơi ${state.trapSetter} đặt bẫy.`
-            );
-          }
-          saveState();
-        }
+  if (
+    state.gameMode === "pvcpu" &&
+    state.currentPlayer !== state.player1Mark
+  ) {
+    showToast(`Bắt đầu ván ${state.round}. Bạn đặt bẫy trước.`);
+  } else {
+    showToast(
+      `Bắt đầu ván ${state.round}. Người chơi ${state.trapSetter} đặt bẫy.`
+    );
+  }
+  saveState();
+}
 
         function updateUiForNewRound() {
           // Xóa trạng thái thắng/thua/hòa trên thanh điểm
@@ -1081,14 +1083,33 @@ function continueGame() {
           }
         }
 
-        function updateBoardAppearance() {
-          boardElement.classList.remove("trap-setting", "turn-x", "turn-o");
-          if (state.gameState === "trap_setting") {
-            boardElement.classList.add("trap-setting");
-          } else if (state.gameState === "playing") {
-            boardElement.classList.add(
-              state.currentPlayer === "X" ? "turn-x" : "turn-o"
-            );
+        function updateHeaderAndBoard() {
+          // Xóa các class trạng thái cũ
+          boardElement.classList.remove("trap-setting", "turn-x", "turn-o", "trap-setting-x", "trap-setting-o");
+          gameHeader.classList.remove("win-x", "win-o", "draw");
+          scoreXDisplay.classList.remove("active");
+          scoreODisplay.classList.remove("active");
+
+          switch (state.gameState) {
+            case "trap_setting":
+              boardElement.classList.add("trap-setting");
+              // Thêm class màu nền tương ứng với người đặt bẫy
+              boardElement.classList.add(state.trapSetter === 'X' ? 'trap-setting-x' : 'trap-setting-o');
+              break;
+            case "playing":
+              boardElement.classList.add(state.currentPlayer === "X" ? "turn-x" : "turn-o");
+              roundNumberDisplay.textContent = `Ván ${state.round}`;
+               if (state.currentPlayer !== state.cpuMark) {
+                    if (state.currentPlayer === "X") scoreXDisplay.classList.add("active");
+                    else scoreODisplay.classList.add("active");
+                }
+              break;
+            case "round_over":
+              // Logic hiển thị kết quả ván đấu được giữ nguyên trong hàm endRound
+              break;
+            case "series_over":
+               // Logic hiển thị kết quả seri được giữ nguyên trong hàm endSeries
+              break;
           }
         }
 
@@ -1175,9 +1196,7 @@ function continueGame() {
 
 function handleConfirmTraps() {
   boardElement.classList.add("no-click");
-  confirmTrapControlsWrapper.classList.add("hidden"); // Ẩn nút xác nhận
-
-  // SỬA LỖI Ở ĐÂY: Hiển thị lại thanh đếm bẫy ngay lập tức
+  confirmTrapControlsWrapper.classList.add("hidden");
   trapDisplaysWrapper.classList.remove("hidden");
 
   if (state.gameMode === "pvcpu") {
@@ -1188,7 +1207,7 @@ function handleConfirmTraps() {
       state.gameState = "playing";
       renderBoard();
       updateScoreboard();
-      updateBoardAppearance();
+      updateHeaderAndBoard(); // <-- SỬ DỤNG HÀM MỚI
       boardElement.classList.remove("no-click");
       if (state.currentPlayer === state.cpuMark) {
         makeCpuMove();
@@ -1204,7 +1223,7 @@ function handleConfirmTraps() {
         state.trapSetter = nextPlayer;
         renderBoard();
         updateTrapCounter();
-        // Dòng code hiển thị thanh bẫy ở đây không còn cần thiết nữa
+        updateHeaderAndBoard(); // <-- SỬ DỤNG HÀM MỚI
         boardElement.classList.remove("no-click");
       }, 1200);
     } else {
@@ -1214,7 +1233,7 @@ function handleConfirmTraps() {
         state.gameState = "playing";
         renderBoard();
         updateScoreboard();
-        updateBoardAppearance();
+        updateHeaderAndBoard(); // <-- SỬ DỤNG HÀM MỚI
         boardElement.classList.remove("no-click");
       }, 1200);
     }
@@ -1384,19 +1403,19 @@ function handleConfirmTraps() {
         }
 
         function switchPlayerAndUpdate() {
-          switchPlayer();
-          updateScoreboard();
-          updateBoardAppearance();
+  switchPlayer();
+  updateScoreboard();
+  updateHeaderAndBoard(); // <-- THAY THẾ Ở ĐÂY
 
-          if (
-            state.gameMode === "pvcpu" &&
-            state.currentPlayer === state.cpuMark &&
-            state.gameState === "playing"
-          ) {
-            makeCpuMove();
-          }
-          saveState();
-        }
+  if (
+    state.gameMode === "pvcpu" &&
+    state.currentPlayer === state.cpuMark &&
+    state.gameState === "playing"
+  ) {
+    makeCpuMove();
+  }
+  saveState();
+}
 
         function switchPlayer() {
           state.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
@@ -1425,41 +1444,41 @@ function handleConfirmTraps() {
           return null;
         }
 
-        function endRound(result) {
-          state.gameState = "round_over";
-          updateBoardAppearance();
-         
+function endRound(result) {
+  state.gameState = "round_over";
+  // updateHeaderAndBoard() sẽ được gọi từ đây để xóa màu nền
+  updateHeaderAndBoard(); 
 
-          let isPlayerWinner = false;
-          if (result === "Hòa") {
-            roundNumberDisplay.textContent = "Hòa!";
-            gameHeader.classList.add("draw");
-          } else {
-            state.scores[result]++;
-            isPlayerWinner = result === state.player1Mark;
+  let isPlayerWinner = false;
+  if (result === "Hòa") {
+    roundNumberDisplay.textContent = "Hòa!";
+    gameHeader.classList.add("draw");
+  } else {
+    state.scores[result]++;
+    isPlayerWinner = result === state.player1Mark;
 
-            if (state.gameMode === "pvcpu") {
-              roundNumberDisplay.textContent = isPlayerWinner
-                ? "Thắng!"
-                : "Thua!";
-            } else {
-              roundNumberDisplay.textContent = `${result} Thắng!`;
-            }
-            gameHeader.classList.add(`win-${result.toLowerCase()}`);
-          }
+    if (state.gameMode === "pvcpu") {
+      roundNumberDisplay.textContent = isPlayerWinner ?
+        "Thắng!" :
+        "Thua!";
+    } else {
+      roundNumberDisplay.textContent = `${result} Thắng!`;
+    }
+    gameHeader.classList.add(`win-${result.toLowerCase()}`);
+  }
 
-          updateScoreboard();
-          trapDisplaysWrapper.classList.add("hidden");
-          endRoundControlsWrapper.classList.remove("hidden");
+  updateScoreboard();
+  trapDisplaysWrapper.classList.add("hidden");
+  endRoundControlsWrapper.classList.remove("hidden");
 
-          if (state.scores.X === 3 || state.scores.O === 3) {
-            endSeries(result);
-          } else {
-            proceedBtn.textContent = "Ván tiếp theo";
-            proceedBtn.onclick = startNextRound;
-          }
-          saveState();
-        }
+  if (state.scores.X === 3 || state.scores.O === 3) {
+    endSeries(result);
+  } else {
+    proceedBtn.textContent = "Ván tiếp theo";
+    proceedBtn.onclick = startNextRound;
+  }
+  saveState();
+}
 
         function endSeries(winner) {
           state.gameState = "series_over";
