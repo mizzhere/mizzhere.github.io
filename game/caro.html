@@ -62,6 +62,7 @@
       }
       .game-board {
         display: grid;
+        position: relative;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(3, 1fr);
         width: 100%;
@@ -145,7 +146,26 @@
         stroke-width: 8;
         animation: draw 0.3s ease-in-out forwards;
       }
-
+ .winning-line {
+        position: absolute;
+        height: 14px; /* Độ dày của viên thuốc */
+        border-radius: 7px; /* Bo tròn để tạo hình viên thuốc */
+        transform-origin: left center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        opacity: 0;
+        transform: scaleX(0) rotate(0deg); /* Hiệu ứng xuất hiện */
+      }
+      .winning-line.visible {
+        opacity: 1;
+        transform: scaleX(1) var(--rotation, rotate(0deg));
+      }
+      .winning-line.win-x {
+        background-color: var(--x-color);
+      }
+      .winning-line.win-o {
+        background-color: var(--o-color);
+      }
       /* Animations */
       @keyframes draw {
         from {
@@ -945,32 +965,69 @@ function startRound() {
   saveState();
 }
 
-        function updateUiForNewRound() {
-          // Xóa trạng thái thắng/thua/hòa trên thanh điểm
-          gameHeader.classList.remove("win-x", "win-o", "draw");
+       function updateUiForNewRound() {
+  // Xóa đường kẻ chiến thắng của ván trước nếu có
+  const oldLine = boardElement.querySelector('.winning-line');
+  if (oldLine) {
+    oldLine.remove();
+  }
 
-          // Cập nhật lại số hiệu ván đấu
-          roundNumberDisplay.textContent = `Ván ${state.round}`;
+  gameHeader.classList.remove("win-x", "win-o", "draw");
+  roundNumberDisplay.textContent = `Ván ${state.round}`;
+  updateScoreboard();
+  updateHeaderAndBoard();
+  updateTrapCounter();
+  renderBoard();
 
-          // Cập nhật bảng điểm
-          updateScoreboard();
+  trapDisplaysWrapper.classList.remove("hidden");
+  confirmTrapControlsWrapper.classList.add("hidden");
+  endRoundControlsWrapper.classList.add("hidden");
+}
+function drawWinningLine(winner, combo) {
+      const line = document.createElement('div');
+      line.classList.add('winning-line');
+      line.classList.add(winner === 'X' ? 'win-x' : 'win-o');
 
-          // Cập nhật lại màu nền của bàn cờ cho giai đoạn đặt bẫy
-          updateHeaderAndBoard();
+      const boardRect = boardElement.getBoundingClientRect();
+      const cellElements = Array.from(boardElement.querySelectorAll('.cell'));
+      
+      // Lấy ô bắt đầu và ô kết thúc của đường thắng
+      const startCell = cellElements[combo[0]];
+      const endCell = cellElements[combo[2]];
 
-          // Reset lại hiển thị số bẫy
-          updateTrapCounter();
+      const startRect = startCell.getBoundingClientRect();
+      const endRect = endCell.getBoundingClientRect();
+      const lineThickness = 14;
 
-          // QUAN TRỌNG: Vẽ lại một bàn cờ trống hoàn toàn.
-          // Hàm renderBoard() sẽ tự động xóa mọi ký hiệu và màu nền của ván cũ.
-          renderBoard();
+      // Tính toán vị trí tâm của ô bắt đầu và kết thúc so với bàn cờ
+      const startX = startRect.left + startRect.width / 2 - boardRect.left;
+      const startY = startRect.top + startRect.height / 2 - boardRect.top;
+      const endX = endRect.left + endRect.width / 2 - boardRect.left;
+      const endY = endRect.top + endRect.height / 2 - boardRect.top;
 
-          // Hiển thị lại nút xác nhận bẫy
-          trapDisplaysWrapper.classList.remove("hidden"); // Đảm bảo thanh bẫy hiện
-    confirmTrapControlsWrapper.classList.add("hidden"); // Đảm bảo nút xác nhận ẩn
-    endRoundControlsWrapper.classList.add("hidden");
-        }
+      // Dùng định lý Pytago để tính chiều dài của đường kẻ
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const length = Math.sqrt(dx * dx + dy * dy);
 
+      // Dùng atan2 để tính góc xoay
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+      // Áp dụng các giá trị vào style của đường kẻ
+      line.style.width = `${length}px`;
+      line.style.top = `${startY - lineThickness / 2}px`;
+      line.style.left = `${startX}px`;
+      
+      // Lưu giá trị xoay vào biến CSS để dùng trong animation
+      line.style.setProperty('--rotation', `rotate(${angle}deg)`);
+
+      boardElement.appendChild(line);
+
+      // Thêm class 'visible' sau một khoảng trễ nhỏ để kích hoạt hiệu ứng
+      setTimeout(() => {
+        line.classList.add('visible');
+      }, 100);
+    }
         function createSvgForMark(mark, animate = true) {
           const svg = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -1385,22 +1442,22 @@ function handleConfirmTraps() {
     }
 }
 
-        function checkGameState(forceSwitchPlayer = false) {
-          if (forceSwitchPlayer) {
-            switchPlayerAndUpdate();
-            return;
-          }
-          const winner = checkWinner();
-          if (winner) {
-            endRound(winner);
-            return;
-          }
-          if (state.board.every((cell) => cell)) {
-            endRound("Hòa");
-            return;
-          }
-          switchPlayerAndUpdate();
-        }
+       function checkGameState(forceSwitchPlayer = false) {
+  if (forceSwitchPlayer) {
+    switchPlayerAndUpdate();
+    return;
+  }
+  const { winner, combo } = checkWinner(); // Nhận cả winner và combo
+  if (winner) {
+    endRound(winner, combo); // Truyền combo vào hàm endRound
+    return;
+  }
+  if (state.board.every((cell) => cell)) {
+    endRound("Hòa");
+    return;
+  }
+  switchPlayerAndUpdate();
+}
 
         function switchPlayerAndUpdate() {
   switchPlayer();
@@ -1421,33 +1478,33 @@ function handleConfirmTraps() {
           state.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
         }
 
-        function checkWinner() {
-          const combos = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6],
-          ];
-          for (const combo of combos) {
-            const [a, b, c] = combo;
-            if (
-              state.board[a] &&
-              state.board[a] === state.board[b] &&
-              state.board[a] === state.board[c]
-            )
-              return state.board[a];
-          }
-          return null;
-        }
+       function checkWinner() {
+  const combos = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
+  ];
+  for (const combo of combos) {
+    const [a, b, c] = combo;
+    if (
+      state.board[a] &&
+      state.board[a] === state.board[b] &&
+      state.board[a] === state.board[c]
+    )
+      // Trả về một object chứa cả người thắng và bộ 3 ô
+      return { winner: state.board[a], combo: combo };
+  }
+  // Không có ai thắng
+  return { winner: null, combo: null };
+}
 
-function endRound(result) {
+function endRound(result, combo = null) { // Thêm tham số combo
   state.gameState = "round_over";
-  // updateHeaderAndBoard() sẽ được gọi từ đây để xóa màu nền
-  updateHeaderAndBoard(); 
+  updateHeaderAndBoard();
+
+  if (combo) { // Nếu có combo chiến thắng
+    drawWinningLine(result, combo); // Gọi hàm vẽ đường kẻ
+  }
 
   let isPlayerWinner = false;
   if (result === "Hòa") {
