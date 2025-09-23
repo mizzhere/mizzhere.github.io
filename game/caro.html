@@ -1520,91 +1520,97 @@ function togglePause() {
           }, 1200);
         }
 
-        function findBestMove() {
+     // Bảng điểm rủi ro cho mỗi ô, dựa trên tầm quan trọng chiến thuật
+const RISK_MAP = [
+    3, 2, 3, // 0, 1, 2 (Góc, Cạnh, Góc)
+    2, 4, 2, // 3, 4, 5 (Cạnh, Giữa, Cạnh)
+    3, 2, 3  // 6, 7, 8 (Góc, Cạnh, Góc)
+];
+
+/**
+ * Hàm chính để AI tìm nước đi, kết hợp Minimax và suy luận rủi ro.
+ */
+function findBestMove() {
+    const board = [...state.board];
     const cpu = state.cpuMark;
-    const player = state.player1Mark;
     const cpuTraps = state.traps[cpu];
-
-    // --- Ưu tiên 1 & 2: Thắng hoặc Chặn đối thủ (quan trọng nhất) ---
-    // 1. Kiểm tra xem có thể thắng ngay lập tức không
-    for (let i = 0; i < 9; i++) {
-        if (state.board[i] === null) {
-            state.board[i] = cpu;
-            if (checkWinner() === cpu) {
-                state.board[i] = null;
-                return i; // Thắng là ưu tiên hàng đầu
-            }
-            state.board[i] = null;
-        }
-    }
-    // 2. Chặn nước đi chiến thắng của người chơi
-    for (let i = 0; i < 9; i++) {
-        if (state.board[i] === null) {
-            state.board[i] = player;
-            if (checkWinner() === player) {
-                state.board[i] = null;
-                return i; // Chặn đối thủ cũng quan trọng không kém
-            }
-            state.board[i] = null;
-        }
-    }
-
-    // --- Logic thông minh mới ---
-    const allEmptyCells = state.board.map((val, idx) => val === null ? idx : -1).filter(idx => idx !== -1);
     
-    // 3. Ưu tiên đánh vào ô bẫy của đối phương/hệ thống vừa nổ (đã biết là an toàn)
-    const triggeredSafeSpots = state.triggeredTraps
-        .filter(trap => trap.owner !== cpu) // Tìm bẫy không phải của CPU đã nổ
-        .map(trap => trap.index);
-    const availableTriggeredSpots = triggeredSafeSpots.filter(spot => allEmptyCells.includes(spot));
-    if (availableTriggeredSpots.length > 0) {
-        return availableTriggeredSpots[Math.floor(Math.random() * availableTriggeredSpots.length)];
-    }
-
-    // --- Logic vị trí thông thường, nhưng đã được lọc để TRÁNH BẪY CỦA MÌNH ---
-    const safeEmptyCells = allEmptyCells.filter(cell => !cpuTraps.includes(cell));
-
-    if (safeEmptyCells.length > 0) {
-        // Nếu có nước đi an toàn, sẽ dùng logic vị trí trên các ô này
-        
-        // 4. Chiếm ô trung tâm (nếu an toàn)
-        if (safeEmptyCells.includes(4)) return 4;
-        
-        // 5. Chiếm góc đối diện (nếu an toàn)
-        const corners = [0, 2, 6, 8];
-        const opposites = { 0: 8, 2: 6, 6: 2, 8: 0 };
-        for (const corner of corners) {
-            if (state.board[corner] === player && safeEmptyCells.includes(opposites[corner])) {
-                return opposites[corner];
-            }
-        }
-        
-        // 6. Chiếm một góc trống bất kỳ (nếu an toàn)
-        const emptySafeCorners = corners.filter(c => safeEmptyCells.includes(c));
-        if (emptySafeCorners.length > 0)
-            return emptySafeCorners[Math.floor(Math.random() * emptySafeCorners.length)];
-            
-        // 7. Chiếm một cạnh trống bất kỳ (nếu an toàn)
-        const sides = [1, 3, 5, 7];
-        const emptySafeSides = sides.filter(s => safeEmptyCells.includes(s));
-        if (emptySafeSides.length > 0)
-            return emptySafeSides[Math.floor(Math.random() * emptySafeSides.length)];
-        
-        // 8. Nếu các logic trên đều không thỏa, chọn một ô an toàn ngẫu nhiên
-        return safeEmptyCells[Math.floor(Math.random() * safeEmptyCells.length)];
-    } else {
-        // --- Giải pháp cuối cùng ---
-        // 9. Nếu không còn nước đi an toàn, máy buộc  vào bẫy của chính mình
-        if (allEmptyCells.length > 0) {
-             showToast("Máy không còn nước đi an toàn!");
-             return allEmptyCells[Math.floor(Math.random() * allEmptyCells.length)];
+    let possibleMoves = [];
+    // Tính điểm Minimax cho tất cả các nước đi có thể
+    for (let i = 0; i < 9; i++) {
+        if (board[i] === null) {
+            board[i] = cpu;
+            let score = minimax(board, false);
+            board[i] = null; // Hoàn tác
+            possibleMoves.push({ move: i, score: score });
         }
     }
 
-    // Dự phòng cuối cùng nếu mọi logic đều thất bại
-    return state.board.findIndex(cell => cell === null);
+    // Tìm điểm số cao nhất có thể đạt được
+    const maxScore = Math.max(...possibleMoves.map(m => m.score));
+
+    // Lọc ra tất cả các nước đi có thể đạt được điểm số cao nhất đó
+    let bestMoves = possibleMoves.filter(m => m.score === maxScore);
+
+    // Nếu chỉ có một nước đi tốt nhất, không cần suy nghĩ thêm
+    if (bestMoves.length === 1) {
+        return bestMoves[0].move;
+    }
+
+    // Nếu có nhiều nước đi cùng điểm, dùng heuristics để phá vỡ thế cân bằng
+    // Ưu tiên 1: Lọc ra các nước đi không nằm trên bẫy của chính mình
+    let safeMoves = bestMoves.filter(m => !cpuTraps.includes(m.move));
+    
+    // Nếu có các lựa chọn an toàn, ta sẽ chỉ xem xét chúng
+    if (safeMoves.length > 0) {
+        bestMoves = safeMoves;
+    } 
+    // Nếu không còn nước nào an toàn, buộc phải chọn trong số các nước đi dẫm lên bẫy của mình
+    // Trong trường hợp này, `bestMoves` vẫn giữ nguyên giá trị ban đầu
+
+    // Ưu tiên 2: Chọn nước đi có điểm rủi ro thấp nhất
+    bestMoves.sort((a, b) => RISK_MAP[a.move] - RISK_MAP[b.move]);
+    
+    // Trả về nước đi tốt nhất sau khi đã sắp xếp theo rủi ro
+    return bestMoves[0].move;
 }
 
+/**
+ * Hàm đệ quy Minimax (Không thay đổi)
+ */
+function minimax(board, isMaximizing) {
+    const cpu = state.cpuMark;
+    const player = state.player1Mark;
+
+    let winner = checkWinnerForBoard(board);
+    if (winner === cpu) return 10;
+    if (winner === player) return -10;
+    if (board.every(cell => cell !== null)) return 0;
+
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === null) {
+                board[i] = cpu;
+                let score = minimax(board, false);
+                board[i] = null;
+                bestScore = Math.max(score, bestScore);
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === null) {
+                board[i] = player;
+                let score = minimax(board, true);
+                board[i] = null;
+                bestScore = Math.min(score, bestScore);
+            }
+        }
+        return bestScore;
+    }
+}
         function saveState() {
           if (state.gameState !== "welcome") {
             localStorage.setItem(SAVE_KEY, JSON.stringify(state));
