@@ -857,7 +857,7 @@ function continueGame() {
     gameScreen.classList.remove("hidden");
     roundNumberDisplay.textContent = `Ván ${state.round}`;
     updateScoreboard();
-    updateBoardAppearance();
+    updateHeaderAndBoard();
     updateTrapCounter();
     renderBoard();
 
@@ -956,7 +956,7 @@ function startRound() {
           updateScoreboard();
 
           // Cập nhật lại màu nền của bàn cờ cho giai đoạn đặt bẫy
-          updateBoardAppearance();
+          updateHeaderAndBoard();
 
           // Reset lại hiển thị số bẫy
           updateTrapCounter();
@@ -1511,7 +1511,7 @@ function togglePause() {
     state.gameState = "paused";
   }
 
-  updateBoardAppearance();
+  updateHeaderAndBoard();
   updateScoreboard();
   
   // Khi tạm dừng, ẩn nút xác nhận đi
