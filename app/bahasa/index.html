@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Từ điển Indonesia - Việt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --background: #f8fafc;
+        --foreground: #020817;
+        --card: #ffffff;
+        --card-foreground: #020817;
+        --popover: #ffffff;
+        --popover-foreground: #020817;
+        --primary: #14b8a6; /* Teal 500 */
+        --primary-foreground: #ffffff;
+        --secondary: #f1f5f9;
+        --secondary-foreground: #0f172a;
+        --muted: #f1f5f9;
+        --muted-foreground: #64748b;
+        --accent: #f1f5f9;
+        --accent-foreground: #0f172a;
+        --border: #e2e8f0;
+        --input: #e2e8f0;
+        --ring: #14b8a6;
+      }
+
+      html.dark {
+        --background: #020817;
+        --foreground: #f8fafc;
+        --card: #0f172a;
+        --card-foreground: #f8fafc;
+        --popover: #020817;
+        --popover-foreground: #f8fafc;
+        --primary: #2dd4bf; /* Teal 400 */
+        --primary-foreground: #0f172a;
+        --secondary: #1e293b;
+        --secondary-foreground: #f8fafc;
+        --muted: #1e293b;
+        --muted-foreground: #94a3b8;
+        --accent: #1e293b;
+        --accent-foreground: #f8fafc;
+        --border: #1e293b;
+        --input: #1e293b;
+        --ring: #2dd4bf;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--background);
+        color: var(--foreground);
+      }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .lucide { stroke-width: 2; }
+      .custom-ring:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+      }
+      .view-container {
+        animation-duration: 250ms;
+        animation-timing-function: ease-in-out;
+        animation-fill-mode: forwards;
+      }
+      .view-fade-in { animation-name: view-fade-in-anim; }
+      .view-fade-out { animation-name: view-fade-out-anim; }
+      @keyframes view-fade-in-anim {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes view-fade-out-anim {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-10px); }
+      }
+      .word-card {
+        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
+      }
+      .word-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+       .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+          transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .animate-on-scroll.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      dialog {
+        background-color: var(--card);
+        color: var(--card-foreground);
+      }
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease-out;
+      }
+      dialog[open] { animation: modal-scale-in 0.3s ease-out forwards; }
+      dialog[open]::backdrop { backdrop-filter: blur(4px); }
+      @keyframes modal-scale-in {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      #toast-container {
+        position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+        display: flex; flex-direction: column; gap: 0.75rem;
+      }
+      .toast {
+        display: flex; align-items: center; padding: 1rem; border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        animation: toast-in 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; min-width: 320px;
+      }
+      .toast.success { background-color: #dcfce7; color: #166534; }
+      .toast.error { background-color: #fee2e2; color: #991b1b; }
+      html.dark .toast.success { background-color: #14532d; color: #f0fdf4; }
+      html.dark .toast.error { background-color: #7f1d1d; color: #fef2f2; }
+      @keyframes toast-in {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+      #sidebar.collapsed { width: 72px; }
+      #sidebar.collapsed .sidebar-text,
+      #sidebar.collapsed .sidebar-header-text,
+      #sidebar.collapsed .sidebar-tabs,
+      #sidebar.collapsed #groups-nav-container,
+      #sidebar.collapsed #variants-nav-container { display: none; }
+      .group-details summary::-webkit-details-marker { display: none; }
+      .group-details summary { list-style: none; }
+      .group-details summary .chevron { transition: transform 0.2s; }
+      .group-details[open] > summary .chevron { transform: rotate(90deg); }
+      .word-card.selected {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary);
+      }
+       #search-view { transition: transform 0.3s ease-in-out; }
+      .search-highlight {
+        background-color: #a7f3d0; /* emerald-200 */
+        color: #065f46; /* emerald-800 */
+        font-weight: 600; padding: 0 2px; border-radius: 3px;
+      }
+      html.dark .search-highlight {
+        background-color: #047857; /* emerald-700 */
+        color: #ecfdf5; /* emerald-50 */
+      }
+       /* Trigger for clickable text in sentences */
+       .smart-trigger {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--primary);
+        border-bottom: 1px dotted var(--primary);
+        transition: all 0.2s ease-in-out;
+      }
+      .smart-trigger:hover {
+        background-color: var(--primary);
+        color: var(--primary-foreground);
+        border-bottom-color: transparent;
+        border-radius: 3px;
+        padding: 1px 3px;
+        margin: -1px -3px;
+      }
+       /* Trigger for clickable pill-shaped tags */
+      .clickable-tag {
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+      }
+
+      .sticky-group-header {
+        position: sticky; top: -1rem; z-index: 10;
+        background-color: var(--background);
+        padding: 0.75rem 0 0.75rem 0;
+      }
+      .autocomplete-list {
+        z-index: 60; /* Higher than modal z-index */
+      }
+
+      @media (min-width: 768px) {
+        .sticky-group-header { top: -2rem; padding-top: 2.75rem; }
+      }
+    </style>
+  </head>
+  <body class="h-[100dvh] w-screen overflow-hidden">
+    <div class="flex h-full w-full">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="hidden md:flex flex-col w-72 border-r border-[var(--border)] bg-[var(--card)] p-3">
+        <div class="flex items-center gap-2 mb-4 px-2">
+          <i data-lucide="book-open-text" class="text-[var(--primary)] flex-shrink-0"></i>
+          <h1 class="text-xl font-bold sidebar-text">Kamus Indo-Viet</h1>
+        </div>
+        <div id="sidebar-top-actions" class="flex items-center gap-2 mb-4 px-1">
+          <div class="relative flex-grow">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
+            <input type="text" id="search-input" placeholder="Tìm từ..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all"/>
+          </div>
+          <button id="add-word-sidebar" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span class="absolute left-full ml-3 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Thêm từ mới</span>
+          </button>
+        </div>
+        <div id="sidebar-top-actions-collapsed" class="hidden flex-col items-center gap-2 mb-4">
+          <button id="search-button-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 hover:bg-[var(--accent)] rounded-lg transition-colors custom-ring">
+            <i data-lucide="search" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+          </button>
+          <button id="add-word-sidebar-collapsed" class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col">
+            <div class="sidebar-tabs flex border-b border-[var(--border)] mb-2 flex-shrink-0">
+                <button id="tab-btn-groups" class="flex-1 p-2 text-sm font-medium text-center border-b-2 border-transparent">Chủ đề</button>
+                <button id="tab-btn-variants" class="flex-1 p-2 text-sm font-medium text-center border-b-2 border-transparent">Biến thể</button>
+            </div>
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                <div id="groups-nav-container">
+                    <nav id="groups-nav"></nav>
+                </div>
+                <div id="variants-nav-container" class="hidden">
+                    <nav id="variants-nav"></nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-4 border-t border-[var(--border)]">
+           <div id="sidebar-bottom-actions" class="flex items-center justify-around">
+            <button id="import-button-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+              <i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+              <span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Nhập</span>
+            </button>
+            <button id="export-button-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+              <i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+              <span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Xuất</span>
+            </button>
+            <button id="theme-toggle-desktop" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+              <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i>
+              <i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i>
+              <span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Giao diện</span>
+            </button>
+            <button id="sidebar-toggle" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+              <i data-lucide="chevrons-left" class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"></i>
+              <span class="tooltip-text absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Thu gọn</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 flex flex-col relative overflow-hidden">
+        <header id="mobile-header" class="flex md:hidden items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+          <div class="flex items-center gap-2">
+            <i data-lucide="book-open-text" class="text-[var(--primary)]"></i>
+            <h1 class="text-xl font-bold">Kamus Indo-Viet</h1>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="mobile-search-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="search"></i></button>
+            <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="menu"></i></button>
+          </div>
+        </header>
+        <div id="sticky-header" class="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center gap-4 p-2 border-b border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-sm transition-transform duration-300 ease-in-out -translate-y-full">
+            <button id="sticky-back-button" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="arrow-left"></i></button>
+            <div class="flex-1 text-center overflow-hidden pr-12">
+                <h3 id="sticky-title" class="font-bold text-base truncate"></h3>
+                <p id="sticky-subtitle" class="text-xs text-[var(--muted-foreground)] truncate"></p>
+            </div>
+        </div>
+        
+        <div id="word-list-container" class="flex-1 overflow-y-auto p-4 md:p-8">
+          <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-center">
+            <div class="p-6 bg-[var(--card)] rounded-full mb-4">
+              <i data-lucide="languages" class="w-16 h-16 text-[var(--primary)]"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Chào mừng đến với Từ điển Indo-Việt!</h2>
+            <p class="max-w-md text-[var(--muted-foreground)] mb-6">Bắt đầu bằng cách thêm từ mới, nhập dữ liệu có sẵn, hoặc chọn một chủ đề để khám phá.</p>
+            <button id="add-word-welcome" class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity custom-ring">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i>Thêm từ mới
+            </button>
+          </div>
+          <div id="word-list-grid"></div>
+        </div>
+        
+        <div id="word-detail-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"></div>
+
+        <button id="add-word-fab" class="md:hidden fixed bottom-6 right-6 bg-[var(--primary)] text-[var(--primary-foreground)] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-all custom-ring">
+          <i data-lucide="plus" class="w-8 h-8"></i>
+        </button>
+        <div id="selection-toolbar" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--card)] border border-[var(--border)] rounded-full shadow-lg p-2 flex items-center gap-4 z-30 transition-all">
+          <span id="selection-count" class="text-sm font-medium px-2"></span>
+          <button id="delete-selected-btn" class="flex items-center justify-center w-10 h-10 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors custom-ring">
+            <i data-lucide="trash-2" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Search View (Mobile) -->
+    <div id="search-view" class="md:hidden fixed inset-0 bg-[var(--background)] z-50 transform translate-x-full flex flex-col">
+      <header class="flex-shrink-0 flex items-center gap-2 p-2 border-b border-[var(--border)] bg-[var(--card)]">
+        <button id="search-view-back-button" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring -ml-2">
+          <i data-lucide="chevron-left" class="w-5 h-5 flex-shrink-0"></i>
+          <span id="search-view-back-label" class="truncate">Quay lại</span>
+        </button>
+        <div class="relative flex-grow">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
+          <input type="text" id="search-view-input" placeholder="Tìm kiếm từ..." class="w-full pl-10 pr-4 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none"/>
+        </div>
+      </header>
+      <div id="search-results-container" class="flex-1 overflow-y-auto p-4">
+        <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/40 z-40 hidden">
+      <aside class="absolute inset-y-0 left-0 w-72 bg-[var(--card)] p-4 flex flex-col">
+        <div class="flex items-center justify-between gap-2 mb-6">
+          <div class="flex items-center gap-2">
+            <i data-lucide="book-open-text" class="text-[var(--primary)]"></i>
+            <h1 class="text-xl font-bold">Kamus Indo-Viet</h1>
+          </div>
+          <button id="close-mobile-menu" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring"><i data-lucide="x"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col">
+          <div class="sidebar-tabs-mobile flex border-b border-[var(--border)] mb-2 flex-shrink-0">
+              <button id="tab-btn-groups-mobile" class="flex-1 p-2 text-sm font-medium text-center border-b-2 border-transparent">Chủ đề</button>
+              <button id="tab-btn-variants-mobile" class="flex-1 p-2 text-sm font-medium text-center border-b-2 border-transparent">Biến thể</button>
+          </div>
+          <div class="flex-1 overflow-y-auto no-scrollbar">
+              <div id="groups-nav-container-mobile">
+                  <nav id="groups-nav-mobile"></nav>
+              </div>
+              <div id="variants-nav-container-mobile" class="hidden">
+                  <nav id="variants-nav-mobile"></nav>
+              </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
+            <button id="add-word-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Thêm từ mới</span>
+            </button>
+            <button id="import-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                <i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Nhập Dữ liệu</span>
+            </button>
+            <button id="export-button-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                <i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Xuất Dữ liệu</span>
+            </button>
+            <button id="theme-toggle-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+              <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i>
+              <i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i>
+              <span class="text-sm font-medium">Giao diện</span>
+            </button>
+        </div>
+      </aside>
+    </div>
+    
+    <!-- Modals, Context Menu, Toast -->
+    <div id="context-menu" class="hidden fixed bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-50 text-sm w-40"></div>
+    <dialog id="word-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-2xl">
+      <form id="word-form" class="p-6 md:p-8">
+        <div class="flex justify-between items-center mb-6">
+          <h2 id="modal-title" class="text-2xl font-bold">Thêm từ mới</h2>
+          <button type="button" id="close-modal-button" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="x"></i></button>
+        </div>
+        <input type="hidden" id="word-id" />
+        <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div class="relative">
+                <label for="tu-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Từ Tiếng Indonesia</label>
+                <input type="text" id="tu-input" required class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+            </div>
+            <div class="relative">
+                <label for="phatam-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Cách đọc (Tiếng Việt)</label>
+                <input type="text" id="phatam-input" class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+            </div>
+            <div class="relative">
+                <label for="chude-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Chủ đề</label>
+                <input type="text" id="chude-input" placeholder="Vd: Umum > Keluarga" required class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+                <div id="chude-list" class="autocomplete-list absolute w-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg max-h-48 overflow-y-auto hidden no-scrollbar"></div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2 text-[var(--muted-foreground)]">Nghĩa & Ví dụ</label>
+                <div id="meanings-container" class="space-y-4"></div>
+                <button type="button" id="add-meaning-btn" class="mt-2 text-sm font-medium text-[var(--primary)] flex items-center gap-1 hover:underline custom-ring rounded">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Thêm nghĩa
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div class="relative">
+                     <label for="bienthe-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Biến thể</label>
+                     <input type="text" id="bienthe-input" placeholder="Cách nhau bởi dấu phẩy" class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+                     <div id="bienthe-list" class="autocomplete-list absolute w-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg max-h-48 overflow-y-auto hidden no-scrollbar"></div>
+                 </div>
+                <div class="relative">
+                    <label for="dongnghia-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Từ đồng nghĩa</label>
+                    <input type="text" id="dongnghia-input" placeholder="Cách nhau bởi dấu phẩy" class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+                    <div id="dongnghia-list" class="autocomplete-list absolute w-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg max-h-48 overflow-y-auto hidden no-scrollbar"></div>
+                </div>
+            </div>
+            <div class="relative">
+                 <label for="trainghia-input" class="block text-sm font-medium mb-1 text-[var(--muted-foreground)]">Từ trái nghĩa</label>
+                 <input type="text" id="trainghia-input" placeholder="Cách nhau bởi dấu phẩy" class="w-full p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none"/>
+                 <div id="trainghia-list" class="autocomplete-list absolute w-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg max-h-48 overflow-y-auto hidden no-scrollbar"></div>
+            </div>
+        </div>
+        <div class="mt-8 flex justify-end gap-3">
+          <button type="button" id="cancel-button" class="px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Lưu</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="import-options-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-md">
+      <div class="p-6">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100"><i data-lucide="file-down" class="h-6 w-6 text-teal-600"></i></div>
+          <div>
+            <h3 class="text-lg font-medium leading-6">Tùy chọn Nhập Dữ liệu</h3>
+            <p id="import-info" class="mt-1 text-sm text-[var(--muted-foreground)]"></p>
+          </div>
+        </div>
+        <div class="mt-6 flex flex-col gap-3">
+          <button id="import-overwrite-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]">
+            <p class="font-semibold">Ghi đè toàn bộ</p><p class="text-sm text-[var(--muted-foreground)]">Xóa dữ liệu hiện tại và thay thế.</p>
+          </button>
+          <button id="import-merge-btn" class="w-full text-left p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring border border-[var(--border)]">
+            <p class="font-semibold">Hợp nhất (Chỉ thêm mới)</p><p class="text-sm text-[var(--muted-foreground)]">Giữ lại dữ liệu cũ, chỉ thêm mục mới.</p>
+          </button>
+          <button id="import-cancel-btn" class="mt-4 w-full px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="confirm-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-sm">
+      <div class="p-6 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4"><i data-lucide="alert-triangle" class="h-6 w-6 text-yellow-600"></i></div>
+        <h3 class="text-lg font-medium">Bạn có chắc không?</h3>
+        <p id="confirm-message" class="mt-2 text-sm text-[var(--muted-foreground)]"></p>
+        <div class="mt-6 flex justify-center gap-3">
+          <button id="confirm-cancel" class="px-4 py-2 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold hover:opacity-90 transition-opacity custom-ring">Hủy</button>
+          <button id="confirm-proceed" class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors custom-ring">Xác nhận</button>
+        </div>
+      </div>
+    </dialog>
+    <div id="toast-container"></div>
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        class IndoVietDictionaryApp {
+          constructor() {
+            this.words = [];
+            this.currentFilter = { group: "all", variantPrefix: "all", variantMeaning: "all", search: "" };
+            this.activeTab = 'groups'; // 'groups' or 'variants'
+            this.selectedWords = new Set();
+            this.pressTimer = null;
+            this.isLongPressing = false;
+            this.isDragging = false;
+            this.pointerStartPos = { x: 0, y: 0 };
+            this.isTransitioning = false;
+            this.observer = null;
+            this.activeAutocomplete = null;
+            this.currentView = { type: "list" };
+            this.currentListTitle = "Tất cả";
+            this.translations = {
+                'Kata Kerja': 'Động từ',
+                'Kata Benda': 'Danh từ',
+                'Kata Sifat': 'Tính từ',
+                'Frasa': 'Cụm từ',
+                'Aktivitas': 'Hoạt động',
+                'Makanan': 'Ăn uống',
+                'Minuman': 'Đồ uống',
+                'Ucapan': 'Chào hỏi',
+                'Pendidikan': 'Giáo dục',
+                'Perasaan': 'Tình cảm',
+                'Tempat': 'Nơi chốn',
+                'Umum': 'Chung',
+            };
+            this.variantMeaningGroups = {
+                'me-': {
+                    'Biến âm (l, m, n, r, w...) → me-': ['melamun', 'memasak', 'menanti'],
+                    'Biến âm (b, p) → mem-': ['membaca', 'memukul', 'membenci'],
+                    'Biến âm (d, t) → men-': ['mendengar', 'menulis', 'menyantap'],
+                    'Biến âm (s) → meny-': ['menyapu', 'menyayangi'],
+                    'Biến âm (k, g, h, nguyên âm) → meng-': ['mengambil', 'menggoreng', 'menghitung', 'mengirim', 'memakan']
+                },
+                'ber-': {
+                    'Hành động nội tại': ['bekerja', 'bermain', 'berpikir', 'berjalan'],
+                    'Sử dụng/Mặc': ['bersepeda', 'berdasi', 'berkacamata'],
+                    'Có/Sở hữu': ['berbahaya', 'berhasil', 'berwarna'],
+                },
+                'di-': {
+                    'Bị động': ['dimakan', 'dibaca', 'dicintai', 'diminum']
+                },
+                'ter-': {
+                    'Bị động/Vô tình': ['terjatuh', 'terbawa'],
+                    'So sánh nhất': ['terbaik', 'tercepat']
+                },
+                 'pe-': {
+                    'Danh từ hóa (người/vật)': ['pekerja', 'pembaca', 'penulis'],
+                },
+            };
+            this.initDOMElements();
+            this.initIntersectionObserver();
+            this.loadWords();
+            this.initHistory();
+            this.initEventListeners();
+            this.initTheme();
+            this.initSidebarState();
+          }
+
+          _normalizeText(str) {
+            if (!str) return "";
+            return str.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+          }
+          
+          isMobile() { return window.innerWidth < 768; }
+
+          initIntersectionObserver() {
+            const options = { root: null, rootMargin: "0px", threshold: 0.1 };
+            this.observer = new IntersectionObserver((entries, observer) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-visible");
+                  observer.unobserve(entry.target);
+                }
+              });
+            }, options);
+          }
+          
+           _translate(term) {
+            const translation = this.translations[term];
+            return translation ? `${term} (${translation})` : term;
+          }
+
+          _translatePath(path) {
+            return path.split('>').map(p => p.trim()).map(p => {
+                const translation = this.translations[p];
+                return translation || p;
+            }).join(' > ');
+          }
+
+          initDOMElements() {
+            this.els = {
+              sidebar: document.getElementById("sidebar"),
+              sidebarToggle: document.getElementById("sidebar-toggle"),
+              searchInput: document.getElementById("search-input"),
+              
+              tabBtnGroups: document.getElementById('tab-btn-groups'),
+              tabBtnVariants: document.getElementById('tab-btn-variants'),
+              groupsNavContainer: document.getElementById('groups-nav-container'),
+              variantsNavContainer: document.getElementById('variants-nav-container'),
+              groupsNav: document.getElementById("groups-nav"),
+              variantsNav: document.getElementById("variants-nav"),
+
+              tabBtnGroupsMobile: document.getElementById('tab-btn-groups-mobile'),
+              tabBtnVariantsMobile: document.getElementById('tab-btn-variants-mobile'),
+              groupsNavContainerMobile: document.getElementById('groups-nav-container-mobile'),
+              variantsNavContainerMobile: document.getElementById('variants-nav-container-mobile'),
+              groupsNavMobile: document.getElementById("groups-nav-mobile"),
+              variantsNavMobile: document.getElementById("variants-nav-mobile"),
+              
+              wordListContainer: document.getElementById("word-list-container"),
+              wordListGrid: document.getElementById("word-list-grid"),
+              wordDetailView: document.getElementById("word-detail-view"),
+              wordModal: document.getElementById("word-modal"),
+              wordForm: document.getElementById("word-form"),
+              modalTitle: document.getElementById("modal-title"),
+              closeModalButton: document.getElementById("close-modal-button"),
+              cancelButton: document.getElementById("cancel-button"),
+              wordIdInput: document.getElementById("word-id"),
+              welcomeScreen: document.getElementById("welcome-screen"),
+              addWordWelcomeBtn: document.getElementById("add-word-welcome"),
+              addWordSidebar: document.getElementById("add-word-sidebar"),
+              addWordFab: document.getElementById("add-word-fab"),
+              addWordMobile: document.getElementById("add-word-mobile"),
+              addWordSidebarCollapsed: document.getElementById('add-word-sidebar-collapsed'),
+              mobileHeader: document.getElementById("mobile-header"),
+              mobileMenuButton: document.getElementById("mobile-menu-button"),
+              mobileMenu: document.getElementById("mobile-menu"),
+              closeMobileMenu: document.getElementById("close-mobile-menu"),
+              stickyHeader: document.getElementById("sticky-header"),
+              stickyTitle: document.getElementById("sticky-title"),
+              stickySubtitle: document.getElementById("sticky-subtitle"),
+              stickyBackButton: document.getElementById("sticky-back-button"),
+              themeToggles: document.querySelectorAll("#theme-toggle-desktop, #theme-toggle-mobile"),
+              toastContainer: document.getElementById("toast-container"),
+              confirmModal: document.getElementById("confirm-modal"),
+              confirmMessage: document.getElementById("confirm-message"),
+              confirmCancel: document.getElementById("confirm-cancel"),
+              confirmProceed: document.getElementById("confirm-proceed"),
+              contextMenu: document.getElementById("context-menu"),
+              selectionToolbar: document.getElementById("selection-toolbar"),
+              selectionCount: document.getElementById("selection-count"),
+              deleteSelectedBtn: document.getElementById("delete-selected-btn"),
+              importOptionsModal: document.getElementById("import-options-modal"),
+              importInfo: document.getElementById("import-info"),
+              importOverwriteBtn: document.getElementById("import-overwrite-btn"),
+              importMergeBtn: document.getElementById("import-merge-btn"),
+              importCancelBtn: document.getElementById("import-cancel-btn"),
+              sidebarTopActions: document.getElementById('sidebar-top-actions'),
+              sidebarTopActionsCollapsed: document.getElementById('sidebar-top-actions-collapsed'),
+              searchButtonCollapsed: document.getElementById('search-button-collapsed'),
+              sidebarBottomActions: document.getElementById('sidebar-bottom-actions'),
+              mobileSearchButton: document.getElementById('mobile-search-button'),
+              searchView: document.getElementById('search-view'),
+              searchViewBackButton: document.getElementById('search-view-back-button'),
+              searchViewInput: document.getElementById('search-view-input'),
+              searchResultsGrid: document.getElementById('search-results-grid'),
+              searchViewBackLabel: document.getElementById('search-view-back-label'),
+              // Form fields
+              tuInput: document.getElementById('tu-input'),
+              phatamInput: document.getElementById('phatam-input'),
+              chudeInput: document.getElementById('chude-input'),
+              chudeList: document.getElementById('chude-list'),
+              meaningsContainer: document.getElementById('meanings-container'),
+              addMeaningBtn: document.getElementById('add-meaning-btn'),
+              bientheInput: document.getElementById('bienthe-input'),
+              bientheList: document.getElementById('bienthe-list'),
+              dongnghiaInput: document.getElementById('dongnghia-input'),
+              dongnghiaList: document.getElementById('dongnghia-list'),
+              trainghiaInput: document.getElementById('trainghia-input'),
+              trainghiaList: document.getElementById('trainghia-list'),
+            };
+          }
+
+          initHistory() {
+            history.replaceState({ view: "list", filter: this.currentFilter }, "", "#list");
+            window.addEventListener("popstate", (e) => {
+              if (e.state) {
+                this.handleStateChange(e.state);
+              }
+            });
+          }
+
+          handleStateChange(state) {
+              this.closeModal();
+              this.els.mobileMenu.classList.add("hidden");
+              this.currentView = state;
+              switch (state.view) {
+                  case "detail":
+                      this.hideSearchView(false);
+                      const backTitle = state.backTitle || "Quay lại";
+                      this.showWordDetail(state.id, true, backTitle);
+                      break;
+                  case "search":
+                      this.showSearchView(true, state);
+                      break;
+                  case "list":
+                  default:
+                      this.currentFilter = state.filter;
+                      this.hideSearchView(false);
+                      this.showListView();
+                      break;
+              }
+          }
+
+          initEventListeners() {
+            this.els.sidebarToggle.addEventListener("click", () => this.toggleSidebar());
+            this.els.searchInput.addEventListener("input", (e) => this.handleSearch(e.target.value));
+            
+            [this.els.addWordWelcomeBtn, this.els.addWordSidebar, this.els.addWordFab, this.els.addWordMobile, this.els.addWordSidebarCollapsed].forEach(
+              (btn) => btn && btn.addEventListener("click", () => this.openModal())
+            );
+            
+            this.els.searchButtonCollapsed.addEventListener("click", () => {
+              if (this.els.sidebar.classList.contains("collapsed")) {
+                this.toggleSidebar();
+                this.els.searchInput.focus();
+              }
+            });
+
+            this.els.wordForm.addEventListener("submit", (e) => this.handleFormSubmit(e));
+            this.els.closeModalButton.addEventListener("click", () => this.closeModal());
+            this.els.cancelButton.addEventListener("click", () => this.closeModal());
+            this.els.wordModal.addEventListener("click", (e) => { if (e.target === this.els.wordModal) this.closeModal(); });
+
+            this.els.mobileMenuButton.addEventListener("click", () => this.els.mobileMenu.classList.remove("hidden"));
+            this.els.closeMobileMenu.addEventListener("click", () => this.els.mobileMenu.classList.add("hidden"));
+            this.els.mobileMenu.addEventListener("click", (e) => { if (e.target === this.els.mobileMenu) this.els.mobileMenu.classList.add("hidden"); });
+            
+            this.els.stickyBackButton.addEventListener("click", () => window.history.back());
+
+            document.querySelectorAll("#import-button-desktop, #import-button-mobile").forEach(btn => btn.addEventListener('click', () => this.importData()));
+            document.querySelectorAll("#export-button-desktop, #export-button-mobile").forEach(btn => btn.addEventListener('click', () => this.exportData()));
+            
+            this.els.themeToggles.forEach(btn => btn.addEventListener("click", () => this.toggleTheme()));
+
+            this.els.deleteSelectedBtn.addEventListener("click", () => this.deleteSelectedWords());
+            
+            this.els.addMeaningBtn.addEventListener("click", () => this.addMeaningBlock());
+
+            this.els.mobileSearchButton.addEventListener('click', () => this.navigateToSearch());
+            this.els.searchViewBackButton.addEventListener('click', () => window.history.back());
+            this.els.searchViewInput.addEventListener('input', e => this.renderSearchResults(e.target.value));
+
+            document.addEventListener("click", (e) => {
+              this.hideContextMenu();
+              if (
+                this.activeAutocomplete &&
+                !this.activeAutocomplete.input.contains(e.target) &&
+                !this.activeAutocomplete.list.contains(e.target)
+              ) {
+                this.hideAutocomplete();
+              }
+            });
+
+            // Tab listeners
+            [this.els.tabBtnGroups, this.els.tabBtnGroupsMobile].forEach(btn => btn.addEventListener('click', () => this.setActiveTab('groups')));
+            [this.els.tabBtnVariants, this.els.tabBtnVariantsMobile].forEach(btn => btn.addEventListener('click', () => this.setActiveTab('variants')));
+          }
+
+          loadWords() {
+            const data = localStorage.getItem("indoVietDict");
+            if (data) {
+              this.words = JSON.parse(data);
+            } else {
+              this.words = [
+                { id: "1", tu: "makan", phatam: "ma-kan", chude: "Aktivitas > Makanan", 
+                  meanings: [
+                    { type: "Kata Kerja", meaning: "Ăn", example_indo: "Saya makan nasi setiap hari.", example_viet: "Tôi ăn cơm mỗi ngày." },
+                    { type: "Kata Kerja", meaning: "Tiêu thụ, sử dụng", example_indo: "Proyek itu makan banyak biaya.", example_viet: "Dự án đó tốn nhiều chi phí." }
+                  ],
+                  bienthe: "memakan, dimakan, makanan", dongnghia: "santap, lahap", trainghia: "minum" },
+                { id: "2", tu: "selamat pagi", phatam: "sơ-la-mát pa-gi", chude: "Ucapan", 
+                  meanings: [
+                    { type: "Frasa", meaning: "Chào buổi sáng", example_indo: "Selamat pagi, semuanya!", example_viet: "Chào buổi sáng mọi người!" }
+                  ],
+                  bienthe: "", dongnghia: "", trainghia: "selamat malam" },
+                { id: "3", tu: "buku", phatam: "bu-ku", chude: "Pendidikan", 
+                  meanings: [
+                    { type: "Kata Benda", meaning: "Sách, quyển sách, quyển vở", example_indo: "Saya suka membaca buku.", example_viet: "Tôi thích đọc sách." }
+                  ],
+                  bienthe: "buku-buku, pembaca", dongnghia: "kitab", trainghia: "" },
+                { id: "4", tu: "cinta", phatam: "chin-ta", chude: "Perasaan", 
+                  meanings: [
+                    { type: "Kata Benda", meaning: "Tình yêu", example_indo: "Cinta sejati itu abadi.", example_viet: "Tình yêu đích thực là vĩnh cửu." },
+                    { type: "Kata Kerja", meaning: "Yêu", example_indo: "Aku cinta kamu.", example_viet: "Anh yêu em." }
+                  ],
+                  bienthe: "mencintai, dicintai, percintaan", dongnghia: "sayang, kasih", trainghia: "benci" },
+                { id: "5", tu: "rumah", phatam: "ru-ma-hờ", chude: "Tempat",
+                  meanings: [
+                    { type: "Kata Benda", meaning: "Nhà, ngôi nhà", example_indo: "Ini rumah saya.", example_viet: "Đây là nhà của tôi." }
+                  ],
+                  bienthe: "perumahan", dongnghia: "griya, wisma", trainghia: "" },
+                { id: "6", tu: "minum", phatam: "mi-num", chude: "Aktivitas > Minuman", 
+                  meanings: [
+                    { type: "Kata Kerja", meaning: "Uống", example_indo: "Saya mau minum teh.", example_viet: "Tôi muốn uống trà." }
+                  ],
+                  bienthe: "meminum, diminum, minuman", dongnghia: "", trainghia: "makan" },
+                { id: "7", tu: "santap", phatam: "san-táp", chude: "Aktivitas > Makanan",
+                  meanings: [
+                    { type: "Kata Kerja", meaning: "Ăn (lịch sự), dùng bữa", example_indo: "Mari kita santap malam bersama.", example_viet: "Mời mọi người cùng ăn tối." }
+                  ],
+                  bienthe: "menyantap", dongnghia: "makan", trainghia: "" },
+                { id: "8", tu: "benci", phatam: "bơn-chi", chude: "Perasaan",
+                  meanings: [
+                    { type: "Kata Kerja", meaning: "Ghét", example_indo: "Dia benci dengan kebohongan.", example_viet: "Anh ấy ghét sự dối trá." }
+                  ],
+                  bienthe: "membenci", dongnghia: "", trainghia: "cinta, sayang" },
+                { id: "9", tu: "sayang", phatam: "sa-yang", chude: "Perasaan",
+                  meanings: [
+                    { type: "Kata Sifat", meaning: "Yêu, thương", example_indo: "Ayah sangat sayang kepada anaknya.", example_viet: "Bố rất thương con của mình." },
+                    { type: "Kata Benda", meaning: "Người yêu, người thương", example_indo: "Halo, sayang!", example_viet: "Chào em yêu!" }
+                  ],
+                  bienthe: "menyayangi", dongnghia: "cinta, kasih", trainghia: "benci" },
+                { id: "10", tu: "nasi", phatam: "na-si", chude: "Aktivitas > Makanan",
+                  meanings: [
+                    { type: "Kata Benda", meaning: "Cơm", example_indo: "Nasi adalah makanan pokok di Indonesia.", example_viet: "Cơm là lương thực chính ở Indonesia." }
+                  ],
+                  bienthe: "", dongnghia: "", trainghia: "" },
+                { id: "11", tu: "selamat malam", phatam: "sơ-la-mát ma-lam", chude: "Ucapan",
+                  meanings: [
+                    { type: "Frasa", meaning: "Chào buổi tối, chúc ngủ ngon", example_indo: "Selamat malam, semoga mimpi indah.", example_viet: "Chúc ngủ ngon, chúc bạn có những giấc mơ đẹp." }
+                  ],
+                  bienthe: "", dongnghia: "", trainghia: "selamat pagi, selamat siang" },
+                { id: "12", tu: "mencintai", phatam: "mơn-chin-ta-i", chude: "Perasaan",
+                  meanings: [
+                    { type: "Kata Kerja", meaning: "Yêu (ai đó)", example_indo: "Dia mencintai pekerjaannya.", example_viet: "Anh ấy yêu công việc của mình." }
+                  ],
+                  bienthe: "", dongnghia: "menyayangi", trainghia: "membenci" },
+                 { id: "13", tu: "kerja", phatam: "cơ-ja", chude: "Aktivitas", 
+                  meanings: [ { type: "Kata Kerja", meaning: "Làm việc", example_indo: "Dia kerja di kantor.", example_viet: "Anh ấy làm việc ở văn phòng." }],
+                  bienthe: "bekerja, pekerjaan, pekerja", dongnghia: "", trainghia: "libur" },
+                 { id: "14", tu: "tulis", phatam: "tu-lít-sờ", chude: "Pendidikan",
+                  meanings: [ { type: "Kata Kerja", meaning: "Viết", example_indo: "Tolong tulis namamu di sini.", example_viet: "Làm ơn viết tên bạn ở đây." } ],
+                  bienthe: "menulis, penulis, tulisan", dongnghia: "catat", trainghia: "baca" },
+                 { id: "15", tu: "jatuh", phatam: "gia-tu-hờ", chude: "Aktivitas",
+                  meanings: [ { type: "Kata Kerja", meaning: "Rơi, ngã", example_indo: "Hati-hati, jangan sampai jatuh.", example_viet: "Cẩn thận, đừng để bị ngã." } ],
+                  bienthe: "terjatuh, menjatuhkan", dongnghia: "gugur", trainghia: "bangun" },
+              ];
+              this.saveWords();
+            }
+            this.renderAll();
+          }
+
+          saveWords() { localStorage.setItem("indoVietDict", JSON.stringify(this.words)); }
+          addWord(data) {
+            this.words.push({ id: Date.now().toString(), ...data });
+            this.saveWords(); this.renderAll();
+            this.showToast("Thêm từ mới thành công!", "success");
+          }
+          updateWord(id, data) {
+            this.words = this.words.map((w) => (w.id === id ? { id, ...data } : w));
+            this.saveWords(); this.renderAll();
+            this.showWordDetail(id, true);
+            this.showToast("Cập nhật thành công!", "success");
+          }
+          deleteWord(id) {
+              this.showConfirm(
+                  "Bạn có chắc chắn muốn xóa từ này không?",
+                  () => {
+                      this.words = this.words.filter(w => w.id !== id);
+                      this.selectedWords.delete(id);
+                      this.saveWords(); this.renderAll();
+                      history.back();
+                      this.showToast("Đã xóa từ.", "success");
+                  }
+              );
+          }
+          deleteSelectedWords() {
+            const count = this.selectedWords.size;
+            if (count === 0) return;
+            this.showConfirm(`Bạn có chắc muốn xóa ${count} mục đã chọn không?`, () => {
+              this.words = this.words.filter(w => !this.selectedWords.has(w.id));
+              this.selectedWords.clear();
+              this.saveWords(); this.renderAll();
+              this.showToast(`Đã xóa ${count} từ.`, "success");
+            });
+          }
+
+          renderAll() {
+            this.setActiveTab(this.activeTab);
+            this.renderGroups();
+            this.renderVariantGroups();
+            this.renderWordList(this.getFilteredWords());
+            this.updateUIState();
+            this.updateSelectionToolbar();
+          }
+
+          renderGroups() {
+            const tree = {};
+            this.words.forEach(word => {
+                if (!word.chude) return;
+                const paths = word.chude.split(',').map(c => c.trim()).filter(Boolean);
+                paths.forEach(pathStr => {
+                    const path = pathStr.split('>').map(part => part.trim());
+                    let node = tree;
+                    path.forEach(part => {
+                        if (!node[part]) node[part] = {};
+                        node = node[part];
+                    });
+                });
+            });
+
+            const buildHTML = (node, path = "") => Object.keys(node).sort().map(key => {
+                const children = node[key];
+                const currentPath = path ? `${path} > ${key}` : key;
+                if (Object.keys(children).length > 0) {
+                    return `<li><details class="group-details"><summary class="group-link flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}"><span class="flex-grow font-medium">${this._translate(key)}</span><i data-lucide="chevron-right" class="chevron w-4 h-4 flex-shrink-0"></i></summary><ul class="pl-4">${buildHTML(children, currentPath)}</ul></details></li>`;
+                }
+                return `<li><a href="#" class="group-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}">${this._translate(key)}</a></li>`;
+            }).join('');
+
+            const allLink = `<li><a href="#" class="group-link flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="all"><i data-lucide="library" class="w-5 h-5"></i><span class="sidebar-text">Tất cả Chủ đề</span></a></li>`;
+            const html = `<ul class="space-y-1">${allLink}${buildHTML(tree)}</ul>`;
+            
+            this.els.groupsNav.innerHTML = html;
+            this.els.groupsNavMobile.innerHTML = html;
+
+            document.querySelectorAll(".group-link").forEach(link => {
+              link.addEventListener("click", (e) => {
+                if (link.tagName.toLowerCase() !== 'summary') e.preventDefault();
+                this.handleGroupFilter(e.currentTarget.dataset.group);
+              });
+            });
+            this.highlightActiveFilters();
+            lucide.createIcons();
+          }
+          
+          renderVariantGroups() {
+            const buildHTML = () => {
+                return Object.keys(this.variantMeaningGroups).sort().map(prefix => {
+                    const meanings = this.variantMeaningGroups[prefix];
+                    const meaningLinks = Object.keys(meanings).map(meaning => {
+                        return `<li><a href="#" class="variant-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-variant-prefix="${prefix}" data-variant-meaning="${meaning}">${meaning}</a></li>`;
+                    }).join('');
+                    
+                    return `<li><details class="group-details"><summary class="variant-link flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-[var(--accent)]" data-variant-prefix="${prefix}" data-variant-meaning="all"><span class="flex-grow font-medium">${prefix}</span><i data-lucide="chevron-right" class="chevron w-4 h-4 flex-shrink-0"></i></summary><ul class="pl-4">${meaningLinks}</ul></details></li>`;
+                }).join('');
+            };
+            
+            const allLink = `<li><a href="#" class="variant-link flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-variant-prefix="all" data-variant-meaning="all"><i data-lucide="wand-sparks" class="w-5 h-5"></i><span class="sidebar-text">Tất cả Biến thể</span></a></li>`;
+            const html = `<ul class="space-y-1">${allLink}${buildHTML()}</ul>`;
+            
+            this.els.variantsNav.innerHTML = html;
+            this.els.variantsNavMobile.innerHTML = html;
+
+            document.querySelectorAll(".variant-link").forEach(link => {
+              link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const target = e.currentTarget;
+                this.handleVariantFilter(target.dataset.variantPrefix, target.dataset.variantMeaning);
+              });
+            });
+
+            this.highlightActiveFilters();
+            lucide.createIcons();
+          }
+
+          renderWordList(words) {
+             if (words.length === 0) {
+              let message = "Không tìm thấy từ nào.";
+              if(this.currentFilter.search) message = `Không tìm thấy kết quả cho "${this.currentFilter.search}".`;
+              else if (this.currentFilter.group !== 'all') message = `Không có từ nào trong chủ đề này.`;
+              else if (this.currentFilter.variantPrefix !== 'all') message = `Không có từ nào khớp với bộ lọc biến thể này.`;
+              this.els.wordListGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] py-10"><p>${message}</p></div>`;
+              return;
+            }
+            
+            let groupedWords;
+            if(this.currentFilter.variantPrefix !== 'all') {
+                groupedWords = words.reduce((acc, word) => {
+                    const group = word.semanticGroup || 'Khác';
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(word);
+                    return acc;
+                }, {});
+            } else {
+                 groupedWords = words.reduce((acc, word) => {
+                    const group = word.primaryType || 'Khác';
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(word);
+                    return acc;
+                }, {});
+            }
+
+            const sortedGroups = Object.keys(groupedWords).sort();
+            this.els.wordListGrid.innerHTML = sortedGroups.map(group => `
+                <div class="group-container mb-6">
+                    <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${this.currentFilter.variantPrefix !== 'all' ? group : this._translate(group)}</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2">
+                        ${groupedWords[group].map(word => this.createWordCardHTML(word)).join("")}
+                    </div>
+                </div>
+            `).join('');
+
+
+            this.addEventListenersToCards(this.els.wordListGrid);
+            this.els.wordListGrid.querySelectorAll(".animate-on-scroll").forEach(el => this.observer.observe(el));
+          }
+          
+           createWordCardHTML(displayWord) {
+            const isSelected = this.selectedWords.has(displayWord.rootId);
+            const { cardTitle, cardSubtitle, rootFirstMeaning } = displayWord;
+            
+            return `
+              <div class="word-card animate-on-scroll ${isSelected ? 'selected' : ''}" data-id="${displayWord.rootId}">
+                <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col">
+                    <h3 class="font-bold text-lg text-[var(--card-foreground)]">${cardTitle}</h3>
+                    <p class="text-sm text-[var(--muted-foreground)] mb-2">${cardSubtitle}</p>
+                    <p class="text-sm text-[var(--muted-foreground)]/80 flex-grow">${rootFirstMeaning}</p>
+                </div>
+              </div>`;
+          }
+          
+          addEventListenersToCards(container, fromSearch = false) {
+            container.querySelectorAll(".word-card").forEach((card) => {
+                const id = card.dataset.id;
+                card.addEventListener("mousemove", (e) => this.handlePointerMove(e));
+                card.addEventListener("touchmove", (e) => this.handlePointerMove(e), { passive: true });
+                card.addEventListener("mousedown", (e) => this.handlePointerDown(e, id));
+                card.addEventListener("touchstart", (e) => this.handlePointerDown(e, id), { passive: true });
+                card.addEventListener("mouseup", (e) => this.handlePointerUp(e, id, fromSearch));
+                card.addEventListener("touchend", (e) => this.handlePointerUp(e, id, fromSearch));
+                card.addEventListener("mouseleave", () => this.handlePointerLeave());
+                card.addEventListener("touchcancel", () => this.handlePointerLeave());
+                card.addEventListener("contextmenu", (e) => {
+                    this.handlePointerLeave();
+                    this.showContextMenu(e, id);
+                });
+            });
+        }
+
+          makeSentenceClickable(sentence) {
+              if (!sentence) return '';
+              return sentence.split(/(\s+|[,.?!;])/).map(word => {
+                  if (word.trim().length > 0 && !/[,.?!;]/.test(word)) {
+                      return `<button class="smart-trigger" data-term="${word.replace(/[,.?!;]/g, '')}">${word}</button>`;
+                  }
+                  return `<span>${word}</span>`;
+              }).join('');
+          }
+        
+          navigateToDetail(id) {
+            if (this.currentView.type === "detail" && this.currentView.id === id) return;
+            let backTitle = (this.currentView.type === 'detail') 
+                ? this.words.find(p => p.id === this.currentView.id)?.tu || this.currentListTitle
+                : this.currentListTitle;
+            const newState = { view: "detail", id: id, filter: this.currentFilter, backTitle: this._translatePath(backTitle) };
+            history.pushState(newState, "", `#detail/${id}`);
+            this.handleStateChange(newState);
+        }
+        navigateToSearch(searchTerm = "", fromTitle = null) {
+            if (this.currentView.type === 'search') {
+                if(searchTerm) {
+                    this.els.searchViewInput.value = searchTerm;
+                    this.renderSearchResults(searchTerm);
+                }
+                return;
+            }
+            const newState = { view: "search", filter: this.currentFilter, backTitle: fromTitle || this._translatePath(this.currentListTitle) };
+            history.pushState(newState, "", `#search`);
+            this.handleStateChange(newState);
+            if (searchTerm) {
+                this.els.searchViewInput.value = searchTerm;
+                this.renderSearchResults(searchTerm);
+            }
+        }
+        
+          showWordDetail(id, isPoppedState = false, backTitle = "Quay lại") {
+            this.els.mobileHeader.classList.add('hidden');
+            const word = this.words.find((w) => w.id === id);
+            if (!word) {
+                this.showToast("Không tìm thấy từ.", "error");
+                if (!isPoppedState) history.back();
+                return;
+            }
+            const relatedWords = this.words.filter(w => w.chude && word.chude && w.chude.split(',')[0].trim() === word.chude.split(',')[0].trim() && w.id !== word.id).slice(0, 3);
+            this.els.stickyTitle.textContent = word.tu;
+            this.els.stickySubtitle.textContent = this._translatePath(word.chude);
+
+            const meaningsHTML = (word.meanings || []).map(m => `
+                <div class="mt-6">
+                    <button class="clickable-tag font-semibold text-lg text-[var(--primary)] hover:underline" data-term="${m.type}">${this._translate(m.type)}</button>
+                    <div class="mt-2 pl-4 border-l-2 border-[var(--border)]">
+                        <p class="text-md">${m.meaning}</p>
+                        ${m.example_indo ? `
+                            <div class="mt-2 text-sm italic">
+                                <p class="text-[var(--muted-foreground)]">${this.makeSentenceClickable(m.example_indo)}</p>
+                                <p class="text-[var(--muted-foreground)]/80">${m.example_viet}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            this.els.wordDetailView.innerHTML = `
+              <div class="max-w-4xl mx-auto">
+                <button id="back-to-list" class="flex items-center gap-2 mb-6 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                  <i data-lucide="arrow-left"></i> <span>${backTitle}</span>
+                </button>
+                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8 word-title-block animate-on-scroll">
+                  <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-4xl font-bold">${word.tu}</h2>
+                        <p class="text-lg text-[var(--muted-foreground)]">${word.phatam || ''}</p>
+                    </div>
+                    <div class="relative">
+                      <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
+                      <div id="detail-actions-menu" class="hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
+                          <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Sửa</span></button>
+                          <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                      </div>
+                    </div>
+                  </div>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                      ${this._renderPillTags(word.chude, 'tag', true)}
+                   </div>
+                  <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nghĩa & Ví dụ</h3>
+                        ${meaningsHTML}
+                    </div>
+                    ${word.bienthe ? `<div class="mt-4"><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Biến thể</h4><div class="flex flex-wrap gap-2">${this._renderPillTags(word.bienthe)}</div></div>` : ''}
+                    ${word.dongnghia ? `<div class="mt-4"><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Từ đồng nghĩa</h4><div class="flex flex-wrap gap-2">${this._renderPillTags(word.dongnghia)}</div></div>` : ''}
+                    ${word.trainghia ? `<div class="mt-4"><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Từ trái nghĩa</h4><div class="flex flex-wrap gap-2">${this._renderPillTags(word.trainghia)}</div></div>` : ''}
+                  </div>
+                </div>
+
+                ${relatedWords.length > 0 ? `<div class="mt-8 animate-on-scroll"><h3 class="text-xl font-bold mb-4">Từ cùng chủ đề</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${relatedWords.map(w => this.createWordCardHTML({ rootId: w.id, cardTitle: w.tu, cardSubtitle: w.phatam, rootFirstMeaning: w.meanings[0]?.meaning || '' })).join('')}</div></div>` : ''}
+              </div>`;
+              
+            this.transitionView(this.els.wordListContainer, this.els.wordDetailView);
+            this.els.wordDetailView.scrollTop = 0;
+            this.els.wordDetailView.removeEventListener("scroll", this.handleDetailScroll);
+            this.els.wordDetailView.addEventListener("scroll", this.handleDetailScroll.bind(this));
+            this.setupDetailViewEventListeners(word);
+          }
+          setupDetailViewEventListeners(word) {
+              const detailContent = this.els.wordDetailView.querySelector('.max-w-4xl');
+              if (!detailContent) return;
+              detailContent.querySelector("#back-to-list").addEventListener("click", () => window.history.back());
+              const actionsBtn = detailContent.querySelector('#detail-actions-btn');
+              const actionsMenu = detailContent.querySelector('#detail-actions-menu');
+              actionsBtn.addEventListener('click', e => { e.stopPropagation(); actionsMenu.classList.toggle('hidden'); });
+              actionsMenu.querySelector('[data-action="edit"]').addEventListener('click', () => this.openModal(word.id));
+              actionsMenu.querySelector('[data-action="delete"]').addEventListener('click', () => this.deleteWord(word.id));
+              document.addEventListener('click', () => actionsMenu.classList.add('hidden'), { once: true });
+              
+              detailContent.addEventListener('click', e => {
+                const trigger = e.target.closest(".smart-trigger, .clickable-tag");
+                if (trigger) {
+                    e.preventDefault();
+                    this.handleWordClick(trigger.dataset.term);
+                }
+                const card = e.target.closest('.word-card');
+                if(card) {
+                    e.preventDefault();
+                    this.navigateToDetail(card.dataset.id);
+                }
+              });
+
+              // Fix animation bug for related words
+              detailContent.querySelectorAll('.animate-on-scroll').forEach(el => {
+                this.observer.observe(el);
+              });
+
+              lucide.createIcons();
+          }
+
+          _renderPillTags(text, icon = null, isPath = false) {
+              if (!text) return '';
+              return text.split(',').map(item => item.trim()).filter(Boolean).map(item => `
+                  <button class="clickable-tag inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 rounded-full text-sm hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]" data-term="${item}">
+                      ${icon ? `<i data-lucide="${icon}" class="w-4 h-4"></i>` : ''} ${isPath ? this._translatePath(item) : this._translate(item)}
+                  </button>
+              `).join(' ');
+          }
+
+          async transitionView(fromEl, toEl, onTransitionCallback = null) {
+            if (this.isTransitioning) return;
+            this.isTransitioning = true;
+            if (!fromEl || fromEl.classList.contains("hidden")) {
+                toEl.classList.remove("hidden");
+                if (onTransitionCallback) onTransitionCallback();
+                this.isTransitioning = false;
+                return;
+            }
+            fromEl.classList.add("view-fade-out");
+            await new Promise(r => setTimeout(r, 250));
+            fromEl.classList.add("hidden");
+            fromEl.classList.remove("view-fade-out");
+            toEl.classList.remove("hidden");
+            if (onTransitionCallback) onTransitionCallback();
+            toEl.classList.add("view-fade-in");
+            await new Promise(r => setTimeout(r, 250));
+            toEl.classList.remove("view-fade-in");
+            this.isTransitioning = false;
+        }
+
+        showListView() {
+            this.currentView = { type: 'list' };
+            this.els.mobileHeader.classList.remove('hidden');
+            this.els.stickyHeader.classList.add('-translate-y-full');
+            const fromView = this.els.wordDetailView.classList.contains('hidden') ? null : this.els.wordDetailView;
+            this.transitionView(fromView, this.els.wordListContainer, () => {
+                this.renderAll();
+            });
+            this.els.wordDetailView.innerHTML = "";
+        }
+          
+           showSearchView(isPopped = false, state = {}) {
+            this.currentView = { type: 'search' };
+            this.els.mobileHeader.classList.add('hidden');
+            this.els.searchView.classList.remove('translate-x-full');
+            this.els.searchViewBackLabel.textContent = state.backTitle || "Quay lại";
+            if (!isPopped) { this.els.searchViewInput.focus(); }
+          }
+
+          hideSearchView(isPopped = false) {
+            this.els.mobileHeader.classList.remove('hidden');
+            this.els.searchView.classList.add('translate-x-full');
+            if (!isPopped) { this.els.searchViewInput.value = ""; }
+          }
+           renderSearchResults(query) {
+            const normalizedQuery = this._normalizeText(query);
+            if (!normalizedQuery) {
+                this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm từ điển...</p></div>`;
+                lucide.createIcons(); return;
+            }
+            const results = this.words.filter(p => Object.values(p).some(val => this._normalizeText(String(val)).includes(normalizedQuery)));
+            
+            if (results.length > 0) {
+                 const displayResults = results.map(w => ({
+                    rootId: w.id,
+                    cardTitle: w.tu,
+                    cardSubtitle: w.phatam || '',
+                    rootFirstMeaning: w.meanings && w.meanings.length > 0 ? w.meanings[0].meaning : '...'
+                }));
+                this.els.searchResultsGrid.innerHTML = displayResults.map(word => this.createWordCardHTML(word)).join("");
+                this.addEventListenersToCards(this.els.searchResultsGrid, true);
+                this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll").forEach(el => this.observer.observe(el));
+            } else {
+                this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả</p></div>`;
+            }
+            lucide.createIcons();
+        }
+
+          handleDetailScroll() {
+            const titleBlock = this.els.wordDetailView.querySelector('.word-title-block');
+            if (!titleBlock) return;
+            this.els.stickyHeader.classList.toggle('-translate-y-full', this.els.wordDetailView.scrollTop <= titleBlock.offsetHeight);
+          }
+
+          handleSearch(query) {
+            this.currentFilter = { group: 'all', variantPrefix: 'all', variantMeaning: 'all', search: query.toLowerCase() };
+            history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
+            this.showListView();
+          }
+          handleGroupFilter(group) {
+            this.currentFilter = { group: group, variantPrefix: 'all', variantMeaning: 'all', search: "" };
+            this.currentListTitle = group === 'all' ? 'Tất cả Chủ đề' : group;
+            this.els.searchInput.value = "";
+            this.clearSelection();
+            history.pushState({ view: "list", filter: this.currentFilter }, "", `#list/${group}`);
+            this.showListView();
+            this.els.mobileMenu.classList.add("hidden");
+          }
+          handleVariantFilter(prefix, meaning) {
+            this.currentFilter = { group: 'all', variantPrefix: prefix, variantMeaning: meaning, search: "" };
+            this.currentListTitle = prefix === 'all' ? 'Tất cả Biến thể' : `Biến thể ${prefix}`;
+            this.els.searchInput.value = "";
+            this.clearSelection();
+            history.pushState({ view: "list", filter: this.currentFilter }, "", `#list/${prefix}`);
+            this.showListView();
+            this.els.mobileMenu.classList.add("hidden");
+          }
+          handleFormSubmit(e) {
+            e.preventDefault();
+            const id = this.els.wordIdInput.value;
+            
+            const meanings = [];
+            this.els.meaningsContainer.querySelectorAll('.meaning-block').forEach(block => {
+                meanings.push({
+                    type: block.querySelector('.meaning-type').value,
+                    meaning: block.querySelector('.meaning-meaning').value,
+                    example_indo: block.querySelector('.meaning-example-indo').value,
+                    example_viet: block.querySelector('.meaning-example-viet').value,
+                });
+            });
+
+            const data = {
+              tu: this.els.tuInput.value, 
+              phatam: this.els.phatamInput.value, 
+              chude: this.els.chudeInput.value,
+              meanings: meanings,
+              bienthe: this.els.bientheInput.value,
+              dongnghia: this.els.dongnghiaInput.value, 
+              trainghia: this.els.trainghiaInput.value
+            };
+            if (id) { this.updateWord(id, data); } else { this.addWord(data); }
+            this.closeModal();
+          }
+          
+           handleWordClick(term) {
+                if (!term) return;
+                const normalizedTerm = this._normalizeText(term);
+                const foundWord = this.words.find(w => {
+                    const wordForms = [w.tu, ...(w.bienthe ? w.bienthe.split(',') : [])].map(s => this._normalizeText(s.trim()));
+                    return wordForms.includes(normalizedTerm);
+                });
+
+                if (foundWord) {
+                    this.navigateToDetail(foundWord.id);
+                } else {
+                     // Check if it's a word type
+                    const isWordType = Object.keys(this.translations).includes(term);
+                    if(isWordType) {
+                       if (this.isMobile()) {
+                           this.navigateToSearch(term, 'Chi tiết');
+                       } else {
+                           this.els.searchInput.value = term;
+                           this.handleSearch(term);
+                       }
+                       return;
+                    }
+                    
+                    if (this.isMobile()) {
+                        const currentWord = this.words.find(w => w.id === this.currentView.id);
+                        this.navigateToSearch(term, currentWord ? currentWord.tu : 'Chi tiết');
+                    } else {
+                        this.els.searchInput.value = term;
+                        this.handleSearch(term);
+                    }
+                }
+            }
+
+
+          getFilteredWords() {
+            let baseWords = this.words;
+
+            // Filter by group and search first
+            baseWords = baseWords.filter((w) => {
+                const groupMatch = this.currentFilter.group === "all" || (w.chude && w.chude.toLowerCase().startsWith(this.currentFilter.group.toLowerCase()));
+                const searchMatch = !this.currentFilter.search || 
+                    this._normalizeText(w.tu).includes(this._normalizeText(this.currentFilter.search)) ||
+                    this._normalizeText(w.phatam).includes(this._normalizeText(this.currentFilter.search)) ||
+                    (w.meanings && w.meanings.some(m => this._normalizeText(m.meaning).includes(this._normalizeText(this.currentFilter.search)) || this._normalizeText(m.type).includes(this._normalizeText(this.currentFilter.search)) ));
+                return groupMatch && searchMatch;
+            });
+            
+            // If filtering by variant, we transform the list
+            if (this.currentFilter.variantPrefix !== 'all') {
+                const displayWords = [];
+                const prefix = this.currentFilter.variantPrefix;
+                const meaning = this.currentFilter.variantMeaning;
+
+                let allowedVariants = [];
+                if (meaning === 'all') {
+                     allowedVariants = Object.values(this.variantMeaningGroups[prefix]).flat();
+                } else {
+                    allowedVariants = this.variantMeaningGroups[prefix][meaning];
+                }
+                
+                if(!allowedVariants) return [];
+
+                baseWords.forEach(rootWord => {
+                    if (!rootWord.bienthe) return;
+                    const rootVariants = rootWord.bienthe.split(',').map(v => v.trim());
+                    rootVariants.forEach(variant => {
+                        if (allowedVariants.includes(variant.toLowerCase())) {
+                            // Find which semantic group this variant belongs to
+                             const semanticGroup = Object.keys(this.variantMeaningGroups[prefix]).find(groupKey => 
+                                this.variantMeaningGroups[prefix][groupKey].includes(variant.toLowerCase())
+                             );
+
+                            displayWords.push({
+                                rootId: rootWord.id,
+                                cardTitle: variant,
+                                cardSubtitle: `(từ gốc: ${rootWord.tu})`,
+                                rootFirstMeaning: rootWord.meanings && rootWord.meanings.length > 0 ? rootWord.meanings[0].meaning : '...',
+                                semanticGroup: semanticGroup
+                            });
+                        }
+                    });
+                });
+                return displayWords;
+            }
+
+            // If not filtering by variant, return the root words themselves
+            return baseWords.map(w => ({
+                rootId: w.id,
+                cardTitle: w.tu,
+                cardSubtitle: w.phatam || '',
+                rootFirstMeaning: w.meanings && w.meanings.length > 0 ? w.meanings[0].meaning : '...',
+                primaryType: w.meanings && w.meanings.length > 0 ? w.meanings[0].type : 'Khác'
+            }));
+          }
+          
+          handlePointerDown(e, id) {
+            if (e.type === "mousedown" && e.button === 2) return;
+            this.isDragging = false; this.isLongPressing = false;
+            this.pointerStartPos.y = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
+            this.pressTimer = setTimeout(() => {
+                this.isLongPressing = true;
+                this.toggleWordSelection(id);
+            }, 500);
+          }
+          handlePointerUp(e, id, fromSearch = false) {
+            if(e.type === 'touchend') e.preventDefault();
+            clearTimeout(this.pressTimer);
+            if (this.isDragging) { this.isDragging = false; return; }
+            if (this.isLongPressing) { if(e.cancelable) e.preventDefault(); }
+            else {
+                if (this.selectedWords.size > 0 && !fromSearch) {
+                    this.toggleWordSelection(id);
+                } else {
+                    this.navigateToDetail(id);
+                }
+            }
+            this.isLongPressing = false;
+          }
+          handlePointerMove(e) {
+            if (this.pressTimer) {
+                const curY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+                if (Math.abs(curY - this.pointerStartPos.y) > 10) {
+                    this.isDragging = true; clearTimeout(this.pressTimer);
+                }
+            }
+          }
+          handlePointerLeave() { clearTimeout(this.pressTimer); this.isLongPressing = false; }
+          toggleWordSelection(id) {
+            const card = document.querySelector(`.word-card[data-id="${id}"]`);
+            if (this.selectedWords.has(id)) {
+                this.selectedWords.delete(id);
+                card && card.classList.remove("selected");
+            } else {
+                this.selectedWords.add(id);
+                card && card.classList.add("selected");
+            }
+            this.updateSelectionToolbar();
+          }
+          clearSelection() {
+              this.selectedWords.clear();
+              document.querySelectorAll('.word-card.selected').forEach(c => c.classList.remove('selected'));
+              this.updateSelectionToolbar();
+          }
+          updateSelectionToolbar() {
+            const count = this.selectedWords.size;
+            this.els.selectionCount.textContent = `${count} mục đã chọn`;
+            this.els.selectionToolbar.classList.toggle("hidden", count === 0);
+          }
+          showContextMenu(e, id) {
+            e.preventDefault(); this.hideContextMenu();
+            const isSelected = this.selectedWords.has(id);
+            this.els.contextMenu.innerHTML = `<button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="select" data-id="${id}"><i data-lucide="${isSelected ? 'check-square' : 'square'}" class="w-4 h-4"></i><span>${isSelected ? 'Bỏ chọn' : 'Chọn'}</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="edit" data-id="${id}"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Sửa</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete" data-id="${id}"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>`;
+            lucide.createIcons();
+            this.els.contextMenu.style.top = `${e.pageY}px`;
+            this.els.contextMenu.style.left = `${e.pageX}px`;
+            this.els.contextMenu.classList.remove("hidden");
+            this.els.contextMenu.querySelectorAll("button").forEach(btn => btn.addEventListener("click", e => {
+                const { action, id } = e.currentTarget.dataset;
+                if (action === "select") this.toggleWordSelection(id);
+                if (action === "edit") this.openModal(id);
+                if (action === "delete") this.deleteWord(id);
+                this.hideContextMenu();
+            }));
+          }
+          hideContextMenu() { this.els.contextMenu.classList.add("hidden"); }
+
+          updateUIState() {
+            const hasWords = this.words.length > 0;
+            this.els.welcomeScreen.classList.toggle("hidden", hasWords);
+            this.els.wordListGrid.classList.toggle("hidden", !hasWords || this.els.wordDetailView.classList.contains('hidden') === false);
+          }
+
+          openModal(id = null) {
+            this.els.wordForm.reset();
+            this.els.meaningsContainer.innerHTML = ''; // Clear old blocks
+
+            if (id) {
+              const w = this.words.find((w) => w.id === id);
+              if (w) {
+                this.els.modalTitle.textContent = "Chỉnh sửa từ"; this.els.wordIdInput.value = w.id;
+                this.els.tuInput.value = w.tu || ''; this.els.phatamInput.value = w.phatam || '';
+                this.els.chudeInput.value = w.chude || '';
+                if(w.meanings && w.meanings.length > 0) {
+                    w.meanings.forEach(m => this.addMeaningBlock(m));
+                } else {
+                    this.addMeaningBlock(); // Add one empty block if no meanings
+                }
+                this.els.bientheInput.value = w.bienthe || '';
+                this.els.dongnghiaInput.value = w.dongnghia || '';
+                this.els.trainghiaInput.value = w.trainghia || '';
+              }
+            } else {
+              this.els.modalTitle.textContent = "Thêm từ mới"; this.els.wordIdInput.value = "";
+              this.addMeaningBlock(); // Add one empty block for new word
+            }
+
+            // Setup autocomplete for main fields
+            this.setupAutocomplete(this.els.chudeInput, this.els.chudeList, () => this.getDynamicSuggestions('chude'), { isPath: true });
+            this.setupAutocomplete(this.els.bientheInput, this.els.bientheList, () => this.getDynamicSuggestions('tu'), { isCommaSeparated: true });
+            this.setupAutocomplete(this.els.dongnghiaInput, this.els.dongnghiaList, () => this.getDynamicSuggestions('tu'), { isCommaSeparated: true });
+            this.setupAutocomplete(this.els.trainghiaInput, this.els.trainghiaList, () => this.getDynamicSuggestions('tu'), { isCommaSeparated: true });
+            
+            this.els.wordModal.showModal();
+            lucide.createIcons();
+          }
+          
+           addMeaningBlock(data = {}) {
+                const blockId = `meaning-block-${Date.now()}`;
+                const block = document.createElement('div');
+                block.className = 'meaning-block p-4 border border-[var(--border)] rounded-lg relative';
+                block.innerHTML = `
+                    <button type="button" class="remove-meaning-btn absolute top-2 right-2 p-1 text-[var(--muted-foreground)] hover:text-red-500 custom-ring rounded-full">
+                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    </button>
+                    <div class="space-y-3">
+                         <div class="relative">
+                            <label class="text-sm font-medium text-[var(--muted-foreground)]">Từ loại</label>
+                            <input type="text" class="meaning-type w-full p-2 mt-1 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none" value="${data.type || ''}">
+                            <div class="autocomplete-list absolute w-full mt-1 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg max-h-48 overflow-y-auto hidden no-scrollbar"></div>
+                         </div>
+                         <div>
+                            <label class="text-sm font-medium text-[var(--muted-foreground)]">Nghĩa Tiếng Việt</label>
+                            <input type="text" class="meaning-meaning w-full p-2 mt-1 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none" value="${data.meaning || ''}">
+                         </div>
+                         <div>
+                            <label class="text-sm font-medium text-[var(--muted-foreground)]">Ví dụ Indo</label>
+                            <textarea class="meaning-example-indo w-full p-2 mt-1 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none" rows="2">${data.example_indo || ''}</textarea>
+                         </div>
+                         <div>
+                            <label class="text-sm font-medium text-[var(--muted-foreground)]">Ví dụ Việt</label>
+                             <textarea class="meaning-example-viet w-full p-2 mt-1 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none" rows="2">${data.example_viet || ''}</textarea>
+                         </div>
+                    </div>
+                `;
+                this.els.meaningsContainer.appendChild(block);
+                block.querySelector('.remove-meaning-btn').addEventListener('click', () => block.remove());
+                
+                // Setup autocomplete for the new type input
+                const typeInput = block.querySelector('.meaning-type');
+                const typeList = block.querySelector('.autocomplete-list');
+                this.setupAutocomplete(typeInput, typeList, () => this.getDynamicSuggestions('type'));
+
+                lucide.createIcons();
+            }
+
+            getDynamicSuggestions(field) {
+                const suggestions = new Set();
+                if (field === 'type') {
+                    this.words.forEach(word => {
+                        if (word.meanings) {
+                            word.meanings.forEach(m => suggestions.add(m.type));
+                        }
+                    });
+                } else if (field === 'chude') {
+                     this.words.forEach(word => {
+                        if(word.chude) suggestions.add(word.chude);
+                    });
+                }
+                else {
+                    this.words.forEach(word => {
+                        if (word[field]) {
+                             suggestions.add(word[field]);
+                        }
+                    });
+                }
+                return Array.from(suggestions).sort();
+            }
+
+            setupAutocomplete(inputEl, listEl, sourceFunc, options = {}) {
+                const render = () => {
+                    const suggestions = sourceFunc();
+                    let filter = inputEl.value;
+                    
+                    if (options.isCommaSeparated) {
+                        const parts = filter.split(',').map(p => p.trim());
+                        filter = parts[parts.length - 1];
+                    }
+                    if (options.isPath) {
+                         const parts = filter.split('>').map(p => p.trim());
+                         filter = parts[parts.length - 1];
+                    }
+
+                    if (!filter) { this.hideAutocomplete(); return; }
+                    
+                    const normalizedFilter = this._normalizeText(filter);
+                    const filtered = suggestions.filter(s => this._normalizeText(s).includes(normalizedFilter));
+
+                    if (filtered.length > 0) {
+                        listEl.innerHTML = filtered.slice(0, 10).map(s => `<div class="autocomplete-item px-3 py-2 cursor-pointer hover:bg-[var(--accent)]" data-value="${s}">${s}</div>`).join('');
+                        listEl.classList.remove('hidden');
+                        this.activeAutocomplete = { input: inputEl, list: listEl };
+                    } else {
+                        this.hideAutocomplete();
+                    }
+                };
+
+                const selectItem = (e) => {
+                    const item = e.target.closest('.autocomplete-item');
+                    if(item) {
+                        e.preventDefault();
+                        let value = item.dataset.value;
+                         if (options.isCommaSeparated) {
+                            const parts = inputEl.value.split(',').map(p => p.trim());
+                            parts[parts.length - 1] = value;
+                            inputEl.value = parts.join(', ') + ', ';
+                        } else if(options.isPath) {
+                            const parts = inputEl.value.split('>').map(p => p.trim());
+                            parts[parts.length - 1] = value;
+                            inputEl.value = parts.join(' > ');
+                        } else {
+                            inputEl.value = value;
+                        }
+                        this.hideAutocomplete();
+                        inputEl.focus();
+                    }
+                };
+
+                inputEl.addEventListener('focus', render);
+                inputEl.addEventListener('input', render);
+                listEl.addEventListener('mousedown', selectItem);
+            }
+            
+            hideAutocomplete() {
+                if (this.activeAutocomplete) {
+                    this.activeAutocomplete.list.classList.add('hidden');
+                }
+                this.activeAutocomplete = null;
+            }
+
+
+          closeModal() { this.els.wordModal.close(); this.hideAutocomplete(); }
+
+          setActiveTab(tabName) {
+            this.activeTab = tabName;
+            const isGroupsActive = tabName === 'groups';
+
+            // Desktop
+            this.els.tabBtnGroups.classList.toggle('border-[var(--primary)]', isGroupsActive);
+            this.els.tabBtnGroups.classList.toggle('text-[var(--primary)]', isGroupsActive);
+            this.els.tabBtnGroups.classList.toggle('text-[var(--muted-foreground)]', !isGroupsActive);
+            this.els.groupsNavContainer.classList.toggle('hidden', !isGroupsActive);
+            
+            this.els.tabBtnVariants.classList.toggle('border-[var(--primary)]', !isGroupsActive);
+            this.els.tabBtnVariants.classList.toggle('text-[var(--primary)]', !isGroupsActive);
+            this.els.tabBtnVariants.classList.toggle('text-[var(--muted-foreground)]', isGroupsActive);
+            this.els.variantsNavContainer.classList.toggle('hidden', isGroupsActive);
+            
+            // Mobile
+            this.els.tabBtnGroupsMobile.classList.toggle('border-[var(--primary)]', isGroupsActive);
+            this.els.tabBtnGroupsMobile.classList.toggle('text-[var(--primary)]', isGroupsActive);
+            this.els.tabBtnGroupsMobile.classList.toggle('text-[var(--muted-foreground)]', !isGroupsActive);
+            this.els.groupsNavContainerMobile.classList.toggle('hidden', !isGroupsActive);
+            
+            this.els.tabBtnVariantsMobile.classList.toggle('border-[var(--primary)]', !isGroupsActive);
+            this.els.tabBtnVariantsMobile.classList.toggle('text-[var(--primary)]', !isGroupsActive);
+            this.els.tabBtnVariantsMobile.classList.toggle('text-[var(--muted-foreground)]', isGroupsActive);
+            this.els.variantsNavContainerMobile.classList.toggle('hidden', isGroupsActive);
+          }
+
+          highlightActiveFilters() {
+            document.querySelectorAll(".group-link").forEach((link) => {
+              const groupName = link.dataset.group;
+              const isActive = groupName === this.currentFilter.group;
+              link.classList.toggle("bg-[var(--primary)]", isActive);
+              link.classList.toggle("text-[var(--primary-foreground)]", isActive);
+            });
+            document.querySelectorAll(".variant-link").forEach((link) => {
+              const prefix = link.dataset.variantPrefix;
+              const meaning = link.dataset.variantMeaning;
+              const isActive = prefix === this.currentFilter.variantPrefix && meaning === this.currentFilter.variantMeaning;
+              link.classList.toggle("bg-[var(--primary)]", isActive);
+              link.classList.toggle("text-[var(--primary-foreground)]", isActive);
+            });
+          }
+
+          showToast(message, type = "success") {
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-6 h-6 mr-3"></i><span>${message}</span>`;
+            this.els.toastContainer.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => { toast.remove(); }, 4000);
+          }
+          showConfirm(message, onConfirm) {
+            this.els.confirmMessage.textContent = message;
+            this.els.confirmModal.showModal();
+            this.els.confirmProceed.onclick = () => { onConfirm(); this.els.confirmModal.close(); };
+            this.els.confirmCancel.onclick = () => this.els.confirmModal.close();
+          }
+
+          initTheme() {
+            const theme = localStorage.getItem("theme") || "light";
+            this.setTheme(theme);
+          }
+          setTheme(theme) {
+            localStorage.setItem("theme", theme);
+            document.documentElement.classList.toggle("dark", theme === "dark");
+            document.querySelectorAll(".light-icon").forEach((i) => i.classList.toggle("hidden", theme === "dark"));
+            document.querySelectorAll(".dark-icon").forEach((i) => i.classList.toggle("hidden", theme !== "dark"));
+          }
+          toggleTheme() { this.setTheme(localStorage.getItem("theme") === "dark" ? "light" : "dark"); }
+
+          initSidebarState() {
+            const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
+            if (isCollapsed) this.els.sidebar.classList.add("collapsed");
+            this.updateSidebarToggleButton(isCollapsed);
+          }
+          toggleSidebar() {
+            const isCollapsed = this.els.sidebar.classList.toggle("collapsed");
+            localStorage.setItem("sidebarState", isCollapsed ? "collapsed" : "expanded");
+            this.updateSidebarToggleButton(isCollapsed);
+          }
+           updateSidebarToggleButton(isCollapsed) {
+            const tip = this.els.sidebarToggle.querySelector(".tooltip-text");
+            if(tip) { tip.textContent = isCollapsed ? "Mở rộng" : "Thu gọn"; }
+            this.els.sidebarTopActions.classList.toggle('hidden', isCollapsed);
+            this.els.sidebarTopActionsCollapsed.classList.toggle('hidden', !isCollapsed);
+            lucide.createIcons();
+          }
+
+          importData() {
+            const input = document.createElement("input");
+            input.type = "file"; input.accept = ".json";
+            input.onchange = e => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = re => {
+                    try {
+                        const data = JSON.parse(re.target.result);
+                        if (!Array.isArray(data)) throw new Error("Invalid format");
+                        this.showImportOptions(data);
+                    } catch (err) { this.showToast("Tệp không hợp lệ hoặc bị lỗi.", "error"); }
+                };
+                reader.readAsText(file, 'UTF-8');
+            };
+            input.click();
+            this.els.mobileMenu.classList.add("hidden");
+          }
+          showImportOptions(data) {
+              this.els.importInfo.textContent = `Tệp chứa ${data.length} từ. Vui lòng chọn cách nhập.`;
+              this.els.importOptionsModal.showModal();
+              this.els.importOverwriteBtn.onclick = () => {
+                  this.words = data; this.clearSelection(); this.saveWords(); this.renderAll(); this.showListView();
+                  this.showToast(`Đã ghi đè và nhập ${data.length} từ.`, "success");
+                  this.els.importOptionsModal.close();
+              };
+              this.els.importMergeBtn.onclick = () => {
+                  const existing = new Set(this.words.map(p => p.tu.toLowerCase().trim()));
+                  let added = 0; let newId = Date.now();
+                  data.forEach(p => {
+                      if (p.tu && !existing.has(p.tu.toLowerCase().trim())) {
+                          this.words.push({ ...p, id: (newId++).toString() }); added++;
+                      }
+                  });
+                  if(added > 0) {
+                    this.saveWords(); this.renderAll(); this.showListView();
+                    this.showToast(`Đã hợp nhất và thêm mới ${added} từ.`, "success");
+                  } else {
+                    this.showToast("Không có từ mới nào để thêm.", "success");
+                  }
+                  this.els.importOptionsModal.close();
+              };
+              this.els.importCancelBtn.onclick = () => this.els.importOptionsModal.close();
+          }
+
+          exportData() {
+            if (this.words.length === 0) { this.showToast("Không có dữ liệu để xuất.", "error"); return; }
+            const dataStr = JSON.stringify(this.words, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `tudien_indo_viet_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click(); URL.revokeObjectURL(url);
+            this.els.mobileMenu.classList.add("hidden");
+            this.showToast("Xuất dữ liệu thành công!", "success");
+          }
+        }
+        const app = new IndoVietDictionaryApp();
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>
