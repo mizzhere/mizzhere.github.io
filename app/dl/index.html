@@ -105,6 +105,14 @@
           transform: translateY(-10px);
         }
       }
+      
+      #mobile-header {
+        transition: transform 0.3s ease-in-out;
+      }
+      #mobile-header.-translate-y-full {
+        /* This ensures the element is removed from the accessibility tree and doesn't catch events when hidden */
+        visibility: hidden;
+      }
 
       .plant-card {
         transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
@@ -2092,6 +2100,7 @@
             }, 500);
           }
           handlePointerUp(e, id, fromSearch = false) {
+            if (e.type === 'touchend') e.preventDefault();
             clearTimeout(this.pressTimer);
             if (this.isDragging) {
               this.isDragging = false;
