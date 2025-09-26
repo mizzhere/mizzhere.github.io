@@ -221,6 +221,14 @@
       .group-details[open] > summary .chevron {
         transform: rotate(90deg);
       }
+      .group-details > ul {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+      }
+      .group-details[open] > ul {
+        max-height: 1000px; /* Adjust if menus are very long */
+      }
       a.bg-\[var\(--primary\)\]:hover,
       details > summary.bg-\[var\(--primary\)\]:hover {
         background-color: var(--primary);
@@ -276,17 +284,14 @@
 
       .sticky-group-header {
         position: sticky;
-        /* Kéo lên 1rem (tương ứng với padding p-4 của container) */
-        top: -1rem; 
+        top: -1rem;
         z-index: 10;
         background-color: var(--background);
-        /* Thêm padding-top để nội dung không bị quá sát cạnh trên */
         padding: 0.75rem 0 0.75rem 0;
       }
 
       @media (min-width: 768px) {
         .sticky-group-header {
-          /* Trên desktop, kéo lên 2rem (tương ứng với padding md:p-8) */
           top: -2rem;
           padding-top: 2.75rem;
         }
@@ -329,16 +334,6 @@
               class="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all"
             />
           </div>
-          <button
-            id="add-plant-sidebar"
-            class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring"
-          >
-            <i data-lucide="plus" class="w-5 h-5"></i>
-            <span
-              class="absolute left-full ml-3 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
-              >Thêm Dược liệu</span
-            >
-          </button>
         </div>
         <div
           id="sidebar-top-actions-collapsed"
@@ -352,12 +347,6 @@
               data-lucide="search"
               class="w-5 h-5 text-[var(--muted-foreground)]"
             ></i>
-          </button>
-          <button
-            id="add-plant-sidebar-collapsed"
-            class="relative group flex-shrink-0 flex items-center justify-center w-10 h-10 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity custom-ring"
-          >
-            <i data-lucide="plus" class="w-5 h-5"></i>
           </button>
         </div>
         <h2
@@ -485,7 +474,7 @@
       <main class="flex-1 flex flex-col relative overflow-hidden">
         <header
           id="mobile-header"
-          class="flex md:hidden items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]"
+          class="flex md:hidden items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)] transition-transform duration-300 ease-in-out"
         >
           <div class="flex items-center gap-2">
             <i data-lucide="sprout" class="text-[var(--primary)]"></i>
@@ -516,13 +505,19 @@
           >
             <i data-lucide="arrow-left"></i>
           </button>
-          <div class="flex-1 text-center overflow-hidden pr-12">
+          <div class="flex-1 text-center overflow-hidden">
             <h3 id="sticky-title" class="font-bold text-base truncate"></h3>
             <p
               id="sticky-subtitle"
               class="text-xs text-[var(--muted-foreground)] truncate"
             ></p>
           </div>
+          <button
+            id="sticky-home-button"
+            class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"
+          >
+            <i data-lucide="home" class="w-5 h-5"></i>
+          </button>
         </div>
         <div
           id="plant-list-container"
@@ -541,21 +536,12 @@
             </div>
             <h2 class="text-2xl font-bold mb-2">Chào mừng bạn!</h2>
             <p class="max-w-md text-[var(--muted-foreground)] mb-6">
-              Bắt đầu bằng cách thêm dược liệu mới, nhập dữ liệu có sẵn, hoặc
-              tìm kiếm trong danh sách.
+              Bắt đầu bằng cách nhập dữ liệu có sẵn, hoặc tìm kiếm trong danh sách dược liệu của bạn.
             </p>
             <p
               id="plant-count"
               class="text-sm text-[var(--muted-foreground)] mb-4"
             ></p>
-            <div class="flex gap-2">
-              <button
-                id="add-plant-welcome"
-                class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity custom-ring"
-              >
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>Thêm Dược liệu
-              </button>
-            </div>
           </div>
           <div id="plant-list-grid"></div>
         </div>
@@ -564,22 +550,23 @@
           class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"
         ></div>
 
-        <!-- FAB (Mobile) -->
-        <button
-          id="add-plant-fab"
-          class="md:hidden fixed bottom-6 right-6 bg-[var(--primary)] text-[var(--primary-foreground)] w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-all custom-ring"
-        >
-          <i data-lucide="plus" class="w-8 h-8"></i>
-        </button>
         <!-- Selection Toolbar -->
         <div
           id="selection-toolbar"
-          class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--card)] border border-[var(--border)] rounded-full shadow-lg p-2 flex items-center gap-4 z-30 transition-all"
+          class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--card)] border border-[var(--border)] rounded-full shadow-lg p-2 flex items-center gap-2 z-30 transition-all"
         >
-          <span id="selection-count" class="text-sm font-medium px-2"></span>
+          <span id="selection-count" class="text-sm font-medium px-3"></span>
+          <button
+            id="deselect-all-btn"
+            class="flex items-center justify-center w-10 h-10 text-[var(--muted-foreground)] rounded-full hover:bg-[var(--accent)] transition-colors custom-ring"
+            title="Bỏ chọn tất cả"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
           <button
             id="delete-selected-btn"
             class="flex items-center justify-center w-10 h-10 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors custom-ring"
+            title="Xóa mục đã chọn"
           >
             <i data-lucide="trash-2" class="w-5 h-5"></i>
           </button>
@@ -616,14 +603,11 @@
         </div>
       </header>
       <div id="search-results-container" class="flex-1 overflow-y-auto p-4">
-        <div
-          id="search-results-grid"
-          class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        ></div>
+        <div id="search-results-grid"></div>
       </div>
     </div>
 
-    <!-- Mobile Menu (No search bar) -->
+    <!-- Mobile Menu -->
     <div id="mobile-menu" class="fixed inset-0 bg-black/40 z-40 hidden">
       <aside
         class="absolute inset-y-0 left-0 w-72 bg-[var(--card)] p-4 flex flex-col"
@@ -651,15 +635,6 @@
         ></nav>
         <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
           <button
-            id="add-plant-mobile"
-            class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-          >
-            <i
-              data-lucide="plus-circle"
-              class="w-5 h-5 text-[var(--muted-foreground)]"
-            ></i
-            ><span class="text-sm font-medium">Thêm Dược liệu</span></button
-          ><button
             id="import-button-mobile"
             class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
           >
@@ -706,7 +681,7 @@
     >
       <form id="plant-form" class="p-6 md:p-8">
         <div class="flex justify-between items-center mb-6">
-          <h2 id="modal-title" class="text-2xl font-bold">Thêm Dược liệu</h2>
+          <h2 id="modal-title" class="text-2xl font-bold">Chỉnh sửa Dược liệu</h2>
           <button
             type="button"
             id="close-modal-button"
@@ -994,7 +969,6 @@
           }
           _normalizeGroup(str) {
             if (!str) return "";
-            // Loại bỏ khoảng trắng và phần trong ngoặc đơn, ví dụ: "Indol (dimer)" -> "Indol"
             return str.trim().replace(/\s*\(.*\)\s*$/g, "");
           }
 
@@ -1105,10 +1079,6 @@
               plantIdInput: document.getElementById("plant-id"),
               welcomeScreen: document.getElementById("welcome-screen"),
               plantCount: document.getElementById("plant-count"),
-              addPlantWelcomeBtn: document.getElementById("add-plant-welcome"),
-              addPlantSidebar: document.getElementById("add-plant-sidebar"),
-              addPlantFab: document.getElementById("add-plant-fab"),
-              addPlantMobile: document.getElementById("add-plant-mobile"),
               importButtonDesktop: document.getElementById(
                 "import-button-desktop"
               ),
@@ -1138,6 +1108,7 @@
                 "search-view-back-label"
               ),
               stickyBackButton: document.getElementById("sticky-back-button"),
+              stickyHomeButton: document.getElementById("sticky-home-button"),
               importButtonMobile: document.getElementById(
                 "import-button-mobile"
               ),
@@ -1156,6 +1127,7 @@
               selectionToolbar: document.getElementById("selection-toolbar"),
               selectionCount: document.getElementById("selection-count"),
               deleteSelectedBtn: document.getElementById("delete-selected-btn"),
+              deselectAllBtn: document.getElementById("deselect-all-btn"),
               importOptionsModal: document.getElementById(
                 "import-options-modal"
               ),
@@ -1206,9 +1178,6 @@
               searchButtonCollapsed: document.getElementById(
                 "search-button-collapsed"
               ),
-              addPlantSidebarCollapsed: document.getElementById(
-                "add-plant-sidebar-collapsed"
-              ),
               sidebarBottomActions: document.getElementById(
                 "sidebar-bottom-actions"
               ),
@@ -1236,20 +1205,6 @@
             window.addEventListener("popstate", (e) => {
               if (e.state) {
                 this.handleStateChange(e.state);
-              } else {
-                this.showConfirm(
-                  "Bạn có muốn thoát khỏi trang này không?",
-                  () => {
-                    window.history.back();
-                  },
-                  () => {
-                    history.pushState(
-                      { view: "list", filter: this.currentFilter },
-                      "",
-                      "#list"
-                    );
-                  }
-                );
               }
             });
           }
@@ -1262,18 +1217,17 @@
 
             switch (state.view) {
               case "detail":
-                this.hideSearchView(false);
+                this.hideSearchView(true);
                 const backTitle = state.backTitle || "Quay lại";
                 this.showPlantDetail(state.id, true, backTitle);
                 break;
               case "search":
-                // Truyền toàn bộ đối tượng 'state' vào hàm showSearchView
                 this.showSearchView(true, state);
                 break;
               case "list":
               default:
                 this.currentFilter = state.filter;
-                this.hideSearchView(false);
+                this.hideSearchView(true);
                 this.showListView();
                 break;
             }
@@ -1284,16 +1238,6 @@
             );
             this.els.searchInput.addEventListener("input", (e) =>
               this.handleSearch(e.target.value)
-            );
-            [
-              this.els.addPlantWelcomeBtn,
-              this.els.addPlantSidebar,
-              this.els.addPlantFab,
-              this.els.addPlantMobile,
-              this.els.addPlantSidebarCollapsed,
-            ].forEach(
-              (btn) =>
-                btn && btn.addEventListener("click", () => this.openModal())
             );
             this.els.searchButtonCollapsed.addEventListener("click", () => {
               if (this.els.sidebar.classList.contains("collapsed")) {
@@ -1326,6 +1270,8 @@
             this.els.stickyBackButton.addEventListener("click", () =>
               window.history.back()
             );
+             this.els.stickyHomeButton.addEventListener("click", () => this.goHome());
+
             [
               this.els.importButtonDesktop,
               this.els.importButtonDesktopCollapsed,
@@ -1346,6 +1292,8 @@
             this.els.deleteSelectedBtn.addEventListener("click", () =>
               this.deleteSelectedPlants()
             );
+            this.els.deselectAllBtn.addEventListener("click", () => this.clearSelection());
+
             this.els.mobileSearchButton.addEventListener("click", () =>
               this.navigateToSearch()
             );
@@ -1396,94 +1344,26 @@
           }
 
           loadPlants() {
-            fetch("data.json")
-              .then((res) => {
-                if (!res.ok) throw new Error();
-                return res.json();
-              })
-              .then((data) => {
-                this.plants = data;
-                this.savePlants();
-                this.renderAll();
-              })
-              .catch(() => {
-                console.warn("Cannot find data.json, using local data.");
-                const data = localStorage.getItem("medicinalPlants");
-                if (data) {
+              const data = localStorage.getItem("medicinalPlants");
+              if (data) {
                   this.plants = JSON.parse(data);
-                } else {
-                  this.plants = [
-                    {
-                      id: "1",
-                      tenDuocLieu: "Ba gạc",
-                      hoCay: "Apocynaceae (Họ Trúc đào)",
-                      nhomChat: "Alkaloid > Indol",
-                      thanhPhanHoaHocChinh: "Reserpin, Ajmalin",
-                      boPhanDung: "Rễ",
-                      tacDung:
-                        "Reserpin: Hạ huyết áp, an thần; Ajmalin: Chữa loạn nhịp tim",
-                      congDung:
-                        "(Y học hiện đại): Chữa cao huyết áp; (Y học cổ truyền): Thanh nhiệt; Khác: Rễ cây được dùng để chiết xuất hoạt chất.",
-                      lieuDung:
-                        "Dạng bột rễ: 0,1g/lần, 0,3g/24h. Dạng cao lỏng: 1-3g/24h.",
-                      luuY: "Không dùng cho bệnh nhân trầm cảm, loét dạ dày. Thận trọng với phụ nữ có thai, cho con bú.",
-                      dacDiemDuocLieu:
-                        "Rễ: hình trụ, cong queo, có thể phân nhánh. Vỏ: ngoài màu vàng tro, có nhiều nếp nhăn dọc và vết sẹo của rễ con.",
-                    },
-                    {
-                      id: "2",
-                      tenDuocLieu: "Hòe",
-                      hoCay: "Fabaceae (Họ Đậu)",
-                      nhomChat: "Flavonoid > Flavonol",
-                      thanhPhanHoaHocChinh: "Rutin",
-                      boPhanDung: "Nụ hoa",
-                      tacDung: "Rutin: Tăng sức bền thành mạch, cầm máu.",
-                      congDung:
-                        "(Y học cổ truyền): Lương huyết, chỉ huyết, dùng trong các trường hợp huyết nhiệt, chảy máu cam, ho ra máu.; Khác: Dùng làm phẩm nhuộm an toàn cho thực phẩm.",
-                      lieuDung: "Ngày dùng 5-20g dạng thuốc sắc hoặc hãm.",
-                      luuY: "Người tỳ vị hư hàn, phụ nữ có thai không nên dùng.",
-                      dacDiemDuocLieu:
-                        "Nụ hoa: hình trứng, dài 3-6mm. Đài hoa: hình chuông, màu vàng xám. Mùi thơm đặc trưng.",
-                    },
-                    {
-                      id: "3",
-                      tenDuocLieu: "Mã tiền",
-                      hoCay: "Loganiaceae (Họ Mã tiền)",
-                      nhomChat: "Alkaloid > Indol",
-                      thanhPhanHoaHocChinh: "Strychnin, Brucin",
-                      boPhanDung: "Hạt",
-                      tacDung:
-                        "Strychnin: Kích thích thần kinh trung ương, tăng phản xạ tủy.",
-                      congDung:
-                        "(Y học hiện đại): Dùng ngoài chữa đau nhức, thấp khớp. (Y học cổ truyền): Thông lạc chỉ thống, tiêu thũng tán kết.",
-                      lieuDung:
-                        "Rất độc, chỉ dùng ngoài hoặc theo chỉ định nghiêm ngặt của bác sĩ.",
-                      luuY: "Tuyệt đối không được uống. Phụ nữ có thai không được dùng.",
-                      dacDiemDuocLieu:
-                        "Hạt: hình đĩa, dẹt, một mặt lồi một mặt lõm. Bề mặt phủ lông tơ bóng mượt màu xám tro.",
-                    },
-                    {
-                      id: "4",
-                      tenDuocLieu: "Bình vôi",
-                      hoCay: "Menispermaceae (Họ Tiết dê)",
-                      nhomChat: "Alkaloid > Isoquinolin > Protoberberin",
-                      thanhPhanHoaHocChinh: "Rotundin (L-tetrahydropalmatin)",
-                      boPhanDung: "Củ",
-                      tacDung:
-                        "Rotundin: An thần, gây ngủ, giảm đau, điều hòa nhịp tim.",
-                      congDung:
-                        "(Y học hiện đại): Mất ngủ, an thần, giảm đau trong các bệnh loét dạ dày, hen. (Y học cổ truyền): An thần, kiện tỳ.",
-                      lieuDung:
-                        "Rotundin: người lớn 0.06-0.12g/ngày. Dược liệu: 3-6g/ngày.",
-                      luuY: "Không dùng cho người mẫn cảm với thành phần của thuốc.",
-                      dacDiemDuocLieu:
-                        "Củ: to, tròn, vỏ ngoài xù xì màu nâu đen, trông giống hòn đá hoặc củ khoai.",
-                    },
-                  ];
-                  this.savePlants();
-                }
-                this.renderAll();
-              });
+                  this.renderAll();
+              } else {
+                  fetch("data.json")
+                      .then((res) => {
+                          if (!res.ok) throw new Error("Cannot load default data");
+                          return res.json();
+                      })
+                      .then((defaultData) => {
+                          this.plants = defaultData;
+                          this.savePlants();
+                          this.renderAll();
+                      })
+                      .catch(() => {
+                          this.plants = []; // Start empty if both localStorage and fetch fail
+                          this.renderAll();
+                      });
+              }
           }
 
           savePlants() {
@@ -1492,19 +1372,17 @@
               JSON.stringify(this.plants)
             );
           }
-          addPlant(data) {
-            this.plants.push({ id: Date.now().toString(), ...data });
-            this.savePlants();
-            this.renderAll();
-            this.showToast("Thêm dược liệu thành công!", "success");
-          }
+
           updatePlant(id, data) {
             this.plants = this.plants.map((p) =>
               p.id === id ? { ...p, ...data } : p
             );
             this.savePlants();
             this.renderAll();
-            this.showPlantDetail(id, false);
+            // We need to re-render the detail view if it's currently shown for this plant
+            if (this.currentView.type === 'detail' && this.currentView.id === id) {
+                 this.showPlantDetail(id, true, this.currentView.backTitle);
+            }
             this.showToast("Cập nhật thành công!", "success");
           }
           deletePlant(id) {
@@ -1515,7 +1393,10 @@
                 this.selectedPlants.delete(id);
                 this.savePlants();
                 this.renderAll();
-                history.back();
+                // If we are in detail view of the deleted plant, go back
+                 if (this.currentView.type === 'detail' && this.currentView.id === id) {
+                     history.back();
+                 }
                 this.showToast("Đã xóa dược liệu.", "success");
               }
             );
@@ -1558,6 +1439,17 @@
               .forEach((summary) => {
                 openGroupsMobile.add(summary.dataset.group);
               });
+              
+            const currentGroupPath = this.currentFilter.group;
+            if (currentGroupPath && currentGroupPath !== 'all') {
+                const pathParts = currentGroupPath.split(' > ');
+                let path = '';
+                for (const part of pathParts) {
+                    path = path ? `${path} > ${part}` : part;
+                    openGroups.add(path);
+                    openGroupsMobile.add(path);
+                }
+            }
 
             const tree = {};
             this.plants.forEach((p) => {
@@ -1616,14 +1508,19 @@
 
             document.querySelectorAll(".group-link").forEach((link) => {
               link.addEventListener("click", (e) => {
-                if (link.tagName.toLowerCase() !== "summary") {
-                  e.preventDefault();
+                const isSummary = link.tagName.toLowerCase() === "summary";
+                const groupName = e.currentTarget.dataset.group === "Tất cả" ? "all" : e.currentTarget.dataset.group;
+
+                if (groupName === this.currentFilter.group) {
+                    return;
                 }
-                const groupName =
-                  e.currentTarget.dataset.group === "Tất cả"
-                    ? "all"
-                    : e.currentTarget.dataset.group;
+
+                e.preventDefault();
                 this.handleGroupFilter(groupName);
+
+                if (this.isMobile()) {
+                    setTimeout(() => this.els.mobileMenu.classList.add("hidden"), 150);
+                }
               });
             });
 
@@ -1632,69 +1529,66 @@
           }
 
           renderPlantList(plants) {
-            if (plants.length === 0) {
-              if (this.currentFilter.search || this.plants.length > 0) {
+            const hasSearch = !!this.currentFilter.search;
+
+            if (plants.length === 0 && (hasSearch || this.plants.length > 0)) {
                 this.els.plantListGrid.innerHTML = `<div class="col-span-full text-center text-[var(--muted-foreground)] py-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả</p><p>Vui lòng thử lại với từ khóa hoặc bộ lọc khác.</p></div>`;
                 this.els.plantListGrid.className = "";
-              }
-              lucide.createIcons();
-              return;
+                lucide.createIcons();
+                return;
             }
+            
+            if (hasSearch) {
+                const rawQuery = this.currentFilter.search;
+                const normalizedQuery = this._normalizeText(rawQuery);
+                const exactMatchesCount = plants.filter(p => (p.tenDuocLieu || '').toLowerCase().includes(rawQuery.toLowerCase())).length;
 
-            const normalizedQuery = this._normalizeText(
-              this.currentFilter.search
-            );
-            const hasSearch = !!normalizedQuery;
-
-            const mapPlantToHTML = (plant) => {
-              const context = hasSearch
-                ? this._findMatchContext(plant, normalizedQuery)
-                : null;
-              return this.createPlantCardHTML(plant, context);
-            };
-
-            const filter = this.currentFilter.group;
-            const filterParts = filter === "all" ? [] : filter.split(" > ");
-            const currentLevel = filterParts.length;
-
-            this.els.plantListGrid.className = "";
-            const groups = {};
-            plants.forEach((p) => {
-              let key = "Các dược liệu khác";
-              if (p.nhomChat) {
-                const relevantPath = (
-                  p.nhomChat
-                    .split(",")
-                    .map((x) => x.trim())
-                    .find((x) => filter === "all" || x.startsWith(filter)) || ""
-                )
-                  .split(">")
-                  .map((y) => y.trim());
-                if (relevantPath.length > currentLevel) {
-                  key = relevantPath[currentLevel];
+                let title = '';
+                if (exactMatchesCount > 0) {
+                    title = `<h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${plants.length} kết quả (tìm thấy ${exactMatchesCount} khớp nhất)</h2>`;
+                } else {
+                    title = `<h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm (${plants.length} kết quả)</h2>`;
                 }
-              }
-              if (!groups[key]) groups[key] = [];
-              groups[key].push(p);
-            });
 
-            this.els.plantListGrid.innerHTML = Object.keys(groups)
-              .sort()
-              .map(
-                (key) => `
-                        <div class="group-container mb-4">
-                            <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${key}</h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                                ${groups[key].map(mapPlantToHTML).join("")}
-                            </div>
-                        </div>`
-              )
-              .join("");
+                this.els.plantListGrid.className = "";
+                this.els.plantListGrid.innerHTML = `
+                    <div class="group-container mb-4">
+                        ${title}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                            ${plants.map(p => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery))).join('')}
+                        </div>
+                    </div>`;
+            
+            } else {
+                const filter = this.currentFilter.group;
+                const filterParts = filter === "all" ? [] : filter.split(" > ");
+                const currentLevel = filterParts.length;
+                this.els.plantListGrid.className = "";
 
+                const groups = {};
+                plants.forEach((p) => {
+                    let key = "Các dược liệu khác";
+                    if (p.nhomChat) {
+                        const relevantPath = (p.nhomChat.split(",").map(x => x.trim()).find(x => filter === "all" || x.startsWith(filter)) || "").split(">").map(y => y.trim());
+                        if (relevantPath.length > currentLevel) {
+                            key = relevantPath[currentLevel];
+                        }
+                    }
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(p);
+                });
+
+                this.els.plantListGrid.innerHTML = Object.keys(groups).sort().map(key => `
+                    <div class="group-container mb-4">
+                        <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${key} (${groups[key].length})</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                            ${groups[key].map(p => this.createPlantCardHTML(p)).join("")}
+                        </div>
+                    </div>`).join("");
+            }
+            
             this.addEventListenersToCards(this.els.plantListGrid);
-            this.els.plantListGrid
-              .querySelectorAll(".animate-on-scroll")
-              .forEach((el) => this.observer.observe(el));
+            this.els.plantListGrid.querySelectorAll(".animate-on-scroll").forEach(el => this.observer.observe(el));
             lucide.createIcons();
           }
 
@@ -1726,69 +1620,43 @@
             this.isTransitioning = false;
           }
 
-          // ✅ Mã đã sửa
-          // ✅ Mã đã sửa
-navigateToDetail(id) {
-    // Nếu đang ở chính trang chi tiết này rồi thì không làm gì cả
-    if (
-      this.currentView.type === "detail" &&
-      this.currentView.id === id
-    )
-      return;
+          navigateToDetail(id) {
+            if (this.currentView.type === "detail" && this.currentView.id === id) {
+              return;
+            }
 
-    let backTitle = "";
+            let backTitle = "";
+            if (this.currentView.type === "detail") {
+              const previousPlant = this.plants.find((p) => p.id === this.currentView.id);
+              backTitle = previousPlant ? previousPlant.tenDuocLieu : this.currentListTitle;
+            } else {
+              backTitle = this.currentListTitle;
+            }
 
-    // KIỂM TRA NGỮ CẢNH TRƯỚC KHI ĐIỀU HƯỚNG
-    if (this.currentView.type === "detail") {
-      // Nếu trang hiện tại LÀ một trang chi tiết khác (ví dụ: cây A)
-      // thì lấy tên của cây đó làm nhãn "back"
-      const previousPlant = this.plants.find(
-        (p) => p.id === this.currentView.id
-      );
-      backTitle = previousPlant
-        ? previousPlant.tenDuocLieu
-        : this.currentListTitle;
-    } else {
-      // Nếu trang hiện tại là trang danh sách hoặc tìm kiếm
-      // thì lấy tiêu đề của danh sách làm nhãn "back"
-      backTitle = this.currentListTitle;
-    }
+            const newState = { view: "detail", id: id, filter: this.currentFilter, backTitle: backTitle };
+            history.pushState(newState, "", `#detail/${id}`);
+            this.handleStateChange(newState);
+          }
 
-    const newState = {
-      view: "detail",
-      id: id,
-      filter: this.currentFilter,
-      backTitle: backTitle, // Sử dụng nhãn đã được xác định ở trên
-    };
-
-    history.pushState(newState, "", `#detail/${id}`);
-    this.handleStateChange(newState);
-}
-          // ✅ Mã đã sửa (Thêm tham số fromTitle)
           navigateToSearch(searchTerm = "", fromTitle = null) {
-    if (this.currentView.type === "search") {
-      if (searchTerm) {
-        this.els.searchViewInput.value = searchTerm;
-        this.renderSearchResults(searchTerm);
-      }
-      return;
-    }
-    // Khi tạo state mới, gán backTitle bằng fromTitle (nếu có) hoặc tiêu đề danh sách hiện tại
-    const newState = {
-      view: "search",
-      filter: this.currentFilter,
-      backTitle: fromTitle || this.currentListTitle,
-    };
-    history.pushState(newState, "", `#search`);
-    this.handleStateChange(newState);
-    if (searchTerm) {
-      this.els.searchViewInput.value = searchTerm;
-      this.renderSearchResults(searchTerm);
-    }
-}
+            if (this.currentView.type === "search") {
+                if (searchTerm) {
+                    this.els.searchViewInput.value = searchTerm;
+                    this.renderSearchResults(searchTerm);
+                }
+                return;
+            }
+            const newState = { view: "search", filter: this.currentFilter, backTitle: fromTitle || this.currentListTitle };
+            history.pushState(newState, "", `#search`);
+            this.handleStateChange(newState);
+            if (searchTerm) {
+                this.els.searchViewInput.value = searchTerm;
+                this.renderSearchResults(searchTerm);
+            }
+          }
 
           showPlantDetail(id, isPoppedState = false, backTitle = "Quay lại") {
-            this.els.mobileHeader.classList.add("hidden");
+            this.els.mobileHeader.classList.add('-translate-y-full');
             const plant = this.plants.find((p) => p.id === id);
             if (!plant) {
               this.showToast("Không tìm thấy dược liệu.", "error");
@@ -1796,278 +1664,98 @@ navigateToDetail(id) {
               return;
             }
 
-            // Get related data
             const currentFilteredList = this.getFilteredPlants();
-            const currentIndex = currentFilteredList.findIndex(
-              (p) => p.id === id
-            );
-            const prevPlant =
-              currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
-            const nextPlant =
-              currentIndex < currentFilteredList.length - 1
-                ? currentFilteredList[currentIndex + 1]
-                : null;
-
-            const relatedFamilyPlants = this.plants.filter(
-              (p) => p.hoCay === plant.hoCay && p.id !== plant.id
-            );
-            const relatedGroupsData = [];
-            const primaryGroupPath = (plant.nhomChat || "")
-              .split(",")[0]
-              .trim();
-
-            if (primaryGroupPath) {
-              const groupParts = primaryGroupPath
-                .split(">")
-                .map((p) => p.trim());
-              let currentPath = "";
-              for (const part of groupParts) {
-                currentPath = currentPath ? `${currentPath} > ${part}` : part;
-                const normalizedCurrentPath = this._normalizeGroup(currentPath);
-                const relatedPlants = this.plants.filter(
-                  (p) =>
-                    p.id !== plant.id &&
-                    p.nhomChat &&
-                    p.nhomChat
-                      .split(",")
-                      .some((g) =>
-                        this._normalizeGroup(g.trim()).startsWith(
-                          normalizedCurrentPath
-                        )
-                      )
-                );
-                if (relatedPlants.length > 0) {
-                  relatedGroupsData.push({
-                    groupName: part,
-                    fullPath: currentPath,
-                    plants: relatedPlants,
-                  });
-                }
-              }
-            }
+            const currentIndex = currentFilteredList.findIndex((p) => p.id === id);
+            const prevPlant = currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
+            const nextPlant = currentIndex < currentFilteredList.length - 1 ? currentFilteredList[currentIndex + 1] : null;
+            const relatedFamilyPlants = this.plants.filter((p) => p.hoCay === plant.hoCay && p.id !== plant.id);
 
             const renderMultilineText = (s) => {
               if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-              const items = s
-                .split(/(?:;|\.\s+|\n)/g)
-                .map((i) => i.trim())
-                .filter(Boolean);
+              const items = s.split(/(?:;|\.\s+|\n)/g).map((i) => i.trim()).filter(Boolean);
               if (items.length <= 1) return `<p>${s}</p>`;
-              return `<ul class="list-disc pl-5 space-y-1">${items
-                .map((i) => `<li>${i.replace(/\.$/, "")}</li>`)
-                .join("")}</ul>`;
-            };
-
-            const renderDacDiem = (s) => {
-              if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-              const parts = s
-                .split(
-                  /(Rễ:|Thân:|Lá:|Hoa:|Quả:|Hạt:|Vỏ:|Củ:|Nụ hoa:|Đài hoa:)/g
-                )
-                .filter((p) => p.trim() !== "");
-              if (parts.length <= 1) return `<p>${s}</p>`;
-
-              let html = '<ul class="list-none space-y-2">';
-              for (let i = 0; i < parts.length; i += 2) {
-                if (parts[i] && parts[i + 1]) {
-                  const keyword = parts[i].trim();
-                  const description = parts[i + 1]
-                    .trim()
-                    .replace(/^(\.|;|,)/, "")
-                    .trim();
-                  html += `<li><span class="font-semibold">${keyword}</span> ${description}</li>`;
-                } else if (parts[i]) {
-                  html += `<li>${parts[i].trim()}</li>`;
-                }
-              }
-              html += "</ul>";
-              return html;
+              return `<ul class="list-disc pl-5 space-y-1">${items.map((i) => `<li>${i.replace(/\.$/, "")}</li>`).join("")}</ul>`;
             };
 
             const renderTacDung = (s) => {
               if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-              return `<ul class="list-disc pl-5 space-y-2">${s
-                .split(";")
-                .map((i) => {
+              return `<ul class="list-disc pl-5 space-y-2">${s.split(";").map((i) => {
                   const p = i.trim().split(":");
-                  return p.length === 2
-                    ? `<li><span class="font-semibold">${p[0].trim()}:</span> ${p[1].trim()}</li>`
-                    : `<li>${i.trim()}</li>`;
-                })
-                .join("")}</ul>`;
-            };
-
-            const renderCongDung = (s) => {
-              if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-              const items = s
-                .split(/(?:;|\.\s*(?=\())/g)
-                .map((i) => i.trim())
-                .filter(Boolean);
-              return `<ul class="list-disc pl-5 space-y-2">${items
-                .map((item) => {
-                  const m = item.match(/^\((.*?)\):\s*(.*)/);
-                  if (m) {
-                    return `<li><span class="font-semibold text-[var(--primary)]">${m[1].trim()}:</span> ${m[2]
-                      .trim()
-                      .replace(/\.$/, "")}</li>`;
-                  }
-                  const m2 = item.match(/^(Khác):\s*(.*)/);
-                  if (m2) {
-                    return `<li><span class="font-semibold text-[var(--primary)]">${m2[1].trim()}:</span> ${m2[2]
-                      .trim()
-                      .replace(/\.$/, "")}</li>`;
-                  }
-                  return `<li>${item}</li>`;
-                })
-                .join("")}</ul>`;
+                  return p.length === 2 ? `<li><span class="font-semibold">${p[0].trim()}:</span> ${p[1].trim()}</li>` : `<li>${i.trim()}</li>`;
+                }).join("")}</ul>`;
             };
 
             this.els.stickyTitle.textContent = plant.tenDuocLieu;
             this.els.stickySubtitle.textContent = plant.hoCay;
 
             this.els.plantDetailView.innerHTML = `
-        <div class="max-w-4xl mx-auto">
-            <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20">
-                <button id="back-to-list-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring w-full">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    <span class="truncate">${backTitle}</span>
-                </button>
-            </div>
-            
-            <button id="back-to-list-desktop" class="hidden md:flex items-center gap-2 mb-4 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
-                <i data-lucide="arrow-left"></i>
-                <span>${backTitle}</span>
-            </button>
+            <div class="max-w-4xl mx-auto">
+                <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20 flex items-center justify-between">
+                    <button id="back-to-list-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring max-w-[calc(100%-60px)]">
+                        <i data-lucide="chevron-left" class="w-5 h-5 flex-shrink-0"></i>
+                        <span class="truncate">${backTitle}</span>
+                    </button>
+                    <button id="detail-home-btn-mobile" title="Trang chủ" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="home"></i></button>
+                </div>
+                
+                <div class="hidden md:flex items-center justify-between mb-4">
+                    <button id="back-to-list-desktop" class="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                        <i data-lucide="arrow-left"></i>
+                        <span>${backTitle}</span>
+                    </button>
+                    <button id="detail-home-btn-desktop" title="Trang chủ" class="p-2 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)] transition-colors custom-ring">
+                         <i data-lucide="home"></i>
+                    </button>
+                </div>
 
-            <div class="detail-section animate-on-scroll">
-                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
-                    <div class="plant-title-block flex flex-col md:flex-row justify-between md:items-start mb-6">
-                        <div>
-                            <h2 class="text-3xl font-bold">${
-                              plant.tenDuocLieu
-                            }</h2>
-                            <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(
-                              plant.hoCay
-                            )}</p>
-                        </div>
-                        <div class="relative mt-4 md:mt-0">
-                            <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
-                            <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
-                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
-                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                <div class="detail-section animate-on-scroll">
+                    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
+                        <div class="plant-title-block flex flex-col md:flex-row justify-between md:items-start mb-6">
+                            <div>
+                                <h2 class="text-3xl font-bold">${plant.tenDuocLieu}</h2>
+                                <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(plant.hoCay)}</p>
+                            </div>
+                            <div class="relative mt-4 md:mt-0">
+                                <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
+                                <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
+                                    <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
+                                    <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="space-y-6">
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div class="flex flex-wrap gap-1">${(
-                          plant.nhomChat || ""
-                        )
-                          .split(",")
-                          .map(
-                            (g) =>
-                              `<span class="inline-block bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 rounded-full text-sm">${g.trim()}</span>`
-                          )
-                          .join("")}</div></div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div>${this._renderClickableItems(
-                          plant.thanhPhanHoaHocChinh
-                        )}</div></div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div>${this._renderClickableItems(
-                          plant.boPhanDung
-                        )}</div></div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Đặc điểm dược liệu</h4>${renderDacDiem(
-                          plant.dacDiemDuocLieu
-                        )}</div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng</h4>${renderTacDung(
-                          plant.tacDung
-                        )}</div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4>${renderCongDung(
-                          plant.congDung
-                        )}</div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Liều dùng</h4>${renderMultilineText(
-                          plant.lieuDung
-                        )}</div>
-                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Lưu ý</h4>${renderMultilineText(
-                          plant.luuY
-                        )}</div>
+                        <div class="space-y-6">
+                            <!-- Các trường thông tin -->
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div>${this._renderClickableItems(plant.nhomChat)}</div></div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div>${this._renderClickableItems(plant.thanhPhanHoaHocChinh)}</div></div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div>${this._renderClickableItems(plant.boPhanDung)}</div></div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Đặc điểm dược liệu</h4>${renderMultilineText(plant.dacDiemDuocLieu)}</div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng</h4>${renderTacDung(plant.tacDung)}</div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4>${renderMultilineText(plant.congDung)}</div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Liều dùng</h4>${renderMultilineText(plant.lieuDung)}</div>
+                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Lưu ý</h4>${renderMultilineText(plant.luuY)}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            ${
-              prevPlant || nextPlant
-                ? `
-            <div class="detail-section mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${
-                      prevPlant
-                        ? `
-                    <a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll">
-                        <p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Cây trước đó</p>
-                        <h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4>
-                    </a>`
-                        : "<div></div>"
-                    }
-                    ${
-                      nextPlant
-                        ? `
-                    <a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll">
-                        <p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Cây tiếp theo <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p>
-                        <h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4>
-                    </a>`
-                        : "<div></div>"
-                    }
-                </div>
-            </div>`
-                : ""
-            }
+                
+                ${ prevPlant || nextPlant ? `
+                <div class="detail-section mt-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${ prevPlant ? `<a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Cây trước đó</p><h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4></a>` : "<div></div>" }
+                        ${ nextPlant ? `<a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Cây tiếp theo <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4></a>` : "<div></div>" }
+                    </div>
+                </div>` : "" }
 
-            ${
-              relatedFamilyPlants.length > 0
-                ? `
-            <div class="detail-section mt-8">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Cây cùng họ</h3>
-                    ${
-                      relatedFamilyPlants.length > 3
-                        ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>`
-                        : ""
-                    }
-                </div>
-                <div id="related-family-plants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    ${relatedFamilyPlants
-                      .slice(0, 3)
-                      .map((p) => this.createPlantCardHTML(p))
-                      .join("")}
-                </div>
-            </div>`
-                : ""
-            }
-
-            ${relatedGroupsData
-              .map(
-                (groupData) => `
-            <div class="detail-section mt-8">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Cây cùng nhóm ${
-                      groupData.groupName
-                    }</h3>
-                    ${
-                      groupData.plants.length > 3
-                        ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${groupData.fullPath}">Xem tất cả (${groupData.plants.length})</button>`
-                        : ""
-                    }
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    ${groupData.plants
-                      .slice(0, 3)
-                      .map((p) => this.createPlantCardHTML(p))
-                      .join("")}
-                </div>
-            </div>`
-              )
-              .join("")}
-        </div>
-    `;
+                ${ relatedFamilyPlants.length > 0 ? `
+                <div class="detail-section mt-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Cây cùng họ</h3>
+                        ${ relatedFamilyPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>` : "" }
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${relatedFamilyPlants.slice(0, 3).map((p) => this.createPlantCardHTML(p)).join("")}
+                    </div>
+                </div>` : "" }
+            </div>`;
 
             this.transitionView(
               this.els.plantListContainer,
@@ -2076,61 +1764,34 @@ navigateToDetail(id) {
 
             this.els.plantDetailView.scrollTop = 0;
             if (this.handleDetailScroll)
-              this.els.plantDetailView.removeEventListener(
-                "scroll",
-                this.handleDetailScroll
-              );
+              this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
+            
             this.handleDetailScroll = this.handleDetailScroll.bind(this);
-            this.els.plantDetailView.addEventListener(
-              "scroll",
-              this.handleDetailScroll
-            );
+            this.els.plantDetailView.addEventListener("scroll", this.handleDetailScroll);
 
             this.setupDetailViewEventListeners(id);
           }
-          setupDetailViewEventListeners(plantId) {
-            const detailContent =
-              this.els.plantDetailView.querySelector(".max-w-4xl");
-            if (!detailContent) return;
 
-            // Lấy thông tin cây thuốc đang xem để sử dụng cho back button thông minh
+          setupDetailViewEventListeners(plantId) {
+            const detailContent = this.els.plantDetailView.querySelector(".max-w-4xl");
+            if (!detailContent) return;
             const plant = this.plants.find((p) => p.id === plantId);
             if (!plant) return;
 
-            // Gán sự kiện cho các nút back
-            detailContent
-              .querySelector("#back-to-list-desktop")
-              ?.addEventListener("click", () => window.history.back());
-            detailContent
-              .querySelector("#back-to-list-mobile")
-              ?.addEventListener("click", () => window.history.back());
-
-            // Gán sự kiện cho menu hành động (sửa/xóa)
-            const actionsBtn = detailContent.querySelector(
-              "#detail-actions-btn"
-            );
-            const actionsMenu = detailContent.querySelector(
-              "#detail-actions-menu"
-            );
+            detailContent.querySelector("#back-to-list-desktop")?.addEventListener("click", () => window.history.back());
+            detailContent.querySelector("#back-to-list-mobile")?.addEventListener("click", () => window.history.back());
+            detailContent.querySelector("#detail-home-btn-desktop")?.addEventListener("click", () => this.goHome());
+            detailContent.querySelector("#detail-home-btn-mobile")?.addEventListener("click", () => this.goHome());
+            
+            const actionsBtn = detailContent.querySelector("#detail-actions-btn");
+            const actionsMenu = detailContent.querySelector("#detail-actions-menu");
             if (actionsBtn && actionsMenu) {
-              actionsBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                actionsMenu.classList.toggle("hidden");
-              });
-              actionsMenu
-                .querySelector('[data-action="edit"]')
-                .addEventListener("click", () => this.openModal(plantId));
-              actionsMenu
-                .querySelector('[data-action="delete"]')
-                .addEventListener("click", () => this.deletePlant(plantId));
-              document.addEventListener(
-                "click",
-                () => actionsMenu.classList.add("hidden"),
-                { once: true }
-              );
+              actionsBtn.addEventListener("click", (e) => { e.stopPropagation(); actionsMenu.classList.toggle("hidden"); });
+              actionsMenu.querySelector('[data-action="edit"]').addEventListener("click", () => this.openModal(plantId));
+              actionsMenu.querySelector('[data-action="delete"]').addEventListener("click", () => this.deletePlant(plantId));
+              document.addEventListener("click", () => actionsMenu.classList.add("hidden"), { once: true });
             }
 
-            // Xử lý sự kiện click cho toàn bộ vùng nội dung chi tiết
             detailContent.addEventListener("click", (e) => {
               const trigger = e.target.closest(".search-trigger");
               if (trigger) {
@@ -2140,13 +1801,9 @@ navigateToDetail(id) {
                   this.navigateToSearch(term, plant.tenDuocLieu);
                 } else {
                   this.currentFilter.group = "all";
-                  this.currentFilter.search = term.toLowerCase();
+                  this.currentFilter.search = term;
                   this.els.searchInput.value = term;
-                  history.pushState(
-                    { view: "list", filter: this.currentFilter },
-                    "",
-                    "#list"
-                  );
+                  history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
                   this.showListView();
                 }
               }
@@ -2160,93 +1817,54 @@ navigateToDetail(id) {
               }
             });
 
-            // --- LOGIC ANIMATION ĐÃ SỬA ---
-
-            // 1. Animate khối thông tin chính
-            const mainDetailSection = detailContent.querySelector(
-              ".detail-section.animate-on-scroll"
-            );
-            if (mainDetailSection) {
-              this.observer.observe(mainDetailSection);
-            }
-
-            // 2. Animate các khối gợi ý (Cùng họ, cùng nhóm, etc.)
-            // Lặp qua từng khối để reset lại index (và do đó là delay) cho mỗi khối
-            const suggestionSections = detailContent.querySelectorAll(
-              ".detail-section:not(.animate-on-scroll)"
-            );
-            suggestionSections.forEach((section) => {
-              // Tìm tất cả các card hoặc link cần animate bên trong khối này
-              const elementsToAnimate =
-                section.querySelectorAll(".animate-on-scroll");
-              elementsToAnimate.forEach((el, index) => {
-                // Áp dụng delay so le chỉ trong phạm vi của khối hiện tại
-                el.style.transitionDelay = `${index * 100}ms`;
+            const allAnimatedElements = detailContent.querySelectorAll(".animate-on-scroll");
+            allAnimatedElements.forEach((el, index) => {
+                el.style.transitionDelay = `${index * 80}ms`;
                 this.observer.observe(el);
-              });
             });
 
             lucide.createIcons();
           }
           _createSearchTrigger(term, isTag = false) {
-            const baseClasses =
-              "search-trigger inline-block cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded";
-            const tagClasses =
-              "bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-sm mr-1 mb-1 hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]";
+            const baseClasses ="search-trigger inline-block cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded";
+            const tagClasses = "bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-sm mr-1 mb-1 hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)]";
             const linkClasses = "text-[var(--primary)] hover:underline";
-            return `<button class="${baseClasses} ${
-              isTag ? tagClasses : linkClasses
-            }" data-search-term="${term.trim()}">${term.trim()}</button>`;
+            return `<button class="${baseClasses} ${ isTag ? tagClasses : linkClasses }" data-search-term="${term.trim()}">${term.trim()}</button>`;
           }
 
           _renderClickableItems(text) {
             if (!text || text.trim() === "") return "Chưa có thông tin";
-            return text
-              .split(/,(?![^\(]*\))/)
-              .map((item) => this._createSearchTrigger(item.trim(), true))
-              .join(" ");
+            return text.split(/,(?![^\(]*\))/).map((item) => this._createSearchTrigger(item.trim(), true)).join(" ");
           }
 
           showListView() {
             this.currentView = { type: "list" };
-            this.els.mobileHeader.classList.remove("hidden");
+            this.els.mobileHeader.classList.remove('-translate-y-full');
             if (this.handleDetailScroll) {
-              this.els.plantDetailView.removeEventListener(
-                "scroll",
-                this.handleDetailScroll
-              );
+              this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
             }
             this.els.stickyHeader.classList.add("-translate-y-full");
 
-            const fromView = this.els.plantDetailView.classList.contains(
-              "hidden"
-            )
-              ? null
-              : this.els.plantDetailView;
+            const fromView = this.els.plantDetailView.classList.contains("hidden") ? null : this.els.plantDetailView;
 
-            this.transitionView(fromView, this.els.plantListContainer, () => {
-              this.renderAll();
-            });
-
+            this.transitionView(fromView, this.els.plantListContainer, () => { this.renderAll(); });
             this.els.plantDetailView.innerHTML = "";
           }
 
           showSearchView(isPopped = false, state = {}) {
             this.currentView = { type: "search" };
-            this.els.mobileHeader.classList.add("hidden");
+            this.els.mobileHeader.classList.add('-translate-y-full');
             this.els.searchView.classList.remove("translate-x-full");
-
-            // Cập nhật nhãn của nút back dựa trên thông tin từ state
-            this.els.searchViewBackLabel.textContent =
-              state.backTitle || "Quay lại";
-
+            this.els.searchViewBackLabel.textContent = state.backTitle || "Quay lại";
             if (!isPopped) {
               this.els.searchViewInput.focus();
             }
           }
 
           hideSearchView(isPopped = false) {
-            this.els.mobileHeader.classList.remove("hidden");
+            if (this.currentView.type === 'list') {
+                this.els.mobileHeader.classList.remove('-translate-y-full');
+            }
             this.els.searchView.classList.add("translate-x-full");
             if (!isPopped) {
               this.els.searchViewInput.value = "";
@@ -2254,49 +1872,53 @@ navigateToDetail(id) {
           }
 
           renderSearchResults(query) {
-            const normalizedQuery = this._normalizeText(query);
-            if (!normalizedQuery) {
-              this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm dược liệu theo tên, họ, ...</p></div>`;
-              lucide.createIcons();
-              return;
-            }
-            const results = this.plants.filter((p) =>
-              Object.values(p).some((val) =>
-                this._normalizeText(val).includes(normalizedQuery)
-              )
-            );
+              const normalizedQuery = this._normalizeText(query);
+              if (!normalizedQuery) {
+                  this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm dược liệu theo tên, họ, ...</p></div>`;
+                  lucide.createIcons();
+                  return;
+              }
+              
+              const originalFilter = { ...this.currentFilter };
+              this.currentFilter.group = 'all';
+              this.currentFilter.search = query;
+              const results = this.getFilteredPlants();
+              this.currentFilter = originalFilter;
 
-            if (results.length > 0) {
-              this.els.searchResultsGrid.innerHTML = results
-                .map((plant) => {
-                  const context = this._findMatchContext(
-                    plant,
-                    normalizedQuery
-                  );
-                  return this.createPlantCardHTML(plant, context);
-                })
-                .join("");
-              this.addEventListenersToCards(this.els.searchResultsGrid, true);
-              this.els.searchResultsGrid
-                .querySelectorAll(".animate-on-scroll")
-                .forEach((el) => this.observer.observe(el));
-            } else {
-              this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
-            }
-            lucide.createIcons();
+              if (results.length > 0) {
+                  const exactMatchesCount = results.filter(p => (p.tenDuocLieu || '').toLowerCase().includes(query.toLowerCase())).length;
+
+                  let titleHtml = '';
+                  if (exactMatchesCount > 0) {
+                      titleHtml = `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatchesCount} kết quả khớp nhất</h2>`;
+                  } else {
+                      titleHtml = `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm</h2>`;
+                  }
+                  
+                  const cardsHtml = results.map((plant) => {
+                      const context = this._findMatchContext(plant, normalizedQuery);
+                      return this.createPlantCardHTML(plant, context);
+                  }).join("");
+
+                  this.els.searchResultsGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${titleHtml}${cardsHtml}</div>`;
+                  this.addEventListenersToCards(this.els.searchResultsGrid, true);
+                  this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll").forEach((el, i) => {
+                      el.style.transitionDelay = `${i * 50}ms`;
+                      this.observer.observe(el)
+                  });
+              } else {
+                  this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
+              }
+              lucide.createIcons();
           }
 
           handleDetailScroll() {
-            const t =
-              this.els.plantDetailView.querySelector(".plant-title-block");
+            const t = this.els.plantDetailView.querySelector(".plant-title-block");
             if (!t) return;
-            this.els.stickyHeader.classList.toggle(
-              "-translate-y-full",
-              this.els.plantDetailView.scrollTop <= t.offsetHeight
-            );
+            this.els.stickyHeader.classList.toggle("-translate-y-full", this.els.plantDetailView.scrollTop <= t.offsetHeight);
           }
           handleSearch(q) {
-            this.currentFilter.search = q.toLowerCase();
+            this.currentFilter.search = q;
             this.renderAll();
           }
           handleGroupFilter(g) {
@@ -2305,17 +1927,17 @@ navigateToDetail(id) {
             this.currentFilter.search = "";
             this.els.searchInput.value = "";
             this.clearSelection();
-            history.pushState(
-              { view: "list", filter: this.currentFilter },
-              "",
-              "#list"
-            );
+            history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
             this.showListView();
-            this.els.mobileMenu.classList.add("hidden");
           }
           handleFormSubmit(e) {
             e.preventDefault();
             const id = this.els.plantIdInput.value;
+            if (!id) {
+                this.showToast("Lỗi: Không tìm thấy ID dược liệu để cập nhật.", "error");
+                this.closeModal();
+                return;
+            }
             const data = {
               tenDuocLieu: this.els.tenDuocLieu.input.value,
               hoCay: this.els.hoCay.input.value,
@@ -2328,72 +1950,58 @@ navigateToDetail(id) {
               luuY: this.els.luuY.input.value,
               dacDiemDuocLieu: this.els.dacDiemDuocLieu.input.value,
             };
-            if (id) {
-              this.updatePlant(id, data);
-            } else {
-              this.addPlant(data);
-            }
+            this.updatePlant(id, data);
             this.closeModal();
           }
           getFilteredPlants() {
-            return this.plants
-              .filter((p) => {
-                const normalizedFilterGroup = this._normalizeGroup(
-                  this._normalizeText(this.currentFilter.group)
-                );
-                const groupMatch =
-                  this.currentFilter.group === "all" ||
-                  (p.nhomChat &&
-                    this._normalizeText(p.nhomChat)
-                      .split(",")
-                      .some((c) =>
-                        this._normalizeGroup(c.trim()).startsWith(
-                          normalizedFilterGroup
-                        )
-                      ));
-                const searchMatch =
-                  !this.currentFilter.search ||
-                  Object.values(p).some((val) =>
-                    this._normalizeText(val).includes(
-                      this._normalizeText(this.currentFilter.search)
-                    )
-                  );
+            const rawQuery = this.currentFilter.search;
+            const normalizedQuery = this._normalizeText(rawQuery);
+            
+            const filtered = this.plants.filter((p) => {
+                const normalizedFilterGroup = this._normalizeGroup(this._normalizeText(this.currentFilter.group));
+                const groupMatch = this.currentFilter.group === "all" || (p.nhomChat && this._normalizeText(p.nhomChat).split(",").some((c) => this._normalizeGroup(c.trim()).startsWith(normalizedFilterGroup)));
+                const searchMatch = !normalizedQuery || Object.values(p).some((val) => this._normalizeText(val).includes(normalizedQuery));
                 return groupMatch && searchMatch;
-              })
-              .sort((a, b) => {
-                const searchQuery = this._normalizeText(
-                  this.currentFilter.search
-                );
-                if (searchQuery && searchQuery.includes("dimer")) {
-                  const aHasDimer = this._normalizeText(a.nhomChat).includes(
-                    "dimer"
-                  );
-                  const bHasDimer = this._normalizeText(b.nhomChat).includes(
-                    "dimer"
-                  );
-                  if (aHasDimer && !bHasDimer) return -1; // a lên trước
-                  if (!aHasDimer && bHasDimer) return 1; // b lên trước
-                }
-                return 0; // Giữ nguyên thứ tự
-              });
+            });
+
+            if (normalizedQuery) {
+                const calculateScore = (plant) => {
+                    let score = 0;
+                    const tenDuocLieu = plant.tenDuocLieu || '';
+                    const tenDuocLieuNorm = this._normalizeText(tenDuocLieu);
+
+                    if (tenDuocLieu.toLowerCase().includes(rawQuery.toLowerCase())) {
+                        score += 100;
+                        if (tenDuocLieu.toLowerCase().startsWith(rawQuery.toLowerCase())) score += 50;
+                    } else if (tenDuocLieuNorm.includes(normalizedQuery)) {
+                        score += 50;
+                        if (tenDuocLieuNorm.startsWith(normalizedQuery)) score += 25;
+                    }
+                    
+                    for (const key in plant) {
+                        if (key !== 'tenDuocLieu' && plant.hasOwnProperty(key)) {
+                            const val = plant[key] || '';
+                            if (this._normalizeText(val).includes(normalizedQuery)) {
+                                score += 1;
+                                break;
+                            }
+                        }
+                    }
+                    return score;
+                };
+                filtered.sort((a, b) => calculateScore(b) - calculateScore(a));
+            }
+            return filtered;
           }
 
           _findMatchContext(plant, normalizedQuery) {
             if (!normalizedQuery) return null;
 
-            const escapeRegExp = (string) =>
-              string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const queryRegex = new RegExp(escapeRegExp(normalizedQuery), "i");
-
-            if (this._normalizeText(plant.tenDuocLieu).match(queryRegex)) {
-              return {
-                query: normalizedQuery,
-                field: "tenDuocLieu",
-                context: null,
-              };
+            if (this._normalizeText(plant.tenDuocLieu).includes(normalizedQuery)) {
+              return { query: normalizedQuery, field: null, context: null };
             }
-            if (this._normalizeText(plant.hoCay).match(queryRegex)) {
-              return { query: normalizedQuery, field: "hoCay", context: null };
+            if (this._normalizeText(plant.hoCay).includes(normalizedQuery)) {
+              return { query: normalizedQuery, field: null, context: null };
             }
 
             const searchableFields = [
@@ -2402,43 +2010,29 @@ navigateToDetail(id) {
               { key: "tacDung", label: "Tác dụng" },
               { key: "congDung", label: "Công dụng" },
               { key: "nhomChat", label: "Nhóm chất" },
-              { key: "lieuDung", label: "Liều dùng" },
-              { key: "luuY", label: "Lưu ý" },
-              { key: "dacDiemDuocLieu", label: "Đặc điểm" },
             ];
 
             for (const { key, label } of searchableFields) {
               const text = plant[key];
               const normalizedText = this._normalizeText(text);
-              if (text && normalizedText.match(queryRegex)) {
-                const matchIndex = normalizedText.search(queryRegex);
+              if (text && normalizedText.includes(normalizedQuery)) {
+                const matchIndex = normalizedText.indexOf(normalizedQuery);
                 const start = Math.max(0, matchIndex - 20);
-                const end = Math.min(
-                  text.length,
-                  matchIndex + normalizedQuery.length + 20
-                );
+                const end = Math.min(text.length, matchIndex + normalizedQuery.length + 20);
                 let snippet = text.substring(start, end);
                 if (start > 0) snippet = "..." + snippet;
                 if (end < text.length) snippet = snippet + "...";
-                return {
-                  query: normalizedQuery,
-                  field: label,
-                  context: snippet,
-                };
+                return { query: normalizedQuery, field: label, context: snippet };
               }
             }
-            return { query: normalizedQuery, field: null, context: null };
+            return null;
           }
 
           _highlightText(text, query) {
             if (!query || !text) return text;
-            const escapeRegExp = (string) =>
-              string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const queryRegex = new RegExp(`(${escapeRegExp(query)})`, "gi");
-            return text.replace(
-              queryRegex,
-              `<mark class="search-highlight">$1</mark>`
-            );
+            const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const queryRegex = new RegExp(`(${escapeRegExp(this.currentFilter.search)})`, "gi");
+            return text.replace(queryRegex, `<mark class="search-highlight">$1</mark>`);
           }
 
           createPlantCardHTML(plant, searchContext = null) {
@@ -2447,78 +2041,40 @@ navigateToDetail(id) {
             let hoCayHTML = plant.hoCay;
             let contextHTML = "";
 
-            if (searchContext && searchContext.query) {
-              tenDuocLieuHTML = this._highlightText(
-                plant.tenDuocLieu,
-                searchContext.query
-              );
-              hoCayHTML = this._highlightText(plant.hoCay, searchContext.query);
-              if (searchContext.context) {
-                const highlightedContext = this._highlightText(
-                  searchContext.context,
-                  searchContext.query
-                );
+            if (this.currentFilter.search) {
+              tenDuocLieuHTML = this._highlightText(plant.tenDuocLieu, this.currentFilter.search);
+              hoCayHTML = this._highlightText(plant.hoCay, this.currentFilter.search);
+              if (searchContext && searchContext.context) {
+                const highlightedContext = this._highlightText(searchContext.context, this.currentFilter.search);
                 contextHTML = `<p class="search-context"><strong>${searchContext.field}:</strong> ${highlightedContext}</p>`;
               }
             }
 
             return `
-                        <div class="plant-card animate-on-scroll ${
-                          isSelected ? "selected" : ""
-                        }" data-id="${plant.id}">
-                            <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col">
-                                <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenDuocLieuHTML}</h3>
-                                <p class="text-sm text-[var(--muted-foreground)] mb-2">${hoCayHTML}</p>
-                                <div class="flex-grow"></div>
-                                ${contextHTML}
-                                <div class="flex flex-wrap gap-1 mt-2">${(
-                                  plant.nhomChat || ""
-                                )
-                                  .split(",")
-                                  .slice(0, 3)
-                                  .map(
-                                    (g) =>
-                                      `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g
-                                        .trim()
-                                        .split(">")
-                                        .pop()}</span>`
-                                  )
-                                  .join("")}</div>
-                            </div>
-                        </div>`;
+            <div class="plant-card animate-on-scroll ${ isSelected ? "selected" : "" }" data-id="${plant.id}">
+                <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col">
+                    <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenDuocLieuHTML}</h3>
+                    <p class="text-sm text-[var(--muted-foreground)] mb-2">${hoCayHTML}</p>
+                    <div class="flex-grow"></div>
+                    ${contextHTML}
+                    <div class="flex flex-wrap gap-1 mt-2">${(plant.nhomChat || "").split(",").slice(0, 3).map((g) =>
+                        `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g.trim().split(">").pop()}</span>`).join("")}
+                    </div>
+                </div>
+            </div>`;
           }
 
           addEventListenersToCards(container, fromSearch = false) {
             container.querySelectorAll(".plant-card").forEach((card) => {
               const id = card.dataset.id;
-              card.addEventListener("mousemove", (e) =>
-                this.handlePointerMove(e)
-              );
-              card.addEventListener(
-                "touchmove",
-                (e) => this.handlePointerMove(e),
-                { passive: true }
-              );
-              card.addEventListener("mousedown", (e) =>
-                this.handlePointerDown(e, id)
-              );
-              card.addEventListener(
-                "touchstart",
-                (e) => this.handlePointerDown(e, id),
-                { passive: true }
-              );
-              card.addEventListener("mouseup", (e) =>
-                this.handlePointerUp(e, id, fromSearch)
-              );
-              card.addEventListener("touchend", (e) =>
-                this.handlePointerUp(e, id, fromSearch)
-              );
-              card.addEventListener("mouseleave", () =>
-                this.handlePointerLeave()
-              );
-              card.addEventListener("touchcancel", () =>
-                this.handlePointerLeave()
-              );
+              card.addEventListener("mousemove", (e) => this.handlePointerMove(e));
+              card.addEventListener("touchmove", (e) => this.handlePointerMove(e), { passive: true });
+              card.addEventListener("mousedown", (e) => this.handlePointerDown(e, id));
+              card.addEventListener("touchstart", (e) => this.handlePointerDown(e, id), { passive: true });
+              card.addEventListener("mouseup", (e) => this.handlePointerUp(e, id, fromSearch));
+              card.addEventListener("touchend", (e) => this.handlePointerUp(e, id, fromSearch));
+              card.addEventListener("mouseleave", () => this.handlePointerLeave());
+              card.addEventListener("touchcancel", () => this.handlePointerLeave());
               card.addEventListener("contextmenu", (e) => {
                 this.handlePointerLeave();
                 this.showContextMenu(e, id);
@@ -2529,32 +2085,23 @@ navigateToDetail(id) {
             if (e.type === "mousedown" && e.button === 2) return;
             this.isDragging = false;
             this.isLongPressing = false;
-            this.pointerStartPos.y =
-              e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
+            this.pointerStartPos.y = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
             this.pressTimer = setTimeout(() => {
               this.isLongPressing = true;
               this.togglePlantSelection(id);
             }, 500);
           }
-          // ✅ Mã đã sửa
           handlePointerUp(e, id, fromSearch = false) {
-            if (e.type === "touchend") {
-              e.preventDefault();
-            }
             clearTimeout(this.pressTimer);
             if (this.isDragging) {
               this.isDragging = false;
               return;
             }
 
-            if (this.isLongPressing) {
-              if (e.cancelable) e.preventDefault();
-            } else {
+            if (!this.isLongPressing) {
               if (this.selectedPlants.size > 0 && !fromSearch) {
-                // Chỉ toggle select ở màn hình chính
                 this.togglePlantSelection(id);
               } else {
-                // Luôn điều hướng tới trang chi tiết như một hành động mới
                 this.navigateToDetail(id);
               }
             }
@@ -2562,8 +2109,7 @@ navigateToDetail(id) {
           }
           handlePointerMove(e) {
             if (this.pressTimer) {
-              const curY =
-                e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+              const curY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
               if (Math.abs(curY - this.pointerStartPos.y) > 10) {
                 this.isDragging = true;
                 clearTimeout(this.pressTimer);
@@ -2588,24 +2134,23 @@ navigateToDetail(id) {
           updateUIState() {
             const hasPlants = this.plants.length > 0;
             this.els.welcomeScreen.classList.toggle("hidden", hasPlants);
-            const isListView =
-              !this.els.plantListContainer.classList.contains("hidden");
-            this.els.plantListGrid.classList.toggle(
-              "hidden",
-              !hasPlants || !isListView
-            );
+            const isListView = !this.els.plantListContainer.classList.contains("hidden");
+            this.els.plantListGrid.classList.toggle("hidden", !hasPlants && isListView);
+            this.els.plantCount.textContent = `Hiện có ${this.plants.length} dược liệu trong từ điển.`
           }
           openModal(id = null) {
+             if (!id) {
+                this.showToast("Không thể mở form, thiếu ID dược liệu.", "error");
+                return;
+            }
             this.els.plantForm.reset();
-            if (id) {
-              const p = this.plants.find((p) => p.id === id);
-              if (p) {
+            const p = this.plants.find((p) => p.id === id);
+            if (p) {
                 this.els.modalTitle.textContent = "Chỉnh sửa Dược liệu";
                 this.els.tenDuocLieu.input.value = p.tenDuocLieu || "";
                 this.els.hoCay.input.value = p.hoCay || "";
                 this.els.nhomChat.input.value = p.nhomChat || "";
-                this.els.thanhPhanHoaHocChinh.input.value =
-                  p.thanhPhanHoaHocChinh || "";
+                this.els.thanhPhanHoaHocChinh.input.value = p.thanhPhanHoaHocChinh || "";
                 this.els.boPhanDung.input.value = p.boPhanDung || "";
                 this.els.tacDung.input.value = p.tacDung || "";
                 this.els.congDung.input.value = p.congDung || "";
@@ -2613,12 +2158,10 @@ navigateToDetail(id) {
                 this.els.luuY.input.value = p.luuY || "";
                 this.els.dacDiemDuocLieu.input.value = p.dacDiemDuocLieu || "";
                 this.els.plantIdInput.value = p.id;
-              }
+                 this.els.plantModal.showModal();
             } else {
-              this.els.modalTitle.textContent = "Thêm Dược liệu mới";
-              this.els.plantIdInput.value = "";
+                this.showToast(`Không tìm thấy dược liệu với ID: ${id}`, "error");
             }
-            this.els.plantModal.showModal();
           }
           closeModal() {
             this.hideAutocomplete();
@@ -2626,21 +2169,15 @@ navigateToDetail(id) {
           }
           highlightActiveGroup() {
             document.querySelectorAll(".group-link").forEach((link) => {
-              const groupName =
-                link.dataset.group === "Tất cả" ? "all" : link.dataset.group;
+              const groupName = link.dataset.group === "Tất cả" ? "all" : link.dataset.group;
               const isActive = groupName === this.currentFilter.group;
               link.classList.toggle("bg-[var(--primary)]", isActive);
-              link.classList.toggle(
-                "text-[var(--primary-foreground)]",
-                isActive
-              );
+              link.classList.toggle("text-[var(--primary-foreground)]", isActive);
             });
           }
           clearSelection() {
             this.selectedPlants.clear();
-            document
-              .querySelectorAll(".plant-card.selected")
-              .forEach((c) => c.classList.remove("selected"));
+            document.querySelectorAll(".plant-card.selected").forEach((c) => c.classList.remove("selected"));
             this.updateSelectionToolbar();
           }
           updateSelectionToolbar() {
@@ -2652,11 +2189,7 @@ navigateToDetail(id) {
             e.preventDefault();
             this.hideContextMenu();
             const isSel = this.selectedPlants.has(id);
-            this.els.contextMenu.innerHTML = `<button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="select" data-id="${id}"><i data-lucide="${
-              isSel ? "check-square" : "square"
-            }" class="w-4 h-4"></i><span>${
-              isSel ? "Bỏ chọn" : "Chọn"
-            }</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="edit" data-id="${id}"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete" data-id="${id}"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>`;
+            this.els.contextMenu.innerHTML = `<button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="select" data-id="${id}"><i data-lucide="${ isSel ? "check-square" : "square" }" class="w-4 h-4"></i><span>${ isSel ? "Bỏ chọn" : "Chọn" }</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="edit" data-id="${id}"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete" data-id="${id}"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>`;
             lucide.createIcons();
             this.els.contextMenu.style.top = `${e.pageY}px`;
             this.els.contextMenu.style.left = `${e.pageX}px`;
@@ -2681,43 +2214,24 @@ navigateToDetail(id) {
           setTheme(t) {
             localStorage.setItem("theme", t);
             document.documentElement.classList.toggle("dark", t === "dark");
-            document
-              .querySelectorAll(".light-icon")
-              .forEach((i) => i.classList.toggle("hidden", t === "dark"));
-            document
-              .querySelectorAll(".dark-icon")
-              .forEach((i) => i.classList.toggle("hidden", t !== "dark"));
+            document.querySelectorAll(".light-icon").forEach((i) => i.classList.toggle("hidden", t === "dark"));
+            document.querySelectorAll(".dark-icon").forEach((i) => i.classList.toggle("hidden", t !== "dark"));
           }
           toggleTheme() {
-            this.setTheme(
-              localStorage.getItem("theme") === "dark" ? "light" : "dark"
-            );
+            this.setTheme(localStorage.getItem("theme") === "dark" ? "light" : "dark");
           }
           updateSidebarToggleButton(isCollapsed) {
             const tip = this.els.sidebarToggle.querySelector(".tooltip-text");
-            if (tip) {
-              tip.textContent = isCollapsed ? "Mở rộng" : "Thu gọn";
-            }
+            if (tip) tip.textContent = isCollapsed ? "Mở rộng" : "Thu gọn";
             this.els.sidebarTopActions.classList.toggle("hidden", isCollapsed);
-            this.els.sidebarTopActionsCollapsed.classList.toggle(
-              "hidden",
-              !isCollapsed
-            );
-            this.els.sidebarBottomActions.classList.toggle(
-              "hidden",
-              isCollapsed
-            );
-            this.els.sidebarBottomActionsCollapsed.classList.toggle(
-              "hidden",
-              !isCollapsed
-            );
+            this.els.sidebarTopActionsCollapsed.classList.toggle("hidden", !isCollapsed);
+            this.els.sidebarBottomActions.classList.toggle("hidden", isCollapsed);
+            this.els.sidebarBottomActionsCollapsed.classList.toggle("hidden", !isCollapsed);
             lucide.createIcons();
           }
           initSidebarState() {
             const c = localStorage.getItem("sidebarState") === "collapsed";
-            if (c) {
-              this.els.sidebar.classList.add("collapsed");
-            }
+            this.els.sidebar.classList.toggle("collapsed", c);
             this.updateSidebarToggleButton(c);
           }
           toggleSidebar() {
@@ -2725,53 +2239,42 @@ navigateToDetail(id) {
             localStorage.setItem("sidebarState", c ? "collapsed" : "expanded");
             this.updateSidebarToggleButton(c);
           }
+          goHome() {
+            if (this.currentView.type === 'list' && this.currentFilter.group === 'all' && this.currentFilter.search === '') {
+                return;
+            }
+            this.currentFilter = { group: "all", search: "" };
+            this.els.searchInput.value = "";
+            this.clearSelection();
+            const newState = { view: "list", filter: this.currentFilter };
+            history.pushState(newState, "", "#list");
+            this.handleStateChange(newState);
+          }
           getDynamicSuggestions(field) {
             const s = new Set();
             this.plants.forEach((p) => {
-              if (p[field]) {
-                p[field].split(/,|>/).forEach((i) => {
-                  const t = i.trim();
-                  if (t) s.add(t);
-                });
-              }
+              if (p[field]) p[field].split(/,|>/).forEach((i) => { const t = i.trim(); if (t) s.add(t); });
             });
             return Array.from(s).sort();
           }
           renderAutocompleteList(key, data, filter, options) {
             const { list } = this.els[key];
             const normFilter = this._normalizeText(filter);
+            if (!normFilter) { this.hideAutocomplete(); return; }
+            
             let filtered;
-            if (!normFilter) {
-              this.hideAutocomplete();
-              return;
-            }
             if (options.type === "family") {
-              filtered = data.filter(
-                (i) =>
-                  this._normalizeText(i.s).includes(normFilter) ||
-                  this._normalizeText(i.v).includes(normFilter)
-              );
+              filtered = data.filter((i) => this._normalizeText(i.s).includes(normFilter) || this._normalizeText(i.v).includes(normFilter));
             } else {
-              filtered = data.filter((i) =>
-                this._normalizeText(i).includes(normFilter)
-              );
+              filtered = data.filter((i) => this._normalizeText(i).includes(normFilter));
             }
+
             if (filtered.length > 0) {
-              if (options.type === "family") {
-                list.innerHTML = filtered
-                  .map(
-                    (i) =>
-                      `<div class="autocomplete-item px-3 py-2 cursor-pointer hover:bg-[var(--accent)]" data-value="${i.s} (${i.v})"><span class="font-medium">${i.s}</span><span class="text-[var(--muted-foreground)]">- ${i.v}</span></div>`
-                  )
-                  .join("");
-              } else {
-                list.innerHTML = filtered
-                  .map(
-                    (i) =>
-                      `<div class="autocomplete-item px-3 py-2 cursor-pointer hover:bg-[var(--accent)]" data-value="${i}">${i}</div>`
-                  )
-                  .join("");
-              }
+              list.innerHTML = filtered.map((i) => {
+                  const value = options.type === 'family' ? `${i.s} (${i.v})` : i;
+                  const display = options.type === 'family' ? `<span class="font-medium">${i.s}</span><span class="text-[var(--muted-foreground)]">- ${i.v}</span>` : i;
+                  return `<div class="autocomplete-item px-3 py-2 cursor-pointer hover:bg-[var(--accent)]" data-value="${value}">${display}</div>`;
+              }).join('');
               list.classList.remove("hidden");
               this.activeAutocomplete = key;
             } else {
@@ -2796,23 +2299,15 @@ navigateToDetail(id) {
             const { input, list } = this.els[key];
             if (!input || !list) return;
             const render = () => {
-              const suggestions =
-                typeof dataProvider === "function"
-                  ? dataProvider()
-                  : dataProvider;
-              const filter = input.value
-                .split(/,|>|\s+/)
-                .pop()
-                .trim();
+              const suggestions = typeof dataProvider === "function" ? dataProvider() : dataProvider;
+              const filter = input.value.split(/,|>|\s+/).pop().trim();
               this.renderAutocompleteList(key, suggestions, filter, options);
             };
             input.addEventListener("focus", render);
             input.addEventListener("input", render);
             list.addEventListener("mousedown", (e) => {
               const item = e.target.closest(".autocomplete-item");
-              if (item) {
-                this.selectAutocompleteItem(key, item.dataset.value, options);
-              }
+              if (item) this.selectAutocompleteItem(key, item.dataset.value, options);
             });
           }
           hideAutocomplete() {
@@ -2824,48 +2319,23 @@ navigateToDetail(id) {
           showToast(message, type = "success") {
             const t = document.createElement("div");
             t.className = `toast ${type}`;
-            t.innerHTML = `<i data-lucide="${
-              type === "success" ? "check-circle" : "alert-circle"
-            }" class="w-6 h-6 mr-3"></i><span>${message}</span>`;
+            t.innerHTML = `<i data-lucide="${ type === "success" ? "check-circle" : "alert-circle" }" class="w-6 h-6 mr-3"></i><span>${message}</span>`;
             this.els.toastContainer.appendChild(t);
             lucide.createIcons();
-            setTimeout(() => {
-              t.remove();
-            }, 4000);
+            setTimeout(() => { t.remove(); }, 4000);
           }
           showConfirm(message, onConfirm, onCancel = () => {}) {
             this.els.confirmMessage.textContent = message;
             this.els.confirmModal.showModal();
-
             const newProceedBtn = this.els.confirmProceed.cloneNode(true);
-            this.els.confirmProceed.parentNode.replaceChild(
-              newProceedBtn,
-              this.els.confirmProceed
-            );
+            this.els.confirmProceed.parentNode.replaceChild(newProceedBtn, this.els.confirmProceed);
             this.els.confirmProceed = newProceedBtn;
-
             const newCancelBtn = this.els.confirmCancel.cloneNode(true);
-            this.els.confirmCancel.parentNode.replaceChild(
-              newCancelBtn,
-              this.els.confirmCancel
-            );
+            this.els.confirmCancel.parentNode.replaceChild(newCancelBtn, this.els.confirmCancel);
             this.els.confirmCancel = newCancelBtn;
 
-            const proceedHandler = () => {
-              onConfirm();
-              this.els.confirmModal.close();
-            };
-            const cancelHandler = () => {
-              onCancel();
-              this.els.confirmModal.close();
-            };
-
-            this.els.confirmProceed.addEventListener("click", proceedHandler, {
-              once: true,
-            });
-            this.els.confirmCancel.addEventListener("click", cancelHandler, {
-              once: true,
-            });
+            this.els.confirmProceed.addEventListener("click", () => { onConfirm(); this.els.confirmModal.close(); }, { once: true });
+            this.els.confirmCancel.addEventListener("click", () => { onCancel(); this.els.confirmModal.close(); }, { once: true });
           }
           importData() {
             const input = document.createElement("input");
@@ -2893,50 +2363,35 @@ navigateToDetail(id) {
             this.els.importInfo.textContent = `Tệp chứa ${data.length} dược liệu. Vui lòng chọn cách nhập.`;
             this.els.importOptionsModal.showModal();
             this.els.importOverwriteBtn.onclick = () => {
-              this.plants = data;
+              this.plants = data.map((p, i) => ({ ...p, id: p.id || (Date.now() + i).toString() }));
               this.clearSelection();
               this.savePlants();
               this.renderAll();
-              this.showListView();
-              this.showToast(
-                `Đã ghi đè và nhập ${data.length} dược liệu.`,
-                "success"
-              );
+              this.goHome();
+              this.showToast(`Đã ghi đè và nhập ${data.length} dược liệu.`, "success");
               this.els.importOptionsModal.close();
             };
             this.els.importMergeBtn.onclick = () => {
-              const existing = new Set(
-                this.plants.map((p) => p.tenDuocLieu.toLowerCase().trim())
-              );
+              const existing = new Set(this.plants.map((p) => (p.tenDuocLieu || '').toLowerCase().trim()));
               let added = 0;
               let newId = Date.now();
               data.forEach((p) => {
-                if (
-                  !p.tenDuocLieu ||
-                  !existing.has(p.tenDuocLieu.toLowerCase().trim())
-                ) {
-                  this.plants.push({ ...p, id: (newId++).toString() });
+                if (p.tenDuocLieu && !existing.has(p.tenDuocLieu.toLowerCase().trim())) {
+                  this.plants.push({ ...p, id: p.id || (newId++).toString() });
                   added++;
                 }
               });
               if (added > 0) {
                 this.savePlants();
                 this.renderAll();
-                this.showListView();
-                this.showToast(
-                  `Đã hợp nhất và thêm mới ${added} dược liệu.`,
-                  "success"
-                );
+                this.goHome();
+                this.showToast(`Đã hợp nhất và thêm mới ${added} dược liệu.`, "success");
               } else {
-                this.showToast(
-                  "Không có dược liệu mới nào để thêm.",
-                  "success"
-                );
+                this.showToast("Không có dược liệu mới nào để thêm.", "success");
               }
               this.els.importOptionsModal.close();
             };
-            this.els.importCancelBtn.onclick = () =>
-              this.els.importOptionsModal.close();
+            this.els.importCancelBtn.onclick = () => this.els.importOptionsModal.close();
           }
           exportData() {
             if (this.plants.length === 0) {
@@ -2948,9 +2403,7 @@ navigateToDetail(id) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `duoclieu_data_${new Date()
-              .toISOString()
-              .slice(0, 10)}.json`;
+            a.download = `duoclieu_data_${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
             this.els.mobileMenu.classList.add("hidden");
