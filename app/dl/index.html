@@ -1162,27 +1162,39 @@
                         if (!this.els.aboutView.classList.contains("hidden")) return this.els.aboutView;
                         return null;
                     }
+                    // THAY THẾ TOÀN BỘ HÀM loadPlants() CŨ BẰNG HÀM NÀY
+
                     loadPlants() {
-                        const data = localStorage.getItem("medicinalPlants");
-                        if (data) {
-                            this.plants = JSON.parse(data);
-                            this.renderAll();
-                        } else {
-                            fetch("data.json")
-                                .then((res) => {
-                                    if (!res.ok) throw new Error("Cannot load default data");
-                                    return res.json();
-                                })
-                                .then((defaultData) => {
-                                    this.plants = defaultData;
-                                    this.savePlants();
-                                    this.renderAll();
-                                })
-                                .catch(() => {
-                                    this.plants = []; // Start empty if both localStorage and fetch fail
-                                    this.renderAll();
-                                });
-                        }
+                        // Luôn luôn fetch (tải) dữ liệu từ file data.json mỗi khi ứng dụng khởi động.
+                        fetch("data.json")
+                            .then((res) => {
+                                if (!res.ok) throw new Error("Không thể tải dữ liệu mặc định");
+                                return res.json();
+                            })
+                            .then((defaultData) => {
+                                // Gán dữ liệu từ file vào ứng dụng.
+                                this.plants = defaultData;
+
+                                // Dòng này vẫn cần thiết để nếu bạn có chỉnh sửa, localStorage sẽ được cập nhật,
+                                // nhưng nó sẽ bị ghi đè lại ở lần tải trang tiếp theo.
+                                this.savePlants();
+                                this.renderAll();
+                            })
+                            .catch((error) => {
+                                // Xử lý trường hợp không tải được file data.json (ví dụ: file bị xóa, lỗi mạng)
+                                console.error("Lỗi khi tải data.json:", error);
+                                this.showToast("Không thể tải dữ liệu từ server.", "error");
+
+                                // Như một phương án dự phòng, ta có thể thử tải từ localStorage
+                                // hoặc bắt đầu với một mảng rỗng.
+                                const data = localStorage.getItem("medicinalPlants");
+                                if (data) {
+                                    this.plants = JSON.parse(data);
+                                } else {
+                                    this.plants = [];
+                                }
+                                this.renderAll();
+                            });
                     }
 
                     savePlants() {
