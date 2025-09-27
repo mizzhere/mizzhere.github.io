@@ -107,8 +107,9 @@
             #mobile-header {
                 position: sticky;
                 top: 0;
-                z-index: 25; /* Thấp hơn sticky-header */
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 25;
+                max-height: 100px; /* Chiều cao tối đa lớn hơn chiều cao thực tế */
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .plant-card {
@@ -294,6 +295,7 @@
                 border-top: 1px dashed var(--border);
                 -webkit-box-orient: vertical;
                 -webkit-line-clamp: 2;
+                line-clamp: 2;
                 overflow: hidden;
                 display: -webkit-box;
             }
@@ -326,6 +328,62 @@
             #search-view-back-label {
                 display: none;
             }
+            /* DÁN VÀO CUỐI THẺ STYLE */
+            .ghost-text-container {
+                display: grid;
+                grid-template-areas: "content";
+            }
+            .ghost-text-container > * {
+                grid-area: content;
+                font: inherit;
+                letter-spacing: inherit;
+                color: inherit;
+                background-color: transparent;
+                padding: inherit;
+                border: none;
+            }
+            #search-ghost-text,
+            #search-view-ghost-text {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .autocomplete-item.active {
+                background-color: var(--accent);
+            }
+            #search-ghost-text,
+            #search-view-ghost-text {
+                opacity: 0.7; /* Độ mờ mặc định cho giao diện sáng */
+            }
+
+            html.dark #search-ghost-text,
+            html.dark #search-view-ghost-text {
+                opacity: 0.4; /* Độ mờ hơn cho giao diện tối */
+            }
+            .header-hidden {
+                max-height: 0 !important;
+                opacity: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                overflow: hidden;
+                border-bottom-width: 0px !important;
+            }
+            #mobile-menu-button {
+                position: relative; /* Bắt buộc phải có để z-index hoạt động */
+                z-index: 41; /* Cao hơn z-index: 40 của lớp phủ mờ */
+            }
+            /* Dán vào cuối thẻ style */
+            @keyframes flash-animation {
+                0% {
+                    background-color: rgba(59, 130, 246, 0.3);
+                } /* Màu xanh dương nhạt */
+                100% {
+                    background-color: transparent;
+                }
+            }
+            .flash-highlight {
+                animation: flash-animation 3s ease-out;
+                border-radius: 8px;
+            }
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -339,13 +397,18 @@
                 </div>
                 <div id="sidebar-top-actions" class="flex items-center gap-2 mb-4 px-1">
                     <div class="relative flex-grow">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
-                        <input
-                            type="text"
-                            id="search-input"
-                            placeholder="Tìm kiếm..."
-                            class="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all"
-                        />
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none z-10"></i>
+                        <div class="relative w-full">
+                            <input
+                                type="text"
+                                id="search-input"
+                                placeholder="Tìm kiếm..."
+                                class="relative w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-transparent focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all z-10"
+                                autocomplete="off"
+                            />
+                            <div id="search-ghost-text" class="absolute inset-y-0 left-10 right-4 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"></div>
+                        </div>
+                        <div id="search-autocomplete-list" class="absolute top-full mt-2 w-full bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg z-20 hidden"></div>
                     </div>
                 </div>
                 <div id="sidebar-top-actions-collapsed" class="hidden flex-col items-center gap-2 mb-4">
@@ -373,6 +436,12 @@
                                 Giao diện
                             </span>
                         </button>
+                        <button data-action="show-about" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                            <i data-lucide="user-circle-2" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+                            <span class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                Giới thiệu
+                            </span>
+                        </button>
                         <button id="sidebar-toggle" class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
                             <i data-lucide="chevrons-left" class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"></i>
                             <span class="tooltip-text absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
@@ -391,6 +460,9 @@
                             <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i>
                             <span class="text-sm font-medium sidebar-text">Giao diện</span>
                         </button>
+                        <button data-action="show-about" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                            <i data-lucide="user-circle-2" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium sidebar-text">Giới thiệu</span>
+                        </button>
                         <button id="sidebar-toggle-collapsed" class="sidebar-item w-full flex items-center justify-start gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
                             <i data-lucide="chevrons-right" class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"></i><span class="text-sm font-medium sidebar-text">Mở rộng</span>
                         </button>
@@ -400,19 +472,21 @@
 
             <!-- Main Content -->
             <main class="flex-1 flex flex-col relative overflow-hidden">
-                <header id="mobile-header" class="flex md:hidden items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)] transition-transform duration-300 ease-in-out">
+                <header id="mobile-header" class="flex md:hidden items-center justify-between p-2 border-b border-[var(--border)] bg-[var(--card)]">
                     <div class="flex items-center gap-2">
-                        <i data-lucide="sprout" class="text-[var(--primary)]"></i>
-                        <h1 class="text-xl font-bold">Dược liệu</h1>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="mobile-search-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring">
-                            <i data-lucide="search"></i>
-                        </button>
                         <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring">
-                            <i data-lucide="menu"></i>
+                            <i data-lucide="menu" class="menu-icon"></i>
+                            <i data-lucide="x" class="close-icon hidden"></i>
                         </button>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sprout" class="text-[var(--primary)]"></i>
+                            <h1 class="text-xl font-bold">Dược liệu</h1>
+                        </div>
                     </div>
+
+                    <button id="mobile-search-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring">
+                        <i data-lucide="search"></i>
+                    </button>
                 </header>
                 <div
                     id="sticky-header"
@@ -464,6 +538,44 @@
                         <i data-lucide="check" class="w-5 h-5"></i>
                     </button>
                 </div>
+                <div id="about-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20 flex items-center justify-between">
+                            <button id="back-from-about-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring">
+                                <i data-lucide="chevron-left" class="w-5 h-5 flex-shrink-0"></i>
+                                <span class="truncate">Quay lại</span>
+                            </button>
+                        </div>
+
+                        <div class="hidden md:flex items-center mb-4">
+                            <button id="back-from-about-desktop" class="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                                <i data-lucide="arrow-left"></i>
+                                <span>Quay lại</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8 text-center animate-on-scroll">
+                            <h2 class="text-3xl font-bold">Nguyễn Ngọc Tiệp</h2>
+                            <p class="text-lg text-[var(--muted-foreground)] mt-1">@eu_2iw</p>
+                            <p class="max-w-2xl mx-auto mt-4 text-base">
+                                Liên hệ Zalo để được hỗ trợ thêm về ứng dụng hoặc đóng góp ý kiến.
+                            </p>
+
+                            <div class="mt-8 flex justify-center items-center gap-4">
+                                <a href="https://zalo.me/0867832917" target="_blank" class="p-3 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring" title="GitHub">
+                                    <i data-lucide="phone" class="w-6 h-6"></i>
+                                </a>
+                                <a href="https://www.instagram.com/eu_2iw/" target="_blank" class="p-3 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring" title="Facebook">
+                                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <footer class="text-center mt-8 text-sm text-[var(--muted-foreground)]">
+                            <p>Từ điển Dược liệu Thông minh &copy; 2025</p>
+                        </footer>
+                    </div>
+                </div>
             </main>
         </div>
 
@@ -475,8 +587,11 @@
                     <span id="search-view-back-label" class="truncate">Quay lại</span>
                 </button>
                 <div class="relative flex-grow">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none"></i>
-                    <input type="text" id="search-view-input" placeholder="Tìm kiếm dược liệu..." class="w-full pl-10 pr-4 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none" />
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] pointer-events-none z-10"></i>
+                    <div class="relative w-full">
+                        <input type="text" id="search-view-input" placeholder="Tìm kiếm dược liệu..." class="relative w-full pl-10 pr-4 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none z-10" autocomplete="off" />
+                        <div id="search-view-ghost-text" class="absolute inset-y-0 left-10 right-4 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"></div>
+                    </div>
                 </div>
             </header>
             <div id="search-results-container" class="flex-1 overflow-y-auto p-4">
@@ -487,15 +602,7 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="fixed inset-0 bg-black/40 z-40 hidden">
             <aside class="absolute inset-y-0 left-0 w-72 bg-[var(--card)] p-4 flex flex-col">
-                <div class="flex items-center justify-between gap-2 mb-6">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="sprout" class="text-[var(--primary)]"></i>
-                        <h1 class="text-xl font-bold">Dược liệu</h1>
-                    </div>
-                    <button id="close-mobile-menu" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring">
-                        <i data-lucide="x"></i>
-                    </button>
-                </div>
+                <div class="flex items-center justify-between gap-2 mb-6"></div>
                 <h2 class="text-sm font-semibold text-[var(--muted-foreground)] mb-2 px-2">
                     NHÓM CHẤT
                 </h2>
@@ -510,6 +617,9 @@
                     <button id="theme-toggle-mobile" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
                         <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i>
                         <span class="text-sm font-medium">Giao diện</span>
+                    </button>
+                    <button data-action="show-about" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring">
+                        <i data-lucide="user-circle-2" class="w-5 h-5 text-[var(--muted-foreground)]"></i><span class="text-sm font-medium">Giới thiệu</span>
                     </button>
                 </div>
             </aside>
@@ -656,8 +766,6 @@
                         this.lastScrollY = 0;
                         this.activeAutocomplete = null;
                         this.selectedPlants = new Set();
-                        this.pressTimer = null;
-                        this.isLongPressing = false;
                         this.isDragging = false;
                         this.pointerStartPos = { x: 0, y: 0 };
                         this.isTransitioning = false;
@@ -665,6 +773,8 @@
                         this.currentView = { type: "list" };
                         this.isDetailEditing = false;
                         this.currentListTitle = "Tất cả Dược liệu";
+                        this.postRenderAction = null;
+
                         this.initDataLists();
                         this.initDOMElements();
                         this.initIntersectionObserver();
@@ -673,8 +783,21 @@
                         this.initEventListeners();
                         this.initTheme();
                         this.initSidebarState();
+                        history.scrollRestoration = "manual";
+                    }
+                    openMenu() {
+                        this.els.mobileMenu.classList.remove("hidden");
+                        setTimeout(() => this.els.mobileMenu.classList.add("is-open"), 10);
+                        this.els.mobileMenuButton.querySelector(".menu-icon").classList.add("hidden");
+                        this.els.mobileMenuButton.querySelector(".close-icon").classList.remove("hidden");
                     }
 
+                    closeMenu() {
+                        this.els.mobileMenu.classList.remove("is-open");
+                        setTimeout(() => this.els.mobileMenu.classList.add("hidden"), 300);
+                        this.els.mobileMenuButton.querySelector(".menu-icon").classList.remove("hidden");
+                        this.els.mobileMenuButton.querySelector(".close-icon").classList.add("hidden");
+                    }
                     _normalizeText(str) {
                         if (!str) return "";
                         return str
@@ -801,7 +924,6 @@
                             mobileHeader: document.getElementById("mobile-header"),
                             mobileMenuButton: document.getElementById("mobile-menu-button"),
                             mobileMenu: document.getElementById("mobile-menu"),
-                            closeMobileMenu: document.getElementById("close-mobile-menu"),
                             stickyHeader: document.getElementById("sticky-header"),
                             stickyTitle: document.getElementById("sticky-title"),
                             stickySubtitle: document.getElementById("sticky-subtitle"),
@@ -868,6 +990,10 @@
                             searchViewBackButton: document.getElementById("search-view-back-button"),
                             searchViewInput: document.getElementById("search-view-input"),
                             searchResultsGrid: document.getElementById("search-results-grid"),
+                            searchGhostText: document.getElementById("search-ghost-text"),
+                            searchAutocompleteList: document.getElementById("search-autocomplete-list"),
+                            searchViewGhostText: document.getElementById("search-view-ghost-text"),
+                            aboutView: document.getElementById("about-view"),
                         };
                     }
 
@@ -890,22 +1016,37 @@
                             case "detail":
                                 this.hideSearchView(true);
                                 const backTitle = state.backTitle || "Quay lại";
-                                this.showPlantDetail(state.id, true, backTitle);
+                                this.showPlantDetail(state.id, true, backTitle, true);
                                 break;
                             case "search":
                                 this.showSearchView(true, state);
+                                break;
+                            case "about":
+                                this.hideSearchView(true);
+                                this.showAboutView(state);
                                 break;
                             case "list":
                             default:
                                 this.currentFilter = state.filter;
                                 this.hideSearchView(true);
-                                this.showListView();
+                                this.showListView(true);
                                 break;
                         }
                     }
                     initEventListeners() {
                         [this.els.sidebarToggle, this.els.sidebarToggleCollapsed].forEach((btn) => btn.addEventListener("click", () => this.toggleSidebar()));
-                        this.els.searchInput.addEventListener("input", (e) => this.handleSearch(e.target.value));
+                        this.els.searchInput.addEventListener("input", (e) => {
+                            this.handleSearch(e.target.value);
+                            this.handleSearchAutocomplete(e.target.value, this.els.searchInput);
+                        });
+                        this.els.searchInput.addEventListener("keydown", (e) => {
+                            if (e.key === "Tab" && this.els.searchGhostText.textContent) {
+                                e.preventDefault();
+                                e.target.value = this.els.searchGhostText.textContent;
+                                this.handleSearch(e.target.value);
+                                this.handleSearchAutocomplete(e.target.value, this.els.searchInput);
+                            }
+                        });
                         this.els.searchButtonCollapsed.addEventListener("click", () => {
                             if (this.els.sidebar.classList.contains("collapsed")) {
                                 this.toggleSidebar();
@@ -920,31 +1061,21 @@
                         });
                         // Đoạn code mới để mở/đóng menu với animation
                         // Dán đoạn mã đã sửa lỗi này vào
-                        const openMenu = () => {
-                            // Quan trọng: Bỏ class 'hidden' để menu có thể được hiển thị
-                            this.els.mobileMenu.classList.remove("hidden");
-                            // Thêm một độ trễ rất nhỏ để trình duyệt áp dụng thay đổi display trước khi bắt đầu animation
-                            setTimeout(() => this.els.mobileMenu.classList.add("is-open"), 10);
-                        };
 
-                        const closeMenu = () => {
-                            // Xóa class is-open để kích hoạt animation đóng
-                            this.els.mobileMenu.classList.remove("is-open");
-                            // Đợi animation chạy xong (300ms) rồi mới thêm 'hidden' trở lại.
-                            // Điều này đảm bảo menu biến mất hoàn toàn và không thể tương tác.
-                            setTimeout(() => this.els.mobileMenu.classList.add("hidden"), 300);
-                        };
-
-                        this.els.mobileMenuButton.addEventListener("click", openMenu);
-                        this.els.closeMobileMenu.addEventListener("click", closeMenu);
-                        this.els.mobileMenu.addEventListener("click", (e) => {
-                            if (e.target === this.els.mobileMenu) closeMenu();
+                        this.els.mobileMenuButton.addEventListener("click", () => {
+                            if (this.els.mobileMenu.classList.contains("is-open")) {
+                                this.closeMenu(); // Thêm this.
+                            } else {
+                                this.openMenu(); // Thêm this.
+                            }
                         });
 
+                        this.els.mobileMenu.addEventListener("click", (e) => {
+                            if (e.target === this.els.mobileMenu) this.closeMenu(); // Thêm this.
+                        });
                         this.els.groupsNavMobile.addEventListener("click", (e) => {
                             if (e.target.closest(".group-link")) {
-                                // Giờ chỉ cần gọi closeMenu, nó đã tự xử lý timeout
-                                closeMenu();
+                                this.closeMenu(); // Thêm this.
                             }
                         });
                         this.els.stickyBackButton.addEventListener("click", () => window.history.back());
@@ -958,9 +1089,25 @@
 
                         this.els.mobileSearchButton.addEventListener("click", () => this.navigateToSearch());
                         this.els.searchViewBackButton.addEventListener("click", () => window.history.back());
-                        this.els.searchViewInput.addEventListener("input", (e) => this.renderSearchResults(e.target.value));
-                        this.setupAutocomplete("hoCay", this.dataLists.families, {
-                            type: "family",
+                        this.els.searchViewInput.addEventListener("input", (e) => {
+                            this.renderSearchResults(e.target.value);
+                            // handleSearchAutocomplete đã được gọi trong renderSearchResults
+                        });
+                        this.els.searchViewInput.addEventListener("keydown", (e) => {
+                            if (e.key === "Tab" && this.els.searchViewGhostText.textContent) {
+                                e.preventDefault();
+                                e.target.value = this.els.searchViewGhostText.textContent;
+                                this.renderSearchResults(e.target.value);
+                            }
+                        });
+                        this.els.searchAutocompleteList.addEventListener("mousedown", (e) => {
+                            const item = e.target.closest(".autocomplete-item");
+                            if (item) {
+                                this.els.searchInput.value = item.dataset.value;
+                                this.handleSearch(item.dataset.value);
+                                this.handleSearchAutocomplete(item.dataset.value, this.els.searchInput);
+                                this.els.searchAutocompleteList.classList.add("hidden");
+                            }
                         });
                         this.setupAutocomplete("nhomChat", () => this.getDynamicSuggestions("nhomChat"), { append: true, separator: ">" });
                         this.setupAutocomplete("thanhPhanHoaHocChinh", () => this.getDynamicSuggestions("thanhPhanHoaHocChinh"), { append: true });
@@ -973,8 +1120,48 @@
                                 this.hideAutocomplete();
                             }
                         });
+                        document.querySelectorAll('[data-action="show-about"]').forEach((btn) => {
+                            btn.addEventListener("click", () => this.navigateToAbout());
+                        });
                     }
+                    // THAY THẾ TOÀN BỘ HÀM CŨ BẰNG HÀM NÀY
+                    handleLeafNodeClick(groupName) {
+                        const pathParts = groupName.split(" > ");
+                        const targetSubgroupName = pathParts.pop();
+                        const parentGroupName = pathParts.length > 0 ? pathParts.join(" > ") : "all";
 
+                        // Đây là hàm sẽ thực hiện việc cuộn và nháy sáng
+                        const scrollAndFlash = () => {
+                            const headers = this.els.plantListGrid.querySelectorAll("h2.sticky-group-header");
+                            for (const header of headers) {
+                                const headerText = header.textContent.replace(/\s*\(\d+\)$/, "").trim();
+                                if (this._normalizeText(headerText) === this._normalizeText(targetSubgroupName)) {
+                                    header.scrollIntoView({ behavior: "smooth", block: "center" });
+                                    header.classList.add("flash-highlight");
+                                    setTimeout(() => {
+                                        header.classList.remove("flash-highlight");
+                                    }, 1500);
+                                    break;
+                                }
+                            }
+                        };
+
+                        // TRƯỜNG HỢP 1: Đã ở đúng trang cha -> Bỏ qua render, thực thi luôn
+                        if (this.currentFilter.group === parentGroupName) {
+                            scrollAndFlash();
+                        }
+                        // TRƯỜNG HỢP 2: Cần chuyển trang -> Đặt hẹn hành động và kích hoạt render
+                        else {
+                            this.postRenderAction = scrollAndFlash;
+                            this.handleGroupFilter(parentGroupName);
+                        }
+                    }
+                    getActiveViewElement() {
+                        if (!this.els.plantListContainer.classList.contains("hidden")) return this.els.plantListContainer;
+                        if (!this.els.plantDetailView.classList.contains("hidden")) return this.els.plantDetailView;
+                        if (!this.els.aboutView.classList.contains("hidden")) return this.els.aboutView;
+                        return null;
+                    }
                     loadPlants() {
                         const data = localStorage.getItem("medicinalPlants");
                         if (data) {
@@ -1001,7 +1188,13 @@
                     savePlants() {
                         localStorage.setItem("medicinalPlants", JSON.stringify(this.plants));
                     }
-
+                    saveCurrentScrollPosition() {
+                        const activeView = this.getActiveViewElement();
+                        if (activeView && history.state) {
+                            const scrollY = activeView.scrollTop;
+                            history.replaceState({ ...history.state, scrollY }, "");
+                        }
+                    }
                     // ---- THAY THẾ TOÀN BỘ HÀM updatePlant BẰNG MÃ NÀY ----
                     updatePlant(id, data) {
                         // Cập nhật dữ liệu trong mảng plants
@@ -1099,7 +1292,7 @@
                                             level + 1
                                         )}</ul></details></li>`;
                                     }
-                                    return `<li><a href="#" class="group-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}">${key}</a></li>`;
+                                    return `<li><a href="#" class="group-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}" data-is-leaf="true">${key}</a></li>`;
                                 })
                                 .join("");
                         const allLink = `<li><a href="#" class="group-link flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="Tất cả"><i data-lucide="library" class="w-5 h-5"></i><span class="sidebar-text">Tất cả Dược liệu</span></a></li>`;
@@ -1120,18 +1313,26 @@
 
                         document.querySelectorAll(".group-link").forEach((link) => {
                             link.addEventListener("click", (e) => {
-                                const isSummary = link.tagName.toLowerCase() === "summary";
+                                e.preventDefault();
                                 const groupName = e.currentTarget.dataset.group === "Tất cả" ? "all" : e.currentTarget.dataset.group;
+                                const isLeaf = e.currentTarget.dataset.isLeaf === "true";
 
-                                if (groupName === this.currentFilter.group) {
-                                    return;
+                                // Nếu là nhóm lá, xử lý theo logic mới
+                                if (isLeaf) {
+                                    this.handleLeafNodeClick(groupName);
+                                }
+                                // Nếu không, xử lý như bình thường
+                                else {
+                                    if (groupName === this.currentFilter.group) return;
+                                    this.handleGroupFilter(groupName);
                                 }
 
-                                e.preventDefault();
-                                this.handleGroupFilter(groupName);
-
                                 if (this.isMobile()) {
-                                    setTimeout(() => this.els.mobileMenu.classList.add("hidden"), 150);
+                                    // Giờ dùng hàm closeMenu đã có sẵn
+                                    const closeMenu = this.els.mobileMenuButton.onclick;
+                                    if (this.els.mobileMenu.classList.contains("is-open")) {
+                                        setTimeout(() => closeMenu(), 150);
+                                    }
                                 }
                             });
                         });
@@ -1140,44 +1341,55 @@
                         lucide.createIcons();
                     }
 
-                    renderPlantList(plants) {
+                    // THAY THẾ TOÀN BỘ HÀM renderPlantList BẰNG PHIÊN BẢN ĐẦY ĐỦ NÀY
+
+                    renderPlantList(plantsData) {
+                        // plantsData bây giờ là một đối tượng: { exactMatches, fuzzyMatches }
+                        const { exactMatches, fuzzyMatches } = plantsData;
                         const hasSearch = !!this.currentFilter.search;
 
-                        if (plants.length === 0 && (hasSearch || this.plants.length > 0)) {
+                        // Xử lý trường hợp không tìm thấy kết quả nào
+                        if (exactMatches.length === 0 && fuzzyMatches.length === 0 && (hasSearch || this.plants.length > 0)) {
                             this.els.plantListGrid.innerHTML = `<div class="col-span-full text-center text-[var(--muted-foreground)] py-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả</p><p>Vui lòng thử lại với từ khóa hoặc bộ lọc khác.</p></div>`;
                             this.els.plantListGrid.className = "";
                             lucide.createIcons();
                             return;
                         }
 
+                        // Trường hợp 1: Người dùng đang thực hiện tìm kiếm
                         if (hasSearch) {
-                            const rawQuery = this.currentFilter.search;
-                            const normalizedQuery = this._normalizeText(rawQuery);
-                            const exactMatchesCount = plants.filter((p) => (p.tenDuocLieu || "").toLowerCase().includes(rawQuery.toLowerCase())).length;
-
-                            let title = "";
-                            if (exactMatchesCount > 0) {
-                                title = `<h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${plants.length} kết quả (tìm thấy ${exactMatchesCount} khớp nhất)</h2>`;
-                            } else {
-                                title = `<h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm (${plants.length} kết quả)</h2>`;
+                            let html = "";
+                            if (exactMatches.length > 0) {
+                                html += `
+                <div class="group-container mb-4">
+                    <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatches.length} kết quả khớp nhất</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                        ${exactMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
+                    </div>
+                </div>`;
                             }
-
+                            if (fuzzyMatches.length > 0) {
+                                html += `
+                <div class="group-container mb-4">
+                    <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm...</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                        ${fuzzyMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
+                    </div>
+                </div>`;
+                            }
+                            this.els.plantListGrid.innerHTML = html;
                             this.els.plantListGrid.className = "";
-                            this.els.plantListGrid.innerHTML = `
-                    <div class="group-container mb-4">
-                        ${title}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                            ${plants.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery))).join("")}
-                        </div>
-                    </div>`;
-                        } else {
+                        }
+                        // Trường hợp 2: Người dùng đang xem danh sách theo nhóm (KHÔNG tìm kiếm)
+                        else {
                             const filter = this.currentFilter.group;
                             const filterParts = filter === "all" ? [] : filter.split(" > ");
                             const currentLevel = filterParts.length;
                             this.els.plantListGrid.className = "";
 
                             const groups = {};
-                            plants.forEach((p) => {
+                            // Khi không tìm kiếm, tất cả dược liệu hợp lệ nằm trong `exactMatches`
+                            exactMatches.forEach((p) => {
                                 let key = "Các dược liệu khác";
                                 if (p.nhomChat) {
                                     const relevantPath = (
@@ -1200,21 +1412,53 @@
                                 .sort()
                                 .map(
                                     (key) => `
-                    <div class="group-container mb-4">
-                        <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${key} (${groups[key].length})</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                            ${groups[key].map((p) => this.createPlantCardHTML(p)).join("")}
-                        </div>
-                    </div>`
+            <div class="group-container mb-4">
+                <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">${key} (${groups[key].length})</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                    ${groups[key].map((p) => this.createPlantCardHTML(p)).join("")}
+                </div>
+            </div>`
                                 )
                                 .join("");
                         }
 
+                        // Các lệnh cuối hàm không đổi
                         this.addEventListenersToCards(this.els.plantListGrid);
                         this.els.plantListGrid.querySelectorAll(".animate-on-scroll").forEach((el) => this.observer.observe(el));
                         lucide.createIcons();
+                        if (this.postRenderAction) {
+                            this.postRenderAction();
+                            this.postRenderAction = null; // Xóa hành động sau khi thực thi
+                        }
+                    }
+                    // Thêm 3 hàm mới này
+                    navigateToAbout() {
+                        if (this.currentView.type === "about") return;
+                        const newState = { view: "about", filter: this.currentFilter, backTitle: this.currentListTitle };
+                        history.pushState(newState, "", "#about");
+                        this.handleStateChange(newState);
+                        this.closeMenu();
                     }
 
+                    showAboutView(state) {
+                        this.els.mobileHeader.classList.add("header-hidden");
+                        this.currentView = { type: "about" };
+
+                        const fromView = this.getActiveViewElement();
+
+                        this.transitionView(fromView, this.els.aboutView, () => {
+                            this.els.aboutView.querySelector(".animate-on-scroll").classList.remove("is-visible");
+                            this.observer.observe(this.els.aboutView.querySelector(".animate-on-scroll"));
+                        });
+
+                        this.els.aboutView.scrollTop = 0;
+
+                        // Gán sự kiện cho các nút quay lại
+                        this.els.aboutView.querySelector("#back-from-about-mobile").onclick = () => window.history.back();
+                        this.els.aboutView.querySelector("#back-from-about-desktop").onclick = () => window.history.back();
+
+                        lucide.createIcons();
+                    }
                     async transitionView(fromEl, toEl, onTransitionCallback = null) {
                         if (this.isTransitioning) return;
                         this.isTransitioning = true;
@@ -1244,6 +1488,7 @@
                     }
 
                     navigateToDetail(id) {
+                        this.saveCurrentScrollPosition();
                         this.els.searchViewInput.blur();
 
                         if (this.currentView.type === "detail" && this.currentView.id === id) {
@@ -1281,7 +1526,7 @@
 
                     showPlantDetail(id, isPoppedState = false, backTitle = "Quay lại") {
                         // Dòng code mới
-                        this.els.mobileHeader.style.display = "none";
+                        this.els.mobileHeader.classList.add("header-hidden");
                         const plant = this.plants.find((p) => p.id === id);
                         if (!plant) {
                             this.showToast("Không tìm thấy dược liệu.", "error");
@@ -1289,7 +1534,8 @@
                             return;
                         }
 
-                        const currentFilteredList = this.getFilteredPlants();
+                        const { exactMatches, fuzzyMatches } = this.getFilteredPlants();
+                        const currentFilteredList = [...exactMatches, ...fuzzyMatches];
                         const currentIndex = currentFilteredList.findIndex((p) => p.id === id);
                         const prevPlant = currentIndex > 0 ? currentFilteredList[currentIndex - 1] : null;
                         const nextPlant = currentIndex < currentFilteredList.length - 1 ? currentFilteredList[currentIndex + 1] : null;
@@ -1478,8 +1724,7 @@ ${relatedGroupsData
 
             </div>`;
 
-                        this.transitionView(this.els.plantListContainer, this.els.plantDetailView);
-
+                        this.transitionView(this.getActiveViewElement(), this.els.plantDetailView);
                         this.els.plantDetailView.scrollTop = 0;
                         if (this.handleDetailScroll) this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
 
@@ -1580,26 +1825,36 @@ ${relatedGroupsData
                             .join(" ");
                     }
 
-                    showListView() {
+                    showListView(isPoppedState = false) {
                         this.currentView = { type: "list" };
                         // Dòng code mới
-                        this.els.mobileHeader.style.display = "flex";
+                        this.els.mobileHeader.classList.remove("header-hidden");
                         if (this.handleDetailScroll) {
                             this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
                         }
                         this.els.stickyHeader.classList.add("-translate-y-full");
 
-                        const fromView = this.els.plantDetailView.classList.contains("hidden") ? null : this.els.plantDetailView;
+                        const fromView = this.getActiveViewElement();
 
                         this.transitionView(fromView, this.els.plantListContainer, () => {
                             this.renderAll();
+                            if (isPoppedState) {
+                                const scrollY = history.state?.scrollY || 0;
+                                setTimeout(() => {
+                                    this.els.plantListContainer.scrollTop = scrollY;
+                                }, 0);
+                            } else {
+                                this.els.plantListContainer.scrollTop = 0;
+                            }
                         });
                         this.els.plantDetailView.innerHTML = "";
                     }
 
                     showSearchView(isPopped = false, state = {}) {
                         this.currentView = { type: "search" };
-                        this.els.mobileHeader.style.display = "none";
+                        this.els.mobileHeader.classList.add("header-hidden");
+
+                        this.els.searchView.classList.remove("translate-x-full");
                         this.els.searchView.classList.remove("translate-x-full");
                         this.els.searchViewBackLabel.textContent = state.backTitle || "Quay lại";
                         if (!isPopped) {
@@ -1609,7 +1864,7 @@ ${relatedGroupsData
 
                     hideSearchView(isPopped = false) {
                         if (this.currentView.type === "list") {
-                            this.els.mobileHeader.classList.remove("-translate-y-full");
+                            this.els.mobileHeader.classList.remove("header-hidden");
                         }
                         this.els.searchView.classList.add("translate-x-full");
                         if (!isPopped) {
@@ -1617,10 +1872,12 @@ ${relatedGroupsData
                         }
                     }
 
+                    // THAY THẾ TOÀN BỘ HÀM CŨ
                     renderSearchResults(query) {
                         const normalizedQuery = this._normalizeText(query);
                         if (!normalizedQuery) {
                             this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm dược liệu theo tên, họ, ...</p></div>`;
+                            this.handleSearchAutocomplete(query, this.els.searchViewInput);
                             lucide.createIcons();
                             return;
                         }
@@ -1628,38 +1885,86 @@ ${relatedGroupsData
                         const originalFilter = { ...this.currentFilter };
                         this.currentFilter.group = "all";
                         this.currentFilter.search = query;
-                        const results = this.getFilteredPlants();
+                        const { exactMatches, fuzzyMatches } = this.getFilteredPlants();
                         this.currentFilter = originalFilter;
 
-                        if (results.length > 0) {
-                            const exactMatchesCount = results.filter((p) => (p.tenDuocLieu || "").toLowerCase().includes(query.toLowerCase())).length;
+                        let html = "";
 
-                            let titleHtml = "";
-                            if (exactMatchesCount > 0) {
-                                titleHtml = `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatchesCount} kết quả khớp nhất</h2>`;
-                            } else {
-                                titleHtml = `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm</h2>`;
-                            }
-
-                            const cardsHtml = results
-                                .map((plant) => {
-                                    const context = this._findMatchContext(plant, normalizedQuery);
-                                    return this.createPlantCardHTML(plant, context);
-                                })
-                                .join("");
-
-                            this.els.searchResultsGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${titleHtml}${cardsHtml}</div>`;
-                            this.addEventListenersToCards(this.els.searchResultsGrid, true);
-                            this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll").forEach((el, i) => {
-                                el.style.transitionDelay = `${i * 50}ms`;
-                                this.observer.observe(el);
-                            });
+                        if (exactMatches.length === 0 && fuzzyMatches.length === 0) {
+                            html = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
                         } else {
-                            this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
+                            if (exactMatches.length > 0) {
+                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatches.length} kết quả khớp nhất</h2>`;
+                                html += exactMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery))).join("");
+                            }
+                            if (fuzzyMatches.length > 0) {
+                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mt-6">Có thể bạn đang tìm...</h2>`;
+                                html += fuzzyMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery))).join("");
+                            }
                         }
+
+                        this.els.searchResultsGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${html}</div>`;
+
+                        this.addEventListenersToCards(this.els.searchResultsGrid, true);
+                        this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll").forEach((el, i) => {
+                            el.style.transitionDelay = `${i * 50}ms`;
+                            this.observer.observe(el);
+                        });
+
+                        this.handleSearchAutocomplete(query, this.els.searchViewInput);
                         lucide.createIcons();
                     }
+                    // THÊM HÀM MỚI NÀY
+                    handleSearchAutocomplete(value, inputEl) {
+                        const isMobile = inputEl.id === "search-view-input";
+                        const ghostEl = isMobile ? this.els.searchViewGhostText : this.els.searchGhostText;
+                        const listEl = isMobile ? null : this.els.searchAutocompleteList; // Mobile không có list riêng
 
+                        if (!value) {
+                            ghostEl.textContent = "";
+                            if (listEl) listEl.classList.add("hidden");
+                            if (isMobile) this.els.searchResultsGrid.innerHTML = "";
+                            return;
+                        }
+
+                        const normalizedValue = this._normalizeText(value);
+                        const suggestions = this.plants.filter((p) => this._normalizeText(p.tenDuocLieu).startsWith(normalizedValue)).sort((a, b) => a.tenDuocLieu.localeCompare(b.tenDuocLieu));
+
+                        // Cập nhật ghost text
+                        if (suggestions.length > 0) {
+                            const topSuggestion = suggestions[0].tenDuocLieu;
+                            if (topSuggestion.toLowerCase().startsWith(value.toLowerCase())) {
+                                ghostEl.textContent = value + topSuggestion.substring(value.length);
+                            } else {
+                                ghostEl.textContent = "";
+                            }
+                        } else {
+                            ghostEl.textContent = "";
+                        }
+
+                        // Cập nhật danh sách gợi ý (chỉ cho desktop)
+                        if (listEl) {
+                            if (suggestions.length > 0) {
+                                listEl.innerHTML = suggestions
+                                    .slice(0, 3)
+                                    .map((p) => `<div class="autocomplete-item px-3 py-2 cursor-pointer hover:bg-[var(--accent)]" data-value="${p.tenDuocLieu}">${p.tenDuocLieu}</div>`)
+                                    .join("");
+                                listEl.classList.remove("hidden");
+                            } else {
+                                listEl.classList.add("hidden");
+                            }
+                        }
+                    }
+                    isPlantInGroup(plant, groupFilter) {
+                        if (groupFilter === "all") return true;
+                        const normalizedFilterGroup = this._normalizeGroup(this._normalizeText(groupFilter));
+                        return (
+                            plant.nhomChat &&
+                            this._normalizeText(plant.nhomChat)
+                                .split(",")
+                                .some((c) => this._normalizeGroup(c.trim()).startsWith(normalizedFilterGroup))
+                        );
+                    }
                     handleDetailScroll() {
                         const t = this.els.plantDetailView.querySelector(".plant-title-block");
                         if (!t) return;
@@ -1701,50 +2006,67 @@ ${relatedGroupsData
                         this.updatePlant(id, data);
                         this.closeModal();
                     }
+                    // THAY THẾ TOÀN BỘ HÀM CŨ
                     getFilteredPlants() {
                         const rawQuery = this.currentFilter.search;
+                        const groupFilteredPlants = this.plants.filter((p) => this.isPlantInGroup(p, this.currentFilter.group));
+
+                        if (!rawQuery) {
+                            return { exactMatches: groupFilteredPlants, fuzzyMatches: [] };
+                        }
+
                         const normalizedQuery = this._normalizeText(rawQuery);
 
-                        const filtered = this.plants.filter((p) => {
-                            const normalizedFilterGroup = this._normalizeGroup(this._normalizeText(this.currentFilter.group));
-                            const groupMatch =
-                                this.currentFilter.group === "all" ||
-                                (p.nhomChat &&
-                                    this._normalizeText(p.nhomChat)
-                                        .split(",")
-                                        .some((c) => this._normalizeGroup(c.trim()).startsWith(normalizedFilterGroup)));
-                            const searchMatch = !normalizedQuery || Object.values(p).some((val) => this._normalizeText(val).includes(normalizedQuery));
-                            return groupMatch && searchMatch;
+                        const exactMatches = [];
+                        const fuzzyMatches = [];
+                        const addedIds = new Set();
+
+                        // Vòng 1: Tìm các kết quả khớp nhất (tên & họ) và tính điểm
+                        groupFilteredPlants.forEach((plant) => {
+                            const tenDuocLieuNorm = this._normalizeText(plant.tenDuocLieu);
+                            const hoCayNorm = this._normalizeText(plant.hoCay);
+
+                            let score = 0;
+                            if (tenDuocLieuNorm.startsWith(normalizedQuery)) {
+                                score = 100; // Ưu tiên cao nhất: Khớp đầu tên
+                            } else if (tenDuocLieuNorm.includes(normalizedQuery)) {
+                                score = 50; // Ưu tiên cao: Khớp trong tên
+                            } else if (hoCayNorm.includes(normalizedQuery)) {
+                                score = 20; // Ưu tiên trung bình: Khớp trong họ
+                            }
+
+                            if (score > 0) {
+                                exactMatches.push({ ...plant, score });
+                                addedIds.add(plant.id);
+                            }
                         });
 
-                        if (normalizedQuery) {
-                            const calculateScore = (plant) => {
-                                let score = 0;
-                                const tenDuocLieu = plant.tenDuocLieu || "";
-                                const tenDuocLieuNorm = this._normalizeText(tenDuocLieu);
+                        // Vòng 2: Tìm các kết quả liên quan (các trường khác)
+                        groupFilteredPlants.forEach((plant) => {
+                            if (addedIds.has(plant.id)) return;
 
-                                if (tenDuocLieu.toLowerCase().includes(rawQuery.toLowerCase())) {
-                                    score += 100;
-                                    if (tenDuocLieu.toLowerCase().startsWith(rawQuery.toLowerCase())) score += 50;
-                                } else if (tenDuocLieuNorm.includes(normalizedQuery)) {
-                                    score += 50;
-                                    if (tenDuocLieuNorm.startsWith(normalizedQuery)) score += 25;
+                            const fuzzyKeys = ["nhomChat", "thanhPhanHoaHocChinh", "boPhanDung", "tacDung", "congDung", "dacDiemDuocLieu"];
+                            for (const key of fuzzyKeys) {
+                                if (plant[key] && this._normalizeText(plant[key]).includes(normalizedQuery)) {
+                                    fuzzyMatches.push(plant);
+                                    addedIds.add(plant.id);
+                                    break; // Tìm thấy là đủ, chuyển sang cây tiếp theo
                                 }
+                            }
+                        });
 
-                                for (const key in plant) {
-                                    if (key !== "tenDuocLieu" && plant.hasOwnProperty(key)) {
-                                        const val = plant[key] || "";
-                                        if (this._normalizeText(val).includes(normalizedQuery)) {
-                                            score += 1;
-                                            break;
-                                        }
-                                    }
-                                }
-                                return score;
-                            };
-                            filtered.sort((a, b) => calculateScore(b) - calculateScore(a));
-                        }
-                        return filtered;
+                        // Sắp xếp các kết quả khớp nhất: điểm cao hơn trước, sau đó đến alphabet
+                        exactMatches.sort((a, b) => {
+                            if (a.score !== b.score) {
+                                return b.score - a.score;
+                            }
+                            return a.tenDuocLieu.localeCompare(b.tenDuocLieu);
+                        });
+
+                        // Bỏ thuộc tính score đi trước khi trả về
+                        const finalExactMatches = exactMatches.map(({ score, ...rest }) => rest);
+
+                        return { exactMatches: finalExactMatches, fuzzyMatches };
                     }
 
                     _findMatchContext(plant, normalizedQuery) {
@@ -1840,42 +2162,31 @@ ${relatedGroupsData
                     handlePointerDown(e, id) {
                         if (e.type === "mousedown" && e.button === 2) return;
                         this.isDragging = false;
-                        this.isLongPressing = false;
                         this.pointerStartPos.y = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
-                        this.pressTimer = setTimeout(() => {
-                            this.isLongPressing = true;
-                            this.togglePlantSelection(id);
-                        }, 500);
                     }
                     handlePointerUp(e, id, fromSearch = false) {
                         if (e.type === "touchend") e.preventDefault();
-                        clearTimeout(this.pressTimer);
                         if (this.isDragging) {
                             this.isDragging = false;
                             return;
                         }
 
-                        if (!this.isLongPressing) {
-                            if (this.selectedPlants.size > 0 && !fromSearch) {
-                                this.togglePlantSelection(id);
-                            } else {
-                                this.navigateToDetail(id);
-                            }
+                        // Logic được thực thi ngay lập tức
+                        if (this.selectedPlants.size > 0 && !fromSearch) {
+                            this.togglePlantSelection(id);
+                        } else {
+                            this.navigateToDetail(id);
                         }
-                        this.isLongPressing = false;
                     }
                     handlePointerMove(e) {
-                        if (this.pressTimer) {
-                            const curY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-                            if (Math.abs(curY - this.pointerStartPos.y) > 10) {
-                                this.isDragging = true;
-                                clearTimeout(this.pressTimer);
-                            }
+                        const curY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+                        if (Math.abs(curY - this.pointerStartPos.y) > 10) {
+                            this.isDragging = true;
                         }
                     }
+
                     handlePointerLeave() {
-                        clearTimeout(this.pressTimer);
-                        this.isLongPressing = false;
+                        // Không cần làm gì ở đây nữa
                     }
                     togglePlantSelection(id) {
                         const card = document.querySelector(`.plant-card[data-id="${id}"]`);
