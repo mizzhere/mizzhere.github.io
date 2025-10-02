@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <title>SLAM Grand Final</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet" />
+        <style>
+            :root {
+                --grid-gap: clamp(2px, 0.5vmin, 4px);
+                --cell-size: 40px;
+                --font-size: calc(var(--cell-size) * 0.7);
+                --primary-accent: #ffc700;
+                --secondary-accent: #42a5f5;
+                --dark-blue: #1d1a53;
+                --light-text: #a8a2d2;
+                --danger-color: #ef5350;
+                --success-color: #66bb6a;
+                --incorrect-color: #78909c;
+            }
+
+            html {
+                scroll-behavior: smooth;
+            }
+            body {
+                font-family: "Montserrat", sans-serif;
+                background: radial-gradient(circle at top right, #3a32a3 0%, #1d1a53 40%, #0f0d2a 100%);
+                color: white;
+                overflow: hidden;
+                height: 100dvh;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .page {
+                width: 100%;
+                height: 100dvh;
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+                opacity: 0;
+                transition: opacity 0.5s ease;
+                overflow-y: auto;
+            }
+            .page.active {
+                display: flex;
+                opacity: 1;
+            }
+            .page-title {
+                font-size: 2rem;
+                font-weight: 900;
+                color: var(--primary-accent);
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+
+            #lobby-page {
+                justify-content: flex-start;
+            }
+            #puzzle-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1rem;
+                width: 100%;
+                max-width: 1200px;
+            }
+            .puzzle-card,
+            .new-puzzle-card {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 16px;
+                padding: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+                backdrop-filter: blur(5px);
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+            }
+            .puzzle-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            }
+            .puzzle-card-title {
+                font-weight: 700;
+                font-size: 1.2rem;
+                color: var(--secondary-accent);
+                margin-bottom: 0.5rem;
+                word-break: break-word;
+            }
+            .puzzle-card-meta {
+                font-size: 0.8rem;
+                color: var(--light-text);
+                margin-bottom: 1rem;
+            }
+            .puzzle-card-actions {
+                display: flex;
+                gap: 0.5rem;
+                margin-top: 1.5rem;
+            }
+            .new-puzzle-card {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                border-style: dashed;
+            }
+            .new-puzzle-card .plus-icon {
+                font-size: 3rem;
+                color: var(--primary-accent);
+                font-weight: 300;
+            }
+            .new-puzzle-card .new-puzzle-text {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--primary-accent);
+                margin-top: 0.5rem;
+            }
+
+            #creation-page {
+                justify-content: flex-start;
+                padding-bottom: 100px;
+            }
+            .word-card {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 1rem;
+                width: 100%;
+                max-width: 500px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+            .card-title {
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: var(--secondary-accent);
+            }
+            .remove-word-btn {
+                background: none;
+                border: none;
+                color: #e57373;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0;
+                line-height: 1;
+            }
+            .form-group-material {
+                position: relative;
+                margin-top: 10px;
+            }
+            .form-group-material input {
+                width: 100%;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid var(--light-text);
+                color: white;
+                padding: 8px 0;
+                font-size: 1rem;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+            .form-group-material label {
+                position: absolute;
+                top: 8px;
+                left: 0;
+                color: var(--light-text);
+                pointer-events: none;
+                transition: all 0.2s ease-out;
+            }
+            .form-group-material input:focus + label,
+            .form-group-material input:not(:placeholder-shown) + label {
+                top: -14px;
+                font-size: 0.75rem;
+                color: var(--primary-accent);
+            }
+            .form-group-material input:focus {
+                border-bottom-color: var(--primary-accent);
+            }
+
+            #add-word-fab {
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                background: linear-gradient(145deg, var(--primary-accent), #ffb300);
+                border-radius: 50%;
+                border: none;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+                color: var(--dark-blue);
+                font-size: 2.25rem;
+                font-weight: 300;
+                cursor: pointer;
+                z-index: 100;
+            }
+            .creation-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                padding: 15px;
+                background: linear-gradient(to top, rgba(15, 13, 42, 1), rgba(15, 13, 42, 0));
+                display: flex;
+                justify-content: center;
+                gap: 0.75rem;
+                z-index: 50;
+            }
+            .action-btn {
+                background: linear-gradient(145deg, #1e88e5, #1565c0);
+                color: white;
+                border: 1px solid #64b5f6;
+                border-radius: 50px;
+                padding: 10px 20px;
+                font-size: 0.875rem;
+                font-weight: 700;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                white-space: nowrap;
+            }
+            .action-btn.icon-btn {
+                padding: 10px;
+                width: 44px;
+                height: 44px;
+            }
+            .action-btn svg {
+                width: 1.5em;
+                height: 1.5em;
+            }
+            .action-btn.primary {
+                background: linear-gradient(145deg, var(--primary-accent), #ffb300);
+                color: var(--dark-blue);
+                border-color: #fff;
+            }
+
+            #game-page {
+                justify-content: flex-start;
+                padding: 10px 0;
+                overflow: hidden;
+            }
+            #game-header {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px 15px;
+                flex-shrink: 0;
+            }
+            #game-stats {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--light-text);
+                flex-grow: 1;
+                justify-content: center;
+            }
+            #score-display {
+                min-width: 0.2rem;
+                text-align: center;
+            }
+            #word-timer {
+                background-color: rgba(0, 0, 0, 0.3);
+                padding: 2px 10px;
+                border-radius: 4px;
+                color: var(--primary-accent);
+            }
+            .game-area {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                flex-grow: 1;
+                min-height: 0;
+            }
+
+            #grid-wrapper {
+                position: relative;
+            }
+            #grid-container {
+                display: grid;
+                gap: var(--grid-gap);
+                perspective: 1000px;
+                transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Thêm dòng này */
+            }
+            #grid-container.word-zoomed {
+                transform: scale(1.05);
+            }
+            #number-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+            .word-number-label {
+                position: absolute;
+                font-weight: 700;
+                color: white;
+                background-color: transparent;
+                border: 1.5px solid white;
+                border-radius: 0;
+                font-size: calc(var(--cell-size) * 0.5);
+                display: none;
+                width: calc(var(--cell-size) * 0.75);
+                height: calc(var(--cell-size) * 0.75);
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+            }
+            .word-number-label.visible {
+                display: flex;
+                animation: label-fade-in 0.3s forwards;
+            }
+            .word-number-label.hiding-right {
+                animation: slide-out-right 0.4s forwards ease-out;
+            }
+            .word-number-label.hiding-down {
+                animation: slide-out-down 0.4s forwards ease-out;
+            }
+
+            .cell {
+                width: var(--cell-size);
+                height: var(--cell-size);
+                position: relative;
+            }
+            .playable {
+                width: 100%;
+                height: 100%;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                cursor: pointer;
+            }
+            .cell-face {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 900;
+                border-radius: 0;
+                font-size: var(--font-size);
+                transition: background 0.3s, color 0.3s, border 0.3s, transform 0.3s;
+            }
+
+            #grid-wrapper.selection-active .playable {
+                opacity: 0.4;
+            }
+            #grid-wrapper.selection-active .playable.selected-word {
+                opacity: 1;
+                /* transform: scale(1.03);  <-- Xóa dòng này */
+                z-index: 10;
+            }
+            .cell-front {
+                background: linear-gradient(145deg, #ffd700, #ffb300);
+                box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.3);
+                box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 0 0 1px #ffc700;
+            }
+            .cell-front .letter-pop-in {
+                animation: letter-pop-in 0.3s ease-out forwards;
+                display: inline-block;
+            }
+
+            .playable.is-solved .cell-front {
+                background: white;
+                color: var(--dark-blue);
+                box-shadow: inset 0 0 0 1px var(--secondary-accent);
+            }
+            .playable.is-locked .cell-front {
+                background: var(--incorrect-color);
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+                border-color: #546e7a;
+            }
+
+            .game-hud {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 200;
+                flex-shrink: 0;
+            }
+            .keyboard-wrapper {
+                width: 100%;
+                background: var(--dark-blue);
+                border-top: 1px solid var(--light-text);
+                transform: translateY(100%);
+                transition: transform 0.4s ease-out;
+                padding-top: 10px;
+            }
+            .keyboard-wrapper.visible {
+                transform: translateY(0);
+            }
+            #clue-area {
+                width: 100%;
+                max-width: 600px;
+                color: var(--primary-accent);
+                text-align: center;
+                padding: 12px;
+            }
+            #clue-text {
+                font-size: clamp(1rem, 4vw, 1.25rem);
+                font-weight: 700;
+                min-height: 1.25rem;
+                transition: opacity 0.3s;
+            }
+            #clue-text.hidden {
+                opacity: 0;
+            }
+
+            #slam-button-container {
+                display: flex;
+                justify-content: center;
+                padding: 5px 0;
+            }
+            #slam-btn {
+                background: linear-gradient(145deg, var(--danger-color), #c62828);
+                color: white;
+                border: 2px solid #ff8a80;
+                border-radius: 50px;
+                padding: 8px 24px;
+                font-size: 1rem;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                box-shadow: 0 5px 15px rgba(239, 83, 80, 0.5);
+                animation: pulse 2s infinite;
+            }
+            #slam-btn:disabled {
+                background: #555 !important;
+                cursor: not-allowed;
+                animation: none;
+                opacity: 0.5;
+                box-shadow: none;
+                border-color: #777;
+            }
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+                z-index: 10000;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+            .modal-overlay.visible {
+                display: flex;
+                opacity: 1;
+            }
+            .modal-content {
+                background: var(--dark-blue);
+                padding: 30px;
+                border-radius: 16px;
+                text-align: center;
+                border: 1px solid var(--secondary-accent);
+                max-width: 90%;
+            }
+            .modal-content h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                color: var(--primary-accent);
+            }
+            .modal-content p {
+                margin-bottom: 2rem;
+            }
+            .modal-actions {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            #virtual-keyboard {
+                width: 100%;
+                padding: 5px;
+                background: rgba(0, 0, 0, 0.2);
+                user-select: none;
+            }
+            .keyboard-row {
+                display: flex;
+                justify-content: center;
+                margin: 4px 0;
+            }
+            .key {
+                height: 44px;
+                margin: 0 2px;
+                border-radius: 6px;
+                border: none;
+                background: linear-gradient(145deg, #5c6bc0, #3f51b5);
+                color: white;
+                font-weight: 700;
+                box-shadow: 0 3px #1a237e;
+                font-size: 1rem;
+                flex-grow: 1;
+                cursor: pointer;
+                transition: all 0.1s ease;
+            }
+            .key:active:not(:disabled) {
+                background: #3f51b5;
+                transform: translateY(2px);
+                box-shadow: 0 1px #1a237e;
+            }
+            .key.special {
+                flex-grow: 1.5;
+                background: linear-gradient(145deg, #78909c, #546e7a);
+                box-shadow: 0 3px #263238;
+            }
+            .key.enter {
+                background: linear-gradient(145deg, var(--primary-accent), #ffb300);
+                box-shadow: 0 3px #ff8f00;
+                color: var(--dark-blue);
+            }
+            .key:disabled {
+                background: var(--incorrect-color);
+                cursor: not-allowed;
+                opacity: 0.5;
+                box-shadow: 0 3px #263238;
+            }
+
+            #toast-container {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 9999;
+                width: 90%;
+                max-width: 500px;
+            }
+            .toast {
+                background-color: #333;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                margin-bottom: 10px;
+                text-align: center;
+                opacity: 0;
+                transform: translateY(-20px);
+                animation: fadeInDown 0.5s forwards;
+            }
+            .toast.error {
+                background-color: var(--danger-color);
+            }
+            .toast.success {
+                background-color: var(--success-color);
+            }
+            .toast.exit {
+                animation: fadeOutUp 0.5s forwards;
+            }
+
+            @keyframes fadeInDown {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes fadeOutUp {
+                to {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+            }
+            @keyframes letter-pop-in {
+                0% {
+                    transform: scale(0.5);
+                    opacity: 0;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            @keyframes label-fade-in {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            @keyframes slide-out-right {
+                from {
+                    opacity: 1;
+                    transform: translate(-100%, -50%) scale(1);
+                }
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+            }
+            @keyframes slide-out-down {
+                from {
+                    opacity: 1;
+                    transform: translate(-50%, -100%) scale(1);
+                }
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+            }
+            /* --- CSS MỚI CHO HIỆU ỨNG TRẢ LỜI ĐÚNG --- */
+            @keyframes zoom-in-orange {
+                from {
+                    transform: scale(0.4);
+                    opacity: 0;
+                    background: white; /* Bắt đầu từ màu trắng (trạng thái đang nhập) */
+                    color: var(--dark-blue);
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                    background: #f57c00; /* Kết thúc ở màu cam đậm */
+                    color: white;
+                }
+            }
+
+            @keyframes zoom-in-white {
+                from {
+                    transform: scale(0.4);
+                    opacity: 0;
+                    background: #f57c00; /* Bắt đầu từ màu cam đậm */
+                    color: white;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                    background: white; /* Kết thúc ở màu trắng (đã giải) */
+                    color: var(--dark-blue);
+                }
+            }
+
+            /* Class kích hoạt Giai đoạn 1: Zoom ra màu cam */
+            /* Class kích hoạt Giai đoạn 1: Zoom ra màu cam */
+            .anim-correct-phase1 .cell-front {
+                animation: zoom-in-orange 0.25s ease-out forwards;
+            }
+
+            /* Quy tắc mới có độ ưu tiên cao hơn để đảm bảo viền trắng được áp dụng đồng nhất */
+            .playable.anim-correct-phase1 .cell-front {
+                box-shadow: inset 0 0 0 1.5px white;
+            }
+
+            /* Class kích hoạt Giai đoạn 2: Zoom về màu trắng */
+            .anim-correct-phase2 .cell-front {
+                animation: zoom-in-white 0.25s ease-out forwards;
+                color: var(--dark-blue); /* Chữ màu xanh của trạng thái đã giải */
+                box-shadow: inset 0 0 0 1.5px var(--secondary-accent);
+            }
+            /* --- CSS MỚI CHO HIỆU ỨNG NHẬP LIỆU --- */
+            @keyframes zoom-in-typing {
+                from {
+                    transform: scale(0.4);
+                    opacity: 0;
+                    /* Dòng background đã được xóa đi từ đây */
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                    background: white; /* Kết thúc ở màu trắng */
+                }
+            }
+
+            /* Class áp dụng khi người dùng gõ chữ vào ô */
+            .anim-typing .cell-front {
+                animation: zoom-in-typing 0.15s ease-out forwards;
+                color: var(--dark-blue);
+                box-shadow: inset 0 0 0 1px var(--secondary-accent);
+            }
+            /* --- CSS MỚI CHO HIỆU ỨNG CHỮ ZOOM KHI TRẢ LỜI ĐÚNG --- */
+            @keyframes letter-zoom-back {
+                from {
+                    transform: scale(0.5);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+
+            /* Class để kích hoạt animation cho chữ */
+            .cell-front .letter-reveal-anim {
+                display: inline-block; /* Bắt buộc để transform hoạt động */
+                /* Tốc độ nhanh (0.2s), có hiệu ứng nảy (ease-back) */
+                animation: letter-zoom-back 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="toast-container"></div>
+
+        <div id="lobby-page" class="page">
+            <h1 class="page-title">SLAM PUZZLE</h1>
+            <div id="puzzle-list"></div>
+        </div>
+
+        <div id="creation-page" class="page">
+            <div class="form-group-material" style="width: 100%; max-width: 500px; margin-bottom: 1rem;">
+                <input type="text" id="puzzle-title-input" required />
+                <label>Tên Bộ Đề</label>
+            </div>
+            <div id="word-list-container" class="w-full max-w-lg"></div>
+            <button id="add-word-fab" title="Thêm từ mới">+</button>
+            <div class="creation-footer">
+                <button id="back-to-lobby-btn" class="action-btn">Quay Lại</button>
+                <button id="delete-puzzle-btn" class="action-btn" style="background: linear-gradient(145deg, #c62828, #b71c1c); border-color: #e57373; display: none;">Xóa</button>
+                <button id="save-puzzle-btn" class="action-btn primary">Lưu & Chơi</button>
+            </div>
+        </div>
+
+        <div id="game-page" class="page">
+            <div id="game-header">
+                <button id="back-to-lobby-btn-game" class="action-btn icon-btn" title="Về sảnh chờ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </button>
+                <div id="game-stats">
+                    <div id="score-display">0</div>
+                    <div id="words-solved-stat">0/0</div>
+                    <div id="timer" class="w-1/3">00:00</div>
+                    <div id="word-timer">00:30</div>
+                </div>
+                <button id="edit-puzzle-btn" class="action-btn icon-btn" title="Sửa bộ đề">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
+                    </svg>
+                </button>
+            </div>
+            <div class="game-area">
+                <div id="grid-wrapper">
+                    <div id="number-overlay"></div>
+                    <div id="grid-container"></div>
+                </div>
+            </div>
+
+            <div id="game-hud" class="game-hud">
+                <div id="keyboard-wrapper" class="keyboard-wrapper">
+                    <div id="clue-area">
+                        <div id="clue-text">Chọn một ô để bắt đầu!</div>
+                    </div>
+                    <div id="slam-button-container">
+                        <button id="slam-btn">SLAM</button>
+                    </div>
+                    <div id="virtual-keyboard"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="slam-modal">
+            <div class="modal-content">
+                <h2>Thử Thách SLAM!</h2>
+                <p>Bạn có chắc chắn? Mọi gợi ý và trợ giúp sẽ biến mất. Bạn sẽ phải giải toàn bộ bảng chỉ với trí nhớ của mình.</p>
+                <div class="modal-actions">
+                    <button id="slam-confirm-btn" class="action-btn primary" style="background: var(--danger-color);">Chấp nhận</button>
+                    <button id="slam-cancel-btn" class="action-btn">Hủy bỏ</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="confirm-modal">
+            <div class="modal-content">
+                <h2 id="confirm-title">Xác nhận</h2>
+                <p id="confirm-text">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+                <div class="modal-actions">
+                    <button id="confirm-ok-btn" class="action-btn primary">Đồng ý</button>
+                    <button id="confirm-cancel-btn" class="action-btn">Hủy bỏ</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                let state = {
+                    currentPage: "lobby",
+                    words: [],
+                    currentPuzzleId: null,
+                    selectedWordId: null,
+                    solvedWords: new Set(),
+                    timerInterval: null,
+                    saveInterval: null,
+                    wordTimerInterval: null,
+                    wordTimeLeft: 30,
+                    startTime: 0,
+                    elapsedSeconds: 0,
+                    totalScore: 0,
+                    currentInputCell: null,
+                    slamModeActive: false,
+                    gamePhase: "reveal",
+                    revealedLetters: new Set(),
+                    playableWordIds: new Set(),
+                    disabledLetters: new Set(),
+                    isGameFinished: false,
+                };
+
+                const pages = { lobby: document.getElementById("lobby-page"), creation: document.getElementById("creation-page"), game: document.getElementById("game-page") };
+                const puzzleListContainer = document.getElementById("puzzle-list");
+                const puzzleTitleInput = document.getElementById("puzzle-title-input");
+                const gameArea = document.querySelector(".game-area");
+                const wordListContainer = document.getElementById("word-list-container");
+                const addWordFab = document.getElementById("add-word-fab");
+                const savePuzzleBtn = document.getElementById("save-puzzle-btn");
+                const deletePuzzleBtn = document.getElementById("delete-puzzle-btn");
+                const backToLobbyBtn = document.getElementById("back-to-lobby-btn");
+                const backToLobbyBtnGame = document.getElementById("back-to-lobby-btn-game");
+                const editPuzzleBtn = document.getElementById("edit-puzzle-btn");
+                const gridContainer = document.getElementById("grid-container");
+                const numberOverlay = document.getElementById("number-overlay");
+                const clueText = document.getElementById("clue-text");
+                const timerDisplay = document.getElementById("timer");
+                const wordsSolvedStat = document.getElementById("words-solved-stat");
+                const scoreDisplay = document.getElementById("score-display");
+                const wordTimerDisplay = document.getElementById("word-timer");
+                const keyboardWrapper = document.getElementById("keyboard-wrapper");
+                const virtualKeyboard = document.getElementById("virtual-keyboard");
+                const slamBtn = document.getElementById("slam-btn");
+                const slamModal = document.getElementById("slam-modal");
+                const slamConfirmBtn = document.getElementById("slam-confirm-btn");
+                const slamCancelBtn = document.getElementById("slam-cancel-btn");
+                const confirmModal = document.getElementById("confirm-modal");
+
+                const getPuzzles = () => {
+                    try {
+                        const p = localStorage.getItem("slam-puzzles-list");
+                        return p ? JSON.parse(p) : {};
+                    } catch (e) {
+                        return {};
+                    }
+                };
+                const savePuzzles = (p) => {
+                    localStorage.setItem("slam-puzzles-list", JSON.stringify(p));
+                };
+
+                const showConfirmation = (title, text) => {
+                    return new Promise((resolve) => {
+                        document.getElementById("confirm-title").textContent = title;
+                        document.getElementById("confirm-text").textContent = text;
+                        confirmModal.classList.add("visible");
+                        const okBtn = document.getElementById("confirm-ok-btn");
+                        const cancelBtn = document.getElementById("confirm-cancel-btn");
+                        const cleanup = (result) => {
+                            confirmModal.classList.remove("visible");
+                            okBtn.replaceWith(okBtn.cloneNode(true));
+                            cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                            resolve(result);
+                        };
+                        okBtn.addEventListener("click", () => cleanup(true), { once: true });
+                        cancelBtn.addEventListener("click", () => cleanup(false), { once: true });
+                    });
+                };
+
+                const switchView = (pageName, data = null) => {
+                    stopGame();
+                    state.currentPage = pageName;
+                    Object.values(pages).forEach((p) => p.classList.remove("active"));
+                    pages[pageName].classList.add("active");
+                    if (pageName === "lobby") renderLobby();
+                    if (pageName === "creation") initCreation(data);
+                    if (pageName === "game") initGame(data);
+                };
+
+                const showToast = (message, type = "info", duration = 3000) => {
+                    const toast = document.createElement("div");
+                    toast.className = `toast ${type}`;
+                    toast.textContent = message;
+                    document.getElementById("toast-container").appendChild(toast);
+                    setTimeout(() => {
+                        toast.classList.add("exit");
+                        toast.addEventListener("animationend", () => toast.remove());
+                    }, duration);
+                };
+
+                const renderLobby = () => {
+                    const puzzles = getPuzzles();
+                    const puzzleIds = Object.keys(puzzles).sort((a, b) => (puzzles[b].lastModified || 0) - (puzzles[a].lastModified || 0));
+                    puzzleListContainer.innerHTML = "";
+                    puzzleIds.forEach((id) => {
+                        const puzzle = puzzles[id];
+                        const card = document.createElement("div");
+                        card.className = "puzzle-card";
+                        card.innerHTML = `
+                    <h3 class="puzzle-card-title">${puzzle.title}</h3>
+<p class="puzzle-card-meta">${puzzle.words.length} từ - Sửa đổi: ${new Date(puzzle.lastModified).toLocaleString("vi-VN")}</p>
+<p class="puzzle-card-meta" style="color: var(--primary-accent); font-weight: 700;">Điểm cao: ${puzzle.highScore || 0}</p>
+                    <div class="puzzle-card-actions">
+                        <button class="action-btn primary play-puzzle-btn" data-id="${id}">Chơi</button>
+                        <button class="action-btn edit-puzzle-btn" data-id="${id}">Sửa</button>
+                    </div>`;
+                        puzzleListContainer.appendChild(card);
+                    });
+                    const addNewCard = document.createElement("div");
+                    addNewCard.className = "new-puzzle-card";
+                    addNewCard.innerHTML = `<div class="plus-icon">+</div><div class="new-puzzle-text">Tạo Bộ Đề Mới</div>`;
+                    addNewCard.addEventListener("click", () => switchView("creation"));
+                    puzzleListContainer.appendChild(addNewCard);
+                };
+
+                puzzleListContainer.addEventListener("click", (e) => {
+                    const playBtn = e.target.closest(".play-puzzle-btn");
+                    const editBtn = e.target.closest(".edit-puzzle-btn");
+                    if (playBtn) switchView("game", playBtn.dataset.id);
+                    if (editBtn) switchView("creation", editBtn.dataset.id);
+                });
+
+                const initCreation = (puzzleId = null) => {
+                    state.currentPuzzleId = puzzleId;
+                    let wordsToRender = [];
+                    puzzleTitleInput.value = "";
+                    deletePuzzleBtn.style.display = "none";
+                    if (puzzleId) {
+                        const puzzle = getPuzzles()[puzzleId];
+                        if (puzzle) {
+                            puzzleTitleInput.value = puzzle.title;
+                            wordsToRender = puzzle.words.map((w, i) => ({ ...w, id: i }));
+                            deletePuzzleBtn.style.display = "flex";
+                        } else {
+                            showToast("Không tìm thấy bộ đề!", "error");
+                            state.currentPuzzleId = null;
+                        }
+                    } else if (Object.keys(getPuzzles()).length === 0) {
+                        wordsToRender = [
+                            { word: "VIETNAM", clue: "Đất nước hình chữ S" },
+                            { word: "HANOI", clue: "Thủ đô" },
+                        ].map((w, i) => ({ ...w, id: i }));
+                    }
+                    state.words = wordsToRender;
+                    renderWordForms();
+                };
+
+                const renderWordForms = () => {
+                    wordListContainer.innerHTML = state.words
+                        .map(
+                            (word, index) =>
+                                `<div class="word-card" data-index="${index}">
+                    <div class="card-header">
+                        <h2 class="card-title">Từ #${index + 1}</h2>
+                        <button class="remove-word-btn" title="Xóa từ này">&times;</button>
+                    </div>
+                    <div class="form-group-material">
+                        <input type="text" class="word-input" value="${word.word || ""}" style="text-transform: uppercase;">
+                        <label>Từ (Word)</label>
+                    </div>
+                    <div class="form-group-material">
+                        <input type="text" class="clue-input" value="${word.clue || ""}">
+                        <label>Gợi ý (Clue)</label>
+                    </div>
+                </div>`
+                        )
+                        .join("");
+                };
+                const updateStateFromForms = () => {
+                    state.words = Array.from(document.querySelectorAll(".word-card")).map((form, index) => ({
+                        id: index,
+                        word: form.querySelector(".word-input").value.toUpperCase().trim(),
+                        clue: form.querySelector(".clue-input").value.trim(),
+                    }));
+                };
+                addWordFab.addEventListener("click", () => {
+                    updateStateFromForms();
+                    state.words.push({ id: state.words.length, word: "", clue: "" });
+                    renderWordForms();
+                    wordListContainer.scrollTop = wordListContainer.scrollHeight;
+                });
+                wordListContainer.addEventListener("click", (e) => {
+                    if (e.target.classList.contains("remove-word-btn")) {
+                        updateStateFromForms();
+                        const indexToRemove = parseInt(e.target.closest(".word-card").dataset.index);
+                        state.words.splice(indexToRemove, 1);
+                        state.words.forEach((word, index) => (word.id = index));
+                        renderWordForms();
+                    }
+                });
+
+                savePuzzleBtn.addEventListener("click", () => {
+                    updateStateFromForms();
+                    const title = puzzleTitleInput.value.trim();
+                    if (!title) {
+                        showToast("Vui lòng nhập tên bộ đề.", "error");
+                        return;
+                    }
+                    const validWords = state.words.filter((w) => w.word && w.clue);
+                    if (validWords.length < 2) {
+                        showToast("Cần ít nhất 2 từ hợp lệ.", "error");
+                        return;
+                    }
+
+                    let arrangedWords = autoArrangeWords(validWords);
+                    if (!arrangedWords) {
+                        showToast("Không thể tự động tạo lưới.", "error");
+                        return;
+                    }
+
+                    arrangedWords.sort((a, b) => a.row - b.row || a.col - b.col);
+                    const finalWords = arrangedWords.map((word, index) => ({ ...word, id: index }));
+
+                    const puzzles = getPuzzles();
+                    const puzzleId = state.currentPuzzleId || `puzzle_${Date.now()}`;
+                    if (state.currentPuzzleId) {
+                        localStorage.removeItem(`slam-gamestate-${state.currentPuzzleId}`);
+                    }
+                    puzzles[puzzleId] = {
+                        id: puzzleId,
+                        title: title,
+                        words: validWords.map(({ word, clue }) => ({ word, clue })),
+                        arrangedWords: finalWords,
+                        lastModified: Date.now(),
+                    };
+                    savePuzzles(puzzles);
+                    showToast("Đã lưu bộ đề!", "success");
+                    switchView("game", puzzleId);
+                });
+
+                deletePuzzleBtn.addEventListener("click", async () => {
+                    if (!state.currentPuzzleId) return;
+                    const confirmed = await showConfirmation("Xóa Bộ Đề?", "Hành động này không thể hoàn tác.");
+                    if (confirmed) {
+                        const puzzles = getPuzzles();
+                        delete puzzles[state.currentPuzzleId];
+                        savePuzzles(puzzles);
+                        localStorage.removeItem(`slam-gamestate-${state.currentPuzzleId}`);
+                        showToast("Đã xóa bộ đề.", "success");
+                        switchView("lobby");
+                    }
+                });
+
+                backToLobbyBtn.addEventListener("click", () => switchView("lobby"));
+                backToLobbyBtnGame.addEventListener("click", () => switchView("lobby"));
+                editPuzzleBtn.addEventListener("click", () => {
+                    if (state.currentPuzzleId) switchView("creation", state.currentPuzzleId);
+                });
+
+                const canPlaceWord = (word, row, col, direction, grid) => {
+                    if (direction === "horizontal") {
+                        if (grid[`${row}-${col - 1}`] || grid[`${row}-${col + word.word.length}`]) return false;
+                    } else {
+                        if (grid[`${row - 1}-${col}`] || grid[`${row + word.word.length}-${col}`]) return false;
+                    }
+                    for (let i = 0; i < word.word.length; i++) {
+                        let r = row,
+                            c = col;
+                        let p_r_before, p_c_before, p_r_after, p_c_after;
+                        if (direction === "horizontal") {
+                            c += i;
+                            p_r_before = r - 1;
+                            p_c_before = c;
+                            p_r_after = r + 1;
+                            p_c_after = c;
+                        } else {
+                            r += i;
+                            p_r_before = r;
+                            p_c_before = c - 1;
+                            p_r_after = r;
+                            p_c_after = c + 1;
+                        }
+                        const key = `${r}-${c}`;
+                        if (grid[key]) {
+                            if (grid[key].letter !== word.word[i]) return false;
+                        } else {
+                            if (grid[`${p_r_before}-${p_c_before}`] || grid[`${p_r_after}-${p_c_after}`]) return false;
+                        }
+                    }
+                    return true;
+                };
+                const autoArrangeWords = (wordsToArrange) => {
+                    if (!wordsToArrange || wordsToArrange.length === 0) return [];
+                    let unplacedWords = JSON.parse(JSON.stringify(wordsToArrange)).sort((a, b) => b.word.length - a.word.length);
+                    const placedWords = [];
+                    const grid = {};
+                    const firstWord = unplacedWords.shift();
+                    firstWord.row = 0;
+                    firstWord.col = 0;
+                    firstWord.direction = "horizontal";
+                    for (let i = 0; i < firstWord.word.length; i++) {
+                        grid[`${firstWord.row}-${firstWord.col + i}`] = { letter: firstWord.word[i], wordId: firstWord.id };
+                    }
+                    placedWords.push(firstWord);
+                    let attempts = 0;
+                    while (unplacedWords.length > 0 && attempts < unplacedWords.length) {
+                        let bestFit = null;
+                        for (let i = 0; i < unplacedWords.length; i++) {
+                            const wordToPlace = unplacedWords[i];
+                            for (const placedWord of placedWords) {
+                                const newDirection = placedWord.direction === "horizontal" ? "vertical" : "horizontal";
+                                for (let j = 0; j < wordToPlace.word.length; j++) {
+                                    const letterToMatch = wordToPlace.word[j];
+                                    for (let k = 0; k < placedWord.word.length; k++) {
+                                        if (placedWord.word[k] === letterToMatch) {
+                                            let newRow, newCol;
+                                            if (newDirection === "vertical") {
+                                                newRow = placedWord.row - j;
+                                                newCol = placedWord.col + k;
+                                            } else {
+                                                newRow = placedWord.row + k;
+                                                newCol = placedWord.col - j;
+                                            }
+                                            if (canPlaceWord(wordToPlace, newRow, newCol, newDirection, grid)) {
+                                                let score = 0;
+                                                for (let l = 0; l < wordToPlace.word.length; l++) {
+                                                    let r = newRow,
+                                                        c = newCol;
+                                                    if (newDirection === "horizontal") c += l;
+                                                    else r += l;
+                                                    if (grid[`${r}-${c}`]) score++;
+                                                }
+                                                if (!bestFit || score > bestFit.score) {
+                                                    bestFit = { word: wordToPlace, row: newRow, col: newCol, direction: newDirection, score: score, index: i };
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (bestFit) {
+                            const word = unplacedWords[bestFit.index];
+                            word.row = bestFit.row;
+                            word.col = bestFit.col;
+                            word.direction = bestFit.direction;
+                            for (let i = 0; i < word.word.length; i++) {
+                                let r = word.row,
+                                    c = word.col;
+                                if (word.direction === "horizontal") c += i;
+                                else r += i;
+                                grid[`${r}-${c}`] = { letter: word.word[i], wordId: word.id };
+                            }
+                            placedWords.push(word);
+                            unplacedWords.splice(bestFit.index, 1);
+                            attempts = 0;
+                        } else {
+                            attempts++;
+                        }
+                    }
+                    if (unplacedWords.length > 0) return null;
+                    let minRow = Infinity,
+                        minCol = Infinity;
+                    placedWords.forEach((word) => {
+                        minRow = Math.min(minRow, word.row);
+                        minCol = Math.min(minCol, word.col);
+                    });
+                    placedWords.forEach((word) => {
+                        word.row -= minRow;
+                        word.col -= minCol;
+                    });
+                    return placedWords;
+                };
+
+                const saveGameState = () => {
+                    if (state.isGameFinished) return;
+                    if (!state.currentPuzzleId) return;
+                    const gridContent = {};
+                    gridContainer.querySelectorAll(".playable").forEach((cell) => {
+                        const text = cell.querySelector(".cell-front").textContent;
+                        if (text) gridContent[`${cell.dataset.row}-${cell.dataset.col}`] = text;
+                    });
+                    const gameState = {
+                        solvedWords: Array.from(state.solvedWords),
+                        revealedLetters: Array.from(state.revealedLetters),
+                        elapsedSeconds: state.elapsedSeconds + (state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0),
+                        totalScore: state.totalScore,
+                        gridContent: gridContent,
+                        slamModeActive: state.slamModeActive,
+                        disabledLetters: Array.from(state.disabledLetters),
+                        // --- BẮT ĐẦU THÊM CODE MỚI ---
+                        gamePhase: state.gamePhase, // Lưu lại giai đoạn hiện tại của game
+                        playableWordIds: Array.from(state.playableWordIds), // Lưu lại danh sách các từ có thể chơi
+                        // --- KẾT THÚC THÊM CODE MỚI ---
+                    };
+                    localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
+                };
+
+                const loadGameState = () => {
+                    const savedState = localStorage.getItem(`slam-gamestate-${state.currentPuzzleId}`);
+                    if (!savedState) return;
+                    try {
+                        const gameState = JSON.parse(savedState);
+                        if (gameState.isComplete) {
+                            localStorage.removeItem(`slam-gamestate-${state.currentPuzzleId}`);
+                            showToast("Bắt đầu màn chơi mới!", "info");
+                            return false;
+                        }
+                        state.solvedWords = new Set(gameState.solvedWords || []);
+                        state.revealedLetters = new Set(gameState.revealedLetters || []);
+                        state.elapsedSeconds = gameState.elapsedSeconds || 0;
+                        state.totalScore = gameState.totalScore || 0;
+                        state.slamModeActive = gameState.slamModeActive || false;
+                        state.disabledLetters = new Set(gameState.disabledLetters || []);
+
+                        if (gameState.gamePhase) {
+                            state.gamePhase = gameState.gamePhase;
+                        }
+                        state.playableWordIds = new Set(gameState.playableWordIds || []);
+
+                        updateScore(0);
+                        if (gameState.gridContent) {
+                            for (const key in gameState.gridContent) {
+                                const [r, c] = key.split("-");
+                                const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                if (cell) cell.querySelector(".cell-front").textContent = gameState.gridContent[key];
+                            }
+                        }
+
+                        // --- BẮT ĐẦU CODE MỚI ---
+                        // Sau khi điền các chữ cái, hãy áp dụng lại style màu trắng cho các ô đã được tiết lộ
+                        if (state.revealedLetters.size > 0) {
+                            state.words.forEach((wordData) => {
+                                // Không cần xử lý lại những từ đã được giải hoàn toàn
+                                if (state.solvedWords.has(wordData.id)) return;
+
+                                for (let i = 0; i < wordData.word.length; i++) {
+                                    const letter = wordData.word[i];
+                                    // Nếu chữ cái trong từ này nằm trong danh sách đã tiết lộ
+                                    if (state.revealedLetters.has(letter)) {
+                                        let r = wordData.row,
+                                            c = wordData.col;
+                                        if (wordData.direction === "horizontal") c += i;
+                                        else r += i;
+                                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                        // Thêm class 'is-solved' để nó có màu trắng
+                                        if (cell) {
+                                            cell.classList.add("is-solved");
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        // --- KẾT THÚC CODE MỚI ---
+
+                        state.solvedWords.forEach((wordId) => {
+                            const wordData = state.words.find((w) => w.id === wordId);
+                            if (wordData) {
+                                for (let i = 0; i < wordData.word.length; i++) {
+                                    let r = wordData.row,
+                                        c = wordData.col;
+                                    if (wordData.direction === "horizontal") c += i;
+                                    else r += i;
+                                    const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                    if (cell) cell.classList.add("is-solved");
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Lỗi tải game:", e);
+                    }
+                };
+                const updateScore = (change) => {
+                    state.totalScore += change;
+                    scoreDisplay.textContent = state.totalScore;
+                };
+
+                const startTimer = () => {
+                    if (state.timerInterval) clearInterval(state.timerInterval); // Thay stopTimer() bằng dòng này
+                    state.startTime = Date.now();
+                    state.timerInterval = setInterval(() => {
+                        const elapsed = state.elapsedSeconds + Math.floor((Date.now() - state.startTime) / 1000);
+                        const minutes = String(Math.floor(elapsed / 60)).padStart(2, "0");
+                        const seconds = String(elapsed % 60).padStart(2, "0");
+                        timerDisplay.textContent = `${minutes}:${seconds}`;
+                    }, 1000);
+                };
+                const stopTimer = () => {
+                    if (state.timerInterval) {
+                        state.elapsedSeconds += Math.floor((Date.now() - state.startTime) / 1000);
+                        clearInterval(state.timerInterval);
+                        state.timerInterval = null;
+                        state.startTime = 0;
+                    }
+                };
+
+                const startWordTimer = () => {
+                    stopWordTimer();
+                    state.wordTimeLeft = 30;
+                    wordTimerDisplay.textContent = `00:${state.wordTimeLeft}`;
+                    state.wordTimerInterval = setInterval(() => {
+                        state.wordTimeLeft--;
+                        wordTimerDisplay.textContent = `00:${String(state.wordTimeLeft).padStart(2, "0")}`;
+                        if (state.wordTimeLeft <= 0) {
+                            handleWordTimeout();
+                        }
+                    }, 1000);
+                };
+                const stopWordTimer = () => {
+                    if (state.wordTimerInterval) clearInterval(state.wordTimerInterval);
+                    state.wordTimerInterval = null;
+                    wordTimerDisplay.textContent = "00:30";
+                };
+
+                const stopGame = () => {
+                    stopTimer();
+                    stopWordTimer();
+                    if (state.currentPage === "game") saveGameState();
+                };
+
+                const updateStats = () => {
+                    wordsSolvedStat.textContent = `${state.solvedWords.size}/${state.words.length}`;
+                };
+                const repositionNumberLabels = () => {
+                    document.querySelectorAll(".word-number-label").forEach((label) => {
+                        const wordId = parseInt(label.dataset.wordId);
+                        if (isNaN(wordId)) return;
+
+                        const wordData = state.words.find((w) => w.id === wordId);
+                        const firstCell = gridContainer.querySelector(`.cell:has([data-row="${wordData.row}"][data-col="${wordData.col}"])`);
+
+                        if (firstCell && wordData) {
+                            const gap = parseInt(getComputedStyle(gridContainer).gap) || 2;
+                            // Reset lại transform trước khi tính toán để tránh lỗi cộng dồn
+                            label.style.transform = "";
+
+                            if (wordData.direction === "horizontal") {
+                                label.style.top = `${firstCell.offsetTop + firstCell.offsetHeight / 2}px`;
+                                label.style.left = `${firstCell.offsetLeft - gap}px`;
+                                label.style.transform = "translate(-100%, -50%)";
+                            } else {
+                                // vertical
+                                label.style.top = `${firstCell.offsetTop - gap}px`;
+                                label.style.left = `${firstCell.offsetLeft + firstCell.offsetWidth / 2}px`;
+                                label.style.transform = "translate(-50%, -100%)";
+                            }
+                        }
+                    });
+                };
+
+                const adjustGridSize = () => {
+                    const gridData = generateGridData(JSON.parse(JSON.stringify(state.words)));
+                    if (gridData.rows === 0 || gridData.cols === 0) return;
+                    const availableWidth = gameArea.clientWidth - 20;
+                    const availableHeight = gameArea.clientHeight - 20;
+                    const cellSizeByWidth = availableWidth / (gridData.cols + 1.5);
+                    const cellSizeByHeight = availableHeight / (gridData.rows + 1.5);
+                    const newCellSize = Math.floor(Math.min(cellSizeByWidth, cellSizeByHeight));
+                    document.documentElement.style.setProperty("--cell-size", `${newCellSize}px`);
+                };
+
+                const createGameGrid = () => {
+                    const gridData = generateGridData(state.words);
+                    state.words = gridData.words;
+                    adjustGridSize();
+                    gridContainer.innerHTML = "";
+                    numberOverlay.innerHTML = ""; // Dọn sạch overlay
+
+                    // --- PHẦN CODE MỚI ĐƯỢC THÊM VÀO ---
+                    // Tạo các nhãn số cho mỗi từ
+                    state.words.forEach((word, index) => {
+                        const numberLabel = document.createElement("div");
+                        numberLabel.className = "word-number-label";
+                        numberLabel.dataset.wordId = word.id;
+                        numberLabel.textContent = index + 1;
+                        numberOverlay.appendChild(numberLabel);
+                    });
+                    // --- KẾT THÚC PHẦN CODE MỚI ---
+
+                    gridContainer.style.gridTemplateRows = `repeat(${gridData.rows}, var(--cell-size))`;
+                    gridContainer.style.gridTemplateColumns = `repeat(${gridData.cols}, var(--cell-size))`;
+
+                    for (let r = 0; r < gridData.rows; r++) {
+                        for (let c = 0; c < gridData.cols; c++) {
+                            const key = `${r}-${c}`;
+                            const cellDiv = document.createElement("div");
+                            cellDiv.className = "cell";
+                            if (gridData.grid.has(key)) {
+                                const cellInfo = gridData.grid.get(key);
+                                cellDiv.innerHTML = `<div class="playable" data-row="${r}" data-col="${c}"><div class="cell-face cell-front"></div></div>`;
+                                const playableDiv = cellDiv.querySelector(".playable");
+                                cellInfo.wordIds.forEach((id) => (playableDiv.dataset[`word_${id}`] = true));
+                            }
+                            gridContainer.appendChild(cellDiv);
+                        }
+                    }
+
+                    setTimeout(() => {
+                        repositionNumberLabels();
+                    }, 100);
+                };
+                const generateGridData = (words) => {
+                    if (!words || words.length === 0) return { grid: new Map(), rows: 0, cols: 0 };
+                    const wordsCopy = JSON.parse(JSON.stringify(words));
+                    let minR = Infinity,
+                        maxR = -Infinity,
+                        minC = Infinity,
+                        maxC = -Infinity;
+                    wordsCopy.forEach((word) => {
+                        let r = word.row,
+                            c = word.col;
+                        minR = Math.min(minR, r);
+                        minC = Math.min(minC, c);
+                        if (word.direction === "horizontal") {
+                            maxC = Math.max(maxC, c + word.word.length - 1);
+                            maxR = Math.max(maxR, r);
+                        } else {
+                            maxR = Math.max(maxR, r + word.word.length - 1);
+                            maxC = Math.max(maxC, c);
+                        }
+                    });
+                    const grid = new Map();
+                    wordsCopy.forEach((word) => {
+                        word.row -= minR;
+                        word.col -= minC;
+                        let r = word.row;
+                        let c = word.col;
+                        for (let i = 0; i < word.word.length; i++) {
+                            const key = `${r}-${c}`;
+                            const char = word.word[i].toUpperCase();
+                            if (!grid.has(key)) grid.set(key, { letter: char, wordIds: new Set() });
+                            grid.get(key).wordIds.add(word.id);
+                            if (word.direction === "horizontal") c++;
+                            else r++;
+                        }
+                    });
+                    return { grid, rows: maxR - minR + 1, cols: maxC - minC + 1, words: wordsCopy };
+                };
+
+                const triggerWinAnimation = () => {
+                    state.isGameFinished = true;
+                    stopTimer(); // Dừng hẳn timer
+                    clueText.textContent = "XUẤT SẮC! BẠN ĐÃ CHIẾN THẮNG!";
+                    keyboardWrapper.classList.remove("visible");
+
+                    // Logic cập nhật điểm cao
+                    const puzzles = getPuzzles();
+                    const currentPuzzle = puzzles[state.currentPuzzleId];
+                    if (currentPuzzle) {
+                        const oldHighScore = currentPuzzle.highScore || 0;
+                        if (state.totalScore > oldHighScore) {
+                            currentPuzzle.highScore = state.totalScore;
+                            savePuzzles(puzzles);
+                            showToast(`ĐIỂM CAO MỚI: ${state.totalScore}!`, "success", 4000);
+                        }
+                    }
+
+                    // Đánh dấu game đã hoàn thành và xóa save game cũ
+                    const finalGameState = {
+                        isComplete: true,
+                        totalScore: state.totalScore,
+                        // bạn có thể lưu thêm thông tin khác nếu muốn
+                    };
+                    localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(finalGameState));
+
+                    // Animation
+                    const allPlayableCells = Array.from(gridContainer.querySelectorAll(".playable"));
+                    allPlayableCells.forEach((cell) => {
+                        cell.dataset.letter = cell.querySelector(".cell-front").textContent;
+                        cell.querySelector(".cell-front").textContent = "";
+                    });
+
+                    const flickerInterval = setInterval(() => {
+                        allPlayableCells.forEach((cell) => {
+                            cell.querySelector(".cell-front").textContent = "";
+                        });
+                        const cellsToShow = allPlayableCells.sort(() => 0.5 - Math.random()).slice(0, 5);
+                        cellsToShow.forEach((cell) => {
+                            cell.querySelector(".cell-front").textContent = cell.dataset.letter;
+                        });
+                    }, 150);
+
+                    setTimeout(() => {
+                        clearInterval(flickerInterval);
+                        allPlayableCells.forEach((cell) => {
+                            cell.querySelector(".cell-front").textContent = cell.dataset.letter;
+                        });
+                    }, 2000);
+                };
+
+                const handleIncorrectGuess = (wordData) => {
+                    updateScore(-2);
+                    showToast(`Không chính xác!`, "error", 1500);
+                    if (wordData) {
+                        const playableCells = [];
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            let r = wordData.row,
+                                c = wordData.col;
+                            if (wordData.direction === "horizontal") c += i;
+                            else r += i;
+                            const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                            if (playable) playableCells.push(playable);
+                        }
+                        playableCells.forEach((p) => {
+                            if (!p.classList.contains("is-solved")) {
+                                p.querySelector(".cell-front").textContent = "";
+                                p.classList.add("is-locked");
+                            }
+                        });
+                    }
+                    setTimeout(() => {
+                        state.gamePhase = "reveal";
+                        state.isGameFinished = false;
+                        state.playableWordIds.clear();
+                        document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
+                        deselectWord();
+                        saveGameState();
+                    }, 800);
+                };
+
+                const handleWordTimeout = () => {
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    showToast("Hết giờ!", "error");
+                    handleIncorrectGuess(wordData);
+                };
+
+                const checkSelectedWord = () => {
+                    const timeLeft = state.wordTimeLeft;
+                    stopWordTimer();
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) return;
+
+                    let userInput = "";
+                    const playableCells = [];
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        if (playable) {
+                            playableCells.push(playable);
+                            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
+                        }
+                    }
+
+                    if (userInput === wordData.word) {
+                        updateScore(timeLeft + wordData.word.length);
+                        state.solvedWords.add(wordData.id);
+                        showToast(`+${timeLeft + wordData.word.length} điểm!`, "success", 1500);
+
+                        const dominoDelay = 60;
+                        const animationDuration = 250;
+                        const holdDuration = 1000;
+                        const letterRevealDelay = 40; // Chữ sẽ hiện ra sau nền 40ms
+
+                        // Giai đoạn 1: Zoom nền ra màu cam, sau đó chữ zoom lên
+                        playableCells.forEach((cell, i) => {
+                            const cellAnimStartTime = i * dominoDelay;
+                            const letterAnimStartTime = cellAnimStartTime + letterRevealDelay;
+
+                            // Lên lịch cho animation của nền ô
+                            setTimeout(() => {
+                                cell.classList.remove("anim-typing");
+                                cell.classList.add("anim-correct-phase1");
+                            }, cellAnimStartTime);
+
+                            // Lên lịch cho animation của chữ, trễ hơn một chút
+                            setTimeout(() => {
+                                const cellFront = cell.querySelector(".cell-front");
+                                // Bọc chữ trong thẻ <span> để animate riêng
+                                cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
+                            }, letterAnimStartTime);
+                        });
+
+                        const phase1TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration + letterRevealDelay;
+
+                        // Giai đoạn 2: Zoom về màu trắng (sau Giai đoạn 1 + thời gian chờ)
+                        setTimeout(() => {
+                            playableCells.forEach((cell, i) => {
+                                setTimeout(() => {
+                                    cell.classList.remove("anim-correct-phase1");
+                                    cell.classList.add("anim-correct-phase2");
+                                    // Đảm bảo chữ vẫn hiển thị đúng sau khi đổi animation
+                                    const cellFront = cell.querySelector(".cell-front");
+                                    if (!cellFront.textContent.trim()) {
+                                        cellFront.textContent = wordData.word[i];
+                                    }
+                                }, i * dominoDelay);
+                            });
+                        }, phase1TotalTime + holdDuration);
+
+                        const phase2TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration;
+                        const totalAnimationTime = phase1TotalTime + holdDuration + phase2TotalTime;
+
+                        // Cập nhật trạng thái game SAU KHI toàn bộ animation kết thúc
+                        setTimeout(() => {
+                            playableCells.forEach((cell) => {
+                                cell.classList.remove("anim-correct-phase2");
+                                cell.classList.add("is-solved");
+                                // Dọn dẹp: đảm bảo ô chỉ chứa text, không còn thẻ span
+                                const cellFront = cell.querySelector(".cell-front");
+                                cellFront.textContent = cellFront.textContent.trim();
+                            });
+
+                            updateStats();
+                            if (state.solvedWords.size === state.words.length) {
+                                triggerWinAnimation();
+                            } else {
+                                state.gamePhase = "reveal";
+                                state.playableWordIds.clear();
+                                deselectWord();
+                            }
+                            saveGameState();
+                        }, totalAnimationTime + 100);
+                    } else {
+                        handleIncorrectGuess(wordData);
+                    }
+                };
+
+                const hideNumberLabel = (label) => {
+                    if (!label) return;
+                    const wordData = state.words.find((w) => w.id == label.dataset.wordId);
+                    if (wordData) {
+                        label.classList.add(wordData.direction === "horizontal" ? "hiding-right" : "hiding-down");
+                        label.addEventListener(
+                            "animationend",
+                            () => {
+                                label.classList.remove("visible", "hiding-right", "hiding-down");
+                            },
+                            { once: true }
+                        );
+                    } else {
+                        label.classList.remove("visible");
+                    }
+                };
+
+                const deselectWord = () => {
+                    repositionNumberLabels();
+                    gridContainer.classList.remove("word-zoomed");
+                    gridContainer.style.transform = "";
+                    gridContainer.style.transformOrigin = "";
+                    stopWordTimer();
+                    state.selectedWordId = null;
+                    state.currentInputCell = null;
+                    document.getElementById("grid-wrapper").classList.remove("selection-active");
+                    document.querySelectorAll(".playable.selected-word").forEach((el) => el.classList.remove("selected-word"));
+
+                    // --- BẮT ĐẦU THAY ĐỔI LOGIC ---
+                    // Logic mới sẽ không ẩn tất cả các nhãn một cách mù quáng.
+                    // Thay vào đó, nó sẽ lặp qua tất cả các nhãn và quyết định trạng thái của từng cái.
+
+                    const shouldShowNumbers = (state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive;
+
+                    document.querySelectorAll(".word-number-label").forEach((label) => {
+                        const wordId = parseInt(label.dataset.wordId);
+                        // Một từ được coi là "có thể chơi" nếu nó nằm trong danh sách playableWordIds
+                        // hoặc khi đang ở chế độ SLAM (vì tất cả các từ chưa giải đều có thể chơi)
+                        const isPlayable = state.playableWordIds.has(wordId);
+
+                        // Hiển thị nhãn nếu: (chế độ chơi VÀ từ đó có thể chơi)
+                        if (shouldShowNumbers && isPlayable) {
+                            // Đảm bảo nó được hiển thị và không có class animation đang ẩn nó đi
+                            label.classList.remove("hiding-right", "hiding-down");
+                            label.classList.add("visible");
+                        } else {
+                            // Ẩn nhãn trong tất cả các trường hợp khác (ví dụ: đang ở chế độ tiết lộ, hoặc từ này không thể chơi)
+                            // Chỉ gọi hàm ẩn nếu nó đang thực sự hiển thị để tránh các animation không cần thiết
+                            if (label.classList.contains("visible")) {
+                                hideNumberLabel(label);
+                            }
+                        }
+                    });
+
+                    if (state.gamePhase === "playing") {
+                        if (state.playableWordIds.size > 0 && !state.slamModeActive) {
+                            clueText.textContent = "Chọn một từ được đánh số để giải!";
+                        }
+                        keyboardWrapper.classList.remove("visible");
+                    } else if (state.gamePhase === "reveal") {
+                        clueText.textContent = "Chọn một chữ cái để tiết lộ!";
+                        keyboardWrapper.classList.add("visible");
+                    }
+                    // --- KẾT THÚC THAY ĐỔI LOGIC ---
+                };
+                const handleCellClick = (clickedCell) => {
+                    if (state.selectedWordId !== null) {
+                        const wordIds = Object.keys(clickedCell.dataset)
+                            .filter((k) => k.startsWith("word_"))
+                            .map((k) => parseInt(k.replace("word_", "")));
+                        if (wordIds.includes(state.selectedWordId) && !clickedCell.classList.contains("is-solved")) state.currentInputCell = clickedCell;
+                        return;
+                    }
+                    if (state.gamePhase !== "playing" || state.playableWordIds.size === 0) return;
+                    const wordIds = Object.keys(clickedCell.dataset)
+                        .filter((k) => k.startsWith("word_"))
+                        .map((k) => parseInt(k.replace("word_", "")));
+                    if (wordIds.length === 0) return;
+                    const selectableUnsolvedIds = wordIds.filter((id) => !state.solvedWords.has(id) && state.playableWordIds.has(id));
+                    if (selectableUnsolvedIds.length === 0) {
+                        showToast("Chỉ có thể chọn các từ được đánh số.", "error", 2000);
+                        return;
+                    }
+                    const targetId = selectableUnsolvedIds[0];
+                    if (state.solvedWords.has(targetId)) return;
+                    state.selectedWordId = targetId;
+                    updateSelectionAndFocus();
+                };
+                const updateSelectionAndFocus = () => {
+                    document.querySelectorAll(".playable.selected-word").forEach((el) => el.classList.remove("selected-word"));
+                    document.getElementById("grid-wrapper").classList.remove("selection-active");
+                    document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
+
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) {
+                        deselectWord();
+                        return;
+                    }
+                    document.getElementById("grid-wrapper").classList.add("selection-active");
+                    if (!state.slamModeActive) clueText.textContent = `${wordData.id + 1}. ${wordData.clue}`;
+                    let firstEmptyCell = null;
+
+                    const firstCell = gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
+                    let lastCell = null;
+
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+
+                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        if (playable) {
+                            playable.classList.add("selected-word");
+                            playable.classList.remove("is-locked");
+                            const cellText = playable.querySelector(".cell-front").textContent.trim();
+                            if (!firstEmptyCell && cellText === "" && !playable.classList.contains("is-solved")) {
+                                firstEmptyCell = playable;
+                            }
+                            if (i === wordData.word.length - 1) {
+                                // Lấy ô cuối cùng
+                                lastCell = playable;
+                            }
+                        }
+                    }
+
+                    // Tính toán tọa độ trung tâm và áp dụng hiệu ứng phóng to
+                    if (firstCell && lastCell) {
+                        const centerX = (firstCell.offsetLeft + lastCell.offsetLeft + lastCell.offsetWidth) / 2;
+                        const centerY = (firstCell.offsetTop + lastCell.offsetTop + lastCell.offsetHeight) / 2;
+
+                        gridContainer.style.transformOrigin = `${centerX}px ${centerY}px`;
+                        gridContainer.classList.add("word-zoomed");
+                    }
+                    state.currentInputCell = firstEmptyCell || gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
+                    keyboardWrapper.classList.add("visible");
+                    startWordTimer();
+                };
+
+                const updateKeyboardState = () => {
+                    virtualKeyboard.querySelectorAll(".key").forEach((keyEl) => {
+                        const keyUpper = keyEl.dataset.key.toUpperCase();
+                        if (keyUpper.length > 1) return; // Bỏ qua các phím chức năng
+
+                        // Một phím sẽ bị vô hiệu hóa nếu nó đã được tiết lộ HOẶC nó nằm trong danh sách bấm sai
+                        const isDisabled = state.revealedLetters.has(keyUpper) || state.disabledLetters.has(keyUpper);
+                        keyEl.disabled = isDisabled;
+                    });
+                };
+                const createVirtualKeyboard = () => {
+                    const keysLayout = [
+                        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+                        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+                        ["Backspace", "Z", "X", "C", "V", "B", "N", "M", "Enter"],
+                    ];
+                    virtualKeyboard.innerHTML = keysLayout
+                        .map(
+                            (row) =>
+                                `<div class="keyboard-row">${row
+                                    .map((key) => {
+                                        let c = "key";
+                                        if (key.length > 1) c += " special";
+                                        if (key === "Enter") c += " enter";
+                                        return `<button class="${c}" data-key="${key}">${key === "Backspace" ? "XÓA" : key === "Enter" ? "ENTER" : key}</button>`;
+                                    })
+                                    .join("")}</div>`
+                        )
+                        .join("");
+                };
+                const handleLetterReveal = (key) => {
+                    if (key.length > 1 || state.revealedLetters.has(key.toUpperCase())) return;
+                    const letter = key.toUpperCase();
+                    const allLettersInPuzzle = state.words.reduce((acc, word) => acc + word.word, "");
+
+                    // Trường hợp 1: Chữ cái không tồn tại trong toàn bộ câu đố
+                    if (!allLettersInPuzzle.includes(letter)) {
+                        showToast(`Chữ '${letter}' không có trong bảng!`, "error", 2000);
+                        updateScore(-1); // Trừ điểm
+                        const keyEl = virtualKeyboard.querySelector(`[data-key="${letter}"]`);
+                        if (keyEl) keyEl.disabled = true;
+                        state.disabledLetters.add(letter); // Thêm vào danh sách để lưu lại trạng thái disable
+                        saveGameState();
+                        return;
+                    }
+
+                    // --- LOGIC SỬA LỖI BẮT ĐẦU TỪ ĐÂY ---
+                    // Trường hợp 2: Kiểm tra xem tất cả các ô chứa chữ cái này đã hiển thị hết chưa
+                    let hasHiddenInstance = false;
+                    for (const wordData of state.words) {
+                        // Bỏ qua các từ đã được giải hoàn toàn
+                        if (state.solvedWords.has(wordData.id)) continue;
+
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            if (wordData.word[i] === letter) {
+                                let r = wordData.row,
+                                    c = wordData.col;
+                                if (wordData.direction === "horizontal") c += i;
+                                else r += i;
+                                const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                // Nếu tìm thấy một ô chứa chữ này mà chưa được giải (chưa có class 'is-solved'),
+                                // tức là vẫn còn chữ để tiết lộ.
+                                if (cell && !cell.classList.contains("is-solved")) {
+                                    hasHiddenInstance = true;
+                                    break; // Thoát khỏi vòng lặp trong
+                                }
+                            }
+                        }
+                        if (hasHiddenInstance) {
+                            break; // Thoát khỏi vòng lặp ngoài
+                        }
+                    }
+
+                    // Nếu không còn ô nào bị ẩn, thông báo cho người dùng và trừ điểm
+                    if (!hasHiddenInstance) {
+                        showToast(`Chữ '${letter}' đã được hiển thị hết trên bảng.`, "info", 2500);
+                        updateScore(-1); // Trừ điểm cho lựa chọn không hiệu quả
+                        const keyEl = virtualKeyboard.querySelector(`[data-key="${letter}"]`);
+                        if (keyEl) keyEl.disabled = true;
+                        state.revealedLetters.add(letter); // Đánh dấu đã bấm để không bị trừ điểm tiếp
+                        saveGameState();
+                        return;
+                    }
+                    // --- KẾT THÚC LOGIC SỬA LỖI ---
+
+                    // Trường hợp 3: Tiết lộ chữ cái (logic gốc vẫn đúng)
+                    state.revealedLetters.add(letter);
+                    updateKeyboardState();
+                    state.playableWordIds.clear();
+                    let revealedCount = 0;
+
+                    state.words.forEach((wordData) => {
+                        let containsLetter = false;
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            if (wordData.word[i] === letter) {
+                                containsLetter = true;
+                                let r = wordData.row,
+                                    c = wordData.col;
+                                if (wordData.direction === "horizontal") c += i;
+                                else r += i;
+                                const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                if (playable && !playable.classList.contains("is-solved")) {
+                                    playable.querySelector(".cell-front").textContent = letter;
+                                    playable.classList.add("is-solved");
+                                    revealedCount++;
+                                }
+                            }
+                        }
+
+                        if (containsLetter && !state.solvedWords.has(wordData.id)) {
+                            state.playableWordIds.add(wordData.id);
+                            const numberLabel = numberOverlay.querySelector(`[data-word-id="${wordData.id}"]`);
+                            if (numberLabel) {
+                                numberLabel.classList.remove("hiding-right", "hiding-down");
+                                numberLabel.classList.add("visible");
+                            }
+                        }
+                    });
+
+                    if (revealedCount > 0) {
+                        showToast(`Đã tiết lộ ${revealedCount} ô chữ '${letter}'!`, "success");
+                    }
+
+                    if (state.playableWordIds.size > 0) {
+                        state.gamePhase = "playing";
+                    } else {
+                        state.gamePhase = "reveal";
+                    }
+
+                    deselectWord();
+                    saveGameState();
+                };
+                const handleWordInput = (key) => {
+                    if (!state.currentInputCell || (key.length > 1 && key !== "Backspace" && key !== "Enter")) return;
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) return;
+
+                    // --- LOGIC XỬ LÝ NÚT XÓA (BACKSPACE) ---
+                    if (key === "Backspace") {
+                        const currentCellFront = state.currentInputCell.querySelector(".cell-front");
+                        const currentCellPlayable = state.currentInputCell;
+
+                        // Xóa ký tự trong ô hiện tại nếu nó có chữ
+                        if (!currentCellPlayable.classList.contains("is-solved") && currentCellFront.textContent.trim() !== "") {
+                            currentCellFront.textContent = "";
+                            currentCellPlayable.classList.remove("anim-typing"); // Trả ô về màu vàng
+                            return;
+                        }
+
+                        // Nếu ô hiện tại trống, di chuyển đến ô trước đó và xóa
+                        let targetCellToDelete = null;
+                        let cellToTest = currentCellPlayable;
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            const { row, col } = cellToTest.dataset;
+                            const prevRow = parseInt(row) - (wordData.direction === "vertical" ? 1 : 0);
+                            const prevCol = parseInt(col) - (wordData.direction === "horizontal" ? 1 : 0);
+                            const prevCell = gridContainer.querySelector(`[data-row="${prevRow}"][data-col="${prevCol}"]`);
+                            if (prevCell && prevCell.classList.contains("selected-word")) {
+                                cellToTest = prevCell;
+                                if (!cellToTest.classList.contains("is-solved")) {
+                                    targetCellToDelete = cellToTest;
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (targetCellToDelete) {
+                            state.currentInputCell = targetCellToDelete;
+                            state.currentInputCell.querySelector(".cell-front").textContent = "";
+                            state.currentInputCell.classList.remove("anim-typing"); // Trả ô về màu vàng
+                        }
+                        return;
+                    }
+
+                    // --- LOGIC XỬ LÝ NHẬP CHỮ ---
+                    let cellToWriteIn = state.currentInputCell;
+
+                    // Nếu ô hiện tại đã được giải (do tiết lộ), tìm ô trống tiếp theo
+                    if (cellToWriteIn.classList.contains("is-solved")) {
+                        let nextEmptyCell = null;
+                        let tempCell = cellToWriteIn;
+                        for (let i = 0; i < wordData.word.length * 2; i++) {
+                            // Lặp đủ dài để chắc chắn quét hết từ
+                            const { row, col } = tempCell.dataset;
+                            const nextRow = parseInt(row) + (wordData.direction === "vertical" ? 1 : 0);
+                            const nextCol = parseInt(col) + (wordData.direction === "horizontal" ? 1 : 0);
+                            const potentialNext = gridContainer.querySelector(`[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                            if (potentialNext && potentialNext.classList.contains("selected-word")) {
+                                if (!potentialNext.classList.contains("is-solved")) {
+                                    nextEmptyCell = potentialNext;
+                                    break;
+                                }
+                                tempCell = potentialNext;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (nextEmptyCell) cellToWriteIn = nextEmptyCell;
+                    }
+
+                    // Ghi chữ và áp dụng animation
+                    if (cellToWriteIn && !cellToWriteIn.classList.contains("is-solved")) {
+                        cellToWriteIn.classList.add("anim-typing");
+                        cellToWriteIn.querySelector(".cell-front").textContent = key.toUpperCase();
+
+                        // Tự động di chuyển đến ô tiếp theo
+                        let nextFocusCell = null;
+                        let tempCell = cellToWriteIn;
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            const { row, col } = tempCell.dataset;
+                            const nextRow = parseInt(row) + (wordData.direction === "vertical" ? 1 : 0);
+                            const nextCol = parseInt(col) + (wordData.direction === "horizontal" ? 1 : 0);
+                            const potentialNext = gridContainer.querySelector(`[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                            if (potentialNext && potentialNext.classList.contains("selected-word")) {
+                                nextFocusCell = potentialNext; // Di chuyển dù ô tiếp theo đã được giải
+                                break;
+                            } else {
+                                break;
+                            }
+                        }
+                        state.currentInputCell = nextFocusCell || cellToWriteIn;
+                    }
+                };
+                saveGameState();
+                const handleKeyPress = (key) => {
+                    if (state.slamModeActive) {
+                        if (key === "Enter") {
+                            if (state.selectedWordId !== null) checkSelectedWord();
+                        } else handleWordInput(key);
+                        return;
+                    }
+                    if (state.gamePhase === "reveal") handleLetterReveal(key);
+                    else if (state.gamePhase === "playing") {
+                        if (key === "Enter") {
+                            if (state.selectedWordId !== null) checkSelectedWord();
+                        } else handleWordInput(key);
+                    }
+                };
+
+                slamBtn.addEventListener("click", () => {
+                    if (!state.slamModeActive) slamModal.classList.add("visible");
+                });
+                slamCancelBtn.addEventListener("click", () => slamModal.classList.remove("visible"));
+                slamConfirmBtn.addEventListener("click", () => {
+                    state.slamModeActive = true;
+                    state.gamePhase = "playing";
+                    state.playableWordIds.clear();
+                    state.words.forEach((w) => {
+                        if (!state.solvedWords.has(w.id)) state.playableWordIds.add(w.id);
+                    });
+                    document.querySelectorAll(".word-number-label").forEach((l) => {
+                        const wordId = parseInt(l.dataset.wordId);
+                        if (state.playableWordIds.has(wordId) && !state.solvedWords.has(wordId)) l.classList.add("visible");
+                    });
+                    deselectWord();
+                    slamModal.classList.remove("visible");
+                    clueText.classList.add("hidden");
+                    slamBtn.disabled = true;
+                    showToast("SLAM MODE ACTIVATED!", "error");
+                    saveGameState();
+                });
+                pages.game.addEventListener("click", (e) => {
+                    if (state.selectedWordId !== null && !e.target.closest("#grid-wrapper") && !e.target.closest(".game-hud")) deselectWord();
+                });
+                virtualKeyboard.addEventListener("click", (e) => {
+                    if (e.target.matches(".key")) {
+                        handleKeyPress(e.target.dataset.key);
+                    }
+                });
+                gridContainer.addEventListener("click", (e) => {
+                    const playable = e.target.closest(".playable");
+                    if (playable) handleCellClick(playable);
+                });
+                window.addEventListener("resize", () => {
+                    if (state.currentPage === "game") {
+                        adjustGridSize();
+                        repositionNumberLabels();
+                    }
+                });
+                window.addEventListener("beforeunload", () => {
+                    if (state.currentPage === "game") saveGameState();
+                });
+
+                const initGame = (puzzleId) => {
+                    const puzzle = getPuzzles()[puzzleId];
+                    if (!puzzle) {
+                        showToast("Lỗi: Không tìm thấy bộ đề.", "error");
+                        switchView("lobby");
+                        return;
+                    }
+                    state.currentPuzzleId = puzzleId;
+                    state.words = puzzle.arrangedWords;
+                    state.solvedWords.clear();
+                    state.revealedLetters.clear();
+                    state.disabledLetters.clear();
+                    state.playableWordIds.clear();
+                    state.selectedWordId = null;
+                    state.slamModeActive = false;
+                    state.gamePhase = "reveal";
+                    state.elapsedSeconds = 0;
+                    state.totalScore = 0;
+                    updateScore(0);
+                    slamBtn.disabled = false;
+                    clueText.classList.remove("hidden");
+                    createGameGrid();
+                    loadGameState();
+                    updateKeyboardState();
+                    deselectWord();
+                    updateStats();
+                    startTimer();
+                };
+
+                createVirtualKeyboard();
+                switchView("lobby");
+            });
+        </script>
+    </body>
+</html>
