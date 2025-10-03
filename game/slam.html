@@ -754,6 +754,21 @@
             <button id="add-word-fab" title="Thêm từ mới">+</button>
             <div class="creation-footer">
                 <button id="back-to-lobby-btn" class="action-btn">Quay Lại</button>
+
+                <button id="import-puzzle-btn" class="action-btn icon-btn" title="Nhập bộ đề từ file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <button id="export-puzzle-btn" class="action-btn icon-btn" title="Xuất bộ đề ra file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </button>
                 <button id="delete-puzzle-btn" class="action-btn" style="background: linear-gradient(145deg, #c62828, #b71c1c); border-color: #e57373; display: none;">Xóa</button>
                 <button id="save-puzzle-btn" class="action-btn primary">Lưu & Chơi</button>
             </div>
@@ -845,7 +860,8 @@
                     isGameFinished: false,
                 };
                 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+                const exportBtn = document.getElementById("export-puzzle-btn");
+                const importBtn = document.getElementById("import-puzzle-btn");
                 const pages = { lobby: document.getElementById("lobby-page"), creation: document.getElementById("creation-page"), game: document.getElementById("game-page") };
                 const puzzleListContainer = document.getElementById("puzzle-list");
                 const puzzleTitleInput = document.getElementById("puzzle-title-input");
@@ -883,7 +899,92 @@
                 const savePuzzles = (p) => {
                     localStorage.setItem("slam-puzzles-list", JSON.stringify(p));
                 };
+                // =======================================================================
+                // ★★★ LOGIC MỚI CHO TÍNH NĂNG XUẤT/NHẬP BỘ ĐỀ ★★★
+                // =======================================================================
 
+                // --- HÀM 1: XUẤT DỮ LIỆU RA FILE .JSON ---
+                const exportPuzzle = () => {
+                    updateStateFromForms(); // Cập nhật dữ liệu từ các ô input
+                    const title = puzzleTitleInput.value.trim();
+                    if (!title) {
+                        showToast("Vui lòng nhập tên bộ đề trước khi xuất.", "error");
+                        return;
+                    }
+                    const validWords = state.words.filter((w) => w.word && w.clue);
+                    if (validWords.length < 2) {
+                        showToast("Cần ít nhất 2 từ hợp lệ để xuất file.", "error");
+                        return;
+                    }
+
+                    // Tạo đối tượng dữ liệu để xuất
+                    const puzzleData = {
+                        title: title,
+                        words: validWords.map(({ word, clue }) => ({ word, clue })), // Chỉ lấy word và clue
+                    };
+
+                    // Tạo file JSON
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(puzzleData, null, 2));
+                    const downloadAnchorNode = document.createElement("a");
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    // Tạo tên file an toàn
+                    const safeFileName = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+                    downloadAnchorNode.setAttribute("download", `slam_puzzle_${safeFileName}.json`);
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                    showToast("Đã xuất bộ đề!", "success");
+                };
+
+                // --- HÀM 2: NHẬP DỮ LIỆU TỪ FILE .JSON ---
+                const importPuzzle = () => {
+                    // Tạo một input ảo để người dùng chọn file
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = ".json"; // Chỉ chấp nhận file .json
+
+                    fileInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                            try {
+                                const puzzleData = JSON.parse(event.target.result);
+                                // Kiểm tra cấu trúc file
+                                if (!puzzleData.title || !Array.isArray(puzzleData.words)) {
+                                    throw new Error("Cấu trúc file không hợp lệ.");
+                                }
+
+                                const confirmed = await showConfirmation("Nhập Bộ Đề?", `Bạn có muốn thay thế bộ đề hiện tại bằng "${puzzleData.title}" (${puzzleData.words.length} từ)? Mọi thay đổi chưa lưu sẽ bị mất.`);
+
+                                if (confirmed) {
+                                    puzzleTitleInput.value = puzzleData.title;
+                                    // Reset ID và gán dữ liệu mới
+                                    state.words = puzzleData.words.map((w, index) => ({
+                                        id: index,
+                                        word: w.word || "",
+                                        clue: w.clue || "",
+                                    }));
+                                    state.currentPuzzleId = null; // Coi như đây là một bộ đề mới
+                                    deletePuzzleBtn.style.display = "none";
+                                    renderWordForms();
+                                    showToast("Nhập bộ đề thành công!", "success");
+                                }
+                            } catch (error) {
+                                showToast(`Lỗi khi đọc file: ${error.message}`, "error");
+                            }
+                        };
+                        reader.readAsText(file);
+                    };
+
+                    fileInput.click(); // Mở hộp thoại chọn file
+                };
+
+                if (exportBtn) exportBtn.addEventListener("click", exportPuzzle);
+                if (importBtn) importBtn.addEventListener("click", importPuzzle);
+                // =======================================================================
+                // ★★★ KẾT THÚC LOGIC MỚI CHO TÍNH NĂNG XUẤT/NHẬP BỘ ĐỀ ★★★
                 const showConfirmation = (title, text) => {
                     return new Promise((resolve) => {
                         document.getElementById("confirm-title").textContent = title;
