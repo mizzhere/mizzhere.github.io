@@ -2244,25 +2244,42 @@
                     });
 
                     // --- LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
+                    // --- LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
                     const newlyCompletedWords = [];
+                    // Quét qua tất cả các từ có liên quan đến chữ cái vừa được tiết lộ
                     state.playableWordIds.forEach((wordId) => {
+                        // Bỏ qua nếu từ này đã được giải trước đó
                         if (state.solvedWords.has(wordId)) return;
+
                         const wordData = state.words.find((w) => w.id === wordId);
                         if (!wordData) return;
 
-                        let isFullyRevealed = true;
-                        for (const char of wordData.word) {
-                            if (!state.revealedLetters.has(char)) {
-                                isFullyRevealed = false;
+                        let currentGridWord = ""; // Chuỗi để xây dựng từ hiện tại trên lưới
+                        let isCompleteOnGrid = true;
+
+                        // Lặp qua độ dài của từ để đọc từng ô chữ trên lưới
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            let r = wordData.row,
+                                c = wordData.col;
+                            if (wordData.direction === "horizontal") c += i;
+                            else r += i;
+
+                            const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                            const cellText = cell ? cell.querySelector(".cell-front").textContent.trim().toUpperCase() : "";
+
+                            // Nếu có bất kỳ ô nào trống, từ đó chưa thể hoàn thành
+                            if (cellText === "") {
+                                isCompleteOnGrid = false;
                                 break;
                             }
+                            currentGridWord += cellText;
                         }
 
-                        if (isFullyRevealed) {
+                        // Nếu từ trên lưới đã đầy đủ VÀ khớp với đáp án, thêm nó vào danh sách tự động hoàn thành
+                        if (isCompleteOnGrid && currentGridWord === wordData.word) {
                             newlyCompletedWords.push(wordId);
                         }
                     });
-
                     if (newlyCompletedWords.length > 0) {
                         newlyCompletedWords.forEach((wordId) => {
                             state.solvedWords.add(wordId);
