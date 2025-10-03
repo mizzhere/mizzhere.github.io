@@ -1294,39 +1294,58 @@
                         firstWord.direction = "horizontal";
                         return placeRemainingWords([firstWord], words);
                     }
-                    // ★★★ KẾT THÚC LOGIC CHỌN ỨNG VIÊN THÔNG MINH ★★★
 
-                    const getAllIndices = (str, char) => {
-                        const indices = [];
-                        for (let i = 0; i < str.length; i++) {
-                            if (str[i] === char) indices.push(i);
+                    // --- BẮT ĐẦU ĐOẠN MÃ MỚI TỐI ƯU HÓA ---
+                    // Chỗ này chính là phần được thay đổi để tăng tốc độ
+                    const tryBuildUShape_Optimized = () => {
+                        // Bước 1: Tạo "Bản Đồ Ký Tự" để tra cứu nhanh
+                        const charMap = new Map();
+                        for (const wordObj of candidates) {
+                            for (let i = 0; i < wordObj.word.length; i++) {
+                                const char = wordObj.word[i];
+                                if (!charMap.has(char)) {
+                                    charMap.set(char, []);
+                                }
+                                charMap.get(char).push({ word: wordObj, index: i });
+                            }
                         }
-                        return indices;
-                    };
 
-                    const tryBuildUShape = () => {
                         let bestConfig = null;
 
-                        for (let i = 0; i < candidates.length; i++) {
-                            for (let j = 0; j < candidates.length; j++) {
-                                if (i === j) continue;
-                                for (let k = 0; k < candidates.length; k++) {
-                                    if (k === i || k === j) continue;
-                                    const bottomWord = candidates[i];
-                                    const sideA = candidates[j];
-                                    const sideB = candidates[k];
-                                    if (bottomWord.word.length < 3) continue;
-                                    const firstChar = bottomWord.word[0];
-                                    const lastChar = bottomWord.word[bottomWord.word.length - 1];
-                                    const sideA_connects_first_indices = getAllIndices(sideA.word, firstChar);
-                                    const sideB_connects_last_indices = getAllIndices(sideB.word, lastChar);
-                                    for (const idxA of sideA_connects_first_indices) {
-                                        for (const idxB of sideB_connects_last_indices) {
-                                            const score = Math.min(idxA, sideA.word.length - 1 - idxA) + Math.min(idxB, sideB.word.length - 1 - idxB);
-                                            if (!bestConfig || score < bestConfig.score) {
-                                                bestConfig = { score, leftSide: sideA, rightSide: sideB, bottom: bottomWord, leftIndex: idxA, rightIndex: idxB };
-                                            }
-                                        }
+                        // Bước 2: Thuật toán tìm kiếm mới hiệu quả hơn
+                        for (const bottomWordObj of candidates) {
+                            const bottomWord = bottomWordObj.word;
+                            if (bottomWord.length < 3) continue;
+
+                            const firstChar = bottomWord[0];
+                            const lastChar = bottomWord[bottomWord.length - 1];
+
+                            // Tra cứu tức thì các ứng viên cạnh bên
+                            const leftSideCandidates = charMap.get(firstChar) || [];
+                            const rightSideCandidates = charMap.get(lastChar) || [];
+
+                            for (const leftCandidate of leftSideCandidates) {
+                                for (const rightCandidate of rightSideCandidates) {
+                                    const sideA = leftCandidate.word;
+                                    const sideB = rightCandidate.word;
+
+                                    if (sideA.id === sideB.id || sideA.id === bottomWordObj.id || sideB.id === bottomWordObj.id) {
+                                        continue;
+                                    }
+
+                                    const idxA = leftCandidate.index;
+                                    const idxB = rightCandidate.index;
+
+                                    const score = Math.min(idxA, sideA.word.length - 1 - idxA) + Math.min(idxB, sideB.word.length - 1 - idxB);
+                                    if (!bestConfig || score < bestConfig.score) {
+                                        bestConfig = {
+                                            score,
+                                            leftSide: sideA,
+                                            rightSide: sideB,
+                                            bottom: bottomWordObj,
+                                            leftIndex: idxA,
+                                            rightIndex: idxB,
+                                        };
                                     }
                                 }
                             }
@@ -1352,8 +1371,9 @@
                         }
                         return null;
                     };
+                    // --- KẾT THÚC ĐOẠN MÃ MỚI TỐI ƯU HÓA ---
 
-                    const uShapeResult = tryBuildUShape();
+                    const uShapeResult = tryBuildUShape_Optimized(); // <-- Gọi hàm tối ưu hóa mới
                     let finalLayout = null;
 
                     if (uShapeResult) {
