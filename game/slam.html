@@ -1400,7 +1400,68 @@
 
                     return finalLayout;
                 };
+                // HÀM MỚI: Tái sử dụng cho hiệu ứng giải từ
+                const animateWordSolved = async (wordId) => {
+                    const wordData = state.words.find((w) => w.id === wordId);
+                    if (!wordData) return;
 
+                    const playableCells = [];
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        if (playable) playableCells.push(playable);
+                    }
+
+                    const dominoDelay = 60;
+                    const animationDuration = 250;
+                    // Giảm thời gian chờ cho hiệu ứng tự động để game trôi chảy hơn
+                    const holdDuration = 400;
+                    const letterRevealDelay = 40;
+
+                    // GIAI ĐOẠN 1: Domino màu cam và hiện chữ
+                    const phase1Promises = playableCells.map((cell, i) => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                cell.classList.remove("anim-typing", "is-solved");
+                                cell.classList.add("anim-correct-phase1");
+
+                                const cellFront = cell.querySelector(".cell-front");
+                                cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
+
+                                setTimeout(resolve, animationDuration + letterRevealDelay);
+                            }, i * dominoDelay);
+                        });
+                    });
+                    await Promise.all(phase1Promises);
+                    await delay(holdDuration);
+
+                    // GIAI ĐOẠN 2: Domino màu trắng (trạng thái đã giải)
+                    const phase2Promises = playableCells.map((cell, i) => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                cell.classList.remove("anim-correct-phase1");
+                                cell.classList.add("anim-correct-phase2");
+                                const cellFront = cell.querySelector(".cell-front");
+                                if (!cellFront.textContent.trim()) {
+                                    cellFront.textContent = wordData.word[i];
+                                }
+                                setTimeout(resolve, animationDuration);
+                            }, i * dominoDelay);
+                        });
+                    });
+                    await Promise.all(phase2Promises);
+
+                    // Dọn dẹp cuối cùng: Gán class is-solved
+                    playableCells.forEach((cell) => {
+                        cell.classList.remove("anim-correct-phase2");
+                        cell.classList.add("is-solved");
+                        const cellFront = cell.querySelector(".cell-front");
+                        cellFront.textContent = cellFront.textContent.trim();
+                    });
+                };
                 const saveGameState = () => {
                     if (state.isGameFinished) return;
                     if (!state.currentPuzzleId) return;
@@ -1963,57 +2024,10 @@
                         state.solvedWords.add(wordData.id);
                         showToast(`+${timeLeft + wordData.word.length} điểm!`, "success", 1500);
 
-                        // BƯỚC 2.2: Toàn bộ khối setTimeout... được thay thế bằng khối async/await dưới đây
+                        // THAY THẾ toàn bộ khối setTimeout và animation dài dòng bằng một dòng duy nhất
+                        await animateWordSolved(wordData.id);
 
-                        const dominoDelay = 60;
-                        const animationDuration = 250;
-                        const holdDuration = 1000;
-                        const letterRevealDelay = 40;
-
-                        // GIAI ĐOẠN 1: Bắt đầu hiệu ứng domino màu cam
-                        playableCells.forEach((cell, i) => {
-                            const cellAnimStartTime = i * dominoDelay;
-                            const letterAnimStartTime = cellAnimStartTime + letterRevealDelay;
-
-                            setTimeout(() => {
-                                cell.classList.remove("anim-typing");
-                                cell.classList.add("anim-correct-phase1");
-                            }, cellAnimStartTime);
-
-                            setTimeout(() => {
-                                const cellFront = cell.querySelector(".cell-front");
-                                cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
-                            }, letterAnimStartTime);
-                        });
-
-                        // ĐỢI cho Giai đoạn 1 và thời gian giữ kết thúc. Code sẽ dừng ở đây.
-                        const phase1TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration + letterRevealDelay;
-                        await delay(phase1TotalTime + holdDuration);
-
-                        // GIAI ĐOẠN 2: Bắt đầu hiệu ứng domino màu trắng
-                        playableCells.forEach((cell, i) => {
-                            setTimeout(() => {
-                                cell.classList.remove("anim-correct-phase1");
-                                cell.classList.add("anim-correct-phase2");
-                                const cellFront = cell.querySelector(".cell-front");
-                                if (!cellFront.textContent.trim()) {
-                                    cellFront.textContent = wordData.word[i];
-                                }
-                            }, i * dominoDelay);
-                        });
-
-                        // ĐỢI cho Giai đoạn 2 kết thúc. Code lại dừng ở đây.
-                        const phase2TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration;
-                        await delay(phase2TotalTime);
-
-                        // SAU KHI TẤT CẢ ANIMATION ĐÃ XONG, tiến hành cập nhật trạng thái
-                        playableCells.forEach((cell) => {
-                            cell.classList.remove("anim-correct-phase2");
-                            cell.classList.add("is-solved");
-                            const cellFront = cell.querySelector(".cell-front");
-                            cellFront.textContent = cellFront.textContent.trim();
-                        });
-
+                        // SAU KHI hiệu ứng đã xong, tiến hành cập nhật trạng thái
                         updateStats();
                         if (state.solvedWords.size === state.words.length) {
                             triggerWinAnimation();
@@ -2214,7 +2228,7 @@
                         .join("");
                 };
                 // THAY THẾ TOÀN BỘ hàm revealLetterOnGrid CŨ bằng phiên bản HOÀN CHỈNH này
-                const revealLetterOnGrid = (letter) => {
+                const revealLetterOnGrid = async (letter) => {
                     state.revealedLetters.add(letter.toUpperCase());
 
                     state.playableWordIds.clear();
@@ -2281,6 +2295,11 @@
                         }
                     });
                     if (newlyCompletedWords.length > 0) {
+                        // ★★★ GỌI HIỆU ỨNG MỚI Ở ĐÂY ★★★
+                        // Chạy song song hiệu ứng cho tất cả các từ được hoàn thành cùng lúc
+                        await Promise.all(newlyCompletedWords.map((id) => animateWordSolved(id)));
+
+                        // Sau khi hiệu ứng kết thúc, cập nhật trạng thái game
                         newlyCompletedWords.forEach((wordId) => {
                             state.solvedWords.add(wordId);
                             state.playableWordIds.delete(wordId);
@@ -2288,19 +2307,17 @@
 
                         showToast(`Đã tự động hoàn thành ${newlyCompletedWords.length} từ!`, "success");
                         updateStats();
-                        saveGameState(); // Lưu lại ngay sau khi cập nhật
+                        saveGameState();
 
                         if (state.solvedWords.size === state.words.length) {
-                            // Nếu đây là từ cuối cùng, kích hoạt chiến thắng và dừng lại
                             triggerWinAnimation();
                             return;
                         } else {
-                            // Nếu không, tiếp tục vòng lặp tiết lộ tự động
-                            // Dùng setTimeout để tạo một khoảng nghỉ ngắn, giúp người chơi nhận biết được điều gì vừa xảy ra
+                            // Tiếp tục vòng lặp tiết lộ
                             setTimeout(() => {
                                 performAutoReveal();
-                            }, 1200);
-                            return; // Dừng hàm tại đây để không chạy logic phía dưới
+                            }, 500);
+                            return;
                         }
                     }
 
