@@ -1486,16 +1486,14 @@
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
-                // HÀM MỚI: Chọn ký tự tiếp theo để tiết lộ một cách thông minh
-                // THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI này.
-
                 // THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI NHẤT này.
                 const selectNextLetterToReveal = () => {
                     // --- BƯỚC 0: TẬP HỢP TẤT CẢ KÝ TỰ KHẢ DỤNG ---
                     const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
                     if (unsolvedWords.length === 0) return null;
 
-                    const availableChars = [
+                    // Lấy tất cả các ký tự trong các từ chưa giải
+                    const potentiallyAvailableChars = [
                         ...new Set(
                             unsolvedWords
                                 .map((w) => w.word)
@@ -1503,6 +1501,38 @@
                                 .split("")
                         ),
                     ].filter((char) => !state.revealedLetters.has(char));
+
+                    // ★★★ PHẦN LOGIC MỚI ĐƯỢC THÊM VÀO ĐỂ SỬA LỖI ★★★
+                    // Lọc ra những ký tự mà tất cả các ô của nó trên lưới đều đã hiển thị
+                    const availableChars = potentiallyAvailableChars.filter((char) => {
+                        // Tìm tất cả các vị trí của ký tự này trong các từ chưa giải
+                        const locations = [];
+                        unsolvedWords.forEach((wordData) => {
+                            if (wordData.word.includes(char)) {
+                                for (let i = 0; i < wordData.word.length; i++) {
+                                    if (wordData.word[i] === char) {
+                                        let r = wordData.row,
+                                            c = wordData.col;
+                                        if (wordData.direction === "horizontal") c += i;
+                                        else r += i;
+                                        locations.push({ r, c });
+                                    }
+                                }
+                            }
+                        });
+
+                        // Kiểm tra xem có ÍT NHẤT MỘT ô chứa ký tự này mà chưa được hiển thị không
+                        // Nếu có ít nhất một ô chưa hiển thị, ký tự này vẫn "khả dụng" để tiết lộ.
+                        const isAnyCellHidden = locations.some((loc) => {
+                            const cell = gridContainer.querySelector(`[data-row="${loc.r}"][data-col="${loc.c}"]`);
+                            // Ô được coi là "ẩn" nếu nó không phải là ô đã giải (is-solved)
+                            // và cũng không phải là ô người dùng đang gõ (anim-typing)
+                            return cell && !cell.classList.contains("is-solved") && !cell.classList.contains("anim-typing");
+                        });
+
+                        return isAnyCellHidden; // Giữ lại ký tự nếu còn ít nhất 1 ô bị ẩn
+                    });
+                    // ★★★ KẾT THÚC PHẦN LOGIC SỬA LỖI ★★★
 
                     if (availableChars.length === 0) return null;
 
