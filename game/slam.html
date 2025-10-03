@@ -1312,8 +1312,7 @@
                         return placeRemainingWords([firstWord], words);
                     }
 
-                    // --- BẮT ĐẦU ĐOẠN MÃ MỚI TỐI ƯU HÓA ---
-                    // Chỗ này chính là phần được thay đổi để tăng tốc độ
+                    // THAY THẾ TOÀN BỘ HÀM NÀY
                     const tryBuildUShape_Optimized = () => {
                         // Bước 1: Tạo "Bản Đồ Ký Tự" để tra cứu nhanh
                         const charMap = new Map();
@@ -1329,7 +1328,7 @@
 
                         let bestConfig = null;
 
-                        // Bước 2: Thuật toán tìm kiếm mới hiệu quả hơn
+                        // Bước 2: Thuật toán tìm kiếm
                         for (const bottomWordObj of candidates) {
                             const bottomWord = bottomWordObj.word;
                             if (bottomWord.length < 3) continue;
@@ -1337,7 +1336,6 @@
                             const firstChar = bottomWord[0];
                             const lastChar = bottomWord[bottomWord.length - 1];
 
-                            // Tra cứu tức thì các ứng viên cạnh bên
                             const leftSideCandidates = charMap.get(firstChar) || [];
                             const rightSideCandidates = charMap.get(lastChar) || [];
 
@@ -1354,7 +1352,16 @@
                                     const idxB = rightCandidate.index;
 
                                     const score = Math.min(idxA, sideA.word.length - 1 - idxA) + Math.min(idxB, sideB.word.length - 1 - idxB);
-                                    if (!bestConfig || score < bestConfig.score) {
+
+                                    // ★★★ DÒNG CODE SỬA LỖI LOGIC NẰM Ở ĐÂY ★★★
+                                    // Logic cũ: if (!bestConfig || score < bestConfig.score)
+                                    // Logic mới: Thêm điều kiện "phá băng" (tie-breaker)
+                                    if (
+                                        !bestConfig || // Nếu chưa có config nào
+                                        score < bestConfig.score || // Hoặc nếu điểm mới tốt hơn hẳn
+                                        // Hoặc nếu điểm bằng nhau, thì ưu tiên cái có cạnh đáy DÀI HƠN
+                                        (score === bestConfig.score && bottomWordObj.word.length > bestConfig.bottom.word.length)
+                                    ) {
                                         bestConfig = {
                                             score,
                                             leftSide: sideA,
@@ -1388,8 +1395,6 @@
                         }
                         return null;
                     };
-                    // --- KẾT THÚC ĐOẠN MÃ MỚI TỐI ƯU HÓA ---
-
                     const uShapeResult = tryBuildUShape_Optimized(); // <-- Gọi hàm tối ưu hóa mới
                     let finalLayout = null;
 
