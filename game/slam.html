@@ -1600,15 +1600,10 @@
                         return null; // Không tìm thấy ký tự phù hợp
                     };
 
-                    // --- BƯỚC 3: ÁP DỤNG QUY TRÌNH ---
-                    const consonants = letterDetails.filter((l) => !l.isVowel);
-                    const vowels = letterDetails.filter((l) => l.isVowel);
-
-                    const bestConsonant = findBestLetterByRules(consonants);
-                    if (bestConsonant) return bestConsonant;
-
-                    const bestVowel = findBestLetterByRules(vowels);
-                    if (bestVowel) return bestVowel;
+                    // --- BƯỚC 3: ÁP DỤNG QUY TRÌNH (PHIÊN BẢN MỚI) ---
+                    // Gọi trực tiếp hàm tìm kiếm trên toàn bộ danh sách chi tiết chữ cái
+                    const bestLetter = findBestLetterByRules(letterDetails);
+                    if (bestLetter) return bestLetter;
 
                     // Fallback: Nếu mọi logic đều thất bại, trả về ký tự đầu tiên có thể
                     return letterDetails.length > 0 ? letterDetails[0].char : null;
