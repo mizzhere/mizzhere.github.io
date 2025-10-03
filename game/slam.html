@@ -1149,9 +1149,9 @@
 
                     return true;
                 };
-                // HÀM 2: HÀM PHỤ TRỢ ĐỂ ĐẶT CÁC TỪ CÒN LẠI VÀO LƯỚI
+                // HÀM 2: HÀM PHỤ TRỢ ĐỂ ĐẶT CÁC TỪ CÒN LẠI VÀO LƯỚI (PHIÊN BẢN SỬA LỖI BẰNG THUẬT TOÁN QUAY LUI)
                 const placeRemainingWords = (placedWords, unplacedWords, frameBounds = null) => {
-                    const grid = {};
+                    const initialGrid = {};
                     // Khởi tạo grid với các từ đã được đặt sẵn (ví dụ: khung chữ U)
                     placedWords.forEach((word) => {
                         for (let i = 0; i < word.word.length; i++) {
@@ -1160,49 +1160,83 @@
                             if (word.direction === "horizontal") c += i;
                             else r += i;
                             const key = `${r}-${c}`;
-                            if (!grid[key]) grid[key] = { letter: word.word[i], wordIds: new Set() };
-                            grid[key].wordIds.add(word.id);
+                            if (!initialGrid[key]) initialGrid[key] = { letter: word.word[i], wordIds: new Set() };
+                            initialGrid[key].wordIds.add(word.id);
                         }
                     });
 
-                    let attempts = 0;
-                    while (unplacedWords.length > 0 && attempts < unplacedWords.length * 2) {
-                        let bestFit = null;
-                        let bestFitIndex = -1;
+                    // Hàm đệ quy cốt lõi sử dụng thuật toán Backtracking
+                    const solve = (wordsToPlace, grid) => {
+                        // --- ĐIỀU KIỆN DỪNG (BASE CASE) ---
+                        // Nếu không còn từ nào để xếp, có nghĩa là chúng ta đã thành công!
+                        if (wordsToPlace.length === 0) {
+                            return true;
+                        }
 
-                        for (let i = 0; i < unplacedWords.length; i++) {
-                            const wordToPlace = unplacedWords[i];
+                        const wordToPlace = wordsToPlace[0];
+                        const remaining = wordsToPlace.slice(1);
+                        const placedKeys = Object.keys(grid);
 
-                            // Tìm vị trí đặt tốt nhất cho từ hiện tại
-                            for (const placed of placedWords) {
-                                const newDirection = placed.direction === "horizontal" ? "vertical" : "horizontal";
-                                for (let j = 0; j < wordToPlace.word.length; j++) {
-                                    const letterToMatch = wordToPlace.word[j];
-                                    for (let k = 0; k < placed.word.length; k++) {
-                                        if (placed.word[k] === letterToMatch) {
-                                            let newRow, newCol;
-                                            if (newDirection === "vertical") {
-                                                newRow = placed.row - j;
-                                                newCol = placed.col + k;
-                                            } else {
-                                                newRow = placed.row + k;
-                                                newCol = placed.col - j;
+                        // --- BƯỚC ĐỆ QUY (RECURSIVE STEP) ---
+                        // Lặp qua tất cả các ô đã có chữ trên lưới để tìm điểm giao
+                        for (const key of placedKeys) {
+                            const [row, col] = key.split("-").map(Number);
+                            const cell = grid[key];
+
+                            // Thử giao nhau tại mỗi ký tự của từ cần đặt
+                            for (let i = 0; i < wordToPlace.word.length; i++) {
+                                if (wordToPlace.word[i] === cell.letter) {
+                                    // Thử đặt theo cả 2 hướng (ngang/dọc)
+                                    const directions = ["horizontal", "vertical"];
+                                    for (const direction of directions) {
+                                        let newRow, newCol;
+                                        if (direction === "horizontal") {
+                                            newRow = row;
+                                            newCol = col - i;
+                                        } else {
+                                            newRow = row - i;
+                                            newCol = col;
+                                        }
+
+                                        // Kiểm tra xem vị trí đặt này có hợp lệ không
+                                        if (isPlacementValid(wordToPlace, newRow, newCol, direction, grid, frameBounds)) {
+                                            // ---- HÀNH ĐỘNG: Đặt từ vào lưới (Do) ----
+                                            const addedCells = [];
+                                            for (let j = 0; j < wordToPlace.word.length; j++) {
+                                                let r = newRow,
+                                                    c = newCol;
+                                                if (direction === "horizontal") c += j;
+                                                else r += j;
+                                                const currentKey = `${r}-${c}`;
+                                                if (!grid[currentKey]) {
+                                                    grid[currentKey] = { letter: wordToPlace.word[j], wordIds: new Set() };
+                                                    addedCells.push(currentKey);
+                                                }
+                                                grid[currentKey].wordIds.add(wordToPlace.id);
+                                            }
+                                            wordToPlace.row = newRow;
+                                            wordToPlace.col = newCol;
+                                            wordToPlace.direction = direction;
+
+                                            // ---- ĐỆ QUY: Giải tiếp với các từ còn lại (Recurse) ----
+                                            if (solve(remaining, grid)) {
+                                                return true; // Thành công!
                                             }
 
-                                            // Sử dụng hàm isPlacementValid đã được nâng cấp
-                                            if (isPlacementValid(wordToPlace, newRow, newCol, newDirection, grid, frameBounds)) {
-                                                let intersections = 0;
-                                                for (let l = 0; l < wordToPlace.word.length; l++) {
-                                                    let r = newRow,
-                                                        c = newCol;
-                                                    if (newDirection === "horizontal") c += l;
-                                                    else r += l;
-                                                    if (grid[`${r}-${c}`]) intersections++;
-                                                }
-
-                                                if (!bestFit || intersections > bestFit.intersections) {
-                                                    bestFit = { word: wordToPlace, row: newRow, col: newCol, direction: newDirection, intersections };
-                                                    bestFitIndex = i;
+                                            // ---- HOÀN TÁC: Nếu nhánh đệ quy trên thất bại, hãy quay lui (Undo) ----
+                                            delete wordToPlace.row;
+                                            delete wordToPlace.col;
+                                            delete wordToPlace.direction;
+                                            addedCells.forEach((keyToRemove) => delete grid[keyToRemove]);
+                                            // Phải dọn dẹp wordId khỏi các ô giao nhau
+                                            for (let j = 0; j < wordToPlace.word.length; j++) {
+                                                let r = newRow,
+                                                    c = newCol;
+                                                if (direction === "horizontal") c += j;
+                                                else r += j;
+                                                const currentKey = `${r}-${c}`;
+                                                if (grid[currentKey]) {
+                                                    grid[currentKey].wordIds.delete(wordToPlace.id);
                                                 }
                                             }
                                         }
@@ -1211,36 +1245,19 @@
                             }
                         }
 
-                        if (bestFit) {
-                            const word = unplacedWords.splice(bestFitIndex, 1)[0];
-                            word.row = bestFit.row;
-                            word.col = bestFit.col;
-                            word.direction = bestFit.direction;
+                        // Nếu đã thử mọi cách mà không được, trả về false để báo hiệu nhánh này thất bại
+                        return false;
+                    };
 
-                            // Thêm từ vào lưới
-                            for (let i = 0; i < word.word.length; i++) {
-                                let r = word.row,
-                                    c = word.col;
-                                if (word.direction === "horizontal") c += i;
-                                else r += i;
-                                const key = `${r}-${c}`;
-                                if (!grid[key]) grid[key] = { letter: word.word[i], wordIds: new Set() };
-                                grid[key].wordIds.add(word.id);
-                            }
-                            placedWords.push(word);
-                            attempts = 0;
-                        } else {
-                            unplacedWords.push(unplacedWords.shift());
-                            attempts++;
-                        }
+                    if (solve(unplacedWords, initialGrid)) {
+                        // Nếu hàm solve trả về true, có nghĩa là đã tìm được lời giải
+                        // và các thuộc tính (row, col, direction) đã được gán cho các từ.
+                        return [...placedWords, ...unplacedWords];
                     }
 
-                    // Nếu vẫn còn từ chưa được đặt, trả về null để báo hiệu thất bại
-                    if (unplacedWords.length > 0) return null;
-
-                    return placedWords;
+                    // Nếu không tìm được lời giải, trả về null
+                    return null;
                 };
-
                 // HÀM 3: HÀM QUẢN LÝ CHÍNH, TRIỂN KHAI THEO HỆ THỐNG QUY TẮC MỚI (THAY THẾ HOÀN TOÀN)
                 // THAY THẾ TOÀN BỘ hàm autoArrangeWords CŨ bằng phiên bản THÔNG MINH HƠN này.
                 const autoArrangeWords = (wordsToArrange) => {
