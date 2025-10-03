@@ -357,7 +357,26 @@
                 font-size: var(--font-size);
                 transition: background 0.3s, color 0.3s, border 0.3s, transform 0.3s;
             }
+            /* --- CSS MỚI CHO HIỆU ỨNG TRẢ LỜI SAI --- */
+            @keyframes zoom-in-incorrect {
+                from {
+                    transform: scale(0.4);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                    background: var(--incorrect-color); /* Nền màu xám đậm */
+                }
+            }
 
+            /* Class áp dụng khi người dùng trả lời sai */
+            .playable.is-locked .cell-front {
+                background: var(--incorrect-color);
+                /* Thêm viền trắng vào cùng với hiệu ứng đổ bóng cũ */
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 0 0 1.5px white;
+                border-color: #546e7a;
+            }
             #grid-wrapper.selection-active .playable {
                 opacity: 0.4;
             }
@@ -374,6 +393,12 @@
             .cell-front .letter-pop-in {
                 animation: letter-pop-in 0.3s ease-out forwards;
                 display: inline-block;
+            }
+            .playable.is-locked .cell-front {
+                background: var(--incorrect-color);
+                /* Thêm viền trắng vào cùng với hiệu ứng đổ bóng cũ */
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 0 0 1.5px white;
+                border-color: #546e7a;
             }
 
             .game-hud {
@@ -624,7 +649,7 @@
                 from {
                     transform: scale(0.4);
                     opacity: 0;
-                    background: white; /* Bắt đầu từ màu trắng (trạng thái đang nhập) */
+                    background: white;
                     color: var(--dark-blue);
                 }
                 to {
@@ -649,7 +674,28 @@
                     color: var(--dark-blue);
                 }
             }
+            .playable.is-solved .cell-front {
+                background: white;
+                color: var(--dark-blue);
+                box-shadow: inset 0 0 0 1px var(--secondary-accent);
+            }
+            /* Class kích hoạt Giai đoạn 1: Zoom ra màu cam */
+            /* Class kích hoạt Giai đoạn 1: Zoom ra màu cam */
+            .anim-correct-phase1 .cell-front {
+                animation: zoom-in-orange 0.25s ease-out forwards;
+            }
 
+            /* Quy tắc mới có độ ưu tiên cao hơn để đảm bảo viền trắng được áp dụng đồng nhất */
+            .playable.anim-correct-phase1 .cell-front {
+                box-shadow: inset 0 0 0 1.5px white;
+            }
+
+            /* Class kích hoạt Giai đoạn 2: Zoom về màu trắng */
+            .anim-correct-phase2 .cell-front {
+                animation: zoom-in-white 0.25s ease-out forwards;
+                color: var(--dark-blue); /* Chữ màu xanh của trạng thái đã giải */
+                box-shadow: inset 0 0 0 1.5px var(--secondary-accent);
+            }
             /* --- CSS MỚI CHO HIỆU ỨNG NHẬP LIỆU --- */
             @keyframes zoom-in-typing {
                 from {
@@ -688,52 +734,6 @@
                 display: inline-block; /* Bắt buộc để transform hoạt động */
                 /* Tốc độ nhanh (0.2s), có hiệu ứng nảy (ease-back) */
                 animation: letter-zoom-back 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            }
-            /* --- CSS MỚI CHO HIỆU ỨNG TRẢ LỜI SAI --- */
-            @keyframes zoom-in-incorrect {
-                from {
-                    transform: scale(0.4);
-                    opacity: 0;
-                }
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                    background: var(--incorrect-color); /* Nền màu xám đậm */
-                }
-            }
-
-            /* --- TRẠNG THÁI Ô CHỮ - ĐÃ SẮP XẾP LẠI THEO ĐỘ ƯU TIÊN --- */
-            /* Các quy tắc được định nghĩa sau sẽ có độ ưu tiên cao hơn. */
-
-            /* ƯU TIÊN 4 (Thấp nhất): Ô bị khóa do trả lời sai */
-            .playable.is-locked .cell-front {
-                background: var(--incorrect-color);
-                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-            }
-
-            /* ƯU TIÊN 3: Hiệu ứng zoom ra màu xám khi sai */
-            .playable.anim-incorrect .cell-front {
-                animation: zoom-in-incorrect 0.25s ease-out forwards;
-                color: white;
-                box-shadow: inset 0 0 0 1px #263238;
-            }
-
-            /* ƯU TIÊN 2: Ô đã được giải hoặc tiết lộ (màu trắng) */
-            .playable.is-solved .cell-front {
-                background: white;
-                color: var(--dark-blue);
-                box-shadow: inset 0 0 0 1px var(--secondary-accent);
-            }
-
-            /* ƯU TIÊN 1 (Cao nhất): Hiệu ứng Giai đoạn 1 & 2 khi trả lời đúng */
-            .playable.anim-correct-phase1 .cell-front {
-                animation: zoom-in-orange 0.25s ease-out forwards;
-                box-shadow: inset 0 0 0 1.5px white;
-            }
-            .playable.anim-correct-phase2 .cell-front {
-                animation: zoom-in-white 0.25s ease-out forwards;
-                color: var(--dark-blue);
-                box-shadow: inset 0 0 0 1.5px var(--secondary-accent);
             }
         </style>
     </head>
@@ -1247,93 +1247,89 @@
                     const words = JSON.parse(JSON.stringify(wordsToArrange)).sort((a, b) => b.word.length - a.word.length);
                     if (words.length < 3) return null; // Cần ít nhất 3 từ để có khả năng tạo chữ U
 
-                    // HÀM PHỤ TRỢ ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN
+                    // Helper function: tìm TẤT CẢ các vị trí của một ký tự trong chuỗi
+                    const getAllIndices = (str, char) => {
+                        const indices = [];
+                        for (let i = 0; i < str.length; i++) {
+                            if (str[i] === char) indices.push(i);
+                        }
+                        return indices;
+                    };
+
+                    // HÀM PHỤ TRỢ ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN để tìm hình chữ U "đẹp" nhất
                     const tryBuildUShape = () => {
-                        // Tìm 2 từ dài nhất có độ dài bằng nhau để làm 2 cạnh bên
-                        let sideA = null,
-                            sideB = null;
-                        for (let i = 0; i < words.length - 1; i++) {
-                            for (let j = i + 1; j < words.length; j++) {
-                                if (words[i].word.length === words[j].word.length) {
-                                    sideA = words[i];
-                                    sideB = words[j];
-                                    break;
+                        let bestConfig = null;
+
+                        // Thử mọi sự kết hợp của 3 từ dài nhất
+                        for (let i = 0; i < words.length; i++) {
+                            for (let j = 0; j < words.length; j++) {
+                                if (i === j) continue;
+                                for (let k = 0; k < words.length; k++) {
+                                    if (k === i || k === j) continue;
+
+                                    const bottomWord = words[i];
+                                    const sideA = words[j];
+                                    const sideB = words[k];
+
+                                    if (bottomWord.word.length < 3) continue;
+
+                                    const firstChar = bottomWord.word[0];
+                                    const lastChar = bottomWord.word[bottomWord.word.length - 1];
+
+                                    // Tìm tất cả các điểm nối khả thi
+                                    const sideA_connects_first_indices = getAllIndices(sideA.word, firstChar);
+                                    const sideB_connects_last_indices = getAllIndices(sideB.word, lastChar);
+
+                                    // Lặp qua tất cả các cặp điểm nối để tìm ra cặp tốt nhất
+                                    for (const idxA of sideA_connects_first_indices) {
+                                        for (const idxB of sideB_connects_last_indices) {
+                                            // Tính "điểm góc": điểm càng thấp, nối càng gần 2 đầu, càng đẹp
+                                            const score = Math.min(idxA, sideA.word.length - 1 - idxA) + Math.min(idxB, sideB.word.length - 1 - idxB);
+
+                                            if (!bestConfig || score < bestConfig.score) {
+                                                bestConfig = {
+                                                    score: score,
+                                                    leftSide: sideA,
+                                                    rightSide: sideB,
+                                                    bottom: bottomWord,
+                                                    leftIndex: idxA,
+                                                    rightIndex: idxB,
+                                                };
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                            if (sideA) break;
                         }
 
-                        if (!sideA) return null; // Không tìm thấy 2 cạnh bên phù hợp
+                        // Nếu tìm thấy một cấu hình hợp lệ, dựng khung và trả về
+                        if (bestConfig) {
+                            const frame = [];
+                            const { leftSide, rightSide, bottom, leftIndex, rightIndex } = bestConfig;
 
-                        const remainingAfterSides = words.filter((w) => w.id !== sideA.id && w.id !== sideB.id);
-                        if (remainingAfterSides.length === 0) return null;
+                            // Đặt cạnh đáy (ngang) làm gốc
+                            bottom.row = 0;
+                            bottom.col = 0;
+                            bottom.direction = "horizontal";
+                            frame.push(bottom);
 
-                        // ★★★ LOGIC MỚI: ƯU TIÊN KÝ TỰ ĐẦU/CUỐI LÀM ĐIỂM NỐI ★★★
-                        // Lặp qua các từ còn lại để thử làm "cạnh đáy"
-                        for (const bottomWord of remainingAfterSides) {
-                            if (bottomWord.word.length < 3) continue; // Cạnh đáy cần đủ dài
+                            // Đặt cạnh trái (dọc), nối vào ký tự đầu của đáy
+                            leftSide.row = -leftIndex;
+                            leftSide.col = 0;
+                            leftSide.direction = "vertical";
+                            frame.push(leftSide);
 
-                            const firstChar = bottomWord.word[0];
-                            const lastChar = bottomWord.word[bottomWord.word.length - 1];
+                            // Đặt cạnh phải (dọc), nối vào ký tự cuối của đáy
+                            rightSide.row = -rightIndex;
+                            rightSide.col = bottom.word.length - 1;
+                            rightSide.direction = "vertical";
+                            frame.push(rightSide);
 
-                            // Tìm các điểm kết nối khả dĩ
-                            const sideA_connects_first_idx = sideA.word.indexOf(firstChar);
-                            const sideA_connects_last_idx = sideA.word.indexOf(lastChar);
-                            const sideB_connects_first_idx = sideB.word.indexOf(firstChar);
-                            const sideB_connects_last_idx = sideB.word.indexOf(lastChar);
-
-                            let config = null;
-
-                            // Kịch bản 1: Cạnh A nối với ký tự ĐẦU, Cạnh B nối với ký tự CUỐI
-                            if (sideA_connects_first_idx !== -1 && sideB_connects_last_idx !== -1) {
-                                config = {
-                                    leftSide: sideA,
-                                    rightSide: sideB,
-                                    bottom: bottomWord,
-                                    leftIndex: sideA_connects_first_idx,
-                                    rightIndex: sideB_connects_last_idx,
-                                };
-                            }
-                            // Kịch bản 2: Cạnh B nối với ký tự ĐẦU, Cạnh A nối với ký tự CUỐI
-                            else if (sideB_connects_first_idx !== -1 && sideA_connects_last_idx !== -1) {
-                                config = {
-                                    leftSide: sideB,
-                                    rightSide: sideA,
-                                    bottom: bottomWord,
-                                    leftIndex: sideB_connects_first_idx,
-                                    rightIndex: sideA_connects_last_idx,
-                                };
-                            }
-
-                            // Nếu tìm thấy một kịch bản hợp lệ, dựng khung và trả về kết quả
-                            if (config) {
-                                const frame = [];
-                                const { leftSide, rightSide, bottom, leftIndex, rightIndex } = config;
-
-                                // Đặt cạnh đáy (ngang) làm gốc
-                                bottom.row = 0;
-                                bottom.col = 0;
-                                bottom.direction = "horizontal";
-                                frame.push(bottom);
-
-                                // Đặt cạnh trái (dọc), nối vào ký tự đầu của đáy
-                                leftSide.row = -leftIndex;
-                                leftSide.col = 0;
-                                leftSide.direction = "vertical";
-                                frame.push(leftSide);
-
-                                // Đặt cạnh phải (dọc), nối vào ký tự cuối của đáy
-                                rightSide.row = -rightIndex;
-                                rightSide.col = bottom.word.length - 1;
-                                rightSide.direction = "vertical";
-                                frame.push(rightSide);
-
-                                const remainingWords = words.filter((w) => w.id !== leftSide.id && w.id !== rightSide.id && w.id !== bottom.id);
-                                return { frame, remainingWords };
-                            }
+                            const remainingWords = words.filter((w) => w.id !== leftSide.id && w.id !== rightSide.id && w.id !== bottom.id);
+                            return { frame, remainingWords };
                         }
 
-                        return null; // Không thể tạo chữ U với quy tắc ưu tiên
+                        return null; // Không thể tạo chữ U với bất kỳ sự kết hợp nào
                     };
 
                     const uShapeResult = tryBuildUShape();
@@ -1362,8 +1358,10 @@
 
                         // Đặt các từ còn lại VÀO BÊN TRONG khung
                         finalLayout = placeRemainingWords(frame, remainingWords, frameBounds);
-                    } else {
-                        // PHƯƠNG ÁN DỰ PHÒNG: Nếu không thể tạo chữ U, xếp tuần tự
+                    }
+
+                    // PHƯƠNG ÁN DỰ PHÒNG: Nếu không thể tạo chữ U, xếp tuần tự như cũ
+                    if (!finalLayout) {
                         const firstWord = words.shift();
                         firstWord.row = 0;
                         firstWord.col = 0;
@@ -1414,6 +1412,7 @@
                 // HÀM MỚI: Chọn ký tự tiếp theo để tiết lộ một cách thông minh
                 // THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI này.
 
+                // THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI NHẤT này.
                 const selectNextLetterToReveal = () => {
                     // --- BƯỚC 0: TẬP HỢP TẤT CẢ KÝ TỰ KHẢ DỤNG ---
                     const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
@@ -1421,7 +1420,27 @@
                     if (!allUnsolvedChars) return null;
 
                     const uniqueChars = [...new Set(allUnsolvedChars.split(""))];
-                    const availableChars = uniqueChars.filter((char) => !state.revealedLetters.has(char));
+
+                    // Lọc các chữ cái có thể tiết lộ (còn ẩn trên bảng)
+                    const candidateChars = uniqueChars.filter((char) => !state.revealedLetters.has(char));
+                    const availableChars = candidateChars.filter((char) => {
+                        return unsolvedWords.some((wordData) => {
+                            for (let i = 0; i < wordData.word.length; i++) {
+                                if (wordData.word[i] === char) {
+                                    let r = wordData.row,
+                                        c = wordData.col;
+                                    if (wordData.direction === "horizontal") c += i;
+                                    else r += i;
+                                    const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                    if (cell && !cell.classList.contains("is-solved")) {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        });
+                    });
+
                     if (availableChars.length === 0) return null;
 
                     // Thu thập dữ liệu chi tiết cho từng ký tự (frequency, intersections)
@@ -1456,74 +1475,93 @@
                         };
                     });
 
-                    // --- BƯỚC 1: TÁCH PHỤ ÂM VÀ NGUYÊN ÂM ---
+                    // --- TÁCH PHỤ ÂM VÀ NGUYÊN ÂM ---
                     const consonants = letterDetails.filter((l) => !l.isVowel);
                     const vowels = letterDetails.filter((l) => l.isVowel);
 
-                    // Hàm phụ trợ để áp dụng các quy tắc lọc cho một danh sách ký tự
+                    // ★★★ LOGIC CHÍNH ĐÃ ĐƯỢC CẬP NHẬT LẦN CUỐI THEO YÊU CẦU CỦA BẠN ★★★
                     const findBestLetterByRules = (letterList) => {
                         if (!letterList || letterList.length === 0) return null;
 
-                        // Nếu chỉ còn 1 lựa chọn, trả về luôn
-                        if (letterList.length === 1) return letterList[0].char;
+                        // BƯỚC 1: TÁCH LÀM 2 NHÓM ƯU TIÊN: KHÔNG GIAO NHAU và CÓ GIAO NHAU
+                        const nonIntersectionLetters = letterList.filter((l) => l.intersections === 0);
+                        const intersectionLetters = letterList.filter((l) => l.intersections > 0);
 
-                        // Tính toán các giá trị min/max để xác định "nhiều nhất" và "ít nhất"
-                        const freqs = letterList.map((l) => l.frequency);
-                        const intersects = letterList.map((l) => l.intersections);
-                        const minFreq = Math.min(...freqs);
-                        const maxFreq = Math.max(...freqs);
-                        const minIntersect = Math.min(...intersects);
-                        const maxIntersect = Math.max(...intersects);
+                        // Hàm phụ để áp dụng logic tần suất cho một danh sách nhất định
+                        const applyFrequencyRules = (list) => {
+                            if (!list || list.length === 0) return null;
+                            if (list.length === 1) return list[0];
 
-                        let candidatePool;
+                            const freqs = list.map((l) => l.frequency);
+                            const minFreq = Math.min(...freqs);
+                            const maxFreq = Math.max(...freqs);
 
-                        // --- QUY TẮC 2 & 3: Ưu tiên ký tự có tần suất và giao điểm "vừa phải" ---
-                        // Lọc những ký tự không phải nhiều nhất và cũng không phải ít nhất
-                        candidatePool = letterList.filter((l) => l.frequency > minFreq && l.frequency < maxFreq && l.intersections >= 2 && l.intersections < maxIntersect);
-                        // Nếu bộ lọc trên quá khắt khe, thử lọc riêng từng điều kiện
-                        if (candidatePool.length === 0) {
-                            candidatePool = letterList.filter((l) => l.frequency > minFreq && l.frequency < maxFreq);
+                            const mediumFreqLetters = [];
+                            const highFreqLetters = [];
+                            const lowFreqLetters = [];
+
+                            if (minFreq === maxFreq) {
+                                mediumFreqLetters.push(...list);
+                            } else {
+                                for (const letter of list) {
+                                    if (letter.frequency > minFreq && letter.frequency < maxFreq) {
+                                        mediumFreqLetters.push(letter);
+                                    } else if (letter.frequency === maxFreq) {
+                                        highFreqLetters.push(letter);
+                                    } else if (letter.frequency === minFreq) {
+                                        lowFreqLetters.push(letter);
+                                    }
+                                }
+                            }
+
+                            const sortByPriority = (a, b) => {
+                                if (b.frequency !== a.frequency) {
+                                    return b.frequency - a.frequency;
+                                }
+                                return b.intersections - a.intersections; // Dùng làm luật phụ cuối cùng
+                            };
+
+                            mediumFreqLetters.sort(sortByPriority);
+                            highFreqLetters.sort(sortByPriority);
+                            lowFreqLetters.sort(sortByPriority);
+
+                            if (mediumFreqLetters.length > 0) return mediumFreqLetters[0];
+                            if (highFreqLetters.length > 0) return highFreqLetters[0];
+                            if (lowFreqLetters.length > 0) return lowFreqLetters[0];
+
+                            return null;
+                        };
+
+                        // BƯỚC 2: ƯU TIÊN XỬ LÝ NHÓM "KHÔNG GIAO NHAU" TRƯỚC
+                        if (nonIntersectionLetters.length > 0) {
+                            const bestLetter = applyFrequencyRules(nonIntersectionLetters);
+                            if (bestLetter) return bestLetter.char;
                         }
-                        if (candidatePool.length === 0) {
-                            candidatePool = letterList.filter((l) => l.intersections >= 2 && l.intersections < maxIntersect);
+
+                        // BƯỚC 3: NẾU KHÔNG CÒN LỰA CHỌN NÀO, MỚI XÉT ĐẾN NHÓM "CÓ GIAO NHAU"
+                        if (intersectionLetters.length > 0) {
+                            const bestLetter = applyFrequencyRules(intersectionLetters);
+                            if (bestLetter) return bestLetter.char;
                         }
 
-                        if (candidatePool.length > 0) {
-                            // Ưu tiên ký tự giao nhau nhiều hơn trong nhóm này
-                            candidatePool.sort((a, b) => b.intersections - a.intersections);
-                            return candidatePool[0].char;
-                        }
-
-                        // --- QUY TẮC 4: Nếu không còn ký tự "vừa phải", xét đến ký tự nhiều nhất ---
-                        candidatePool = letterList.filter((l) => l.frequency === maxFreq || l.intersections === maxIntersect);
-                        if (candidatePool.length > 0) {
-                            // Vẫn ưu tiên giao nhau nhiều hơn
-                            candidatePool.sort((a, b) => b.intersections - a.intersections);
-                            return candidatePool[0].char;
-                        }
-
-                        // --- QUY TẮC 5: Cuối cùng, xét các ký tự còn lại (đơn lẻ, ít nhất, etc.) ---
-                        // Sắp xếp theo tiêu chí phụ: giao nhau nhiều > tần suất cao
-                        letterList.sort((a, b) => b.intersections - a.intersections || b.frequency - a.frequency);
-                        return letterList[0].char;
+                        // Fallback, nếu tất cả logic trên thất bại
+                        return letterList.length > 0 ? letterList[0].char : null;
                     };
+                    // ★★★ KẾT THÚC LOGIC MỚI ★★★
 
-                    // --- BƯỚC 6: ÁP DỤNG QUY TRÌNH ---
-                    // Chạy bộ lọc cho phụ âm trước
+                    // --- ÁP DỤNG QUY TRÌNH ---
                     const bestConsonant = findBestLetterByRules(consonants);
                     if (bestConsonant) {
                         return bestConsonant;
                     }
 
-                    // Nếu hết phụ âm, chạy bộ lọc cho nguyên âm
                     const bestVowel = findBestLetterByRules(vowels);
                     if (bestVowel) {
                         return bestVowel;
                     }
 
-                    return null; // Không còn ký tự nào để tiết lộ
+                    return null;
                 };
-
                 // HÀM MỚI: Thực thi toàn bộ quá trình tiết lộ tự động
                 const performAutoReveal = async () => {
                     // Nếu đang trong chế độ chơi hoặc game kết thúc, không làm gì cả
@@ -2186,6 +2224,7 @@
                         .join("");
                 };
                 // THAY THẾ HOÀN TOÀN hàm handleLetterReveal CŨ bằng hàm này
+                // THAY THẾ HOÀN TOÀN hàm revealLetterOnGrid CŨ bằng phiên bản HOÀN CHỈNH này
                 const revealLetterOnGrid = (letter) => {
                     state.revealedLetters.add(letter.toUpperCase());
 
@@ -2202,9 +2241,18 @@
                                 if (wordData.direction === "horizontal") c += i;
                                 else r += i;
                                 const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+
                                 if (playable && !playable.classList.contains("is-solved")) {
                                     playable.querySelector(".cell-front").innerHTML = `<span class="letter-pop-in">${letter}</span>`;
+
+                                    // ★★★ SỬA LỖI UX NẰM Ở ĐÂY ★★★
+                                    // Xóa TẤT CẢ các class liên quan đến trạng thái "sai"
+                                    // để đảm bảo style của "is-solved" (màu trắng) được áp dụng.
+                                    playable.classList.remove("is-locked");
+                                    playable.classList.remove("anim-incorrect"); // <--- DÒNG QUAN TRỌNG ĐÃ ĐƯỢC THÊM VÀO
+
                                     playable.classList.add("is-solved");
+
                                     revealedCount++;
                                 }
                             }
@@ -2215,7 +2263,7 @@
                         }
                     });
 
-                    // Kiểm tra các từ được hoàn thành tự động
+                    // (Các phần còn lại của hàm không thay đổi)
                     const newlyCompletedWords = [];
                     state.playableWordIds.forEach((wordId) => {
                         if (state.solvedWords.has(wordId)) return;
@@ -2249,7 +2297,6 @@
                         }
                     }
 
-                    // Sau khi tiết lộ, chuyển sang giai đoạn cho người chơi đoán
                     state.gamePhase = "playing";
                     deselectWord();
                     saveGameState();
