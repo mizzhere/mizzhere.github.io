@@ -19,7 +19,7 @@
                 --light-text: #a8a2d2;
                 --danger-color: #ef5350;
                 --success-color: #66bb6a;
-                --incorrect-color: #78909c;
+                --incorrect-color: #546e7a;
             }
 
             html {
@@ -375,17 +375,17 @@
                 animation: letter-pop-in 0.3s ease-out forwards;
                 display: inline-block;
             }
-
+.playable.is-locked .cell-front {
+                background: var(--incorrect-color);
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+                border-color: #546e7a;
+            }
             .playable.is-solved .cell-front {
                 background: white;
                 color: var(--dark-blue);
                 box-shadow: inset 0 0 0 1px var(--secondary-accent);
             }
-            .playable.is-locked .cell-front {
-                background: var(--incorrect-color);
-                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-                border-color: #546e7a;
-            }
+            
 
             .game-hud {
                 width: 100%;
@@ -693,11 +693,12 @@
             }
 
             /* Class áp dụng khi người dùng gõ chữ vào ô */
-            .anim-typing .cell-front {
-                animation: zoom-in-typing 0.15s ease-out forwards;
-                color: var(--dark-blue);
-                box-shadow: inset 0 0 0 1px var(--secondary-accent);
-            }
+            /* Class áp dụng khi người dùng gõ chữ vào ô */
+.playable.anim-typing .cell-front {
+    animation: zoom-in-typing 0.15s ease-out forwards;
+    color: var(--dark-blue);
+    box-shadow: inset 0 0 0 1px var(--secondary-accent);
+}
             /* --- CSS MỚI CHO HIỆU ỨNG CHỮ ZOOM KHI TRẢ LỜI ĐÚNG --- */
             @keyframes letter-zoom-back {
                 from {
@@ -716,6 +717,25 @@
                 /* Tốc độ nhanh (0.2s), có hiệu ứng nảy (ease-back) */
                 animation: letter-zoom-back 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
             }
+            /* --- CSS MỚI CHO HIỆU ỨNG TRẢ LỜI SAI --- */
+@keyframes zoom-in-incorrect {
+    from {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+        background: var(--incorrect-color); /* Nền màu xám đậm */
+    }
+}
+
+/* Class áp dụng khi người dùng trả lời sai */
+.anim-incorrect .cell-front {
+    animation: zoom-in-incorrect 0.25s ease-out forwards;
+    color: white; /* Chữ màu trắng cho dễ nhìn trên nền xám */
+    box-shadow: inset 0 0 0 1px #263238; /* Viền tối màu hơn một chút */
+}
         </style>
     </head>
     <body>
@@ -825,6 +845,7 @@
                     disabledLetters: new Set(),
                     isGameFinished: false,
                 };
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
                 const pages = { lobby: document.getElementById("lobby-page"), creation: document.getElementById("creation-page"), game: document.getElementById("game-page") };
                 const puzzleListContainer = document.getElementById("puzzle-list");
@@ -1061,82 +1082,115 @@
                 editPuzzleBtn.addEventListener("click", () => {
                     if (state.currentPuzzleId) switchView("creation", state.currentPuzzleId);
                 });
-
-                const canPlaceWord = (word, row, col, direction, grid) => {
-                    if (direction === "horizontal") {
-                        if (grid[`${row}-${col - 1}`] || grid[`${row}-${col + word.word.length}`]) return false;
-                    } else {
-                        if (grid[`${row - 1}-${col}`] || grid[`${row + word.word.length}-${col}`]) return false;
-                    }
+// HÀM 1: KIỂM TRA TÍNH HỢP LỆ CỦA VỊ TRÍ ĐẶT TỪ (PHIÊN BẢN SỬA LỖI)
+                // Logic được làm chặt chẽ hơn để đảm bảo quy tắc "cách 1 ô"
+// HÀM 1: KIỂM TRA TÍNH HỢP LỆ CỦA VỊ TRÍ ĐẶT TỪ (PHIÊN BẢN SỬA LỖI LOGIC)
+                const isPlacementValid = (word, row, col, direction, grid, frameBounds = null) => {
+                    // Tạo một Set chứa tất cả các tọa độ mà từ mới sẽ chiếm giữ
+                    const newWordCoords = new Set();
                     for (let i = 0; i < word.word.length; i++) {
-                        let r = row,
-                            c = col;
-                        let p_r_before, p_c_before, p_r_after, p_c_after;
-                        if (direction === "horizontal") {
-                            c += i;
-                            p_r_before = r - 1;
-                            p_c_before = c;
-                            p_r_after = r + 1;
-                            p_c_after = c;
-                        } else {
-                            r += i;
-                            p_r_before = r;
-                            p_c_before = c - 1;
-                            p_r_after = r;
-                            p_c_after = c + 1;
+                        let r = row, c = col;
+                        if (direction === 'horizontal') c += i; else r += i;
+                        newWordCoords.add(`${r}-${c}`);
+                    }
+
+                    for (let i = 0; i < word.word.length; i++) {
+                        let r = row, c = col;
+                        if (direction === 'horizontal') c += i; else r += i;
+
+                        // Quy tắc 6: Từ không được vượt khung
+                        if (frameBounds && (r < frameBounds.minRow || r > frameBounds.maxRow || c < frameBounds.minCol || c > frameBounds.maxCol)) {
+                            return false;
                         }
-                        const key = `${r}-${c}`;
-                        if (grid[key]) {
-                            if (grid[key].letter !== word.word[i]) return false;
+
+                        const currentKey = `${r}-${c}`;
+                        const existingCell = grid[currentKey];
+                        
+                        if (existingCell) {
+                            // Trường hợp 1: Đây là điểm giao nhau
+                            if (existingCell.letter !== word.word[i]) return false; // Ký tự phải khớp
                         } else {
-                            if (grid[`${p_r_before}-${p_c_before}`] || grid[`${p_r_after}-${p_c_after}`]) return false;
+                            // Trường hợp 2: Đây là ô trống, phải kiểm tra các ô xung quanh
+                            const neighbors = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
+                            for (const [nr, nc] of neighbors) {
+                                const neighborKey = `${nr}-${nc}`;
+                                const neighborCell = grid[neighborKey];
+                                
+                                // ★★★ LOGIC SỬA LỖI NẰM Ở ĐÂY ★★★
+                                // Chỉ báo lỗi nếu:
+                                // 1. Ô hàng xóm có tồn tại (neighborCell)
+                                // 2. VÀ ô hàng xóm đó KHÔNG PHẢI là một phần của từ mới mà chúng ta đang đặt (newWordCoords.has)
+                                if (neighborCell && !newWordCoords.has(neighborKey)) {
+                                    return false; // Phát hiện từ khác nằm sát bên cạnh
+                                }
+                            }
                         }
                     }
+
+                    // Kiểm tra các ô ở đầu/cuối từ để tránh nối đuôi
+                     if (direction === 'horizontal') {
+                        if (grid[`${row}-${col - 1}`] || grid[`${row}-${col + word.word.length}`]) {
+                            return false;
+                        }
+                    } else { // vertical
+                        if (grid[`${row - 1}-${col}`] || grid[`${row + word.word.length}-${col}`]) {
+                            return false;
+                        }
+                    }
+
+
                     return true;
                 };
-                const autoArrangeWords = (wordsToArrange) => {
-                    if (!wordsToArrange || wordsToArrange.length === 0) return [];
-                    let unplacedWords = JSON.parse(JSON.stringify(wordsToArrange)).sort((a, b) => b.word.length - a.word.length);
-                    const placedWords = [];
+                // HÀM 2: HÀM PHỤ TRỢ ĐỂ ĐẶT CÁC TỪ CÒN LẠI VÀO LƯỚI
+                const placeRemainingWords = (placedWords, unplacedWords, frameBounds = null) => {
                     const grid = {};
-                    const firstWord = unplacedWords.shift();
-                    firstWord.row = 0;
-                    firstWord.col = 0;
-                    firstWord.direction = "horizontal";
-                    for (let i = 0; i < firstWord.word.length; i++) {
-                        grid[`${firstWord.row}-${firstWord.col + i}`] = { letter: firstWord.word[i], wordId: firstWord.id };
-                    }
-                    placedWords.push(firstWord);
+                    // Khởi tạo grid với các từ đã được đặt sẵn (ví dụ: khung chữ U)
+                    placedWords.forEach(word => {
+                        for (let i = 0; i < word.word.length; i++) {
+                            let r = word.row, c = word.col;
+                            if (word.direction === 'horizontal') c += i; else r += i;
+                            const key = `${r}-${c}`;
+                            if (!grid[key]) grid[key] = { letter: word.word[i], wordIds: new Set() };
+                            grid[key].wordIds.add(word.id);
+                        }
+                    });
+
                     let attempts = 0;
-                    while (unplacedWords.length > 0 && attempts < unplacedWords.length) {
+                    while (unplacedWords.length > 0 && attempts < unplacedWords.length * 2) {
                         let bestFit = null;
+                        let bestFitIndex = -1;
+
                         for (let i = 0; i < unplacedWords.length; i++) {
                             const wordToPlace = unplacedWords[i];
-                            for (const placedWord of placedWords) {
-                                const newDirection = placedWord.direction === "horizontal" ? "vertical" : "horizontal";
+                            
+                            // Tìm vị trí đặt tốt nhất cho từ hiện tại
+                            for (const placed of placedWords) {
+                                const newDirection = placed.direction === 'horizontal' ? 'vertical' : 'horizontal';
                                 for (let j = 0; j < wordToPlace.word.length; j++) {
                                     const letterToMatch = wordToPlace.word[j];
-                                    for (let k = 0; k < placedWord.word.length; k++) {
-                                        if (placedWord.word[k] === letterToMatch) {
+                                    for (let k = 0; k < placed.word.length; k++) {
+                                        if (placed.word[k] === letterToMatch) {
                                             let newRow, newCol;
-                                            if (newDirection === "vertical") {
-                                                newRow = placedWord.row - j;
-                                                newCol = placedWord.col + k;
+                                            if (newDirection === 'vertical') {
+                                                newRow = placed.row - j;
+                                                newCol = placed.col + k;
                                             } else {
-                                                newRow = placedWord.row + k;
-                                                newCol = placedWord.col - j;
+                                                newRow = placed.row + k;
+                                                newCol = placed.col - j;
                                             }
-                                            if (canPlaceWord(wordToPlace, newRow, newCol, newDirection, grid)) {
-                                                let score = 0;
+
+                                            // Sử dụng hàm isPlacementValid đã được nâng cấp
+                                            if (isPlacementValid(wordToPlace, newRow, newCol, newDirection, grid, frameBounds)) {
+                                                let intersections = 0;
                                                 for (let l = 0; l < wordToPlace.word.length; l++) {
-                                                    let r = newRow,
-                                                        c = newCol;
-                                                    if (newDirection === "horizontal") c += l;
-                                                    else r += l;
-                                                    if (grid[`${r}-${c}`]) score++;
+                                                    let r = newRow, c = newCol;
+                                                    if (newDirection === 'horizontal') c += l; else r += l;
+                                                    if (grid[`${r}-${c}`]) intersections++;
                                                 }
-                                                if (!bestFit || score > bestFit.score) {
-                                                    bestFit = { word: wordToPlace, row: newRow, col: newCol, direction: newDirection, score: score, index: i };
+                                                
+                                                if (!bestFit || intersections > bestFit.intersections) {
+                                                    bestFit = { word: wordToPlace, row: newRow, col: newCol, direction: newDirection, intersections };
+                                                    bestFitIndex = i;
                                                 }
                                             }
                                         }
@@ -1144,39 +1198,151 @@
                                 }
                             }
                         }
+
                         if (bestFit) {
-                            const word = unplacedWords[bestFit.index];
+                            const word = unplacedWords.splice(bestFitIndex, 1)[0];
                             word.row = bestFit.row;
                             word.col = bestFit.col;
                             word.direction = bestFit.direction;
+                            
+                            // Thêm từ vào lưới
                             for (let i = 0; i < word.word.length; i++) {
-                                let r = word.row,
-                                    c = word.col;
-                                if (word.direction === "horizontal") c += i;
-                                else r += i;
-                                grid[`${r}-${c}`] = { letter: word.word[i], wordId: word.id };
+                                let r = word.row, c = word.col;
+                                if (word.direction === 'horizontal') c += i; else r += i;
+                                const key = `${r}-${c}`;
+                                if (!grid[key]) grid[key] = { letter: word.word[i], wordIds: new Set() };
+                                grid[key].wordIds.add(word.id);
                             }
                             placedWords.push(word);
-                            unplacedWords.splice(bestFit.index, 1);
                             attempts = 0;
                         } else {
+                            unplacedWords.push(unplacedWords.shift());
                             attempts++;
                         }
                     }
-                    if (unplacedWords.length > 0) return null;
-                    let minRow = Infinity,
-                        minCol = Infinity;
-                    placedWords.forEach((word) => {
+                    
+                    // Nếu vẫn còn từ chưa được đặt, trả về null để báo hiệu thất bại
+                    if(unplacedWords.length > 0) return null;
+
+                    return placedWords;
+                }
+
+                // HÀM 3: HÀM QUẢN LÝ CHÍNH, TRIỂN KHAI THEO HỆ THỐNG QUY TẮC MỚI (THAY THẾ HOÀN TOÀN)
+                const autoArrangeWords = (wordsToArrange) => {
+                    const words = JSON.parse(JSON.stringify(wordsToArrange)).sort((a, b) => b.word.length - a.word.length);
+                    if(words.length < 2) return null;
+
+                    // --- QUY TẮC 3 & 4: ƯU TIÊN TUYỆT ĐỐI TÌM VÀ DỰNG KHUNG CHỮ U ---
+                    const tryBuildUShape = () => {
+                        // Tìm 2 từ dài nhất có độ dài bằng nhau
+                        let sideA = null, sideB = null;
+                        for (let i = 0; i < words.length - 1; i++) {
+                            if (words[i].word.length === words[i+1].word.length) {
+                                sideA = words[i];
+                                sideB = words[i+1];
+                                break;
+                            }
+                        }
+
+                        if (!sideA) return null; // Không tìm thấy 2 cạnh bằng nhau
+
+                        const remainingAfterSides = words.filter(w => w.id !== sideA.id && w.id !== sideB.id);
+                        if (remainingAfterSides.length === 0) return null; // Cần ít nhất 1 từ nữa để nối
+
+                        // Tìm từ nối (cạnh đáy)
+                        for (const bottomWord of remainingAfterSides) {
+                             // Thử mọi cách kết hợp giao điểm để tạo chữ U
+                            for (let i = 0; i < sideA.word.length; i++) { // Giao điểm trên sideA
+                                for (let j = 0; j < bottomWord.word.length; j++) { // Giao điểm trên bottomWord (trái)
+                                    if (sideA.word[i] === bottomWord.word[j]) {
+                                        for (let k = 0; k < sideB.word.length; k++) { // Giao điểm trên sideB
+                                            for (let l = j + 1; l < bottomWord.word.length; l++) { // Giao điểm trên bottomWord (phải)
+                                                if (sideB.word[k] === bottomWord.word[l]) {
+                                                    // Đã tìm thấy 4 điểm tạo thành khung chữ U!
+                                                    // Giờ hãy sắp xếp chúng
+                                                    const frame = [];
+                                                    const colDistance = l - j;
+                                                    if (colDistance < 2) continue;
+                                                    // Đặt cạnh A (dọc)
+                                                    sideA.row = -i;
+                                                    sideA.col = 0;
+                                                    sideA.direction = 'vertical';
+                                                    frame.push(sideA);
+                                                    
+                                                    // Đặt cạnh đáy (ngang)
+                                                    bottomWord.row = 0;
+                                                    bottomWord.col = -j;
+                                                    bottomWord.direction = 'horizontal';
+                                                    frame.push(bottomWord);
+
+                                                    // Đặt cạnh B (dọc)
+                                                    sideB.row = -k;
+                                                    sideB.col = colDistance;
+                                                    sideB.direction = 'vertical';
+                                                    frame.push(sideB);
+
+                                                    const remainingWords = remainingAfterSides.filter(w => w.id !== bottomWord.id);
+                                                    return { frame, remainingWords };
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return null; // Không thể tạo khung chữ U với các từ hiện có
+                    };
+
+                    const uShapeResult = tryBuildUShape();
+                    let finalLayout = null;
+
+                    if (uShapeResult) {
+                        const { frame, remainingWords } = uShapeResult;
+                        
+                        // QUY TẮC 6: Xác định ranh giới của khung
+                        let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+                        frame.forEach(word => {
+                            minRow = Math.min(minRow, word.row);
+                            minCol = Math.min(minCol, word.col);
+                            if (word.direction === 'vertical') {
+                                maxRow = Math.max(maxRow, word.row + word.word.length - 1);
+                                maxCol = Math.max(maxCol, word.col);
+                            } else {
+                                maxRow = Math.max(maxRow, word.row);
+                                maxCol = Math.max(maxCol, word.col + word.word.length - 1);
+                            }
+                        });
+                        const frameBounds = { minRow, maxRow, minCol, maxCol };
+
+                        // Đặt các từ còn lại VÀO BÊN TRONG khung
+                        finalLayout = placeRemainingWords(frame, remainingWords, frameBounds);
+
+                    } else {
+                        // --- PHƯƠNG ÁN DỰ PHÒNG: Nếu không thể tạo chữ U ---
+                        // Bắt đầu với từ dài nhất và xếp tuần tự
+                        const firstWord = words.shift();
+                        firstWord.row = 0;
+                        firstWord.col = 0;
+                        firstWord.direction = 'horizontal'; // Hoặc vertical, không quá quan trọng
+                        finalLayout = placeRemainingWords([firstWord], words);
+                    }
+                    
+                    // QUY TẮC 9: Nếu không thể tạo bảng (còn từ chưa xếp) -> thất bại
+                    if (!finalLayout) return null;
+
+                    // Chuẩn hóa tọa độ của lưới về (0,0) để hiển thị
+                    let minRow = Infinity, minCol = Infinity;
+                    finalLayout.forEach((word) => {
                         minRow = Math.min(minRow, word.row);
                         minCol = Math.min(minCol, word.col);
                     });
-                    placedWords.forEach((word) => {
+                    finalLayout.forEach((word) => {
                         word.row -= minRow;
                         word.col -= minCol;
                     });
-                    return placedWords;
-                };
 
+                    return finalLayout;
+                }; 
                 const saveGameState = () => {
                     if (state.isGameFinished) return;
                     if (!state.currentPuzzleId) return;
@@ -1196,11 +1362,148 @@
                         // --- BẮT ĐẦU THÊM CODE MỚI ---
                         gamePhase: state.gamePhase, // Lưu lại giai đoạn hiện tại của game
                         playableWordIds: Array.from(state.playableWordIds), // Lưu lại danh sách các từ có thể chơi
+                        selectedWordId: state.selectedWordId,
                         // --- KẾT THÚC THÊM CODE MỚI ---
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
+// HÀM MỚI: Chọn ký tự tiếp theo để tiết lộ một cách thông minh
+// THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI này.
 
+const selectNextLetterToReveal = () => {
+    // --- BƯỚC 0: TẬP HỢP TẤT CẢ KÝ TỰ KHẢ DỤNG ---
+    const unsolvedWords = state.words.filter(w => !state.solvedWords.has(w.id));
+    const allUnsolvedChars = unsolvedWords.map(w => w.word).join('');
+    if (!allUnsolvedChars) return null;
+
+    const uniqueChars = [...new Set(allUnsolvedChars.split(''))];
+    const availableChars = uniqueChars.filter(char => !state.revealedLetters.has(char));
+    if (availableChars.length === 0) return null;
+
+    // Thu thập dữ liệu chi tiết cho từng ký tự (frequency, intersections)
+    const letterDetails = availableChars.map(char => {
+        let frequency = 0;
+        let totalIntersections = 0;
+        unsolvedWords.forEach(wordData => {
+            if (wordData.word.includes(char)) {
+                frequency += wordData.word.split(char).length - 1;
+                for (let i = 0; i < wordData.word.length; i++) {
+                    if (wordData.word[i] === char) {
+                        let r = wordData.row, c = wordData.col;
+                        if (wordData.direction === 'horizontal') c += i; else r += i;
+                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        if (cell) {
+                            const wordIdsInCell = Object.keys(cell.dataset).filter(k => k.startsWith('word_')).length;
+                            if (wordIdsInCell > 1) {
+                                totalIntersections++;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return {
+            char: char,
+            frequency: frequency,
+            intersections: totalIntersections,
+            isVowel: 'AEIOU'.includes(char)
+        };
+    });
+
+    // --- BƯỚC 1: TÁCH PHỤ ÂM VÀ NGUYÊN ÂM ---
+    const consonants = letterDetails.filter(l => !l.isVowel);
+    const vowels = letterDetails.filter(l => l.isVowel);
+
+    // Hàm phụ trợ để áp dụng các quy tắc lọc cho một danh sách ký tự
+    const findBestLetterByRules = (letterList) => {
+        if (!letterList || letterList.length === 0) return null;
+
+        // Nếu chỉ còn 1 lựa chọn, trả về luôn
+        if (letterList.length === 1) return letterList[0].char;
+
+        // Tính toán các giá trị min/max để xác định "nhiều nhất" và "ít nhất"
+        const freqs = letterList.map(l => l.frequency);
+        const intersects = letterList.map(l => l.intersections);
+        const minFreq = Math.min(...freqs);
+        const maxFreq = Math.max(...freqs);
+        const minIntersect = Math.min(...intersects);
+        const maxIntersect = Math.max(...intersects);
+
+        let candidatePool;
+
+        // --- QUY TẮC 2 & 3: Ưu tiên ký tự có tần suất và giao điểm "vừa phải" ---
+        // Lọc những ký tự không phải nhiều nhất và cũng không phải ít nhất
+        candidatePool = letterList.filter(l => 
+            l.frequency > minFreq && l.frequency < maxFreq &&
+            l.intersections >= 2 && l.intersections < maxIntersect
+        );
+        // Nếu bộ lọc trên quá khắt khe, thử lọc riêng từng điều kiện
+        if (candidatePool.length === 0) {
+            candidatePool = letterList.filter(l => l.frequency > minFreq && l.frequency < maxFreq);
+        }
+        if (candidatePool.length === 0) {
+            candidatePool = letterList.filter(l => l.intersections >= 2 && l.intersections < maxIntersect);
+        }
+
+        if (candidatePool.length > 0) {
+            // Ưu tiên ký tự giao nhau nhiều hơn trong nhóm này
+            candidatePool.sort((a, b) => b.intersections - a.intersections);
+            return candidatePool[0].char;
+        }
+
+        // --- QUY TẮC 4: Nếu không còn ký tự "vừa phải", xét đến ký tự nhiều nhất ---
+        candidatePool = letterList.filter(l => l.frequency === maxFreq || l.intersections === maxIntersect);
+        if (candidatePool.length > 0) {
+            // Vẫn ưu tiên giao nhau nhiều hơn
+            candidatePool.sort((a, b) => b.intersections - a.intersections);
+            return candidatePool[0].char;
+        }
+        
+        // --- QUY TẮC 5: Cuối cùng, xét các ký tự còn lại (đơn lẻ, ít nhất, etc.) ---
+        // Sắp xếp theo tiêu chí phụ: giao nhau nhiều > tần suất cao
+        letterList.sort((a, b) => b.intersections - a.intersections || b.frequency - a.frequency);
+        return letterList[0].char;
+    };
+
+    // --- BƯỚC 6: ÁP DỤNG QUY TRÌNH ---
+    // Chạy bộ lọc cho phụ âm trước
+    const bestConsonant = findBestLetterByRules(consonants);
+    if (bestConsonant) {
+        return bestConsonant;
+    }
+
+    // Nếu hết phụ âm, chạy bộ lọc cho nguyên âm
+    const bestVowel = findBestLetterByRules(vowels);
+    if (bestVowel) {
+        return bestVowel;
+    }
+
+    return null; // Không còn ký tự nào để tiết lộ
+};
+
+// HÀM MỚI: Thực thi toàn bộ quá trình tiết lộ tự động
+const performAutoReveal = async () => {
+    // Nếu đang trong chế độ chơi hoặc game kết thúc, không làm gì cả
+    if (state.gamePhase !== 'reveal' || state.isGameFinished) return;
+
+    const letterToReveal = selectNextLetterToReveal();
+
+    if (!letterToReveal) {
+        // Có thể tất cả các chữ đã được lật, chuyển sang chế độ chơi
+        state.gamePhase = "playing";
+        deselectWord();
+        return;
+    }
+
+    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
+    await delay(1500); // Chờ 1.5s
+
+    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 2000);
+    await delay(500); // Chờ 0.5s
+
+    // Gọi logic cốt lõi để thực sự lật chữ trên bảng
+    revealLetterOnGrid(letterToReveal);
+};
                 const loadGameState = () => {
                     const savedState = localStorage.getItem(`slam-gamestate-${state.currentPuzzleId}`);
                     if (!savedState) return;
@@ -1271,6 +1574,15 @@
                                 }
                             }
                         });
+                        if (gameState.selectedWordId !== null && gameState.selectedWordId !== undefined) {
+                            // Nếu có, hãy khôi phục lại lựa chọn đó
+                            state.selectedWordId = gameState.selectedWordId;
+                            // Gọi hàm updateSelectionAndFocus để cập nhật giao diện (hiển thị gợi ý, bàn phím, phóng to ô chữ...)
+                            // Dùng setTimeout để đảm bảo grid đã được render hoàn chỉnh
+                            setTimeout(() => {
+                                updateSelectionAndFocus();
+                            }, 100); 
+                        }
                     } catch (e) {
                         console.error("Lỗi tải game:", e);
                     }
@@ -1382,23 +1694,34 @@
                     });
                     // --- KẾT THÚC PHẦN CODE MỚI ---
 
-                    gridContainer.style.gridTemplateRows = `repeat(${gridData.rows}, var(--cell-size))`;
-                    gridContainer.style.gridTemplateColumns = `repeat(${gridData.cols}, var(--cell-size))`;
+                    const fragment = document.createDocumentFragment();
 
-                    for (let r = 0; r < gridData.rows; r++) {
-                        for (let c = 0; c < gridData.cols; c++) {
-                            const key = `${r}-${c}`;
-                            const cellDiv = document.createElement("div");
-                            cellDiv.className = "cell";
-                            if (gridData.grid.has(key)) {
-                                const cellInfo = gridData.grid.get(key);
-                                cellDiv.innerHTML = `<div class="playable" data-row="${r}" data-col="${c}"><div class="cell-face cell-front"></div></div>`;
-                                const playableDiv = cellDiv.querySelector(".playable");
-                                cellInfo.wordIds.forEach((id) => (playableDiv.dataset[`word_${id}`] = true));
-                            }
-                            gridContainer.appendChild(cellDiv);
-                        }
-                    }
+gridContainer.style.gridTemplateRows = `repeat(${gridData.rows}, var(--cell-size))`;
+gridContainer.style.gridTemplateColumns = `repeat(${gridData.cols}, var(--cell-size))`;
+
+for (let r = 0; r < gridData.rows; r++) {
+    for (let c = 0; c < gridData.cols; c++) {
+        const key = `${r}-${c}`;
+        const cellDiv = document.createElement("div");
+        cellDiv.className = "cell";
+        if (gridData.grid.has(key)) {
+            const cellInfo = gridData.grid.get(key);
+            cellDiv.innerHTML = `<div class="playable" data-row="${r}" data-col="${c}"><div class="cell-face cell-front"></div></div>`;
+            const playableDiv = cellDiv.querySelector(".playable");
+            cellInfo.wordIds.forEach((id) => (playableDiv.dataset[`word_${id}`] = true));
+        }
+        
+        // BƯỚC 2: Thay vì thêm vào gridContainer, hãy thêm vào fragment.
+        // Thao tác này rất nhanh vì nó diễn ra trong bộ nhớ.
+        fragment.appendChild(cellDiv);
+    }
+}
+
+// BƯỚC 3: Sau khi vòng lặp kết thúc, thêm toàn bộ fragment vào gridContainer
+// chỉ bằng một thao tác duy nhất.
+gridContainer.innerHTML = ""; // Xóa grid cũ trước
+gridContainer.appendChild(fragment);
+
 
                     setTimeout(() => {
                         repositionNumberLabels();
@@ -1444,6 +1767,8 @@
 
                 const triggerWinAnimation = () => {
                     state.isGameFinished = true;
+                    deselectWord(); 
+                    
                     stopTimer(); // Dừng hẳn timer
                     clueText.textContent = "XUẤT SẮC! BẠN ĐÃ CHIẾN THẮNG!";
                     keyboardWrapper.classList.remove("visible");
@@ -1493,136 +1818,146 @@
                     }, 2000);
                 };
 
-                const handleIncorrectGuess = (wordData) => {
-                    updateScore(-2);
-                    showToast(`Không chính xác!`, "error", 1500);
-                    if (wordData) {
-                        const playableCells = [];
-                        for (let i = 0; i < wordData.word.length; i++) {
-                            let r = wordData.row,
-                                c = wordData.col;
-                            if (wordData.direction === "horizontal") c += i;
-                            else r += i;
-                            const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                            if (playable) playableCells.push(playable);
-                        }
-                        playableCells.forEach((p) => {
-                            if (!p.classList.contains("is-solved")) {
-                                p.querySelector(".cell-front").textContent = "";
-                                p.classList.add("is-locked");
-                            }
-                        });
-                    }
-                    setTimeout(() => {
-                        state.gamePhase = "reveal";
-                        state.isGameFinished = false;
-                        state.playableWordIds.clear();
-                        document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
-                        deselectWord();
-                        saveGameState();
-                    }, 800);
-                };
+// Thay thế TOÀN BỘ hàm cũ bằng hàm async mới này
+const handleIncorrectGuess = async (wordData) => {
+    updateScore(-2);
+    showToast(`Không chính xác!`, "error", 1500);
 
+    if (wordData) {
+        const playableCells = [];
+        for (let i = 0; i < wordData.word.length; i++) {
+            let r = wordData.row,
+                c = wordData.col;
+            if (wordData.direction === "horizontal") c += i;
+            else r += i;
+            const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+            if (playable) playableCells.push(playable);
+        }
+
+        const dominoDelay = 50; // Tốc độ của hiệu ứng domino
+
+        // Bắt đầu chạy hiệu ứng domino
+        playableCells.forEach((p, i) => {
+            if (!p.classList.contains("is-solved")) {
+                setTimeout(() => {
+                    p.classList.remove("anim-typing");
+                    p.querySelector(".cell-front").textContent = "";
+                    p.classList.add("anim-incorrect");
+                    p.classList.add("is-locked");
+                }, i * dominoDelay); // Mỗi ô sẽ bắt đầu animation sau ô trước đó 50ms
+            }
+        });
+
+        // Đợi cho hiệu ứng chạy xong trước khi reset trạng thái
+        const totalAnimationTime = (playableCells.length - 1) * dominoDelay + 400; // Tổng thời gian anim
+        await delay(totalAnimationTime); // Dùng await để "chờ"
+    }
+
+    // Reset trạng thái game sau khi animation đã kết thúc
+    state.gamePhase = "reveal";
+    state.playableWordIds.clear();
+    document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
+    deselectWord();
+    saveGameState();
+    performAutoReveal();
+};
                 const handleWordTimeout = () => {
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     showToast("Hết giờ!", "error");
                     handleIncorrectGuess(wordData);
                 };
 
-                const checkSelectedWord = () => {
-                    const timeLeft = state.wordTimeLeft;
-                    stopWordTimer();
-                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
-                    if (!wordData) return;
+const checkSelectedWord = async () => { // <-- BƯỚC 2.1: Thêm "async" vào đây
+    const timeLeft = state.wordTimeLeft;
+    stopWordTimer();
+    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+    if (!wordData) return;
 
-                    let userInput = "";
-                    const playableCells = [];
-                    for (let i = 0; i < wordData.word.length; i++) {
-                        let r = wordData.row,
-                            c = wordData.col;
-                        if (wordData.direction === "horizontal") c += i;
-                        else r += i;
-                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                        if (playable) {
-                            playableCells.push(playable);
-                            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
-                        }
-                    }
+    let userInput = "";
+    const playableCells = [];
+    for (let i = 0; i < wordData.word.length; i++) {
+        let r = wordData.row,
+            c = wordData.col;
+        if (wordData.direction === "horizontal") c += i;
+        else r += i;
+        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+        if (playable) {
+            playableCells.push(playable);
+            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
+        }
+    }
 
-                    if (userInput === wordData.word) {
-                        updateScore(timeLeft + wordData.word.length);
-                        state.solvedWords.add(wordData.id);
-                        showToast(`+${timeLeft + wordData.word.length} điểm!`, "success", 1500);
+    if (userInput === wordData.word) {
+        updateScore(timeLeft + wordData.word.length);
+        state.solvedWords.add(wordData.id);
+        showToast(`+${timeLeft + wordData.word.length} điểm!`, "success", 1500);
 
-                        const dominoDelay = 60;
-                        const animationDuration = 250;
-                        const holdDuration = 1000;
-                        const letterRevealDelay = 40; // Chữ sẽ hiện ra sau nền 40ms
+        // BƯỚC 2.2: Toàn bộ khối setTimeout... được thay thế bằng khối async/await dưới đây
+        
+        const dominoDelay = 60;
+        const animationDuration = 250;
+        const holdDuration = 1000;
+        const letterRevealDelay = 40;
 
-                        // Giai đoạn 1: Zoom nền ra màu cam, sau đó chữ zoom lên
-                        playableCells.forEach((cell, i) => {
-                            const cellAnimStartTime = i * dominoDelay;
-                            const letterAnimStartTime = cellAnimStartTime + letterRevealDelay;
+        // GIAI ĐOẠN 1: Bắt đầu hiệu ứng domino màu cam
+        playableCells.forEach((cell, i) => {
+            const cellAnimStartTime = i * dominoDelay;
+            const letterAnimStartTime = cellAnimStartTime + letterRevealDelay;
 
-                            // Lên lịch cho animation của nền ô
-                            setTimeout(() => {
-                                cell.classList.remove("anim-typing");
-                                cell.classList.add("anim-correct-phase1");
-                            }, cellAnimStartTime);
+            setTimeout(() => {
+                cell.classList.remove("anim-typing");
+                cell.classList.add("anim-correct-phase1");
+            }, cellAnimStartTime);
 
-                            // Lên lịch cho animation của chữ, trễ hơn một chút
-                            setTimeout(() => {
-                                const cellFront = cell.querySelector(".cell-front");
-                                // Bọc chữ trong thẻ <span> để animate riêng
-                                cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
-                            }, letterAnimStartTime);
-                        });
+            setTimeout(() => {
+                const cellFront = cell.querySelector(".cell-front");
+                cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
+            }, letterAnimStartTime);
+        });
 
-                        const phase1TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration + letterRevealDelay;
+        // ĐỢI cho Giai đoạn 1 và thời gian giữ kết thúc. Code sẽ dừng ở đây.
+        const phase1TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration + letterRevealDelay;
+        await delay(phase1TotalTime + holdDuration);
 
-                        // Giai đoạn 2: Zoom về màu trắng (sau Giai đoạn 1 + thời gian chờ)
-                        setTimeout(() => {
-                            playableCells.forEach((cell, i) => {
-                                setTimeout(() => {
-                                    cell.classList.remove("anim-correct-phase1");
-                                    cell.classList.add("anim-correct-phase2");
-                                    // Đảm bảo chữ vẫn hiển thị đúng sau khi đổi animation
-                                    const cellFront = cell.querySelector(".cell-front");
-                                    if (!cellFront.textContent.trim()) {
-                                        cellFront.textContent = wordData.word[i];
-                                    }
-                                }, i * dominoDelay);
-                            });
-                        }, phase1TotalTime + holdDuration);
+        // GIAI ĐOẠN 2: Bắt đầu hiệu ứng domino màu trắng
+        playableCells.forEach((cell, i) => {
+            setTimeout(() => {
+                cell.classList.remove("anim-correct-phase1");
+                cell.classList.add("anim-correct-phase2");
+                const cellFront = cell.querySelector(".cell-front");
+                if (!cellFront.textContent.trim()) {
+                    cellFront.textContent = wordData.word[i];
+                }
+            }, i * dominoDelay);
+        });
+        
+        // ĐỢI cho Giai đoạn 2 kết thúc. Code lại dừng ở đây.
+        const phase2TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration;
+        await delay(phase2TotalTime);
 
-                        const phase2TotalTime = (playableCells.length - 1) * dominoDelay + animationDuration;
-                        const totalAnimationTime = phase1TotalTime + holdDuration + phase2TotalTime;
+        // SAU KHI TẤT CẢ ANIMATION ĐÃ XONG, tiến hành cập nhật trạng thái
+        playableCells.forEach((cell) => {
+            cell.classList.remove("anim-correct-phase2");
+            cell.classList.add("is-solved");
+            const cellFront = cell.querySelector(".cell-front");
+            cellFront.textContent = cellFront.textContent.trim();
+        });
 
-                        // Cập nhật trạng thái game SAU KHI toàn bộ animation kết thúc
-                        setTimeout(() => {
-                            playableCells.forEach((cell) => {
-                                cell.classList.remove("anim-correct-phase2");
-                                cell.classList.add("is-solved");
-                                // Dọn dẹp: đảm bảo ô chỉ chứa text, không còn thẻ span
-                                const cellFront = cell.querySelector(".cell-front");
-                                cellFront.textContent = cellFront.textContent.trim();
-                            });
+        updateStats();
+        if (state.solvedWords.size === state.words.length) {
+            triggerWinAnimation();
+        } else {
+            state.gamePhase = "reveal";
+            state.playableWordIds.clear();
+            deselectWord();
+            performAutoReveal();
+        }
+        saveGameState();
 
-                            updateStats();
-                            if (state.solvedWords.size === state.words.length) {
-                                triggerWinAnimation();
-                            } else {
-                                state.gamePhase = "reveal";
-                                state.playableWordIds.clear();
-                                deselectWord();
-                            }
-                            saveGameState();
-                        }, totalAnimationTime + 100);
-                    } else {
-                        handleIncorrectGuess(wordData);
-                    }
-                };
-
+    } else {
+        handleIncorrectGuess(wordData);
+    }
+};
                 const hideNumberLabel = (label) => {
                     if (!label) return;
                     const wordData = state.words.find((w) => w.id == label.dataset.wordId);
@@ -1641,6 +1976,7 @@
                 };
 
                 const deselectWord = () => {
+                    updateKeyboardState(); 
                     repositionNumberLabels();
                     gridContainer.classList.remove("word-zoomed");
                     gridContainer.style.transform = "";
@@ -1655,8 +1991,7 @@
                     // Logic mới sẽ không ẩn tất cả các nhãn một cách mù quáng.
                     // Thay vào đó, nó sẽ lặp qua tất cả các nhãn và quyết định trạng thái của từng cái.
 
-                    const shouldShowNumbers = (state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive;
-
+const shouldShowNumbers = !state.isGameFinished && ((state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive);
                     document.querySelectorAll(".word-number-label").forEach((label) => {
                         const wordId = parseInt(label.dataset.wordId);
                         // Một từ được coi là "có thể chơi" nếu nó nằm trong danh sách playableWordIds
@@ -1677,15 +2012,16 @@
                         }
                     });
 
-                    if (state.gamePhase === "playing") {
-                        if (state.playableWordIds.size > 0 && !state.slamModeActive) {
-                            clueText.textContent = "Chọn một từ được đánh số để giải!";
-                        }
-                        keyboardWrapper.classList.remove("visible");
-                    } else if (state.gamePhase === "reveal") {
-                        clueText.textContent = "Chọn một chữ cái để tiết lộ!";
-                        keyboardWrapper.classList.add("visible");
-                    }
+                    // Trong hàm deselectWord()
+keyboardWrapper.classList.remove("visible"); // Luôn ẩn bàn phím khi không chọn từ nào
+if (state.gamePhase === "playing") {
+    if (state.playableWordIds.size > 0 && !state.slamModeActive) {
+        clueText.textContent = "Chọn một từ được đánh số để giải!";
+    }
+} else if (state.gamePhase === "reveal") {
+    // Có thể để trống hoặc hiển thị một thông báo chờ
+    clueText.textContent = "Chuẩn bị lượt tiếp theo...";
+}
                     // --- KẾT THÚC THAY ĐỔI LOGIC ---
                 };
                 const handleCellClick = (clickedCell) => {
@@ -1762,14 +2098,29 @@
                     startWordTimer();
                 };
 
-                const updateKeyboardState = () => {
+const updateKeyboardState = () => {
+                    const vowels = ["U", "E", "O", "A", "I"];
+
                     virtualKeyboard.querySelectorAll(".key").forEach((keyEl) => {
                         const keyUpper = keyEl.dataset.key.toUpperCase();
                         if (keyUpper.length > 1) return; // Bỏ qua các phím chức năng
 
-                        // Một phím sẽ bị vô hiệu hóa nếu nó đã được tiết lộ HOẶC nó nằm trong danh sách bấm sai
-                        const isDisabled = state.revealedLetters.has(keyUpper) || state.disabledLetters.has(keyUpper);
+                        // --- BẮT ĐẦU LOGIC MỚI ---
+
+                        // Quy tắc 1 (Vĩnh viễn): Vô hiệu hóa các phím bấm sai HOẶC các phím đã được tiết lộ thành công.
+                        let isDisabled = state.disabledLetters.has(keyUpper) || state.revealedLetters.has(keyUpper);
+
+                        // Quy tắc 2 (Tạm thời): CHỈ trong giai đoạn "tiết lộ", vô hiệu hóa thêm các nguyên âm.
+                        if (state.gamePhase === "reveal") {
+                            if (vowels.includes(keyUpper)) {
+                                isDisabled = true;
+                            }
+                        }
+
+                        // Áp dụng trạng thái cuối cùng cho nút
                         keyEl.disabled = isDisabled;
+
+                        // --- KẾT THÚC LOGIC MỚI ---
                     });
                 };
                 const createVirtualKeyboard = () => {
@@ -1792,108 +2143,71 @@
                         )
                         .join("");
                 };
-                const handleLetterReveal = (key) => {
-                    if (key.length > 1 || state.revealedLetters.has(key.toUpperCase())) return;
-                    const letter = key.toUpperCase();
-                    const allLettersInPuzzle = state.words.reduce((acc, word) => acc + word.word, "");
+// THAY THẾ HOÀN TOÀN hàm handleLetterReveal CŨ bằng hàm này
+const revealLetterOnGrid = (letter) => {
+    state.revealedLetters.add(letter.toUpperCase());
 
-                    // Trường hợp 1: Chữ cái không tồn tại trong toàn bộ câu đố
-                    if (!allLettersInPuzzle.includes(letter)) {
-                        showToast(`Chữ '${letter}' không có trong bảng!`, "error", 2000);
-                        updateScore(-1); // Trừ điểm
-                        const keyEl = virtualKeyboard.querySelector(`[data-key="${letter}"]`);
-                        if (keyEl) keyEl.disabled = true;
-                        state.disabledLetters.add(letter); // Thêm vào danh sách để lưu lại trạng thái disable
-                        saveGameState();
-                        return;
-                    }
+    state.playableWordIds.clear();
+    let revealedCount = 0;
 
-                    // --- LOGIC SỬA LỖI BẮT ĐẦU TỪ ĐÂY ---
-                    // Trường hợp 2: Kiểm tra xem tất cả các ô chứa chữ cái này đã hiển thị hết chưa
-                    let hasHiddenInstance = false;
-                    for (const wordData of state.words) {
-                        // Bỏ qua các từ đã được giải hoàn toàn
-                        if (state.solvedWords.has(wordData.id)) continue;
+    state.words.forEach((wordData) => {
+        let containsLetter = false;
+        for (let i = 0; i < wordData.word.length; i++) {
+            if (wordData.word[i] === letter) {
+                containsLetter = true;
+                let r = wordData.row, c = wordData.col;
+                if (wordData.direction === "horizontal") c += i; else r += i;
+                const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                if (playable && !playable.classList.contains("is-solved")) {
+                    playable.querySelector(".cell-front").innerHTML = `<span class="letter-pop-in">${letter}</span>`;
+                    playable.classList.add("is-solved");
+                    revealedCount++;
+                }
+            }
+        }
 
-                        for (let i = 0; i < wordData.word.length; i++) {
-                            if (wordData.word[i] === letter) {
-                                let r = wordData.row,
-                                    c = wordData.col;
-                                if (wordData.direction === "horizontal") c += i;
-                                else r += i;
-                                const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                                // Nếu tìm thấy một ô chứa chữ này mà chưa được giải (chưa có class 'is-solved'),
-                                // tức là vẫn còn chữ để tiết lộ.
-                                if (cell && !cell.classList.contains("is-solved")) {
-                                    hasHiddenInstance = true;
-                                    break; // Thoát khỏi vòng lặp trong
-                                }
-                            }
-                        }
-                        if (hasHiddenInstance) {
-                            break; // Thoát khỏi vòng lặp ngoài
-                        }
-                    }
+        if (containsLetter && !state.solvedWords.has(wordData.id)) {
+            state.playableWordIds.add(wordData.id);
+        }
+    });
 
-                    // Nếu không còn ô nào bị ẩn, thông báo cho người dùng và trừ điểm
-                    if (!hasHiddenInstance) {
-                        showToast(`Chữ '${letter}' đã được hiển thị hết trên bảng.`, "info", 2500);
-                        updateScore(-1); // Trừ điểm cho lựa chọn không hiệu quả
-                        const keyEl = virtualKeyboard.querySelector(`[data-key="${letter}"]`);
-                        if (keyEl) keyEl.disabled = true;
-                        state.revealedLetters.add(letter); // Đánh dấu đã bấm để không bị trừ điểm tiếp
-                        saveGameState();
-                        return;
-                    }
-                    // --- KẾT THÚC LOGIC SỬA LỖI ---
+    // Kiểm tra các từ được hoàn thành tự động
+    const newlyCompletedWords = [];
+    state.playableWordIds.forEach(wordId => {
+        if (state.solvedWords.has(wordId)) return;
+        const wordData = state.words.find(w => w.id === wordId);
+        if (!wordData) return;
+        let isFullyRevealed = true;
+        for (let i = 0; i < wordData.word.length; i++) {
+            let r = wordData.row, c = wordData.col;
+            if (wordData.direction === 'horizontal') c += i; else r += i;
+            const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+            if (!cell || !cell.classList.contains('is-solved')) {
+                isFullyRevealed = false;
+                break;
+            }
+        }
+        if (isFullyRevealed) newlyCompletedWords.push(wordId);
+    });
 
-                    // Trường hợp 3: Tiết lộ chữ cái (logic gốc vẫn đúng)
-                    state.revealedLetters.add(letter);
-                    updateKeyboardState();
-                    state.playableWordIds.clear();
-                    let revealedCount = 0;
+    if (newlyCompletedWords.length > 0) {
+        newlyCompletedWords.forEach(wordId => {
+            state.solvedWords.add(wordId);
+            state.playableWordIds.delete(wordId); 
+        });
+        showToast(`Đã tự động hoàn thành ${newlyCompletedWords.length} từ!`, "success");
+        updateStats();
+        if (state.solvedWords.size === state.words.length) {
+            triggerWinAnimation();
+            return;
+        }
+    }
 
-                    state.words.forEach((wordData) => {
-                        let containsLetter = false;
-                        for (let i = 0; i < wordData.word.length; i++) {
-                            if (wordData.word[i] === letter) {
-                                containsLetter = true;
-                                let r = wordData.row,
-                                    c = wordData.col;
-                                if (wordData.direction === "horizontal") c += i;
-                                else r += i;
-                                const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                                if (playable && !playable.classList.contains("is-solved")) {
-                                    playable.querySelector(".cell-front").textContent = letter;
-                                    playable.classList.add("is-solved");
-                                    revealedCount++;
-                                }
-                            }
-                        }
-
-                        if (containsLetter && !state.solvedWords.has(wordData.id)) {
-                            state.playableWordIds.add(wordData.id);
-                            const numberLabel = numberOverlay.querySelector(`[data-word-id="${wordData.id}"]`);
-                            if (numberLabel) {
-                                numberLabel.classList.remove("hiding-right", "hiding-down");
-                                numberLabel.classList.add("visible");
-                            }
-                        }
-                    });
-
-                    if (revealedCount > 0) {
-                        showToast(`Đã tiết lộ ${revealedCount} ô chữ '${letter}'!`, "success");
-                    }
-
-                    if (state.playableWordIds.size > 0) {
-                        state.gamePhase = "playing";
-                    } else {
-                        state.gamePhase = "reveal";
-                    }
-
-                    deselectWord();
-                    saveGameState();
-                };
+    // Sau khi tiết lộ, chuyển sang giai đoạn cho người chơi đoán
+    state.gamePhase = "playing";
+    deselectWord();
+    saveGameState();
+};
                 const handleWordInput = (key) => {
                     if (!state.currentInputCell || (key.length > 1 && key !== "Backspace" && key !== "Enter")) return;
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
@@ -1995,8 +2309,7 @@
                         } else handleWordInput(key);
                         return;
                     }
-                    if (state.gamePhase === "reveal") handleLetterReveal(key);
-                    else if (state.gamePhase === "playing") {
+                    if (state.gamePhase === "playing") {
                         if (key === "Enter") {
                             if (state.selectedWordId !== null) checkSelectedWord();
                         } else handleWordInput(key);
@@ -2056,6 +2369,7 @@
                     }
                     state.currentPuzzleId = puzzleId;
                     state.words = puzzle.arrangedWords;
+                    state.isGameFinished = false;
                     state.solvedWords.clear();
                     state.revealedLetters.clear();
                     state.disabledLetters.clear();
@@ -2066,14 +2380,21 @@
                     state.elapsedSeconds = 0;
                     state.totalScore = 0;
                     updateScore(0);
-                    slamBtn.disabled = false;
-                    clueText.classList.remove("hidden");
                     createGameGrid();
-                    loadGameState();
+loadGameState(); // Tải trạng thái game trước
+
+// Cập nhật giao diện dựa trên trạng thái vừa tải
+slamBtn.disabled = state.slamModeActive;
+if (state.slamModeActive) {
+    clueText.classList.add("hidden");
+} else {
+    clueText.classList.remove("hidden");
+}
                     updateKeyboardState();
                     deselectWord();
                     updateStats();
                     startTimer();
+                    performAutoReveal();
                 };
 
                 createVirtualKeyboard();
