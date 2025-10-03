@@ -9,6 +9,10 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet" />
         <style>
+            /* Dán dòng này ngay dưới thẻ <style> hoặc trong :root */
+            * {
+                box-sizing: border-box;
+            }
             :root {
                 --grid-gap: clamp(2px, 0.5vmin, 4px);
                 --cell-size: 40px;
@@ -735,6 +739,186 @@
                 /* Tốc độ nhanh (0.2s), có hiệu ứng nảy (ease-back) */
                 animation: letter-zoom-back 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
             }
+
+            #creation-main-view {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                max-width: 1200px;
+                margin: 0 auto;
+                gap: 1rem;
+            }
+            #creation-top-bar {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+            .tab-button {
+                padding: 8px 16px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                cursor: pointer;
+                border: 1px solid transparent;
+            }
+            .tab-button.active {
+                color: var(--primary-accent);
+                border-color: var(--primary-accent);
+                font-weight: 700;
+            }
+
+            .creation-tab-content {
+                display: none;
+            }
+            .creation-tab-content.active {
+                display: block;
+            }
+
+            #editor-container {
+                display: flex;
+                width: 100%;
+                height: calc(100dvh - 250px);
+                gap: 1rem;
+                flex-direction: column;
+            }
+            @media (min-width: 768px) {
+                #editor-container {
+                    flex-direction: row;
+                }
+            }
+
+            #word-bank {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+                padding: 10px;
+                overflow-y: auto;
+                flex-shrink: 0;
+                width: 100%;
+                height: 150px;
+            }
+            @media (min-width: 768px) {
+                #word-bank {
+                    width: 220px;
+                    height: 100%;
+                }
+            }
+
+            .bank-word {
+                background: var(--secondary-accent);
+                color: white;
+                padding: 8px;
+                margin-bottom: 8px;
+                border-radius: 4px;
+                font-weight: 700;
+                cursor: grab;
+                user-select: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background 0.2s;
+                gap: 8px;
+            }
+            .word-direction-indicator {
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.7);
+                width: 16px; /* Dành không gian cố định */
+                text-align: center;
+            }
+            .bank-word:active {
+                cursor: grabbing;
+                background: #1e88e5;
+            }
+
+            .rotate-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #editor-grid-wrapper {
+                flex-grow: 1;
+                overflow: auto;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 8px;
+                padding: 5px;
+            }
+            #editor-grid {
+                display: grid;
+                grid-template-columns: repeat(50, 25px);
+                grid-template-rows: repeat(50, 25px);
+                gap: 1px;
+                position: relative; /* <--- THÊM DÒNG NÀY */
+            }
+            .editor-cell {
+                background-color: rgba(255, 255, 255, 0.08);
+                width: 25px;
+                height: 25px;
+            }
+            .editor-cell-letter {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                color: var(--primary-accent);
+                background: white;
+                color: var(--dark-blue);
+            }
+
+            /* Đây là style cho "bóng ma" của từ khi bạn kéo đi */
+            .word-ghost {
+                position: fixed;
+                z-index: 9999;
+                pointer-events: none;
+                display: flex;
+                background: var(--success-color);
+                opacity: 0.8;
+            }
+            /* Style khi vị trí đặt không hợp lệ */
+            .word-ghost.invalid {
+                background: var(--danger-color);
+            }
+            .ghost-letter {
+                width: 26px; /* Kích thước ô + khoảng cách */
+                height: 26px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 900;
+            }
+            /* Dán đoạn này vào cuối thẻ <style> */
+            .placement-preview {
+                position: absolute;
+                z-index: 100; /* Nằm dưới bóng ma kéo, trên lưới */
+                pointer-events: none;
+                display: none; /* Mặc định ẩn */
+                flex-direction: row;
+                opacity: 0.65;
+                transition: top 0.05s, left 0.05s; /* Di chuyển mượt một chút */
+            }
+            .placement-preview .preview-letter {
+                width: 25px;
+                height: 25px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                color: white;
+                background-color: var(--success-color);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+                box-sizing: border-box;
+            }
+            .placement-preview.invalid .preview-letter {
+                background-color: var(--danger-color);
+            }
         </style>
     </head>
     <body>
@@ -744,17 +928,39 @@
             <h1 class="page-title">SLAM PUZZLE</h1>
             <div id="puzzle-list"></div>
         </div>
-
         <div id="creation-page" class="page">
-            <div class="form-group-material" style="width: 100%; max-width: 500px; margin-bottom: 1rem;">
-                <input type="text" id="puzzle-title-input" required />
-                <label>Tên Bộ Đề</label>
-            </div>
-            <div id="word-list-container" class="w-full max-w-lg"></div>
-            <button id="add-word-fab" title="Thêm từ mới">+</button>
-            <div class="creation-footer">
-                <button id="back-to-lobby-btn" class="action-btn">Quay Lại</button>
+            <div id="creation-main-view">
+                <div id="creation-top-bar">
+                    <div class="form-group-material" style="flex-grow: 1;">
+                        <input type="text" id="puzzle-title-input" required placeholder=" " />
+                        <label>Tên Bộ Đề</label>
+                    </div>
+                    <button id="tab-btn-words" class="tab-button active">1. Nhập Từ</button>
+                    <button id="tab-btn-arrange" class="tab-button">2. Xếp Lưới</button>
+                </div>
 
+                <div id="tab-content-words" class="creation-tab-content active">
+                    <div id="word-list-container" class="w-full" style="max-height: calc(100dvh - 250px); overflow-y: auto;"></div>
+                </div>
+
+                <div id="tab-content-arrange" class="creation-tab-content">
+                    <div id="editor-container">
+                        <div id="word-bank"></div>
+                        <div id="editor-grid-wrapper">
+                            <div id="editor-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="add-word-fab" title="Thêm từ mới">+</button>
+
+            <div class="creation-footer">
+                <button id="back-to-lobby-btn" class="action-btn" title="Quay Lại">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
                 <button id="import-puzzle-btn" class="action-btn icon-btn" title="Nhập bộ đề từ file">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -770,7 +976,11 @@
                     </svg>
                 </button>
                 <button id="delete-puzzle-btn" class="action-btn" style="background: linear-gradient(145deg, #c62828, #b71c1c); border-color: #e57373; display: none;">Xóa</button>
-                <button id="save-puzzle-btn" class="action-btn primary">Lưu & Chơi</button>
+                <button id="save-puzzle-btn" class="action-btn primary" title="Lưu & Chơi">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -859,6 +1069,20 @@
                     disabledLetters: new Set(),
                     isGameFinished: false,
                 };
+                let editorState = {
+                    isDragging: false,
+                    draggedWordId: null,
+                    ghostElement: null,
+                    placementPreview: null,
+                    gridOffset: { x: 0, y: 0 },
+                    startOffset: { x: 0, y: 0 },
+                };
+                const tabBtnWords = document.getElementById("tab-btn-words");
+                const tabBtnArrange = document.getElementById("tab-btn-arrange");
+                const tabContentWords = document.getElementById("tab-content-words");
+                const tabContentArrange = document.getElementById("tab-content-arrange");
+                const wordBank = document.getElementById("word-bank");
+                const editorGrid = document.getElementById("editor-grid");
                 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
                 const exportBtn = document.getElementById("export-puzzle-btn");
                 const importBtn = document.getElementById("import-puzzle-btn");
@@ -965,6 +1189,9 @@
                                         id: index,
                                         word: w.word || "",
                                         clue: w.clue || "",
+                                        direction: "horizontal", // Thêm dòng này
+                                        row: null,
+                                        col: null,
                                     }));
                                     state.currentPuzzleId = null; // Coi như đây là một bộ đề mới
                                     deletePuzzleBtn.style.display = "none";
@@ -1033,13 +1260,17 @@
                         const card = document.createElement("div");
                         card.className = "puzzle-card";
                         card.innerHTML = `
-                    <h3 class="puzzle-card-title">${puzzle.title}</h3>
+            <h3 class="puzzle-card-title">${puzzle.title}</h3>
 <p class="puzzle-card-meta">${puzzle.words.length} từ - Sửa đổi: ${new Date(puzzle.lastModified).toLocaleString("vi-VN")}</p>
 <p class="puzzle-card-meta" style="color: var(--primary-accent); font-weight: 700;">Điểm cao: ${puzzle.highScore || 0}</p>
-                    <div class="puzzle-card-actions">
-                        <button class="action-btn primary play-puzzle-btn" data-id="${id}">Chơi</button>
-                        <button class="action-btn edit-puzzle-btn" data-id="${id}">Sửa</button>
-                    </div>`;
+            <div class="puzzle-card-actions">
+                <button class="action-btn primary play-puzzle-btn" data-id="${id}" title="Chơi">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+</button>
+                <button class="action-btn edit-puzzle-btn" data-id="${id}" title="Sửa">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+</button>
+            </div>`;
                         puzzleListContainer.appendChild(card);
                     });
                     const addNewCard = document.createElement("div");
@@ -1056,62 +1287,585 @@
                     if (editBtn) switchView("creation", editBtn.dataset.id);
                 });
 
+                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
                 const initCreation = (puzzleId = null) => {
                     state.currentPuzzleId = puzzleId;
+                    switchCreationTab("words"); // Luôn bắt đầu ở tab nhập từ
                     let wordsToRender = [];
                     puzzleTitleInput.value = "";
                     deletePuzzleBtn.style.display = "none";
+
                     if (puzzleId) {
                         const puzzle = getPuzzles()[puzzleId];
                         if (puzzle) {
                             puzzleTitleInput.value = puzzle.title;
-                            wordsToRender = puzzle.words.map((w, i) => ({ ...w, id: i }));
+                            // Nếu đã có arrangedWords, load lại dữ liệu vị trí
+                            if (puzzle.arrangedWords) {
+                                wordsToRender = puzzle.arrangedWords.map((w, i) => ({ ...w, id: i }));
+                            } else {
+                                // Dữ liệu cũ chưa có arrangedWords
+                                wordsToRender = puzzle.words.map((w, i) => ({ ...w, id: i, direction: "horizontal", row: null, col: null }));
+                            }
                             deletePuzzleBtn.style.display = "flex";
                         } else {
                             showToast("Không tìm thấy bộ đề!", "error");
                             state.currentPuzzleId = null;
                         }
-                    } else if (Object.keys(getPuzzles()).length === 0) {
+                    } else {
+                        // Thêm từ mẫu
                         wordsToRender = [
-                            { word: "VIETNAM", clue: "Đất nước hình chữ S" },
-                            { word: "HANOI", clue: "Thủ đô" },
-                        ].map((w, i) => ({ ...w, id: i }));
+                            {
+                                id: 0,
+                                word: "VIETNAM",
+                                clue: "Đất nước hình chữ S",
+                                direction: "horizontal",
+                                row: null,
+                                col: null,
+                            },
+                            {
+                                id: 1,
+                                word: "HANOI",
+                                clue: "Thủ đô",
+                                direction: "horizontal",
+                                row: null,
+                                col: null,
+                            },
+                        ];
                     }
                     state.words = wordsToRender;
                     renderWordForms();
                 };
-
+                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
                 const renderWordForms = () => {
                     wordListContainer.innerHTML = state.words
                         .map(
                             (word, index) =>
-                                `<div class="word-card" data-index="${index}">
-                    <div class="card-header">
-                        <h2 class="card-title">Từ #${index + 1}</h2>
-                        <button class="remove-word-btn" title="Xóa từ này">&times;</button>
-                    </div>
-                    <div class="form-group-material">
-                        <input type="text" class="word-input" value="${word.word || ""}" style="text-transform: uppercase;">
-                        <label>Từ (Word)</label>
-                    </div>
-                    <div class="form-group-material">
-                        <input type="text" class="clue-input" value="${word.clue || ""}">
-                        <label>Gợi ý (Clue)</label>
-                    </div>
-                </div>`
+                                `<div class="word-card" data-id="${word.id}">
+            <div class="card-header">
+                <h2 class="card-title">Từ #${index + 1}</h2>
+<button class="remove-word-btn" title="Xóa từ này">
+    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"3 6 5 6 21 6\"></polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path></svg>
+</button>
+            </div>
+            <div class="form-group-material">
+                <input type="text" class="word-input" value="${word.word || ""}" placeholder=" " style="text-transform: uppercase;">
+                <label>Từ (Word)</label>
+            </div>
+            <div class="form-group-material">
+                <input type="text" class="clue-input" value="${word.clue || ""}" placeholder=" ">
+                <label>Gợi ý (Clue)</label>
+            </div>
+        </div>`
                         )
                         .join("");
                 };
+                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
                 const updateStateFromForms = () => {
-                    state.words = Array.from(document.querySelectorAll(".word-card")).map((form, index) => ({
-                        id: index,
-                        word: form.querySelector(".word-input").value.toUpperCase().trim(),
-                        clue: form.querySelector(".clue-input").value.trim(),
-                    }));
+                    const wordCards = document.querySelectorAll(".word-card");
+                    let updatedWords = [];
+                    wordCards.forEach((card) => {
+                        const id = parseInt(card.dataset.id);
+                        const existingWord = state.words.find((w) => w.id === id) || {};
+                        updatedWords.push({
+                            ...existingWord,
+                            id: id,
+                            word: card.querySelector(".word-input").value.toUpperCase().trim(),
+                            clue: card.querySelector(".clue-input").value.trim(),
+                        });
+                    });
+                    state.words = updatedWords;
                 };
+
+                // DÁN TOÀN BỘ KHỐI CODE NÀY VÀO SCRIPT
+
+                // =======================================================================
+                // ★★★ LOGIC CỐT LÕI MỚI CHO TRÌNH CHỈNH SỬA KÉO-THẢ ★★★
+                // =======================================================================
+
+                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
+                const initEditor = () => {
+                    updateStateFromForms();
+
+                    // BƯỚC 1: Tính toán kích thước cần thiết
+                    const gridSize = calculateEditorGridSize();
+
+                    // BƯỚC 2: Tạo lưới với kích thước vừa tính
+                    createEditorGrid(gridSize);
+
+                    // BƯỚC 3: Render các thành phần khác như cũ
+                    renderWordBank();
+                    renderPlacedWords();
+                };
+
+                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
+                const createEditorGrid = (gridSize) => {
+                    editorGrid.innerHTML = ""; // Xóa lưới cũ trước khi tạo lưới mới
+
+                    // Dùng gridSize động thay vì số 50 cố định
+                    editorGrid.style.gridTemplateColumns = `repeat(${gridSize}, 25px)`;
+                    editorGrid.style.gridTemplateRows = `repeat(${gridSize}, 25px)`;
+
+                    const fragment = document.createDocumentFragment();
+                    for (let i = 0; i < gridSize * gridSize; i++) {
+                        const cell = document.createElement("div");
+                        cell.className = "editor-cell";
+                        cell.dataset.row = Math.floor(i / gridSize);
+                        cell.dataset.col = i % gridSize;
+                        fragment.appendChild(cell);
+                    }
+                    editorGrid.appendChild(fragment);
+                };
+
+                const calculateEditorGridSize = () => {
+                    if (state.words.length === 0) return 20; // Kích thước mặc định nếu chưa có từ nào
+
+                    // Tìm từ dài nhất trong danh sách
+                    const longestWordLength = Math.max(...state.words.map((w) => w.word.length));
+
+                    // Kích thước lưới sẽ bằng độ dài từ dài nhất + 1 khoảng đệm (ví dụ 5 ô)
+                    // để có không gian sắp xếp. Tối thiểu là 20.
+                    return Math.max(20, longestWordLength + 5);
+                };
+                const renderWordBank = () => {
+                    wordBank.innerHTML = "";
+                    const unplacedWords = state.words.filter((w) => w.word && (!w.hasOwnProperty("row") || w.row === null));
+
+                    unplacedWords.forEach((word) => {
+                        const wordEl = document.createElement("div");
+                        wordEl.className = "bank-word";
+                        wordEl.dataset.id = word.id;
+                        wordEl.innerHTML = `
+    <span class="word-direction-indicator">${word.direction === "vertical" ? "↓" : "→"}</span>
+    <span style="flex-grow: 1;">${word.word}</span>
+    <button class="rotate-btn" title="Xoay">↻</button>
+`;
+
+                        // Sự kiện kéo-thả cho cả thẻ từ
+                        wordEl.addEventListener("mousedown", handleDragStart);
+                        wordEl.addEventListener("touchstart", handleDragStart, {
+                            passive: false,
+                        });
+
+                        // --- SỬA LẠI: Xử lý riêng cho nút xoay ---
+                        const rotateBtn = wordEl.querySelector(".rotate-btn");
+                        const handleRotate = (e) => {
+                            e.stopPropagation(); // <-- Quan trọng: Ngăn sự kiện lan ra ngoài, tránh kích hoạt kéo-thả
+                            const wordId = parseInt(wordEl.dataset.id);
+                            const wordData = state.words.find((w) => w.id === wordId);
+                            if (wordData) {
+                                wordData.direction = wordData.direction === "horizontal" ? "vertical" : "horizontal";
+                                showToast(`Đã xoay từ "${wordData.word}"`, "info", 1000);
+                            }
+                        };
+
+                        // Gán sự kiện click cho nút xoay
+                        rotateBtn.addEventListener("click", handleRotate);
+                        // Ngăn kéo-thả khi nhấn chuột/chạm vào nút xoay
+                        rotateBtn.addEventListener("mousedown", (e) => e.stopPropagation());
+                        rotateBtn.addEventListener("touchstart", (e) => e.stopPropagation());
+                        // --- KẾT THÚC PHẦN SỬA LẠI ---
+
+                        wordBank.appendChild(wordEl);
+                    });
+                };
+                const renderPlacedWords = () => {
+                    // Xóa các từ cũ đi
+                    editorGrid.querySelectorAll(".placed-word").forEach((el) => el.remove());
+
+                    const placedWords = state.words.filter((w) => w.hasOwnProperty("row") && w.row !== null);
+
+                    placedWords.forEach((word) => {
+                        const wordWrapper = document.createElement("div");
+                        wordWrapper.className = "placed-word";
+                        wordWrapper.dataset.id = word.id;
+                        wordWrapper.style.position = "absolute";
+                        wordWrapper.style.display = "flex";
+                        // Vị trí dựa trên ô lưới (25px) và khoảng cách (1px)
+                        wordWrapper.style.top = `${word.row * 26}px`;
+                        wordWrapper.style.left = `${word.col * 26}px`;
+
+                        if (word.direction === "vertical") {
+                            wordWrapper.style.flexDirection = "column";
+                        }
+
+                        // Tạo từng ô chữ cho từ
+                        word.word.split("").forEach((char) => {
+                            const letterEl = document.createElement("div");
+                            letterEl.className = "editor-cell-letter";
+                            letterEl.textContent = char;
+                            letterEl.style.width = "25px";
+                            letterEl.style.height = "25px";
+                            wordWrapper.appendChild(letterEl);
+                        });
+
+                        // THÊM SỰ KIỆN ĐỂ CÓ THỂ KÉO LẠI TỪ ĐÃ ĐẶT
+                        wordWrapper.addEventListener("mousedown", handleDragStart);
+                        wordWrapper.addEventListener("touchstart", handleDragStart, {
+                            passive: false,
+                        });
+
+                        editorGrid.appendChild(wordWrapper);
+                    });
+                };
+                // DÁN HÀM MỚI NÀY VÀO SCRIPT
+                const handleGridWordInteraction = (e) => {
+                    const target = e.target.closest(".placed-word");
+                    if (!target) return;
+
+                    // Logic Xoay khi nhấp đúp
+                    if (e.type === "dblclick") {
+                        e.preventDefault();
+                        const wordId = parseInt(target.dataset.id);
+                        const wordData = state.words.find((w) => w.id === wordId);
+                        if (!wordData) return;
+
+                        // Lưu lại trạng thái cũ
+                        const oldDirection = wordData.direction;
+                        const newDirection = oldDirection === "horizontal" ? "vertical" : "horizontal";
+
+                        // Thử xoay
+                        wordData.direction = newDirection;
+
+                        // Kiểm tra xem vị trí mới có hợp lệ không (trừ chính nó ra)
+                        if (isPlacementValid(wordData, wordData.row, wordData.col, true)) {
+                            showToast("Đã xoay!", "success", 1000);
+                        } else {
+                            // Nếu không hợp lệ, trả lại như cũ
+                            wordData.direction = oldDirection;
+                            showToast("Không thể xoay ở vị trí này!", "error");
+                        }
+                        renderPlacedWords(); // Cập nhật lại giao diện
+                    }
+                };
+
+                // Gắn sự kiện vào lưới
+                editorGrid.addEventListener("dblclick", handleGridWordInteraction);
+
+                // --- CHANGE START: FIX GHOST JUMPING ---
+                // The logic inside this function has been reordered to prevent the ghost from jumping.
+                // It now calculates the position of the word *before* removing it from the grid for the drag operation.
+                const handleDragStart = (e) => {
+                    e.preventDefault();
+
+                    const target = e.target.closest(".bank-word, .placed-word");
+                    if (!target) return;
+
+                    const wordId = parseInt(target.dataset.id);
+                    const wordData = state.words.find((w) => w.id === wordId);
+                    if (!wordData) return;
+
+                    // Get all coordinate and position data BEFORE changing the DOM
+                    const rect = target.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    editorState.startOffset = {
+                        x: clientX - rect.left,
+                        y: clientY - rect.top,
+                    };
+                    const gridRect = editorGrid.getBoundingClientRect();
+                    editorState.gridOffset = {
+                        x: gridRect.left + editorGrid.scrollLeft,
+                        y: gridRect.top + editorGrid.scrollTop,
+                    };
+
+                    // If the word is already on the grid, update its state and re-render the grid
+                    // This effectively "picks up" the word.
+                    if (target.classList.contains("placed-word")) {
+                        wordData.row = null;
+                        wordData.col = null;
+                        renderPlacedWords();
+                    }
+
+                    editorState.isDragging = true;
+                    editorState.draggedWordId = wordId;
+
+                    // Create the ghost element that follows the cursor
+                    editorState.ghostElement = document.createElement("div");
+                    editorState.ghostElement.className = "word-ghost";
+                    if (wordData.direction === "vertical") {
+                        editorState.ghostElement.style.flexDirection = "column";
+                    }
+                    wordData.word.split("").forEach((char) => {
+                        const letterEl = document.createElement("div");
+                        letterEl.className = "ghost-letter";
+                        letterEl.textContent = char;
+                        editorState.ghostElement.appendChild(letterEl);
+                    });
+                    document.body.appendChild(editorState.ghostElement);
+
+                    // Create the preview element that snaps to the grid
+                    editorState.placementPreview = document.createElement("div");
+                    editorState.placementPreview.className = "placement-preview";
+                    wordData.word.split("").forEach((char) => {
+                        const letterEl = document.createElement("div");
+                        letterEl.className = "preview-letter";
+                        letterEl.textContent = char;
+                        editorState.placementPreview.appendChild(letterEl);
+                    });
+                    editorGrid.appendChild(editorState.placementPreview);
+
+                    updateGhostPosition(e);
+
+                    document.addEventListener("mousemove", handleDragMove);
+                    document.addEventListener("touchmove", handleDragMove, {
+                        passive: false,
+                    });
+                    document.addEventListener("mouseup", handleDragEnd);
+                    document.addEventListener("touchend", handleDragEnd);
+                };
+                // --- CHANGE END: FIX GHOST JUMPING ---
+
+                const handleDragMove = (e) => {
+                    if (!editorState.isDragging) return;
+                    e.preventDefault();
+                    updateGhostPosition(e);
+                };
+
+                // --- CHANGE START: HIDE REDUNDANT GHOST ---
+                // This function now checks if the cursor is over the grid.
+                // If it is, it hides the free-floating ghost and shows the grid preview.
+                // If it's not, it does the opposite.
+                const updateGhostPosition = (e) => {
+                    if (!editorState.ghostElement || !editorState.placementPreview) return;
+
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    // Update the free-floating ghost's position
+                    editorState.ghostElement.style.left = `${clientX - editorState.startOffset.x}px`;
+                    editorState.ghostElement.style.top = `${clientY - editorState.startOffset.y}px`;
+
+                    const gridRect = editorGrid.getBoundingClientRect();
+                    const isOverGrid = clientX >= gridRect.left && clientX <= gridRect.right && clientY >= gridRect.top && clientY <= gridRect.bottom;
+
+                    if (isOverGrid) {
+                        // Show the grid preview and hide the free-floating ghost
+                        editorState.placementPreview.style.display = "flex";
+                        editorState.ghostElement.style.display = "none";
+
+                        const wordData = state.words.find((w) => w.id === editorState.draggedWordId);
+                        let { row, col } = getGridCoordsFromEvent(e);
+                        let snappedDirection = wordData.direction;
+
+                        // --- Auto-snap and rotate logic ---
+                        let hasFoundSnap = false;
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            let checkRow = row,
+                                checkCol = col;
+                            if (snappedDirection === "horizontal") checkCol += i;
+                            else checkRow += i;
+
+                            const targetCellLetter = getLetterAt(checkRow, checkCol);
+                            if (targetCellLetter && targetCellLetter.letter === wordData.word[i]) {
+                                const targetWord = state.words.find((w) => w.id === targetCellLetter.wordId);
+                                if (targetWord) {
+                                    const newDirection = targetWord.direction === "horizontal" ? "vertical" : "horizontal";
+                                    let newRow = checkRow,
+                                        newCol = checkCol;
+                                    if (newDirection === "horizontal") newCol = checkCol - i;
+                                    else newRow = checkRow - i;
+
+                                    if (isPlacementValid({ ...wordData, direction: newDirection }, newRow, newCol)) {
+                                        snappedDirection = newDirection;
+                                        row = newRow;
+                                        col = newCol;
+                                        hasFoundSnap = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        // --- End of auto-snap logic ---
+
+                        const isValid = isPlacementValid({ ...wordData, direction: snappedDirection }, row, col);
+
+                        // Update the grid preview's position and appearance
+                        editorState.placementPreview.style.top = `${row * 26}px`;
+                        editorState.placementPreview.style.left = `${col * 26}px`;
+                        editorState.placementPreview.style.flexDirection = snappedDirection === "vertical" ? "column" : "row";
+                        editorState.placementPreview.classList.toggle("invalid", !isValid);
+                        editorState.ghostElement.classList.toggle("invalid", !isValid);
+
+                        editorState.finalPlacement = {
+                            row,
+                            col,
+                            direction: snappedDirection,
+                            isValid,
+                        };
+                    } else {
+                        // Show the free-floating ghost and hide the grid preview
+                        editorState.placementPreview.style.display = "none";
+                        editorState.ghostElement.style.display = "flex";
+                        editorState.finalPlacement = {
+                            isValid: false,
+                        }; // Mark as invalid if dropped outside
+                    }
+                };
+                // --- CHANGE END: HIDE REDUNDANT GHOST ---
+
+                const getGridCoordsFromEvent = (e) => {
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    // SỬA LẠI: Tính toán vị trí dựa trên góc trên bên trái của bóng ma, không phải con trỏ
+                    const ghostX = clientX - editorState.startOffset.x;
+                    const ghostY = clientY - editorState.startOffset.y;
+
+                    const x = ghostX - editorState.gridOffset.x;
+                    const y = ghostY - editorState.gridOffset.y;
+
+                    const col = Math.round(x / 26); // Dùng Math.round để cảm giác dính tốt hơn
+                    const row = Math.round(y / 26);
+
+                    return {
+                        row,
+                        col,
+                    };
+                };
+
+                // --- CHANGE START: ALLOW PLACING ANYWHERE ---
+                // The rule requiring a new word to connect to an existing word has been commented out.
+                const isPlacementValid = (wordData, row, col, ignoreSelf = false) => {
+                    const gridSize = calculateEditorGridSize();
+
+                    // 1. Check if the word is outside the grid
+                    if (row < 0 || col < 0 || row >= gridSize || col >= gridSize) return false;
+                    if (wordData.direction === "horizontal" && col + wordData.word.length > gridSize) return false;
+                    if (wordData.direction === "vertical" && row + wordData.word.length > gridSize) return false;
+
+                    let intersectionFound = false;
+                    const placedWords = state.words.filter((w) => w.hasOwnProperty("row") && w.row !== null && w.id !== wordData.id);
+
+                    // 2. Loop through each letter of the word to check for collisions
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = row,
+                            c = col;
+                        if (wordData.direction === "horizontal") {
+                            c += i;
+                        } else {
+                            r += i;
+                        }
+
+                        const otherLetter = getLetterAt(r, c);
+
+                        if (otherLetter) {
+                            if (otherLetter.letter !== wordData.word[i]) return false; // Intersects but with the wrong letter
+                            intersectionFound = true;
+                        }
+
+                        // Check for parallel collisions
+                        const isIntersectionPoint = otherLetter !== null;
+
+                        if (wordData.direction === "horizontal") {
+                            if (!isIntersectionPoint) {
+                                if (getLetterAt(r - 1, c) !== null) return false; // Word above
+                                if (getLetterAt(r + 1, c) !== null) return false; // Word below
+                            }
+                            if (i === 0 && getLetterAt(r, c - 1) !== null) return false; // Word at the start
+                            if (i === wordData.word.length - 1 && getLetterAt(r, c + 1) !== null) return false; // Word at the end
+                        } else {
+                            // Vertical
+                            if (!isIntersectionPoint) {
+                                if (getLetterAt(r, c - 1) !== null) return false; // Word to the left
+                                if (getLetterAt(r, c + 1) !== null) return false; // Word to the right
+                            }
+                            if (i === 0 && getLetterAt(r - 1, c) !== null) return false; // Word at the start
+                            if (i === wordData.word.length - 1 && getLetterAt(r + 1, c) !== null) return false; // Word at the end
+                        }
+                    }
+
+                    // 3. This rule is now disabled to allow placing words freely.
+                    //if (!ignoreSelf && placedWords.length > 0 && !intersectionFound) return false;
+
+                    return true;
+                };
+                // --- CHANGE END: ALLOW PLACING ANYWHERE ---
+
+                const getLetterAt = (row, col) => {
+                    for (const word of state.words) {
+                        if (!word.hasOwnProperty("row") || word.row === null) continue;
+
+                        if (word.direction === "horizontal" && word.row === row && col >= word.col && col < word.col + word.word.length) {
+                            return {
+                                letter: word.word[col - word.col],
+                                wordId: word.id,
+                            };
+                        }
+                        if (word.direction === "vertical" && word.col === col && row >= word.row && row < word.row + word.word.length) {
+                            return {
+                                letter: word.word[row - word.row],
+                                wordId: word.id,
+                            };
+                        }
+                    }
+                    return null;
+                };
+
+                const handleDragEnd = (e) => {
+                    if (!editorState.isDragging) return;
+
+                    // Only place the word if the final placement was valid
+                    if (editorState.finalPlacement && editorState.finalPlacement.isValid) {
+                        const { row, col, direction } = editorState.finalPlacement;
+                        const wordData = state.words.find((w) => w.id === editorState.draggedWordId);
+                        if (wordData) {
+                            wordData.row = row;
+                            wordData.col = col;
+                            wordData.direction = direction;
+                        }
+                    }
+
+                    // Cleanup ghost and preview elements
+                    if (editorState.ghostElement) editorState.ghostElement.remove();
+                    if (editorState.placementPreview) editorState.placementPreview.remove();
+
+                    // Reset dragging state
+                    editorState.isDragging = false;
+                    editorState.ghostElement = null;
+                    editorState.placementPreview = null;
+                    editorState.draggedWordId = null;
+
+                    // Remove event listeners
+                    document.removeEventListener("mousemove", handleDragMove);
+                    document.removeEventListener("touchmove", handleDragMove);
+                    document.removeEventListener("mouseup", handleDragEnd);
+                    document.removeEventListener("touchend", handleDragEnd);
+
+                    // Re-render the editor UI
+                    renderWordBank();
+                    renderPlacedWords();
+                };
+
+                // Chuyển đổi giữa 2 tab
+                const switchCreationTab = (tabName) => {
+                    if (tabName === "arrange") {
+                        initEditor();
+                        tabBtnWords.classList.remove("active");
+                        tabBtnArrange.classList.add("active");
+                        tabContentWords.classList.remove("active");
+                        tabContentArrange.classList.add("active");
+                    } else {
+                        tabBtnWords.classList.add("active");
+                        tabBtnArrange.classList.remove("active");
+                        tabContentWords.classList.add("active");
+                        tabContentArrange.classList.remove("active");
+                    }
+                };
+
+                tabBtnWords.addEventListener("click", () => switchCreationTab("words"));
+                tabBtnArrange.addEventListener("click", () => switchCreationTab("arrange"));
                 addWordFab.addEventListener("click", () => {
                     updateStateFromForms();
-                    state.words.push({ id: state.words.length, word: "", clue: "" });
+                    // Tạo ID mới an toàn hơn
+                    const newId = state.words.length > 0 ? Math.max(...state.words.map((w) => w.id)) + 1 : 0;
+                    state.words.push({
+                        id: newId,
+                        word: "",
+                        clue: "",
+                        direction: "horizontal", // Thêm các thuộc tính mặc định
+                        row: null,
+                        col: null,
+                    });
                     renderWordForms();
                     wordListContainer.scrollTop = wordListContainer.scrollHeight;
                 });
@@ -1125,6 +1879,7 @@
                     }
                 });
 
+                // TÌM VÀ THAY THẾ TOÀN BỘ KHỐI NÀY
                 savePuzzleBtn.addEventListener("click", () => {
                     updateStateFromForms();
                     const title = puzzleTitleInput.value.trim();
@@ -1135,35 +1890,48 @@
                     const validWords = state.words.filter((w) => w.word && w.clue);
                     if (validWords.length < 2) {
                         showToast("Cần ít nhất 2 từ hợp lệ.", "error");
+                        switchCreationTab("words");
                         return;
                     }
 
-                    let arrangedWords = autoArrangeWords(validWords);
-                    if (!arrangedWords) {
-                        showToast("Không thể tự động tạo lưới.", "error");
+                    const unplacedWords = validWords.filter((w) => !w.hasOwnProperty("row") || w.row === null);
+                    if (unplacedWords.length > 0) {
+                        showToast(`Còn ${unplacedWords.length} từ chưa được xếp vào lưới!`, "error");
+                        switchCreationTab("arrange");
                         return;
                     }
 
-                    arrangedWords.sort((a, b) => a.row - b.row || a.col - b.col);
-                    const finalWords = arrangedWords.map((word, index) => ({ ...word, id: index }));
+                    // Chuẩn hóa tọa độ để lưới bắt đầu từ 0,0
+                    let minRow = Infinity,
+                        minCol = Infinity;
+                    validWords.forEach((word) => {
+                        minRow = Math.min(minRow, word.row);
+                        minCol = Math.min(minCol, word.col);
+                    });
+
+                    const arrangedWords = validWords.map((word) => ({
+                        ...word,
+                        row: word.row - minRow,
+                        col: word.col - minCol,
+                    }));
 
                     const puzzles = getPuzzles();
                     const puzzleId = state.currentPuzzleId || `puzzle_${Date.now()}`;
-                    if (state.currentPuzzleId) {
-                        localStorage.removeItem(`slam-gamestate-${state.currentPuzzleId}`);
-                    }
                     puzzles[puzzleId] = {
                         id: puzzleId,
                         title: title,
-                        words: validWords.map(({ word, clue }) => ({ word, clue })),
-                        arrangedWords: finalWords,
+                        words: arrangedWords.map(({ word, clue }) => ({
+                            word,
+                            clue,
+                        })), // Chỉ lưu word, clue cho gọn
+                        arrangedWords: arrangedWords, // Lưu toàn bộ dữ liệu đã xếp
                         lastModified: Date.now(),
                     };
                     savePuzzles(puzzles);
+                    localStorage.removeItem(`slam-gamestate-${puzzleId}`);
                     showToast("Đã lưu bộ đề!", "success");
-                    switchView("game", puzzleId);
+                    switchView("lobby");
                 });
-
                 deletePuzzleBtn.addEventListener("click", async () => {
                     if (!state.currentPuzzleId) return;
                     const confirmed = await showConfirmation("Xóa Bộ Đề?", "Hành động này không thể hoàn tác.");
@@ -1182,368 +1950,7 @@
                 editPuzzleBtn.addEventListener("click", () => {
                     if (state.currentPuzzleId) switchView("creation", state.currentPuzzleId);
                 });
-                // HÀM 1: KIỂM TRA TÍNH HỢP LỆ CỦA VỊ TRÍ ĐẶT TỪ (PHIÊN BẢN SỬA LỖI)
-                // Logic được làm chặt chẽ hơn để đảm bảo quy tắc "cách 1 ô"
-                // HÀM 1: KIỂM TRA TÍNH HỢP LỆ CỦA VỊ TRÍ ĐẶT TỪ (PHIÊN BẢN SỬA LỖI LOGIC)
-                const isPlacementValid = (word, row, col, direction, grid, frameBounds = null) => {
-                    // Tạo một Set chứa tất cả các tọa độ mà từ mới sẽ chiếm giữ
-                    const newWordCoords = new Set();
-                    for (let i = 0; i < word.word.length; i++) {
-                        let r = row,
-                            c = col;
-                        if (direction === "horizontal") c += i;
-                        else r += i;
-                        newWordCoords.add(`${r}-${c}`);
-                    }
 
-                    for (let i = 0; i < word.word.length; i++) {
-                        let r = row,
-                            c = col;
-                        if (direction === "horizontal") c += i;
-                        else r += i;
-
-                        // Quy tắc 6: Từ không được vượt khung
-                        if (frameBounds && (r < frameBounds.minRow || r > frameBounds.maxRow || c < frameBounds.minCol || c > frameBounds.maxCol)) {
-                            return false;
-                        }
-
-                        const currentKey = `${r}-${c}`;
-                        const existingCell = grid[currentKey];
-
-                        if (existingCell) {
-                            // Trường hợp 1: Đây là điểm giao nhau
-                            if (existingCell.letter !== word.word[i]) return false; // Ký tự phải khớp
-                        } else {
-                            // Trường hợp 2: Đây là ô trống, phải kiểm tra các ô xung quanh
-                            const neighbors = [
-                                [r - 1, c],
-                                [r + 1, c],
-                                [r, c - 1],
-                                [r, c + 1],
-                            ];
-                            for (const [nr, nc] of neighbors) {
-                                const neighborKey = `${nr}-${nc}`;
-                                const neighborCell = grid[neighborKey];
-
-                                // ★★★ LOGIC SỬA LỖI NẰM Ở ĐÂY ★★★
-                                // Chỉ báo lỗi nếu:
-                                // 1. Ô hàng xóm có tồn tại (neighborCell)
-                                // 2. VÀ ô hàng xóm đó KHÔNG PHẢI là một phần của từ mới mà chúng ta đang đặt (newWordCoords.has)
-                                if (neighborCell && !newWordCoords.has(neighborKey)) {
-                                    return false; // Phát hiện từ khác nằm sát bên cạnh
-                                }
-                            }
-                        }
-                    }
-
-                    // Kiểm tra các ô ở đầu/cuối từ để tránh nối đuôi
-                    if (direction === "horizontal") {
-                        if (grid[`${row}-${col - 1}`] || grid[`${row}-${col + word.word.length}`]) {
-                            return false;
-                        }
-                    } else {
-                        // vertical
-                        if (grid[`${row - 1}-${col}`] || grid[`${row + word.word.length}-${col}`]) {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                };
-                // HÀM 2: HÀM PHỤ TRỢ ĐỂ ĐẶT CÁC TỪ CÒN LẠI VÀO LƯỚI (PHIÊN BẢN SỬA LỖI BẰNG THUẬT TOÁN QUAY LUI)
-                const placeRemainingWords = (placedWords, unplacedWords, frameBounds = null) => {
-                    const initialGrid = {};
-                    // Khởi tạo grid với các từ đã được đặt sẵn (ví dụ: khung chữ U)
-                    placedWords.forEach((word) => {
-                        for (let i = 0; i < word.word.length; i++) {
-                            let r = word.row,
-                                c = word.col;
-                            if (word.direction === "horizontal") c += i;
-                            else r += i;
-                            const key = `${r}-${c}`;
-                            if (!initialGrid[key]) initialGrid[key] = { letter: word.word[i], wordIds: new Set() };
-                            initialGrid[key].wordIds.add(word.id);
-                        }
-                    });
-
-                    // Hàm đệ quy cốt lõi sử dụng thuật toán Backtracking
-                    const solve = (wordsToPlace, grid) => {
-                        // --- ĐIỀU KIỆN DỪNG (BASE CASE) ---
-                        // Nếu không còn từ nào để xếp, có nghĩa là chúng ta đã thành công!
-                        if (wordsToPlace.length === 0) {
-                            return true;
-                        }
-
-                        const wordToPlace = wordsToPlace[0];
-                        const remaining = wordsToPlace.slice(1);
-                        const placedKeys = Object.keys(grid);
-
-                        // --- BƯỚC ĐỆ QUY (RECURSIVE STEP) ---
-                        // Lặp qua tất cả các ô đã có chữ trên lưới để tìm điểm giao
-                        for (const key of placedKeys) {
-                            const [row, col] = key.split("-").map(Number);
-                            const cell = grid[key];
-
-                            // Thử giao nhau tại mỗi ký tự của từ cần đặt
-                            for (let i = 0; i < wordToPlace.word.length; i++) {
-                                if (wordToPlace.word[i] === cell.letter) {
-                                    // Thử đặt theo cả 2 hướng (ngang/dọc)
-                                    const directions = ["horizontal", "vertical"];
-                                    for (const direction of directions) {
-                                        let newRow, newCol;
-                                        if (direction === "horizontal") {
-                                            newRow = row;
-                                            newCol = col - i;
-                                        } else {
-                                            newRow = row - i;
-                                            newCol = col;
-                                        }
-
-                                        // Kiểm tra xem vị trí đặt này có hợp lệ không
-                                        if (isPlacementValid(wordToPlace, newRow, newCol, direction, grid, frameBounds)) {
-                                            // ---- HÀNH ĐỘNG: Đặt từ vào lưới (Do) ----
-                                            const addedCells = [];
-                                            for (let j = 0; j < wordToPlace.word.length; j++) {
-                                                let r = newRow,
-                                                    c = newCol;
-                                                if (direction === "horizontal") c += j;
-                                                else r += j;
-                                                const currentKey = `${r}-${c}`;
-                                                if (!grid[currentKey]) {
-                                                    grid[currentKey] = { letter: wordToPlace.word[j], wordIds: new Set() };
-                                                    addedCells.push(currentKey);
-                                                }
-                                                grid[currentKey].wordIds.add(wordToPlace.id);
-                                            }
-                                            wordToPlace.row = newRow;
-                                            wordToPlace.col = newCol;
-                                            wordToPlace.direction = direction;
-
-                                            // ---- ĐỆ QUY: Giải tiếp với các từ còn lại (Recurse) ----
-                                            if (solve(remaining, grid)) {
-                                                return true; // Thành công!
-                                            }
-
-                                            // ---- HOÀN TÁC: Nếu nhánh đệ quy trên thất bại, hãy quay lui (Undo) ----
-                                            delete wordToPlace.row;
-                                            delete wordToPlace.col;
-                                            delete wordToPlace.direction;
-                                            addedCells.forEach((keyToRemove) => delete grid[keyToRemove]);
-                                            // Phải dọn dẹp wordId khỏi các ô giao nhau
-                                            for (let j = 0; j < wordToPlace.word.length; j++) {
-                                                let r = newRow,
-                                                    c = newCol;
-                                                if (direction === "horizontal") c += j;
-                                                else r += j;
-                                                const currentKey = `${r}-${c}`;
-                                                if (grid[currentKey]) {
-                                                    grid[currentKey].wordIds.delete(wordToPlace.id);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Nếu đã thử mọi cách mà không được, trả về false để báo hiệu nhánh này thất bại
-                        return false;
-                    };
-
-                    if (solve(unplacedWords, initialGrid)) {
-                        // Nếu hàm solve trả về true, có nghĩa là đã tìm được lời giải
-                        // và các thuộc tính (row, col, direction) đã được gán cho các từ.
-                        return [...placedWords, ...unplacedWords];
-                    }
-
-                    // Nếu không tìm được lời giải, trả về null
-                    return null;
-                };
-                // HÀM 3: HÀM QUẢN LÝ CHÍNH, TRIỂN KHAI THEO HỆ THỐNG QUY TẮC MỚI (THAY THẾ HOÀN TOÀN)
-                // THAY THẾ TOÀN BỘ hàm autoArrangeWords CŨ bằng phiên bản THÔNG MINH HƠN này.
-                const autoArrangeWords = (wordsToArrange) => {
-                    const words = JSON.parse(JSON.stringify(wordsToArrange)).sort((a, b) => b.word.length - a.word.length);
-
-                    // ★★★ LOGIC MỚI: TÌM BỘ BA HOÀN HẢO ĐỂ DỰNG KHUNG ★★★
-                    let candidates = [];
-
-                    // 1. Phân loại tất cả các từ theo độ dài
-                    const wordsByLength = words.reduce((acc, word) => {
-                        const len = word.word.length;
-                        if (!acc[len]) acc[len] = [];
-                        acc[len].push(word);
-                        return acc;
-                    }, {});
-
-                    const sortedLengths = Object.keys(wordsByLength)
-                        .map(Number)
-                        .sort((a, b) => b - a);
-
-                    // 2. Tìm một "bộ ba" tiềm năng bằng cách duyệt từ dài nhất xuống
-                    for (const len of sortedLengths) {
-                        // 2a. Tìm được 2 cạnh bên tiềm năng có cùng độ dài!
-                        if (wordsByLength[len].length >= 2) {
-                            const sideCandidates = wordsByLength[len];
-
-                            // 2b. Tìm cạnh đáy có độ dài gần nhất (L-1, L, L+1)
-                            const bottomCandidates = [
-                                ...(wordsByLength[len + 1] || []),
-                                ...(wordsByLength[len] || []), // Có thể lấy từ cùng độ dài làm đáy
-                                ...(wordsByLength[len - 1] || []),
-                            ];
-
-                            // 2c. Gộp lại thành danh sách ứng viên cuối cùng và thoát khỏi vòng lặp
-                            // Dùng Set để loại bỏ các từ trùng lặp
-                            candidates = [...new Set([...sideCandidates, ...bottomCandidates])];
-                            break;
-                        }
-                    }
-
-                    // Nếu không tìm thấy cặp nào hoàn hảo, quay về logic cũ (an toàn)
-                    if (candidates.length < 3) {
-                        candidates = words.slice(0, 5);
-                    }
-
-                    if (candidates.length < 3) {
-                        const firstWord = words.shift();
-                        if (!firstWord) return null;
-                        firstWord.row = 0;
-                        firstWord.col = 0;
-                        firstWord.direction = "horizontal";
-                        return placeRemainingWords([firstWord], words);
-                    }
-
-                    // THAY THẾ TOÀN BỘ HÀM NÀY
-                    const tryBuildUShape_Optimized = () => {
-                        // Bước 1: Tạo "Bản Đồ Ký Tự" để tra cứu nhanh
-                        const charMap = new Map();
-                        for (const wordObj of candidates) {
-                            for (let i = 0; i < wordObj.word.length; i++) {
-                                const char = wordObj.word[i];
-                                if (!charMap.has(char)) {
-                                    charMap.set(char, []);
-                                }
-                                charMap.get(char).push({ word: wordObj, index: i });
-                            }
-                        }
-
-                        let bestConfig = null;
-
-                        // Bước 2: Thuật toán tìm kiếm
-                        for (const bottomWordObj of candidates) {
-                            const bottomWord = bottomWordObj.word;
-                            if (bottomWord.length < 3) continue;
-
-                            const firstChar = bottomWord[0];
-                            const lastChar = bottomWord[bottomWord.length - 1];
-
-                            const leftSideCandidates = charMap.get(firstChar) || [];
-                            const rightSideCandidates = charMap.get(lastChar) || [];
-
-                            for (const leftCandidate of leftSideCandidates) {
-                                for (const rightCandidate of rightSideCandidates) {
-                                    const sideA = leftCandidate.word;
-                                    const sideB = rightCandidate.word;
-
-                                    if (sideA.id === sideB.id || sideA.id === bottomWordObj.id || sideB.id === bottomWordObj.id) {
-                                        continue;
-                                    }
-
-                                    const idxA = leftCandidate.index;
-                                    const idxB = rightCandidate.index;
-
-                                    const score = Math.min(idxA, sideA.word.length - 1 - idxA) + Math.min(idxB, sideB.word.length - 1 - idxB);
-
-                                    // ★★★ DÒNG CODE SỬA LỖI LOGIC NẰM Ở ĐÂY ★★★
-                                    // Logic cũ: if (!bestConfig || score < bestConfig.score)
-                                    // Logic mới: Thêm điều kiện "phá băng" (tie-breaker)
-                                    if (
-                                        !bestConfig || // Nếu chưa có config nào
-                                        score < bestConfig.score || // Hoặc nếu điểm mới tốt hơn hẳn
-                                        // Hoặc nếu điểm bằng nhau, thì ưu tiên cái có cạnh đáy DÀI HƠN
-                                        (score === bestConfig.score && bottomWordObj.word.length > bestConfig.bottom.word.length)
-                                    ) {
-                                        bestConfig = {
-                                            score,
-                                            leftSide: sideA,
-                                            rightSide: sideB,
-                                            bottom: bottomWordObj,
-                                            leftIndex: idxA,
-                                            rightIndex: idxB,
-                                        };
-                                    }
-                                }
-                            }
-                        }
-
-                        if (bestConfig) {
-                            const frame = [];
-                            const { leftSide, rightSide, bottom, leftIndex, rightIndex } = bestConfig;
-                            bottom.row = 0;
-                            bottom.col = 0;
-                            bottom.direction = "horizontal";
-                            frame.push(bottom);
-                            leftSide.row = -leftIndex;
-                            leftSide.col = 0;
-                            leftSide.direction = "vertical";
-                            frame.push(leftSide);
-                            rightSide.row = -rightIndex;
-                            rightSide.col = bottom.word.length - 1;
-                            rightSide.direction = "vertical";
-                            frame.push(rightSide);
-                            const remainingWords = words.filter((w) => w.id !== leftSide.id && w.id !== rightSide.id && w.id !== bottom.id);
-                            return { frame, remainingWords };
-                        }
-                        return null;
-                    };
-                    const uShapeResult = tryBuildUShape_Optimized(); // <-- Gọi hàm tối ưu hóa mới
-                    let finalLayout = null;
-
-                    if (uShapeResult) {
-                        const { frame, remainingWords } = uShapeResult;
-                        let minRow = Infinity,
-                            maxRow = -Infinity,
-                            minCol = Infinity,
-                            maxCol = -Infinity;
-                        frame.forEach((word) => {
-                            minRow = Math.min(minRow, word.row);
-                            minCol = Math.min(minCol, word.col);
-                            if (word.direction === "vertical") {
-                                maxRow = Math.max(maxRow, word.row + word.word.length - 1);
-                                maxCol = Math.max(maxCol, word.col);
-                            } else {
-                                maxRow = Math.max(maxRow, word.row);
-                                maxCol = Math.max(maxCol, word.col + word.word.length - 1);
-                            }
-                        });
-                        const frameBounds = { minRow, maxRow, minCol, maxCol };
-                        finalLayout = placeRemainingWords(frame, remainingWords, frameBounds);
-                    }
-
-                    if (!finalLayout) {
-                        const firstWord = words.shift();
-                        firstWord.row = 0;
-                        firstWord.col = 0;
-                        firstWord.direction = "horizontal";
-                        finalLayout = placeRemainingWords([firstWord], words);
-                    }
-
-                    if (!finalLayout) return null;
-
-                    let minRow = Infinity,
-                        minCol = Infinity;
-                    finalLayout.forEach((word) => {
-                        minRow = Math.min(minRow, word.row);
-                        minCol = Math.min(minCol, word.col);
-                    });
-                    finalLayout.forEach((word) => {
-                        word.row -= minRow;
-                        word.col -= minCol;
-                    });
-
-                    return finalLayout;
-                };
-                // HÀM MỚI: Tái sử dụng cho hiệu ứng giải từ
                 const animateWordSolved = async (wordId) => {
                     const wordData = state.words.find((w) => w.id === wordId);
                     if (!wordData) return;
@@ -1645,7 +2052,7 @@
                         ),
                     ].filter((char) => !state.revealedLetters.has(char));
 
-                    // ★★★ PHẦN LOGIC MỚI ĐƯỢC THÊM VÀO ĐỂ SỬA LỖI ★★★
+                    // ★★★ PHẦN LOGIC MỚI ĐƯỢỢC THÊM VÀO ĐỂ SỬA LỖI ★★★
                     // Lọc ra những ký tự mà tất cả các ô của nó trên lưới đều đã hiển thị
                     const availableChars = potentiallyAvailableChars.filter((char) => {
                         // Tìm tất cả các vị trí của ký tự này trong các từ chưa giải
@@ -1658,7 +2065,10 @@
                                             c = wordData.col;
                                         if (wordData.direction === "horizontal") c += i;
                                         else r += i;
-                                        locations.push({ r, c });
+                                        locations.push({
+                                            r,
+                                            c,
+                                        });
                                     }
                                 }
                             }
@@ -2027,7 +2437,12 @@
                     }, 100);
                 };
                 const generateGridData = (words) => {
-                    if (!words || words.length === 0) return { grid: new Map(), rows: 0, cols: 0 };
+                    if (!words || words.length === 0)
+                        return {
+                            grid: new Map(),
+                            rows: 0,
+                            cols: 0,
+                        };
                     const wordsCopy = JSON.parse(JSON.stringify(words));
                     let minR = Infinity,
                         maxR = -Infinity,
@@ -2055,13 +2470,22 @@
                         for (let i = 0; i < word.word.length; i++) {
                             const key = `${r}-${c}`;
                             const char = word.word[i].toUpperCase();
-                            if (!grid.has(key)) grid.set(key, { letter: char, wordIds: new Set() });
+                            if (!grid.has(key))
+                                grid.set(key, {
+                                    letter: char,
+                                    wordIds: new Set(),
+                                });
                             grid.get(key).wordIds.add(word.id);
                             if (word.direction === "horizontal") c++;
                             else r++;
                         }
                     });
-                    return { grid, rows: maxR - minR + 1, cols: maxC - minC + 1, words: wordsCopy };
+                    return {
+                        grid,
+                        rows: maxR - minR + 1,
+                        cols: maxC - minC + 1,
+                        words: wordsCopy,
+                    };
                 };
 
                 const triggerWinAnimation = () => {
@@ -2220,7 +2644,9 @@
                             () => {
                                 label.classList.remove("visible", "hiding-right", "hiding-down");
                             },
-                            { once: true }
+                            {
+                                once: true,
+                            }
                         );
                     } else {
                         label.classList.remove("visible");
