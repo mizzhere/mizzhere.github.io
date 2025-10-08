@@ -1596,6 +1596,7 @@
                     // Create the preview element that snaps to the grid
                     editorState.placementPreview = document.createElement("div");
                     editorState.placementPreview.className = "placement-preview";
+                    editorState.placementPreview.style.gap = "1px"; 
                     wordData.word.split("").forEach((char) => {
                         const letterEl = document.createElement("div");
                         letterEl.className = "preview-letter";
