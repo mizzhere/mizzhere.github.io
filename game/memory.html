@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi Lật thẻ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #202124;
+            --subtle-text-color: #5f6368;
+            --border-color: #e0e0e0;
+            --accent-color: #4285F4;
+            --green-color: #34A853;
+            --red-color: #EA4335;
+            --yellow-color: #FBBC05;
+            --border-radius: 16px;
+            --card-gap: 12px;
+            --font-family-header: 'Poppins', sans-serif;
+            --font-family-body: 'Inter', sans-serif;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme='dark'] {
+            --bg-color: #202124;
+            --card-bg: #3c4043;
+            --text-color: #e8eaed;
+            --subtle-text-color: #9aa0a6;
+            --border-color: #5f6368;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        /* --- Cài đặt chung --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-family-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 1000px;
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out, visibility 0.5s;
+            backface-visibility: hidden; /* Fix for flickering on transition */
+        }
+        
+        .screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+        }
+        
+        /* --- Nút Theme Toggle --- */
+        #theme-toggle-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-shadow: var(--shadow-light);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: background-color var(--transition-speed), color var(--transition-speed), transform 0.2s ease;
+        }
+        #theme-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+        #theme-toggle-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .icon-sun, .icon-moon {
+            position: absolute;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        [data-theme='light'] .icon-moon { opacity: 0; transform: scale(0); }
+        [data-theme='dark'] .icon-sun { opacity: 0; transform: scale(0); }
+
+        /* --- Màn hình chính --- */
+        #main-screen {
+            text-align: center;
+        }
+        #main-screen h1 {
+            font-family: var(--font-family-header);
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+        #main-screen p {
+            font-size: 1.1rem;
+            color: var(--subtle-text-color);
+            max-width: 400px;
+            margin-bottom: 32px;
+        }
+        .main-menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn {
+            font-family: var(--font-family-header);
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 14px 32px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: #fff;
+            background-color: var(--accent-color);
+            box-shadow: var(--shadow-light);
+            min-width: 200px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-strong);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-secondary {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Màn hình game --- */
+        #game-screen {
+            justify-content: flex-start;
+            gap: 20px;
+            padding: 16px;
+        }
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-grow: 1;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-family-header);
+            font-weight: 500;
+            font-size: 1.2rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .status-item.moves-counter {
+            background-color: #e8f0fe;
+            color: #1967d2;
+        }
+        .status-item.score-counter {
+            background-color: #e6f4ea;
+            color: #1e8e3e;
+        }
+        [data-theme='dark'] .status-item.moves-counter { background-color: #28354b; color: #8ab4f8; }
+        [data-theme='dark'] .status-item.score-counter { background-color: #284234; color: #81c995; }
+        .status-item svg {
+            width: 24px;
+            height: 24px;
+        }
+        #pause-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto; /* Đẩy nút pause sang phải */
+        }
+        #pause-btn:hover {
+            background-color: var(--bg-color);
+        }
+
+        #game-board {
+            width: 100%;
+            flex-grow: 1;
+            display: grid;
+            gap: var(--card-gap);
+            aspect-ratio: 1 / 1;
+            max-width: 600px;
+        }
+
+        .card {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.6s, opacity 0.5s;
+            transform-style: preserve-3d;
+            border-radius: calc(var(--border-radius) / 2);
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card.matched { transform: scale(0.9); opacity: 0.5; pointer-events: none; }
+        .card.mismatched { animation: shake 0.5s ease-in-out; }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: inherit;
+            box-shadow: var(--shadow-light);
+            transition: background-color var(--transition-speed), border var(--transition-speed);
+        }
+        .card-back {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            background-image: radial-gradient(circle at center, var(--border-color) 1px, transparent 1.5px);
+            background-size: 10px 10px;
+        }
+        .card-back::after {
+            content: '?';
+            font-family: var(--font-family-header);
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            color: var(--text-color);
+            background-color: var(--card-bg);
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: color var(--transition-speed), background-color var(--transition-speed);
+        }
+        .card-front {
+            background-color: var(--card-bg);
+            transform: rotateY(180deg);
+        }
+        .card-front svg {
+            width: 70%;
+            height: 70%;
+        }
+        .card-front .bonus-text {
+            font-family: var(--font-family-header);
+            font-size: clamp(3rem, 12vw, 5rem);
+            font-weight: 700;
+            color: var(--green-color);
+        }
+
+        /* Cơ chế đặc biệt */
+        .card.locked .card-back {
+            background-color: var(--border-color);
+            border-color: var(--subtle-text-color);
+        }
+        .locked-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .card.unlocking .locked-overlay { opacity: 0; transform: scale(0.5); }
+        .card.locked-clicked { animation: shake 0.3s ease-in-out; }
+        
+        .mechanic-indicator {
+            display: none; font-size: 1rem; padding: 4px 12px; border-radius: 20px;
+        }
+        #bomb-indicator { background-color: var(--red-color); color: white; }
+        #lock-indicator { background-color: var(--yellow-color); color: #3c4043; }
+        [data-theme='dark'] #lock-indicator { color: var(--text-color); }
+        .mechanic-indicator.active { display: flex; align-items: center; gap: 6px; }
+
+        .bomb-icon-wrapper {
+            position: absolute; top: 8px; left: 8px; width: 24px; height: 24px;
+            background-color: var(--red-color); border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+        .bomb-icon-wrapper svg { width: 14px; height: 14px; fill: white; }
+
+        /* --- Màn hình Pause và Modal --- */
+        #pause-screen, #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); z-index: 10;
+        }
+        .modal-content {
+            background-color: var(--card-bg); padding: 40px; border-radius: var(--border-radius);
+            text-align: center; box-shadow: var(--shadow-strong); transform: scale(0.7);
+            opacity: 0; transition: transform 0.3s ease-out, opacity 0.3s ease-out; max-width: 90vw;
+        }
+        #modal-overlay:not(.hidden) .modal-content, #pause-screen:not(.hidden) .modal-content {
+             transform: scale(1); opacity: 1;
+        }
+        .modal-content h2 { font-family: var(--font-family-header); font-size: 2.5rem; margin-bottom: 16px; }
+        .modal-content p { font-size: 1.1rem; color: var(--subtle-text-color); margin-bottom: 32px; }
+        .modal-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+        /* --- Màn hình Lịch sử --- */
+        #history-screen { justify-content: flex-start; width: 100%; max-width: 600px; }
+        #history-screen h2 { font-family: var(--font-family-header); font-size: 2rem; margin-bottom: 0; }
+        #history-list {
+            list-style: none; width: 100%; max-height: 70vh; overflow-y: auto;
+            background: var(--card-bg); padding: 16px; border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+        }
+        #history-list li {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--bg-color);
+        }
+        #history-list li:last-child { border-bottom: none; }
+        .history-status { font-weight: 500; }
+        .history-status.win { color: var(--green-color); }
+        .history-status.loss { color: var(--red-color); }
+        .history-details { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .history-score { font-weight: 500; font-size: 1rem; color: var(--text-color); }
+        .history-date { font-size: 0.9rem; color: var(--subtle-text-color); }
+        
+        /* --- Animation --- */
+        @keyframes shake {
+            0%, 100% { transform: rotateY(180deg) translateX(0); }
+            20%, 60% { transform: rotateY(180deg) translateX(-5px); }
+            40%, 80% { transform: rotateY(180deg) translateX(5px); }
+        }
+        @keyframes bonus-toast {
+            0% { transform: translateY(100%); opacity: 0; } 20% { transform: translateY(0); opacity: 1; }
+            80% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100%); opacity: 0; }
+        }
+        @keyframes card-enter {
+            from { transform: scale(0.5) rotateY(-90deg); opacity: 0; }
+            to { transform: scale(1) rotateY(0); opacity: 1; }
+        }
+        
+        .card.entering {
+            animation: card-enter 0.5s ease-out forwards;
+        }
+        .card.exiting {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; background-color: var(--green-color); color: white;
+            border-radius: 30px; font-family: var(--font-family-header); font-size: 1rem;
+            box-shadow: var(--shadow-strong); z-index: 100; visibility: hidden;
+        }
+        #toast.show { visibility: visible; animation: bonus-toast 3s ease-in-out; }
+        
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            :root { --card-gap: 8px; }
+            .screen { padding: 16px; }
+            #theme-toggle-btn { top: 8px; right: 8px; }
+            #main-screen h1 { font-size: 2.5rem; }
+            .game-header { flex-direction: column; gap: 12px; padding: 12px; }
+            .status-bar { gap: 8px; flex-wrap: wrap; justify-content: center; }
+            .status-item { font-size: 1rem; }
+            .status-item svg { width: 20px; height: 20px; }
+            .mechanic-indicator { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="theme-toggle-btn" title="Chuyển đổi giao diện">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+        </svg>
+    </button>
+
+    <div class="game-container">
+        <!-- Màn hình chính -->
+        <div id="main-screen" class="screen">
+            <div style="text-align: center;">
+                <h1>Memory Game</h1>
+                <p>Thử thách trí nhớ của bạn qua các vòng chơi ngày càng khó. Lật các thẻ để tìm cặp hình giống nhau.</p>
+            </div>
+            <div class="main-menu-buttons">
+                <button id="continue-btn" class="btn btn-secondary" style="display: none;">Tiếp tục ván chơi</button>
+                <button id="start-btn" class="btn">Ván chơi mới</button>
+                <button id="history-btn" class="btn btn-secondary">Lịch sử</button>
+            </div>
+        </div>
+
+        <!-- Màn hình chơi game -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-header">
+                <div class="status-bar">
+                    <div class="status-item" title="Vòng hiện tại">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.092 1.21-.138 2.43-.138 3.662s.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.092-1.21.138-2.43.138-3.662z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <span id="level-text">1</span>
+                    </div>
+                     <div class="status-item moves-counter" title="Số lượt đi còn lại">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+                        <span id="moves-text">0</span>
+                    </div>
+                    <div class="status-item score-counter" title="Điểm số">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                        <span id="score-text">0</span>
+                    </div>
+                     <div id="bomb-indicator" class="mechanic-indicator status-item" title="Phá bom!">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.25.5a.75.75 0 0 1 .75.75V2h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1v1a.75.75 0 0 1-1.5 0v-1h-1a.75.75 0 0 1-.75-.75v-1a.75.75 0 0 1 .75-.75h1V1.25a.75.75 0 0 1 .75-.75zM8 4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 8 4zm2.5 1.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zM8 16A6 6 0 1 1 8 4a6 6 0 0 1 0 12z"/></svg>
+                        <span id="bomb-moves-text"></span>
+                    </div>
+                    <div id="lock-indicator" class="mechanic-indicator status-item" title="Mở khóa">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                        <span id="lock-text"></span>
+                    </div>
+                </div>
+                <button id="pause-btn" title="Tạm dừng">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="28" height="28">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                    </svg>
+                </button>
+            </div>
+            <div id="game-board"></div>
+        </div>
+
+        <!-- Màn hình tạm dừng -->
+        <div id="pause-screen" class="screen hidden">
+            <div class="modal-content">
+                <h2>Đã tạm dừng</h2>
+                <div class="modal-buttons">
+                    <button id="resume-btn" class="btn">Tiếp tục</button>
+                    <button id="restart-btn-pause" class="btn btn-secondary">Ván chơi mới</button>
+                    <button id="main-menu-btn-pause" class="btn btn-secondary">Màn hình chính</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Màn hình Lịch sử -->
+        <div id="history-screen" class="screen hidden">
+            <h2>Lịch sử chơi</h2>
+            <ul id="history-list">
+                <!-- Dữ liệu sẽ được chèn vào đây bởi JS -->
+            </ul>
+            <button id="back-to-main-btn" class="btn btn-secondary">Quay lại</button>
+        </div>
+    </div>
+    
+    <!-- Modal kết quả -->
+    <div id="modal-overlay" class="screen hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Chiến thắng!</h2>
+            <p id="modal-message">Bạn đã hoàn thành vòng này.</p>
+            <div class="modal-buttons">
+                <button id="modal-primary-btn" class="btn">Vòng tiếp theo</button>
+                <button id="modal-secondary-btn" class="btn btn-secondary">Màn hình chính</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast thông báo bonus -->
+    <div id="toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- CẤU HÌNH & HẰNG SỐ ---
+    const SHAPES = [
+        { name: 'square', svg: `<rect x="15" y="15" width="70" height="70" rx="10" />` },
+        { name: 'circle', svg: `<circle cx="50" cy="50" r="38" />` },
+        { name: 'triangle', svg: `<polygon points="50,15 90,85 10,85" />` },
+        { name: 'diamond', svg: `<polygon points="50,10 90,50 50,90 10,50" />` },
+        { name: 'star', svg: `<polygon points="50,10 61,40 95,40 68,60 79,90 50,70 21,90 32,60 5,40 39,40" />`},
+        { name: 'hexagon', svg: `<polygon points="25,15 75,15 95,50 75,85 25,85 5,50" />` },
+        { name: 'cross', svg: `<polygon points="35,10 65,10 65,35 90,35 90,65 65,65 65,90 35,90 35,65 10,65 10,35 35,35" />` },
+        { name: 'pentagon', svg: `<polygon points="50,10 95,42 78,90 22,90 5,42" />` }
+    ];
+    const COLORS = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#8E44AD', '#1ABC9C', '#E67E22', '#34495E'];
+    const MAX_LEVEL = 7; // Màn 8x8
+    const SAVE_KEY = 'memoryGameState';
+    const HISTORY_KEY = 'memoryGameHistory';
+    const THEME_KEY = 'memoryGameTheme';
+
+    // --- TRẠNG THÁI GAME ---
+    let state = {};
+    let wakeLock = null; // Wake Lock API sentinel
+
+    function resetState() {
+        state = {
+            currentScreen: 'main',
+            level: 1,
+            cards: [],
+            flippedCards: [],
+            movesLeft: 0,
+            score: 0,
+            accumulatedMoves: 0,
+            consecutiveMatches: 0,
+            clearedCards: 0,
+            totalPairs: 0,
+            specialMechanic: null,
+            bombCardValues: [],
+            initialBombCount: 0,
+            bombMovesLimit: 0,
+            totalLockedCards: 0,
+            unlockedCount: 0,
+            isChecking: false,
+            isGameOver: false
+        };
+    }
+
+    // --- DOM ELEMENTS ---
+    const screens = {
+        main: document.getElementById('main-screen'),
+        game: document.getElementById('game-screen'),
+        pause: document.getElementById('pause-screen'),
+        history: document.getElementById('history-screen'),
+    };
+    const gameBoard = document.getElementById('game-board');
+    const levelText = document.getElementById('level-text');
+    const movesText = document.getElementById('moves-text');
+    const scoreText = document.getElementById('score-text');
+    const bombIndicator = document.getElementById('bomb-indicator');
+    const bombMovesText = document.getElementById('bomb-moves-text');
+    const lockIndicator = document.getElementById('lock-indicator');
+    const lockText = document.getElementById('lock-text');
+    const continueBtn = document.getElementById('continue-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+    const modal = {
+        overlay: document.getElementById('modal-overlay'),
+        title: document.getElementById('modal-title'),
+        message: document.getElementById('modal-message'),
+        primaryBtn: document.getElementById('modal-primary-btn'),
+        secondaryBtn: document.getElementById('modal-secondary-btn')
+    };
+    
+    const toast = document.getElementById('toast');
+
+    // --- HÀM KHỞI TẠO & CHUYỂN MÀN HÌNH ---
+    function init() {
+        resetState();
+        loadTheme();
+        setupEventListeners();
+        checkSavedGame();
+        changeScreen('main');
+    }
+
+    function changeScreen(screenName) {
+        Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+        if (screens[screenName]) {
+            screens[screenName].classList.remove('hidden');
+        }
+        state.currentScreen = screenName;
+
+        // Quản lý Wake Lock
+        if (screenName === 'game') {
+            requestWakeLock();
+        } else {
+            releaseWakeLock();
+        }
+    }
+    
+    // --- API Wake Lock ---
+    const requestWakeLock = async () => {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock was released');
+                });
+                console.log('Wake Lock is active');
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+    };
+
+    const releaseWakeLock = async () => {
+        if (wakeLock !== null) {
+            try {
+                await wakeLock.release();
+                wakeLock = null;
+                console.log('Wake Lock was released');
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+    };
+
+
+    // --- Giao diện Sáng/Tối ---
+    function loadTheme() {
+        const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem(THEME_KEY, newTheme);
+    }
+
+    // --- LOGIC LƯU TRỮ ---
+    function saveGame() {
+        if (state.isGameOver) return;
+        try {
+            const stateToSave = { ...state, flippedCards: [] };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+        } catch (e) { console.error("Không thể lưu game:", e); }
+    }
+
+    function loadGame() {
+        try {
+            const savedState = JSON.parse(localStorage.getItem(SAVE_KEY));
+            if (savedState) {
+                state = savedState; state.isGameOver = false; state.isChecking = true;
+                renderBoard(); revealBombCard(); updateStatusUI();
+                changeScreen('game');
+            }
+        } catch (e) {
+            console.error("Không thể tải game:", e);
+            localStorage.removeItem(SAVE_KEY);
+        }
+    }
+    
+    function deleteSavedGame() {
+        localStorage.removeItem(SAVE_KEY);
+        checkSavedGame();
+    }
+    
+    function checkSavedGame() {
+        continueBtn.style.display = localStorage.getItem(SAVE_KEY) ? 'block' : 'none';
+    }
+
+    function saveGameResult(status, score) {
+        try {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+            const result = { status, level: state.level, date: new Date().toISOString(), score };
+            history.unshift(result);
+            if (history.length > 20) history.pop();
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        } catch (e) { console.error("Không thể lưu lịch sử:", e); }
+    }
+    
+    function displayHistory() {
+        const historyList = document.getElementById('history-list');
+        historyList.innerHTML = '';
+        try {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+            if (history.length === 0) {
+                historyList.innerHTML = '<li>Chưa có lịch sử chơi.</li>';
+                return;
+            }
+            history.forEach(result => {
+                const li = document.createElement('li');
+                const statusText = result.status === 'win' ? 'Thắng' : 'Thua';
+                const statusClass = result.status;
+                const date = new Date(result.date).toLocaleString('vi-VN');
+                li.innerHTML = `
+                    <div>
+                        <span class="history-status ${statusClass}">${statusText}</span>
+                        <span>- Vòng ${result.level}</span>
+                    </div>
+                    <div class="history-details">
+                        ${result.score !== undefined ? `<span class="history-score">${result.score} điểm</span>` : ''}
+                        <span class="history-date">${date}</span>
+                    </div>
+                `;
+                historyList.appendChild(li);
+            });
+        } catch (e) {
+            console.error("Không thể hiển thị lịch sử:", e);
+            historyList.innerHTML = '<li>Lỗi khi tải lịch sử.</li>';
+        }
+        changeScreen('history');
+    }
+
+    // --- LOGIC CHÍNH CỦA GAME ---
+    function startGame(isContinuing = false) {
+        if (isContinuing) {
+            loadGame();
+        } else {
+            deleteSavedGame();
+            resetState();
+            state.isGameOver = false;
+            setupLevel();
+            changeScreen('game');
+        }
+    }
+
+    function setupLevel() {
+        modal.overlay.classList.add('hidden');
+        state.isChecking = true;
+        state.flippedCards = [];
+        state.clearedCards = 0;
+        state.consecutiveMatches = 0;
+        
+        const gridSize = state.level + 1;
+        levelText.textContent = `${state.level}: ${gridSize}x${gridSize}`;
+        
+        const numCards = gridSize * gridSize;
+        state.totalPairs = Math.floor(numCards / 2);
+        
+        generateCards(gridSize);
+        setupSpecialMechanics(gridSize);
+
+        const baseMoves = state.totalPairs + Math.ceil(gridSize / 2);
+        state.movesLeft = baseMoves + state.accumulatedMoves + state.initialBombCount;
+
+        renderBoard();
+        revealBombCard();
+        updateStatusUI();
+    }
+    
+    function generateCards(gridSize) {
+        state.cards = [];
+        const numCards = gridSize * gridSize;
+        const numPairs = Math.floor(numCards / 2);
+        const availableShapes = [...SHAPES].sort(() => 0.5 - Math.random());
+        
+        for (let i = 0; i < numPairs; i++) {
+            const cardValue = `${availableShapes[i % availableShapes.length].name}_${COLORS[i % COLORS.length]}`;
+            const cardData = { value: cardValue, shape: availableShapes[i % availableShapes.length].svg, color: COLORS[i % COLORS.length] };
+            state.cards.push({ ...cardData, id: i * 2, isFlipped: false, isMatched: false, isLocked: false, isBomb: false });
+            state.cards.push({ ...cardData, id: i * 2 + 1, isFlipped: false, isMatched: false, isLocked: false, isBomb: false });
+        }
+        if (numCards % 2 !== 0) {
+            state.cards.push({ id: numCards - 1, value: 'single', isFlipped: false, isMatched: false, isLocked: false, isBomb: false });
+        }
+        for (let i = state.cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [state.cards[i], state.cards[j]] = [state.cards[j], state.cards[i]];
+        }
+    }
+
+    function setupSpecialMechanics(gridSize) {
+        state.specialMechanic = null;
+        state.bombCardValues = [];
+        state.initialBombCount = 0;
+        state.totalLockedCards = 0;
+        state.unlockedCount = 0;
+        
+        if (state.level >= 2) {
+            const rand = Math.random();
+            if (rand < 0.5) {
+                state.specialMechanic = 'bomb';
+                const numBombs = Math.floor(gridSize / 2);
+                if (numBombs < 1) return;
+                state.initialBombCount = numBombs;
+                let potentialBombPairs = [...new Set(state.cards.filter(c => c.value !== 'single').map(c => c.value))];
+                for (let i = 0; i < numBombs; i++) {
+                    if (potentialBombPairs.length === 0) break;
+                    const randIndex = Math.floor(Math.random() * potentialBombPairs.length);
+                    const bombPairValue = potentialBombPairs.splice(randIndex, 1)[0];
+                    state.bombCardValues.push(bombPairValue);
+                    const bombPairIndices = state.cards.map((card, index) => ({ card, index })).filter(item => item.card.value === bombPairValue).map(item => item.index);
+                    if (bombPairIndices.length > 0) {
+                        const bombIndex = bombPairIndices[Math.floor(Math.random() * bombPairIndices.length)];
+                        state.cards[bombIndex].isBomb = true; 
+                    }
+                }
+                if (state.bombCardValues.length > 0) {
+                    state.bombMovesLimit = (gridSize % 2 === 0) ? gridSize + 2 : gridSize + 1;
+                }
+            } else {
+                state.specialMechanic = 'lock';
+                const targetLockCount = (gridSize - 2) * 2 -1;
+                if (targetLockCount < 1) return;
+                state.totalLockedCards = targetLockCount;
+                const cardIndices = state.cards.map((_, i) => i);
+                let lockCount = 0;
+                while(lockCount < targetLockCount && cardIndices.length > 0) {
+                    const randIndex = Math.floor(Math.random() * cardIndices.length);
+                    const cardIdxToLock = cardIndices.splice(randIndex, 1)[0];
+                    if (state.cards[cardIdxToLock].value !== 'single') {
+                        state.cards[cardIdxToLock].isLocked = true;
+                        lockCount++;
+                    }
+                }
+            }
+        }
+    }
+
+    function renderBoard() {
+        gameBoard.innerHTML = '';
+        const gridSize = state.level + 1;
+        gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+        gameBoard.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+
+        state.cards.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card entering';
+            cardEl.style.animationDelay = `${index * 25}ms`;
+            cardEl.addEventListener('animationend', () => cardEl.classList.remove('entering'), { once: true });
+
+            if (card.isFlipped) cardEl.classList.add('flipped');
+            if (card.isMatched) cardEl.classList.add('matched');
+            if (card.isLocked) cardEl.classList.add('locked');
+            cardEl.dataset.index = index;
+
+            cardEl.innerHTML = `
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">
+                    ${card.value === 'single' ? `<div class="bonus-text">+1</div>` : `<svg viewBox="0 0 100 100" fill="${card.color}" stroke="none">${card.shape}</svg>`}
+                </div>
+                ${card.isLocked ? `<div class="locked-overlay"><svg xmlns="http://www.w3.org/2000/svg" width="40%" height="40%" fill="#5f6368" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg></div>` : ''}
+                ${card.isBomb ? `<div class="bomb-icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.25.5a.75.75 0 0 1 .75.75V2h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1v1a.75.75 0 0 1-1.5 0v-1h-1a.75.75 0 0 1-.75-.75v-1a.75.75 0 0 1 .75-.75h1V1.25a.75.75 0 0 1 .75-.75zM8 4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 8 4zm2.5 1.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zM8 16A6 6 0 1 1 8 4a6 6 0 0 1 0 12z"/></svg></div>` : ''}
+            `;
+            cardEl.addEventListener('click', () => handleCardClick(cardEl, card, index));
+            gameBoard.appendChild(cardEl);
+        });
+    }
+
+    function handleCardClick(cardEl, card, index) {
+        if (state.isChecking || card.isFlipped || card.isMatched || state.isGameOver || state.flippedCards.length >= 2) return;
+        if (card.isLocked) {
+            cardEl.classList.add('locked-clicked');
+            setTimeout(() => cardEl.classList.remove('locked-clicked'), 300);
+            return;
+        }
+        if (card.value === 'single') {
+            handleSingleCard(cardEl, card); return;
+        }
+        card.isFlipped = true;
+        cardEl.classList.add('flipped');
+        state.flippedCards.push({ el: cardEl, data: card, index: index });
+        if (state.flippedCards.length === 2) {
+            state.isChecking = true;
+            state.movesLeft--;
+            if (state.specialMechanic !== 'bomb' || state.bombCardValues.indexOf(state.flippedCards[0].data.value) === -1) {
+                checkBomb(); // Don't tick down bomb timer if this move defused a bomb
+            }
+            checkMatch();
+            updateStatusUI();
+            saveGame();
+        }
+    }
+    
+    function handleSingleCard(cardEl, card) {
+        state.isChecking = true;
+        card.isFlipped = true; cardEl.classList.add('flipped'); state.clearedCards++; card.isMatched = true;
+        state.movesLeft++; state.score += 25;
+        showToast("Ô lẻ! +1 Lượt & +25 điểm", "green");
+        updateStatusUI(); saveGame();
+        setTimeout(() => { cardEl.classList.add('matched'); state.isChecking = false; checkLevelWin(); }, 1000);
+    }
+    
+    function checkMatch() {
+        const [first, second] = state.flippedCards;
+        if (first.data.value === second.data.value) handleMatch();
+        else handleMismatch();
+    }
+    
+    function handleMatch() {
+        const [first, second] = state.flippedCards;
+        first.data.isMatched = true; second.data.isMatched = true;
+        state.clearedCards += 2; state.consecutiveMatches++; state.score += 50;
+
+        const matchedValue = first.data.value;
+        const bombIndex = state.bombCardValues.indexOf(matchedValue);
+        if (state.specialMechanic === 'bomb' && bombIndex > -1) {
+            state.bombCardValues.splice(bombIndex, 1);
+            showToast("Đã gỡ 1 quả bom!", "green");
+            if (state.bombCardValues.length === 0) {
+                 state.specialMechanic = null;
+                 state.movesLeft++;
+                 const bombBonusScore = state.initialBombCount * 100;
+                 state.score += bombBonusScore;
+                 showToast(`Gỡ hết bom! +1 Lượt & +${bombBonusScore} điểm`, "green");
+                 setTimeout(() => bombIndicator.classList.remove('active'), 500);
+            }
+        }
+        unlockAdjacent(first.index); unlockAdjacent(second.index);
+
+        setTimeout(() => {
+            first.el.classList.add('matched'); second.el.classList.add('matched');
+            state.flippedCards = []; state.isChecking = false;
+            if (state.consecutiveMatches === 3) {
+                state.consecutiveMatches = 0; state.movesLeft++; state.score += 10;
+                updateStatusUI(); showToast("Chuỗi 3! +1 Lượt & +10 điểm", "green");
+            }
+            if (!checkGameOver()) checkLevelWin();
+        }, 800);
+    }
+
+    function handleMismatch() {
+        state.consecutiveMatches = 0;
+        const [first, second] = state.flippedCards;
+        setTimeout(() => { first.el.classList.add('mismatched'); second.el.classList.add('mismatched'); }, 600);
+        setTimeout(() => { first.el.classList.remove('flipped'); second.el.classList.remove('flipped'); }, 1200);
+        setTimeout(() => {
+            first.data.isFlipped = false; second.data.isFlipped = false;
+            first.el.classList.remove('mismatched'); second.el.classList.remove('mismatched');
+            state.flippedCards = []; state.isChecking = false;
+            checkGameOver();
+        }, 1800);
+    }
+    
+    function unlockAdjacent(cardIndex) {
+        if(state.specialMechanic !== 'lock') return;
+        const gridSize = state.level + 1;
+        const row = Math.floor(cardIndex / gridSize); const col = cardIndex % gridSize;
+        const neighbors = [{ r: row - 1, c: col }, { r: row + 1, c: col }, { r: row, c: col - 1 }, { r: row, c: col + 1 }];
+        neighbors.forEach(n => {
+            if (n.r >= 0 && n.r < gridSize && n.c >= 0 && n.c < gridSize) {
+                const neighborIndex = n.r * gridSize + n.c;
+                const neighborCard = state.cards[neighborIndex];
+                if (neighborCard.isLocked) {
+                    neighborCard.isLocked = false;
+                    const neighborEl = gameBoard.querySelector(`[data-index='${neighborIndex}']`);
+                    const overlay = neighborEl.querySelector('.locked-overlay');
+                    neighborEl.classList.add('unlocking');
+                    setTimeout(() => { overlay?.remove(); neighborEl.classList.remove('locked', 'unlocking'); }, 300);
+                    state.unlockedCount++;
+                    if (state.totalLockedCards > 0 && state.unlockedCount >= state.totalLockedCards) {
+                        state.movesLeft++; state.score += 100;
+                        showToast("Mở hết khóa! +1 Lượt & +100 điểm", "green");
+                        state.totalLockedCards = 0;
+                    }
+                    updateStatusUI();
+                }
+            }
+        });
+    }
+    
+    function checkBomb() {
+        if (state.specialMechanic === 'bomb') {
+            state.bombMovesLimit--;
+            if (state.bombMovesLimit <= 0 && state.bombCardValues.length > 0) {
+                gameOver("Thua rồi!", "Bom đã nổ! Bạn không phá bom kịp lúc.");
+            }
+        }
+    }
+    
+    function checkLevelWin() {
+        if (state.clearedCards === state.cards.length) {
+            const bonusScore = state.movesLeft * 10;
+            state.score += bonusScore;
+            showToast(`Hoàn thành vòng! +${bonusScore} điểm thưởng`, 'green');
+
+            if (state.level === MAX_LEVEL) {
+                gameOver("CHIẾN THẮNG!", `Chúc mừng! Bạn đã hoàn thành tất cả các màn chơi với số điểm ${state.score}.`);
+            } else {
+                const cards = gameBoard.querySelectorAll('.card');
+                cards.forEach((card, i) => {
+                    card.style.transitionDelay = `${i * 20}ms`;
+                    card.classList.add('exiting');
+                });
+                setTimeout(() => {
+                    state.accumulatedMoves = state.movesLeft;
+                    state.level++;
+                    setupLevel();
+                }, cards.length * 20 + 500);
+            }
+        }
+    }
+    
+    function checkGameOver() {
+        if (state.movesLeft <= 0 && state.clearedCards < state.cards.length) {
+            gameOver("Thua rồi!", "Bạn đã hết lượt đi.");
+            return true;
+        }
+        return false;
+    }
+
+    function gameOver(title, message) {
+        state.isGameOver = true;
+        const finalScore = state.score;
+        saveGameResult(title.startsWith("CHIẾN THẮNG") ? 'win' : 'loss', finalScore);
+        deleteSavedGame();
+        
+        modal.title.textContent = title;
+        modal.message.textContent = message;
+        modal.primaryBtn.textContent = 'Chơi lại';
+        modal.primaryBtn.onclick = () => { modal.overlay.classList.add('hidden'); startGame(false); };
+        modal.secondaryBtn.textContent = "Màn hình chính";
+        modal.secondaryBtn.onclick = () => { modal.overlay.classList.add('hidden'); changeScreen('main'); };
+        modal.overlay.classList.remove('hidden');
+    }
+
+    // --- CẬP NHẬT UI & HIỆU ỨNG ---
+    function revealBombCard() {
+        if (state.specialMechanic !== 'bomb' || state.bombCardValues.length === 0) {
+            state.isChecking = false; return;
+        }
+        const bombCards = state.cards.map((card, index) => ({ card, index })).filter(item => item.card.isBomb);
+        if (bombCards.length === 0) {
+            state.isChecking = false; return;
+        }
+        setTimeout(() => {
+            bombCards.forEach(item => {
+                const bombCardEl = gameBoard.querySelector(`[data-index='${item.index}']`);
+                if (bombCardEl) bombCardEl.classList.add('flipped');
+            });
+            setTimeout(() => {
+                bombCards.forEach(item => {
+                    const bombCardEl = gameBoard.querySelector(`[data-index='${item.index}']`);
+                    if (bombCardEl) bombCardEl.classList.remove('flipped');
+                });
+                state.isChecking = false;
+            }, 2000);
+        }, 500); 
+    }
+
+    function updateStatusUI() {
+        movesText.textContent = state.movesLeft;
+        scoreText.textContent = state.score;
+        
+        if(state.specialMechanic === 'bomb' && state.bombCardValues.length > 0) {
+            bombIndicator.classList.add('active');
+            bombMovesText.textContent = `${state.bombMovesLimit} | ${state.bombCardValues.length}`;
+        } else { bombIndicator.classList.remove('active'); }
+        
+        if(state.specialMechanic === 'lock' && state.totalLockedCards > 0) {
+            lockIndicator.classList.add('active');
+            lockText.textContent = `${state.unlockedCount} / ${state.totalLockedCards}`;
+        } else { lockIndicator.classList.remove('active'); }
+    }
+    
+    function showToast(message, type = 'green') {
+        toast.textContent = message;
+        toast.style.backgroundColor = type === 'green' ? 'var(--green-color)' : 'var(--red-color)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2900);
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners() {
+        document.getElementById('start-btn').addEventListener('click', () => startGame(false));
+        document.getElementById('continue-btn').addEventListener('click', () => startGame(true));
+        document.getElementById('history-btn').addEventListener('click', displayHistory);
+        document.getElementById('back-to-main-btn').addEventListener('click', () => { checkSavedGame(); changeScreen('main'); });
+        document.getElementById('pause-btn').addEventListener('click', () => { saveGame(); changeScreen('pause'); });
+        document.getElementById('resume-btn').addEventListener('click', () => changeScreen('game'));
+        document.getElementById('restart-btn-pause').addEventListener('click', () => startGame(false));
+        document.getElementById('main-menu-btn-pause').addEventListener('click', () => { checkSavedGame(); changeScreen('main'); });
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Wake Lock re-acquisition
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible' && state.currentScreen === 'game') {
+                await requestWakeLock();
+            }
+        });
+    }
+
+    init();
+});
+</script>
+
+</body>
+</html>
