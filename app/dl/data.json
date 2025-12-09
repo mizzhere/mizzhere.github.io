@@ -10,7 +10,8 @@
     "congDung": "(Y học hiện đại): Làm nguyên liệu chiết xuất reserpin và ajmalin để chữa cao huyết áp, bệnh tâm thần và loạn nhịp tim.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Reserpin có thể gây loét dạ dày, tá tràng do tăng tiết dịch vị. Hiện nay ít dùng.",
-    "dacDiemDuocLieu": "Rễ hình trụ, vỏ ngoài màu nâu vàng, có nhiều nếp nhăn dọc và sẹo của rễ con."
+    "dacDiemDuocLieu": "Rễ hình trụ, vỏ ngoài màu nâu vàng, có nhiều nếp nhăn dọc và sẹo của rễ con.",
+    "tenKhoaHoc": "Rauvolfia tetraphylla L."
   },
   {
     "id": "2",
@@ -23,7 +24,8 @@
     "congDung": "(Y học hiện đại): Dùng ngoài làm thuốc xoa bóp chữa nhức mỏi, đau dây thần kinh. Chiết xuất Strychnin dùng trong suy nhược, liệt dương, giải độc thuốc ngủ. (Y học cổ truyền): Mã tiền chế chữa đau nhức xương khớp, tiêu hóa kém, bại liệt.",
     "lieuDung": "Rất độc, chỉ dùng ngoài hoặc theo chỉ định nghiêm ngặt của bác sĩ.",
     "luuY": "Rất độc, có thể gây tử vong do liệt hô hấp.",
-    "dacDiemDuocLieu": "Hạt hình đĩa dẹt như khuy áo, bề mặt phủ lông tơ bóng mượt màu xám tro hoặc vàng nhạt."
+    "dacDiemDuocLieu": "Hạt hình đĩa dẹt như khuy áo, bề mặt phủ lông tơ bóng mượt màu xám tro hoặc vàng nhạt.",
+    "tenKhoaHoc": "Strychnos nux-vomica L."
   },
   {
     "id": "3",
@@ -36,7 +38,8 @@
     "congDung": "(Y học hiện đại): Dùng làm thuốc an thần gây ngủ, giảm đau trong bệnh loét dạ dày, điều trị rối loạn tâm thần. (Y học cổ truyền): Chữa mất ngủ, ho hen, sốt, lỵ, đau bụng.",
     "lieuDung": "Viên nén Rotundin 30mg, 60mg. Thuốc tiêm Rotundin sulphat 60mg/2ml.",
     "luuY": "Liều cao Rotundin có thể gây kích thích, co giật.",
-    "dacDiemDuocLieu": "Củ to, tròn hoặc hình dạng thay đổi, vỏ ngoài xù xì màu nâu đen, phần thịt bên trong màu trắng ngà đến hơi vàng."
+    "dacDiemDuocLieu": "Củ to, tròn hoặc hình dạng thay đổi, vỏ ngoài xù xì màu nâu đen, phần thịt bên trong màu trắng ngà đến hơi vàng.",
+    "tenKhoaHoc": "Stephania glabra (Roxb.) Miers"
   },
   {
     "id": "4",
@@ -49,7 +52,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất Morphin làm thuốc giảm đau mạnh trong các cơn đau nặng. Codein chữa ho. Papaverin chữa co thắt cơ trơn. (Y học cổ truyền): Giảm đau, chữa ho, tả, lỵ.",
     "lieuDung": "Sử dụng theo chỉ định nghiêm ngặt của bác sĩ do là thuốc gây nghiện.",
     "luuY": "Thuốc độc bảng A, gây nghiện. Heroin (dẫn chất bán tổng hợp) là chất ma túy gây nghiện rất mạnh.",
-    "dacDiemDuocLieu": "Nhựa: lấy từ quả chưa chín, lúc đầu màu trắng sau chuyển thành nâu đen khi khô. Quả (Anh túc xác): quả nang khô, hình cầu hoặc hình trứng, trên đỉnh có núm."
+    "dacDiemDuocLieu": "Nhựa: lấy từ quả chưa chín, lúc đầu màu trắng sau chuyển thành nâu đen khi khô. Quả (Anh túc xác): quả nang khô, hình cầu hoặc hình trứng, trên đỉnh có núm.",
+    "tenKhoaHoc": "Papaver somniferum L."
   },
   {
     "id": "5",
@@ -62,7 +66,8 @@
     "congDung": "(Y học hiện đại): Dùng như một kháng sinh thực vật chữa tiêu chảy, kiết lỵ. Dùng nhỏ mắt trị viêm kết mạc, đau mắt đỏ. (Y học cổ truyền): Chữa sốt, mụn nhọt, các bệnh gan mật.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Chống chỉ định cho phụ nữ có thai.",
-    "dacDiemDuocLieu": "Thân rễ có nhiều đốt, cong queo, hình dáng giống chân gà nên còn gọi là 'Hoàng liên chân gà'. Bẻ ra có màu vàng tươi."
+    "dacDiemDuocLieu": "Thân rễ có nhiều đốt, cong queo, hình dáng giống chân gà nên còn gọi là 'Hoàng liên chân gà'. Bẻ ra có màu vàng tươi.",
+    "tenKhoaHoc": "Coptis chinensis Franch."
   },
   {
     "id": "6",
@@ -75,7 +80,9 @@
     "congDung": "(Y học hiện đại): Là nguồn nguyên liệu chính để chiết xuất berberin dùng làm thuốc chữa tiêu chảy, kiết lỵ, đau mắt.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Chống chỉ định cho phụ nữ có thai do chứa Berberin.",
-    "dacDiemDuocLieu": "Thân gỗ leo, cắt ngang có màu vàng tươi đặc trưng, vị rất đắng."
+    "dacDiemDuocLieu": "Thân gỗ leo, cắt ngang có màu vàng tươi đặc trưng, vị rất đắng.",
+    "tenKhoaHoc": "Coscinium fenestratum (Goetgh.) Colebr.",
+    "isThucHanh": true
   },
   {
     "id": "7",
@@ -88,7 +95,9 @@
     "congDung": "(Y học hiện đại): Dùng làm nguyên liệu chiết xuất berberin. (Y học cổ truyền): Thanh nhiệt táo thấp, chữa lỵ, vàng da, tiểu ít.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Chống chỉ định cho phụ nữ có thai.",
-    "dacDiemDuocLieu": "Vỏ thân dạng mảnh, mặt ngoài màu xám, mặt trong màu vàng tươi. Mỏng, nhẹ, dễ bẻ gãy."
+    "dacDiemDuocLieu": "Vỏ thân dạng mảnh, mặt ngoài màu xám, mặt trong màu vàng tươi. Mỏng, nhẹ, dễ bẻ gãy.",
+    "tenKhoaHoc": "Phellodendron amurense Rupr.",
+    "isThucHanh": true
   },
   {
     "id": "8",
@@ -101,7 +110,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất Emetin để điều trị lỵ amip. Siro Ipeca được dùng để gây nôn trong các trường hợp ngộ độc.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Emetin độc, dùng phải theo chỉ định của bác sĩ.",
-    "dacDiemDuocLieu": "Rễ có hình dáng đặc biệt với nhiều ngấn ngang nổi rõ, chia rễ thành nhiều đốt."
+    "dacDiemDuocLieu": "Rễ có hình dáng đặc biệt với nhiều ngấn ngang nổi rõ, chia rễ thành nhiều đốt.",
+    "tenKhoaHoc": "Cephaelis ipecacuanha (Brot.) A. Rich."
   },
   {
     "id": "9",
@@ -114,7 +124,8 @@
     "congDung": "(Y học cổ truyền): Lá dùng chữa mất ngủ, an thần, giúp tiêu hóa. Vỏ thân chữa phong thấp, đau lưng, nhức xương.",
     "lieuDung": "Lá: 8-16g/ngày, dạng thuốc sắc hoặc nấu canh. Vỏ thân: 6-12g/ngày.",
     "luuY": "Chưa có thông tin.",
-    "dacDiemDuocLieu": "Lá chét kép gồm 3 lá, lá chét giữa thường lớn hơn. Vỏ thân có gai ngắn."
+    "dacDiemDuocLieu": "Lá chét kép gồm 3 lá, lá chét giữa thường lớn hơn. Vỏ thân có gai ngắn.",
+    "tenKhoaHoc": "Erythrina variegata L."
   },
   {
     "id": "10",
@@ -127,7 +138,8 @@
     "congDung": "(Y học cổ truyền): Tâm sen dùng chữa mất ngủ, tim hồi hộp, huyết áp cao. Lá sen dùng để an thần, giảm béo.",
     "lieuDung": "Tâm sen: 1.5-3g/ngày, dạng hãm trà.",
     "luuY": "Người tỳ vị hư yếu không nên dùng nhiều.",
-    "dacDiemDuocLieu": "Tâm sen là mầm nhỏ màu xanh lục, nằm giữa hai lá mầm của hạt sen, vị đắng."
+    "dacDiemDuocLieu": "Tâm sen là mầm nhỏ màu xanh lục, nằm giữa hai lá mầm của hạt sen, vị đắng.",
+    "tenKhoaHoc": "Nelumbo nucifera Gaertn."
   },
   {
     "id": "11",
@@ -140,7 +152,8 @@
     "congDung": "(Y học hiện đại): Làm đồ uống kích thích, hỗ trợ giảm cân, phòng ngừa các bệnh tim mạch và ung thư. (Y học cổ truyền): Chữa tiêu chảy, kiết lỵ, giúp tiêu hóa tốt.",
     "lieuDung": "Dùng hãm trà uống hàng ngày.",
     "luuY": "Uống nhiều vào buổi tối có thể gây mất ngủ. Không uống lúc đói.",
-    "dacDiemDuocLieu": "Búp chè gồm 1 tôm (búp non chưa mở) và 2-3 lá non liền kề."
+    "dacDiemDuocLieu": "Búp chè gồm 1 tôm (búp non chưa mở) và 2-3 lá non liền kề.",
+    "tenKhoaHoc": "Camellia sinensis (L.) Kuntze"
   },
   {
     "id": "12",
@@ -153,7 +166,8 @@
     "congDung": "(Y học hiện đại): Dùng làm đồ uống kích thích. Cafein được phối hợp trong một số thuốc giảm đau, chữa hen.",
     "lieuDung": "Dùng dưới dạng đồ uống, liều lượng tùy thuộc vào cá nhân.",
     "luuY": "Dùng quá liều có thể gây mất ngủ, tim đập nhanh, bồn chồn.",
-    "dacDiemDuocLieu": "Hạt hình bầu dục, có rãnh dọc ở mặt phẳng. Màu xanh xám khi còn sống và màu nâu đen sau khi rang."
+    "dacDiemDuocLieu": "Hạt hình bầu dục, có rãnh dọc ở mặt phẳng. Màu xanh xám khi còn sống và màu nâu đen sau khi rang.",
+    "tenKhoaHoc": "Coffea arabica L."
   },
   {
     "id": "13",
@@ -166,7 +180,8 @@
     "congDung": "(Y học hiện đại): Dùng giảm đau do co thắt cơ trơn (viêm loét dạ dày, hen). Dùng trong khoa mắt để làm giãn đồng tử. Chống nôn khi say tàu xe. Chữa bệnh Parkinson.",
     "lieuDung": "Dược liệu thuộc nhóm độc A, phải dùng theo chỉ định của bác sĩ. Dạng dùng: Bột lá, cao, cồn thuốc.",
     "luuY": "Rất độc, không tự ý sử dụng. Chống chỉ định cho người bị tăng nhãn áp, phì đại tuyến tiền liệt.",
-    "dacDiemDuocLieu": "Lá hình trứng, đầu nhọn. Quả mọng, khi chín có màu đen bóng."
+    "dacDiemDuocLieu": "Lá hình trứng, đầu nhọn. Quả mọng, khi chín có màu đen bóng.",
+    "tenKhoaHoc": "Atropa belladonna L."
   },
   {
     "id": "14",
@@ -179,7 +194,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất scopolamin làm thuốc chống say tàu xe, tiền mê trong phẫu thuật. (Y học cổ truyền): Chữa ho, hen suyễn, giảm đau trong bệnh đau cơ, tê thấp.",
     "lieuDung": "Dạng hút: Lá hoặc hoa thái nhỏ, phơi khô, cuốn vào giấy hút để chữa hen. Các dạng khác thuộc nhóm độc A, phải theo chỉ định của bác sĩ.",
     "luuY": "Độc, không dùng quá liều. Các triệu chứng ngộ độc bao gồm: khô miệng, giãn đồng tử, ảo giác, tim đập nhanh.",
-    "dacDiemDuocLieu": "Hoa hình phễu, màu trắng hoặc tím. Quả hình cầu, vỏ có nhiều gai mềm. Lá có gốc thường không đều (lệch)."
+    "dacDiemDuocLieu": "Hoa hình phễu, màu trắng hoặc tím. Quả hình cầu, vỏ có nhiều gai mềm. Lá có gốc thường không đều (lệch).",
+    "tenKhoaHoc": "Datura metel L."
   },
   {
     "id": "15",
@@ -192,7 +208,8 @@
     "congDung": "(Y học hiện đại): Dùng làm thuốc gây tê tại chỗ trong phẫu thuật tai, mũi, họng, răng. Là chất ma túy bị lạm dụng, cấm sản xuất và buôn bán.",
     "lieuDung": "Dung dịch Cocain hydrochlorid 0,5-2% để gây tê.",
     "luuY": "Dễ gây nghiện và độc tính cao. Sử dụng quá liều có thể gây tử vong do liệt hô hấp.",
-    "dacDiemDuocLieu": "Lá hình elip, nguyên, có một đường gân nổi rõ ở mặt dưới."
+    "dacDiemDuocLieu": "Lá hình elip, nguyên, có một đường gân nổi rõ ở mặt dưới.",
+    "tenKhoaHoc": "Erythroxylum coca Lam."
   },
   {
     "id": "16",
@@ -205,7 +222,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất quinin để điều trị sốt rét, đặc biệt là sốt rét kháng thuốc. Quinidin dùng chữa loạn nhịp tim. (Y học cổ truyền): Dùng làm thuốc bổ đắng, kích thích tiêu hóa, hạ sốt.",
     "lieuDung": "Viên nén Quinin.HCl hoặc Quinin sulphat: 0,15g; 0,25g. Ống tiêm 0,05g/5ml. Viên nén Quinidin bisulphat: 250 mg.",
     "luuY": "Liều cao quinin có thể gây sẩy thai. Có thể gây ra các triệu chứng như ù tai, chóng mặt, buồn nôn (hội chứng Cinchonism).",
-    "dacDiemDuocLieu": "Vỏ cây dạng mảnh hoặc cuộn tròn, mặt ngoài sần sùi màu nâu xám, mặt trong mịn hơn, màu nâu đỏ hoặc vàng nâu."
+    "dacDiemDuocLieu": "Vỏ cây dạng mảnh hoặc cuộn tròn, mặt ngoài sần sùi màu nâu xám, mặt trong mịn hơn, màu nâu đỏ hoặc vàng nâu.",
+    "tenKhoaHoc": "Cinchona succirubra Pav. ex Klotzsch"
   },
   {
     "id": "17",
@@ -218,7 +236,9 @@
     "congDung": "(Y học hiện đại): Chiết xuất ephedrin chữa hen suyễn, sổ mũi, ngạt mũi. (Y học cổ truyền): Chữa cảm mạo không ra mồ hôi, hen, viêm phế quản. Rễ (Ma hoàng căn) chữa chứng ra mồ hôi trộm.",
     "lieuDung": "Chữa hen: liều tối đa ephedrin 0,05g/lần, 0,15g/24 giờ. Chữa sổ mũi: dung dịch nhỏ mũi 1-3%.",
     "luuY": "Có thể gây đánh trống ngực, loạn nhịp tim, tăng huyết áp. Ephedrin là tiền chất để sản xuất ma túy tổng hợp (methamphetamin).",
-    "dacDiemDuocLieu": "Thân nhỏ, có nhiều đốt, màu xanh xám hoặc vàng xám. Lá thoái hóa thành vảy nhỏ."
+    "dacDiemDuocLieu": "Thân nhỏ, có nhiều đốt, màu xanh xám hoặc vàng xám. Lá thoái hóa thành vảy nhỏ.",
+    "tenKhoaHoc": "Ephedra sinica Stapf",
+    "isThucHanh": true
   },
   {
     "id": "18",
@@ -231,7 +251,9 @@
     "congDung": "(Y học hiện đại): Dùng ngoài dưới dạng kem bôi, cao dán để giảm đau trong viêm khớp, đau dây thần kinh. (Y học cổ truyền): Làm gia vị, kích thích tiêu hóa, chữa đau bụng do lạnh, đau khớp, đau lưng. Lá dùng ngoài chữa rắn rết cắn.",
     "lieuDung": "Dùng làm gia vị. Dùng ngoài theo hướng dẫn của sản phẩm.",
     "luuY": "Ăn nhiều có thể gây hại cho dạ dày.",
-    "dacDiemDuocLieu": "Quả mọng, nhiều hình dạng (tròn, dài, cong) và màu sắc (xanh, đỏ, vàng, tím), vị cay nồng đặc trưng."
+    "dacDiemDuocLieu": "Quả mọng, nhiều hình dạng (tròn, dài, cong) và màu sắc (xanh, đỏ, vàng, tím), vị cay nồng đặc trưng.",
+    "tenKhoaHoc": "Capsicum annuum L.",
+    "isThucHanh": true
   },
   {
     "id": "19",
@@ -244,7 +266,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất colchicin làm thuốc điều trị đợt cấp của bệnh Gút. Chữa bệnh bạch cầu và một số loại ung thư da. (Nông nghiệp): Dùng để gây đột biến đa bội, tạo giống cây trồng mới.",
     "lieuDung": "Thuốc độc bảng A, dùng theo chỉ định nghiêm ngặt của bác sĩ.",
     "luuY": "Rất độc, dùng quá liều có thể gây chết người với triệu chứng nôn mửa, đau bụng, tiêu chảy.",
-    "dacDiemDuocLieu": "Giò (thân hành) hình trứng, bọc bởi lớp vỏ khô màu nâu. Hạt nhỏ, hình cầu, màu nâu đen."
+    "dacDiemDuocLieu": "Giò (thân hành) hình trứng, bọc bởi lớp vỏ khô màu nâu. Hạt nhỏ, hình cầu, màu nâu đen.",
+    "tenKhoaHoc": "Colchicum autumnale L."
   },
   {
     "id": "20",
@@ -257,7 +280,9 @@
     "congDung": "(Y học cổ truyền): Chữa các bệnh phụ nữ như rối loạn kinh nguyệt, đau kinh, bế kinh, rong huyết sau sinh. Chữa cao huyết áp, viêm thận cấp và mãn tính, phù thũng.",
     "lieuDung": "6-12g/ngày dạng thuốc sắc. Thường dùng dưới dạng cao lỏng.",
     "luuY": "Phụ nữ có thai không nên dùng.",
-    "dacDiemDuocLieu": "Thân vuông, có lông. Lá mọc đối, xẻ thùy. Hoa mọc vòng ở kẽ lá, màu hồng hoặc tím."
+    "dacDiemDuocLieu": "Thân vuông, có lông. Lá mọc đối, xẻ thùy. Hoa mọc vòng ở kẽ lá, màu hồng hoặc tím.",
+    "tenKhoaHoc": "Leonurus japonicus Houtt.",
+    "isThucHanh": true
   },
   {
     "id": "21",
@@ -270,7 +295,8 @@
     "congDung": "(Y học cổ truyền): Sau khi chế biến dùng chữa chó dại cắn, phong, ghẻ, một số bệnh ngoài da và thấp khớp.",
     "lieuDung": "Rất độc, phải qua chế biến cẩn thận và dùng theo chỉ định.",
     "luuY": "Rất độc, không được tự ý sử dụng.",
-    "dacDiemDuocLieu": "Vỏ thân dày, mặt ngoài màu nâu xám, mặt trong màu vàng nhạt, vị rất đắng."
+    "dacDiemDuocLieu": "Vỏ thân dày, mặt ngoài màu nâu xám, mặt trong màu vàng nhạt, vị rất đắng.",
+    "tenKhoaHoc": "Strychnos wallichiana Steud. ex DC."
   },
   {
     "id": "22",
@@ -283,7 +309,8 @@
     "congDung": "(Y học hiện đại): Là nguồn nguyên liệu chiết xuất Vinblastin và Vincristin, hai loại thuốc quan trọng trong điều trị ung thư máu, u lympho, ung thư vú, ung thư tinh hoàn.... (Y học cổ truyền): Chữa bế kinh, cao huyết áp, đái tháo đường, lỵ.",
     "lieuDung": "Các chế phẩm chống ung thư chỉ được dùng tại bệnh viện dưới sự giám sát chặt chẽ.",
     "luuY": "Các thuốc chống ung thư từ Dừa cạn có nhiều tác dụng phụ và độc tính cao như rụng tóc, giảm bạch cầu, độc với thần kinh.",
-    "dacDiemDuocLieu": "Cây thảo nhỏ, sống dai. Hoa có 5 cánh, thường màu hồng hoặc trắng. Lá mọc đối."
+    "dacDiemDuocLieu": "Cây thảo nhỏ, sống dai. Hoa có 5 cánh, thường màu hồng hoặc trắng. Lá mọc đối.",
+    "tenKhoaHoc": "Catharanthus roseus (L.) G. Don"
   },
   {
     "id": "23",
@@ -296,7 +323,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất Ergotamin dùng trong bệnh đau nửa đầu (migraine). Ergobasin dùng trong sản khoa để thúc đẻ và cầm máu sau sinh. Dùng để bán tổng hợp LSD (chất gây ảo giác). (Y học cổ truyền): Cầm máu khi băng huyết, ho ra máu.",
     "lieuDung": "Sử dụng các alcaloid tinh khiết theo chỉ định của bác sĩ.",
     "luuY": "Rất độc. Dùng không đúng chỉ định có thể gây hoại tử chi do co mạch quá mức.",
-    "dacDiemDuocLieu": "Hạch nấm là khối rắn, màu tím đen, hình cong như cựa gà, mọc ra từ bông lúa mạch đen."
+    "dacDiemDuocLieu": "Hạch nấm là khối rắn, màu tím đen, hình cong như cựa gà, mọc ra từ bông lúa mạch đen.",
+    "tenKhoaHoc": "Claviceps purpurea (Fr.) Tul."
   },
   {
     "id": "24",
@@ -309,7 +337,8 @@
     "congDung": "(Y học cổ truyền): Chữa mất ngủ, suy nhược thần kinh, tim hồi hộp, lo âu. Quả chín dùng để ăn và làm nước giải khát.",
     "lieuDung": "15-30g dược liệu khô/ngày, dạng thuốc sắc hoặc hãm trà.",
     "luuY": "Chưa có thông tin.",
-    "dacDiemDuocLieu": "Dây leo bằng tua cuốn. Hoa đẹp, có nhiều màu sắc (trắng, tím), cấu trúc phức tạp. Quả mọng, khi chín có màu vàng."
+    "dacDiemDuocLieu": "Dây leo bằng tua cuốn. Hoa đẹp, có nhiều màu sắc (trắng, tím), cấu trúc phức tạp. Quả mọng, khi chín có màu vàng.",
+    "tenKhoaHoc": "Passiflora foetida L."
   },
   {
     "id": "25",
@@ -322,7 +351,8 @@
     "congDung": "(Y học cổ truyền): Chữa viêm loét dạ dày - tá tràng, lở loét miệng lưỡi.",
     "lieuDung": "15-30g dược liệu khô/ngày, dạng thuốc sắc.",
     "luuY": "Chưa có thông tin.",
-    "dacDiemDuocLieu": "Dây leo, thân và cành có lông. Lá mọc đối, hình bầu dục. Hoa nhỏ màu trắng, mọc thành cụm."
+    "dacDiemDuocLieu": "Dây leo, thân và cành có lông. Lá mọc đối, hình bầu dục. Hoa nhỏ màu trắng, mọc thành cụm.",
+    "tenKhoaHoc": "Hedyotis capitellata Wall. ex G.Don"
   },
   {
     "id": "26",
@@ -335,7 +365,9 @@
     "congDung": "(Y học cổ truyền): Dùng làm gia vị, kích thích tiêu hóa, giảm đau, chữa đau bụng lạnh, tiêu chảy, cảm lạnh.",
     "lieuDung": "Dùng làm gia vị với liều lượng thích hợp.",
     "luuY": "Liều cao gây kích ứng niêm mạc dạ dày, có thể gây viêm, sốt.",
-    "dacDiemDuocLieu": "Quả hạch nhỏ, hình cầu. Tiêu đen là quả xanh phơi khô. Tiêu sọ là quả chín bỏ vỏ."
+    "dacDiemDuocLieu": "Quả hạch nhỏ, hình cầu. Tiêu đen là quả xanh phơi khô. Tiêu sọ là quả chín bỏ vỏ.",
+    "tenKhoaHoc": "Piper nigrum L.",
+    "isThucHanh": true
   },
   {
     "id": "27",
@@ -348,7 +380,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất nicotin làm thuốc trừ sâu. Nguyên liệu sản xuất acid nicotinic (vitamin PP). (Y học cổ truyền): Dùng ngoài để cầm máu, trừ rệp, ghẻ, chấy.",
     "lieuDung": "Một điếu thuốc lá chứa khoảng 1 mg nicotin.",
     "luuY": "Hút thuốc lá lâu dài gây nghiện và ung thư phổi.",
-    "dacDiemDuocLieu": "Lá to, nguyên, mềm, có nhiều lông tơ. Lá được thu hái, sấy khô và thái nhỏ."
+    "dacDiemDuocLieu": "Lá to, nguyên, mềm, có nhiều lông tơ. Lá được thu hái, sấy khô và thái nhỏ.",
+    "tenKhoaHoc": "Nicotiana tabacum L."
   },
   {
     "id": "28",
@@ -361,7 +394,9 @@
     "congDung": "(Y học cổ truyền): Hạt (Binh lang) dùng để tẩy giun, sán. Vỏ quả (Đại phúc bì) chữa phù, bụng trướng nước, tiểu tiện khó.",
     "lieuDung": "Hạt: 4-6g/ngày để tẩy giun.",
     "luuY": "Arecolin có độc tính. Dùng liều cao có thể gây ngừng tim, liệt hô hấp.",
-    "dacDiemDuocLieu": "Hạt (Binh lang): rất cứng, hình nón cụt, mặt cắt có vân như đá hoa. Vỏ quả (Đại phúc bì): vỏ ngoài của quả cau, phơi khô."
+    "dacDiemDuocLieu": "Hạt (Binh lang): rất cứng, hình nón cụt, mặt cắt có vân như đá hoa. Vỏ quả (Đại phúc bì): vỏ ngoài của quả cau, phơi khô.",
+    "tenKhoaHoc": "Areca catechu L.",
+    "isThucHanh": true
   },
   {
     "id": "29",
@@ -374,7 +409,8 @@
     "congDung": "(Y học cổ truyền): Vỏ rễ, vỏ thân dùng chữa sán. Vỏ quả chữa tiêu chảy, lỵ. Dùng ngoài để ngậm chữa đau răng, viêm amidan.",
     "lieuDung": "Vỏ rễ: 15-30g/ngày sắc uống để tẩy sán.",
     "luuY": "Alkaloid trong vỏ lựu có độc, không dùng quá liều.",
-    "dacDiemDuocLieu": "Vỏ rễ và vỏ thân dạng mảnh, màu vàng nâu. Vỏ quả cứng, khi khô có màu nâu đỏ."
+    "dacDiemDuocLieu": "Vỏ rễ và vỏ thân dạng mảnh, màu vàng nâu. Vỏ quả cứng, khi khô có màu nâu đỏ.",
+    "tenKhoaHoc": "Punica granatum L."
   },
   {
     "id": "30",
@@ -387,7 +423,8 @@
     "congDung": "(Y học hiện đại): Dùng trong các trường hợp ngất do suy hô hấp. Hỗ trợ cai thuốc lá.",
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Chưa có thông tin.",
-    "dacDiemDuocLieu": "Cây thảo nhỏ, lá mọc so le, hoa có màu xanh nhạt hoặc trắng."
+    "dacDiemDuocLieu": "Cây thảo nhỏ, lá mọc so le, hoa có màu xanh nhạt hoặc trắng.",
+    "tenKhoaHoc": "Lobelia inflata L."
   },
   {
     "id": "31",
@@ -400,7 +437,8 @@
     "congDung": "(Y học hiện đại): Làm nguyên liệu chiết xuất conessin. (Y học cổ truyền): Trị lỵ amip và tiêu chảy.",
     "lieuDung": "Vỏ thân: 10-15g/ngày, dạng thuốc sắc.",
     "luuY": "Tác dụng tương tự emetin nhưng ít độc hơn.",
-    "dacDiemDuocLieu": "Vỏ thân dày, màu nâu xám, có nhiều vết nứt. Hạt nhỏ, dài, có chùm lông ở đầu."
+    "dacDiemDuocLieu": "Vỏ thân dày, màu nâu xám, có nhiều vết nứt. Hạt nhỏ, dài, có chùm lông ở đầu.",
+    "tenKhoaHoc": "Holarrhena antidysenterica (L.) Wall."
   },
   {
     "id": "32",
@@ -413,7 +451,8 @@
     "congDung": "(Y học hiện đại): Dùng ngoài dạng cồn xoa bóp trị đau nhức, mỏi tay chân, bong gân. (Y học cổ truyền): Phụ tử đã chế biến được dùng để hồi dương cứu nghịch, chữa chứng suy tim mạch, chân tay giá lạnh.",
     "lieuDung": "Cồn aconit 10% dùng để xoa bóp ngoài. Phụ tử chế dùng trong các bài thuốc với liều 4-12g/ngày theo chỉ định của thầy thuốc.",
     "luuY": "Rất độc, thuộc thuốc độc bảng A. Không được uống dược liệu chưa qua chế biến. Chế biến phải đúng cách để loại bỏ vị cay tê.",
-    "dacDiemDuocLieu": "Rễ củ hình nón, màu nâu đen. Ô đầu là củ mẹ, to hơn. Phụ tử là củ con, nhỏ hơn, mọc bên cạnh củ mẹ."
+    "dacDiemDuocLieu": "Rễ củ hình nón, màu nâu đen. Ô đầu là củ mẹ, to hơn. Phụ tử là củ con, nhỏ hơn, mọc bên cạnh củ mẹ.",
+    "tenKhoaHoc": "Aconitum fortunei Hemsl."
   },
   {
     "id": "33",
@@ -426,7 +465,8 @@
     "congDung": "(Y học cổ truyền): Chữa các chứng ho lâu ngày, ho gà, viêm phế quản. Dùng ngoài để diệt chấy, rận, chữa giun kim, ghẻ.",
     "lieuDung": "6-12g/ngày, dạng thuốc sắc hoặc ngâm rượu. Dùng ngoài: nấu nước để rửa hoặc thụt.",
     "luuY": "Chưa có thông tin.",
-    "dacDiemDuocLieu": "Rễ củ mọc thành chùm, hình thoi, hai đầu thuôn nhọn, màu vàng ngà."
+    "dacDiemDuocLieu": "Rễ củ mọc thành chùm, hình thoi, hai đầu thuôn nhọn, màu vàng ngà.",
+    "tenKhoaHoc": "Stemona tuberosa Lour."
   },
   {
     "id": "1758897192217",
@@ -439,7 +479,8 @@
     "congDung": "Dùng làm nguyên liệu chiết xuất Berberin.",
     "lieuDung": "",
     "luuY": "",
-    "dacDiemDuocLieu": ""
+    "dacDiemDuocLieu": "",
+    "tenKhoaHoc": "Thalictrum foliolosum DC."
   },
   {
     "id": "1758897192218",
@@ -452,7 +493,8 @@
     "congDung": "Dùng làm nguyên liệu chiết xuất Berberin.",
     "lieuDung": "",
     "luuY": "Chống chỉ định cho phụ nữ có thai.",
-    "dacDiemDuocLieu": "Cây bụi, thân có nhiều gai. Vỏ thân và rễ có màu vàng."
+    "dacDiemDuocLieu": "Cây bụi, thân có nhiều gai. Vỏ thân và rễ có màu vàng.",
+    "tenKhoaHoc": "Berberis wallichiana DC."
   },
   {
     "id": "1758897192219",
@@ -465,7 +507,8 @@
     "congDung": "",
     "lieuDung": "",
     "luuY": "",
-    "dacDiemDuocLieu": "Dây leo gỗ lớn, thân cắt ngang có màu vàng, vị đắng."
+    "dacDiemDuocLieu": "Dây leo gỗ lớn, thân cắt ngang có màu vàng, vị đắng.",
+    "tenKhoaHoc": "Fibraurea tinctoria Lour."
   },
   {
     "id": "1758897192220",
@@ -478,7 +521,8 @@
     "congDung": "Dùng để hút (hút điếu cày). Có thể dùng làm thuốc trừ sâu.",
     "lieuDung": "",
     "luuY": "Gây nghiện và có độc tính mạnh hơn Thuốc lá.",
-    "dacDiemDuocLieu": "Cây thảo, lá to, được thu hái, thái sợi và phơi khô."
+    "dacDiemDuocLieu": "Cây thảo, lá to, được thu hái, thái sợi và phơi khô.",
+    "tenKhoaHoc": "Nicotiana rustica L."
   },
   {
     "id": "1758897192221",
@@ -491,7 +535,8 @@
     "congDung": "Không dùng làm thuốc.",
     "lieuDung": "Không dùng.",
     "luuY": "Rất độc, có thể gây chết người với liều lượng rất nhỏ. Rất dễ nhầm lẫn với các cây thuốc khác.",
-    "dacDiemDuocLieu": "Dây leo, hoa màu vàng, hình phễu."
+    "dacDiemDuocLieu": "Dây leo, hoa màu vàng, hình phễu.",
+    "tenKhoaHoc": "Gelsemium elegans (Gardn. & Champ.) Benth."
   },
   {
     "id": "1758897192222",
@@ -504,7 +549,8 @@
     "congDung": "",
     "lieuDung": "",
     "luuY": "",
-    "dacDiemDuocLieu": "Cây bụi nhỏ, lá mọc đối, hình bầu dục."
+    "dacDiemDuocLieu": "Cây bụi nhỏ, lá mọc đối, hình bầu dục.",
+    "tenKhoaHoc": "Dichroa febrifuga Lour."
   },
   {
     "id": "1758897233289",
@@ -517,7 +563,8 @@
     "congDung": "(Y học hiện đại): Vỏ quả là nguồn sản xuất tinh dầu và flavonoid. Tinh dầu dùng trong kỹ nghệ pha chế đồ uống, nước hoa. (Y học cổ truyền): Dịch quả giúp tiêu hóa, thông tiểu tiện, chữa bệnh Scorbut do chứa nhiều Vitamin C. Lá chanh làm gia vị. Rễ chanh chữa ho.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Tinh dầu vỏ quả (Lime oil): Chất lỏng màu vàng đỏ, mùi thơm đặc biệt của chanh, vị đắng."
+    "dacDiemDuocLieu": "Tinh dầu vỏ quả (Lime oil): Chất lỏng màu vàng đỏ, mùi thơm đặc biệt của chanh, vị đắng.",
+    "tenKhoaHoc": "Citrus aurantifolia (Christm.) Swingle"
   },
   {
     "id": "1758897233290",
@@ -530,7 +577,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu vỏ quả làm thơm thuốc, dùng trong kỹ nghệ thực phẩm, pha chế nước hoa, mỹ phẩm. (Y học cổ truyền): Vỏ cam phơi khô (thanh bì) có tác dụng hành khí, giảm đau, kiện vị.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Tinh dầu vỏ quả (Orange oil): Chất lỏng màu vàng hoặc nâu vàng, mùi thơm, vị không đắng."
+    "dacDiemDuocLieu": "Tinh dầu vỏ quả (Orange oil): Chất lỏng màu vàng hoặc nâu vàng, mùi thơm, vị không đắng.",
+    "tenKhoaHoc": "Citrus sinensis (L.) Osbeck"
   },
   {
     "id": "1758897233291",
@@ -543,7 +591,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu hoa bưởi dùng làm thơm bánh kẹo, nước giải khát, mỹ phẩm. Vỏ và hạt là nguồn cung cấp pectin. (Y học cổ truyền): Quả dùng để ăn tươi. Lá bưởi dùng làm thuốc xông.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Tinh dầu vỏ quả: chất lỏng màu vàng nhạt, mùi thơm."
+    "dacDiemDuocLieu": "Tinh dầu vỏ quả: chất lỏng màu vàng nhạt, mùi thơm.",
+    "tenKhoaHoc": "Citrus grandis (L.) Osbeck"
   },
   {
     "id": "1758897233292",
@@ -556,7 +605,8 @@
     "congDung": "(Y học hiện đại): Dùng nhiều nhất trong kỹ nghệ hương liệu (nước hoa, xà phòng). (Y học cổ truyền): Xông giải cảm, xoa ngoài chống cúm, phòng bệnh truyền nhiễm, phối hợp các tinh dầu khác xoa bóp giảm đau, chữa tê thấp.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Cây cỏ sống dai, mọc thành bụi. Thân rễ trắng hoặc hơi tím."
+    "dacDiemDuocLieu": "Cây cỏ sống dai, mọc thành bụi. Thân rễ trắng hoặc hơi tím.",
+    "tenKhoaHoc": "Cymbopogon winterianus Jowitt"
   },
   {
     "id": "1758897233293",
@@ -569,7 +619,8 @@
     "congDung": "(Y học hiện đại): Dùng trong sản xuất nước hoa, xà phòng, thuốc lá.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Không có thông tin."
+    "dacDiemDuocLieu": "Không có thông tin.",
+    "tenKhoaHoc": "Cymbopogon martini (Roxb.) W. Watson"
   },
   {
     "id": "1758897233294",
@@ -582,7 +633,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất Citral là nguyên liệu bán tổng hợp vitamin A, sản xuất nước hoa, xà phòng, chất tẩy rửa. (Y học cổ truyền): Làm gia vị, chữa cảm sốt (xông), đau bụng, đầy hơi, nôn mửa.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Không có thông tin."
+    "dacDiemDuocLieu": "Không có thông tin.",
+    "tenKhoaHoc": "Cymbopogon citratus (DC.) Stapf"
   },
   {
     "id": "1758897233295",
@@ -595,7 +647,8 @@
     "congDung": "(Y học hiện đại): Dùng làm gia vị trong kỹ nghệ chế biến bánh kẹo và thực phẩm.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Tinh dầu cất ra không có mùi đặc trưng nên ít có ý nghĩa sử dụng.",
-    "dacDiemDuocLieu": "Quả hình trứng, màu nâu đỏ, có nhiều rãnh dọc và mùi thơm đặc trưng."
+    "dacDiemDuocLieu": "Quả hình trứng, màu nâu đỏ, có nhiều rãnh dọc và mùi thơm đặc trưng.",
+    "tenKhoaHoc": "Amomum tsaoko Crevost et Lemarie"
   },
   {
     "id": "1758897233296",
@@ -608,7 +661,8 @@
     "congDung": "(Y học cổ truyền): Làm gia vị, chữa sởi (kích thích sởi mọc).",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Quả (hạt) nhỏ, hình cầu, màu vàng nâu, có mùi thơm đặc trưng."
+    "dacDiemDuocLieu": "Quả (hạt) nhỏ, hình cầu, màu vàng nâu, có mùi thơm đặc trưng.",
+    "tenKhoaHoc": "Coriandrum sativum L."
   },
   {
     "id": "1758897233297",
@@ -621,7 +675,8 @@
     "congDung": "(Y học hiện đại): Là nguồn nguyên liệu chính để cất tinh dầu và chiết xuất Menthol. (Y học cổ truyền): Trị cảm phong nhiệt (sốt không ra mồ hôi), kích thích tiêu hóa, chữa ho.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không dùng cho trẻ em do có thể gây ngừng thở và ngừng tim.",
-    "dacDiemDuocLieu": "Menthol: thể rắn, kết tinh hình kim, không màu, mùi thơm mát đặc trưng."
+    "dacDiemDuocLieu": "Menthol: thể rắn, kết tinh hình kim, không màu, mùi thơm mát đặc trưng.",
+    "tenKhoaHoc": "Mentha arvensis L."
   },
   {
     "id": "1758897233298",
@@ -634,7 +689,8 @@
     "congDung": "(Y học hiện đại): Dùng trong kỹ nghệ dược phẩm, bánh kẹo, thực phẩm, pha chế rượu mùi, các loại chè túi.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không dùng cho trẻ em do có thể gây ngừng thở và ngừng tim.",
-    "dacDiemDuocLieu": "Tinh dầu (Peppermint oil): mùi thơm đặc trưng, vị cay mát."
+    "dacDiemDuocLieu": "Tinh dầu (Peppermint oil): mùi thơm đặc trưng, vị cay mát.",
+    "tenKhoaHoc": "Mentha x piperita L."
   },
   {
     "id": "1758897233299",
@@ -647,7 +703,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu dùng trị ngộ độc phosphor, bán tổng hợp terpin, dùng trong công nghiệp sản xuất verni, sơn. (Y học cổ truyền): Nhựa dùng làm thuốc long đờm, sát khuẩn.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Nhựa thông đặc, dính, màu vàng. Tinh dầu (Turpentine oil) lỏng, không màu."
+    "dacDiemDuocLieu": "Nhựa thông đặc, dính, màu vàng. Tinh dầu (Turpentine oil) lỏng, không màu.",
+    "tenKhoaHoc": "Pinus massoniana Lamb."
   },
   {
     "id": "1758897233300",
@@ -660,7 +717,8 @@
     "congDung": "(Y học hiện đại): Camphor dùng làm thuốc hồi sức cấp cứu khi suy tuần hoàn, suy tim. Gỗ và lá là nguồn cất tinh dầu và chế camphor hoặc cineol. (Y học cổ truyền): Cồn long não 10% xoa bóp ngoài chống viêm, sát khuẩn, giảm đau khớp, mẩn ngứa. Lá nấu nước tắm chữa lở loét.",
     "lieuDung": "Thuốc tiêm natri camphosulfonat 10%. Thuốc nước camphor 0,1%.",
     "luuY": "Uống quá liều gây ngộ độc, co giật, có thể tử vong do suy hô hấp.",
-    "dacDiemDuocLieu": "Camphor: thể rắn, kết tinh, màu trắng, mùi thơm mạnh đặc trưng."
+    "dacDiemDuocLieu": "Camphor: thể rắn, kết tinh, màu trắng, mùi thơm mạnh đặc trưng.",
+    "tenKhoaHoc": "Cinnamomum camphora (L.) J. Presl"
   },
   {
     "id": "1758897233301",
@@ -673,7 +731,8 @@
     "congDung": "(Y học cổ truyền): Chữa ăn không tiêu, đầy hơi, nôn mửa. (Y học hiện đại): Tinh dầu dùng trong cao xoa bóp.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Quả nang khô, hình cầu, có gai mềm, mùi thơm."
+    "dacDiemDuocLieu": "Quả nang khô, hình cầu, có gai mềm, mùi thơm.",
+    "tenKhoaHoc": "Amomum villosum Lour."
   },
   {
     "id": "1758897233302",
@@ -686,7 +745,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu tràm có trong các dạng thuốc ho, thuốc kháng khuẩn, làm lành vết thương, chữa bỏng. Tinh dầu làm giàu cineol được xuất khẩu. (Y học cổ truyền): Chữa cảm, ho.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Tinh dầu (Cajeput oil): Chất lỏng màu vàng nhạt, mùi dễ chịu, giống mùi camphor."
+    "dacDiemDuocLieu": "Tinh dầu (Cajeput oil): Chất lỏng màu vàng nhạt, mùi dễ chịu, giống mùi camphor.",
+    "tenKhoaHoc": "Melaleuca cajuputi Powell"
   },
   {
     "id": "1758897233303",
@@ -699,7 +759,8 @@
     "congDung": "(Y học hiện đại): Dùng trong kỹ nghệ hương liệu, nước hoa, có thể thay thế tinh dầu Sả Java. (Y học cổ truyền): Chữa ho.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Lá có mùi thơm mạnh đặc trưng của sả chanh khi vò nát."
+    "dacDiemDuocLieu": "Lá có mùi thơm mạnh đặc trưng của sả chanh khi vò nát.",
+    "tenKhoaHoc": "Eucalyptus citriodora Hook.f."
   },
   {
     "id": "1758897233304",
@@ -712,7 +773,8 @@
     "congDung": "(Y học hiện đại): Nguyên liệu chế Eucalyptol (dầu khuynh diệp) dùng chữa cảm cúm, sổ mũi, nghẹt mũi, côn trùng đốt, trặc gân. (Y học cổ truyền): Chữa ho, hen, nhiễm khuẩn đường hô hấp.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Dầu khuynh diệp có thể dùng cho trẻ sơ sinh.",
-    "dacDiemDuocLieu": "Lá hình lưỡi liềm, có mùi thơm đặc trưng."
+    "dacDiemDuocLieu": "Lá hình lưỡi liềm, có mùi thơm đặc trưng.",
+    "tenKhoaHoc": "Eucalyptus globulus Labill."
   },
   {
     "id": "1758897233305",
@@ -725,7 +787,8 @@
     "congDung": "(Y học hiện đại): Dùng để tẩy giun.",
     "lieuDung": "1 ml tinh dầu pha trong 30ml dầu thầu dầu hoặc dùng dạng viên nang 0,33ml/1 nang, ngày 3 nang.",
     "luuY": "Độc, liều cao có thể gây liệt trung khu hô hấp. Không dùng cho trẻ em dưới 5 tuổi, phụ nữ có thai, người có bệnh gan, thận.",
-    "dacDiemDuocLieu": "Tinh dầu: Chất lỏng màu vàng nhạt, vị hăng."
+    "dacDiemDuocLieu": "Tinh dầu: Chất lỏng màu vàng nhạt, vị hăng.",
+    "tenKhoaHoc": "Chenopodium ambrosioides L."
   },
   {
     "id": "1758897233306",
@@ -738,7 +801,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu và nhựa dầu làm chất thơm và cay trong kỹ nghệ thực phẩm, đồ uống. (Y học cổ truyền): Gừng tươi (sinh khương) chữa cảm mạo phong hàn, làm ấm dạ dày. Gừng khô (can khương) chữa chân tay lạnh, đau bụng đi ngoài.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Mùi đặc trưng của gừng không nằm trong thành phần tinh dầu.",
-    "dacDiemDuocLieu": "Thân rễ mập, phân nhánh, vỏ màu vàng nâu, ruột màu vàng nhạt, có mùi thơm và vị cay nồng."
+    "dacDiemDuocLieu": "Thân rễ mập, phân nhánh, vỏ màu vàng nâu, ruột màu vàng nhạt, có mùi thơm và vị cay nồng.",
+    "tenKhoaHoc": "Zingiber officinale Rosc."
   },
   {
     "id": "1758897233307",
@@ -751,7 +815,8 @@
     "congDung": "(Y học hiện đại): Là hương liệu quý dùng làm chất định hương trong kỹ nghệ pha chế nước hoa.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Lá khô có mùi thơm rất bền."
+    "dacDiemDuocLieu": "Lá khô có mùi thơm rất bền.",
+    "tenKhoaHoc": "Pogostemon cablin (Blanco) Benth."
   },
   {
     "id": "1758897233308",
@@ -764,7 +829,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất artemisinin để điều trị bệnh sốt rét.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Hợp chất chính (Artemisinin) không được coi là tinh dầu chính danh vì không bay hơi và không cất kéo được bằng hơi nước.",
-    "dacDiemDuocLieu": "Cây có mùi thơm đặc trưng."
+    "dacDiemDuocLieu": "Cây có mùi thơm đặc trưng.",
+    "tenKhoaHoc": "Artemisia annua L."
   },
   {
     "id": "1758897233309",
@@ -777,7 +843,8 @@
     "congDung": "(Y học hiện đại): Dùng trong nha khoa (giảm đau), là nguồn chiết xuất Eugenol. (Y học cổ truyền): Kích thích tiêu hóa.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Tinh dầu có tỷ trọng lớn hơn 1.",
-    "dacDiemDuocLieu": "Nụ hoa khô, màu nâu sẫm, hình dáng giống chiếc đinh, mùi thơm mạnh."
+    "dacDiemDuocLieu": "Nụ hoa khô, màu nâu sẫm, hình dáng giống chiếc đinh, mùi thơm mạnh.",
+    "tenKhoaHoc": "Syzygium aromaticum (L.) Merr. & L.M.Perry"
   },
   {
     "id": "1758897233310",
@@ -790,7 +857,8 @@
     "congDung": "(Y học hiện đại): Dùng để cất tinh dầu giàu eugenol, chiết xuất eugenol dùng trong nha khoa và dầu cao xoa bóp.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Tinh dầu có mùi thơm đặc trưng của đinh hương."
+    "dacDiemDuocLieu": "Tinh dầu có mùi thơm đặc trưng của đinh hương.",
+    "tenKhoaHoc": "Ocimum gratissimum L."
   },
   {
     "id": "1758897233311",
@@ -803,7 +871,8 @@
     "congDung": "(Y học cổ truyền): Chữa cảm sốt (dạng xông), đau bụng đi ngoài, nôn.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Thân có màu tím, cây có mùi thơm đặc trưng."
+    "dacDiemDuocLieu": "Thân có màu tím, cây có mùi thơm đặc trưng.",
+    "tenKhoaHoc": "Ocimum tenuiflorum L."
   },
   {
     "id": "1758897233312",
@@ -816,7 +885,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu làm gia vị, hương liệu trong kỹ nghệ thực phẩm, sản xuất xà phòng, kem đánh răng. Acid shikimic là nguyên liệu tổng hợp oseltamivir (Tamiflu). (Y học cổ truyền): Chữa ỉa chảy, nôn mửa, ăn không tiêu. Dùng ngoài chữa đau nhức, thấp khớp.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Anethol có thể dùng để tổng hợp dẫn chất Amphetamin.",
-    "dacDiemDuocLieu": "Quả khô gồm 8 đại, hình sao. Tinh dầu: chất lỏng không màu hoặc vàng nhạt, mùi đặc biệt, vị ngọt, kết tinh khi để lạnh (tối thiểu 15 độ C)."
+    "dacDiemDuocLieu": "Quả khô gồm 8 đại, hình sao. Tinh dầu: chất lỏng không màu hoặc vàng nhạt, mùi đặc biệt, vị ngọt, kết tinh khi để lạnh (tối thiểu 15 độ C).",
+    "tenKhoaHoc": "Illicium verum Hook.f."
   },
   {
     "id": "1758897233313",
@@ -829,7 +899,8 @@
     "congDung": "(Y học cổ truyền): Quế nhục dùng chữa tạng phủ lạnh, tiêu hóa kém, hồi dương cứu nghịch. Quế chi chữa cảm lạnh không ra mồ hôi, tê thấp. (Y học hiện đại): Làm gia vị.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Vỏ thân khô, dạng mảnh hoặc cuộn tròn, màu nâu đỏ, mùi thơm, vị cay ngọt."
+    "dacDiemDuocLieu": "Vỏ thân khô, dạng mảnh hoặc cuộn tròn, màu nâu đỏ, mùi thơm, vị cay ngọt.",
+    "tenKhoaHoc": "Cinnamomum cassia (L.) J.Presl"
   },
   {
     "id": "1758897233314",
@@ -842,7 +913,8 @@
     "congDung": "(Y học hiện đại): Làm gia vị, hương liệu.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Thành phần tinh dầu ở vỏ và lá khác nhau.",
-    "dacDiemDuocLieu": "Không có thông tin."
+    "dacDiemDuocLieu": "Không có thông tin.",
+    "tenKhoaHoc": "Cinnamomum verum J.Presl"
   },
   {
     "id": "1758897233315",
@@ -855,7 +927,8 @@
     "congDung": "(Y học hiện đại): Tinh dầu trầm dùng để sản xuất nước hoa thượng hạng. (Y học cổ truyền): Trầm là một hương liệu rất quý.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Trầm là sản phẩm bệnh lý của cây Dó.",
-    "dacDiemDuocLieu": "Gỗ có chứa trầm có màu sẫm, nặng, và có mùi thơm đặc biệt khi đốt."
+    "dacDiemDuocLieu": "Gỗ có chứa trầm có màu sẫm, nặng, và có mùi thơm đặc biệt khi đốt.",
+    "tenKhoaHoc": "Aquilaria crassna Pierre ex Lecomte"
   },
   {
     "id": "1758897233316",
@@ -868,7 +941,8 @@
     "congDung": "(Y học hiện đại): Dùng trong sản xuất nước hoa.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Cánh hoa mỏng, có mùi thơm ngọt đặc trưng."
+    "dacDiemDuocLieu": "Cánh hoa mỏng, có mùi thơm ngọt đặc trưng.",
+    "tenKhoaHoc": "Rosa damascena Mill."
   },
   {
     "id": "1758897233317",
@@ -881,7 +955,8 @@
     "congDung": "(Y học hiện đại): Dùng trong công nghiệp hương liệu, mỹ phẩm, trị liệu bằng hương thơm (aromatherapy).",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Cụm hoa màu tím, có mùi thơm nồng đặc trưng."
+    "dacDiemDuocLieu": "Cụm hoa màu tím, có mùi thơm nồng đặc trưng.",
+    "tenKhoaHoc": "Lavandula angustifolia Mill."
   },
   {
     "id": "1758897233318",
@@ -894,7 +969,8 @@
     "congDung": "(Y học cổ truyền): Dùng trong các chế phẩm xoa bóp, trị cảm cúm.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Borneol: thể rắn, kết tinh, mùi thơm tương tự long não."
+    "dacDiemDuocLieu": "Borneol: thể rắn, kết tinh, mùi thơm tương tự long não.",
+    "tenKhoaHoc": "Blumea balsamifera (L.) DC."
   },
   {
     "id": "1758897233319",
@@ -907,7 +983,8 @@
     "congDung": "(Y học hiện đại): Dùng trong y học để chữa bệnh dạ dày, làm đẹp da. (Y học cổ truyền): Làm gia vị, phẩm màu thực phẩm.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Chất màu curcumin không phải là thành phần của tinh dầu.",
-    "dacDiemDuocLieu": "Thân rễ có vỏ màu nâu xám, ruột màu vàng cam đặc trưng."
+    "dacDiemDuocLieu": "Thân rễ có vỏ màu nâu xám, ruột màu vàng cam đặc trưng.",
+    "tenKhoaHoc": "Curcuma longa L."
   },
   {
     "id": "1758897233320",
@@ -920,7 +997,8 @@
     "congDung": "(Y học hiện đại): Dùng để tẩy giun đũa.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Hợp chất chính (Santonin) không được coi là tinh dầu chính danh vì không bay hơi và không cất kéo được bằng hơi nước. Dược liệu có độc tính.",
-    "dacDiemDuocLieu": "Cụm hoa đầu chưa nở, phơi khô."
+    "dacDiemDuocLieu": "Cụm hoa đầu chưa nở, phơi khô.",
+    "tenKhoaHoc": "Artemisia cina O.Berg & C.F.Schmidt"
   },
   {
     "id": "1758897233321",
@@ -933,7 +1011,8 @@
     "congDung": "(Y học hiện đại): Dùng làm hương liệu cho nước giải khát (Sá xị), mỹ phẩm.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Không có thông tin.",
-    "dacDiemDuocLieu": "Gỗ có mùi thơm đặc trưng của sá xị."
+    "dacDiemDuocLieu": "Gỗ có mùi thơm đặc trưng của sá xị.",
+    "tenKhoaHoc": "Cinnamomum parthenoxylon (Jack) Meisn."
   },
   {
     "id": "1758897233322",
@@ -946,7 +1025,8 @@
     "congDung": "(Y học hiện đại): Chiết xuất citral làm hương liệu hoặc bán tổng hợp vitamin A.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Thành phần hóa học của tinh dầu thay đổi tùy theo bộ phận dùng.",
-    "dacDiemDuocLieu": "Quả mọng, hình cầu, khi chín màu đen, có mùi thơm của sả."
+    "dacDiemDuocLieu": "Quả mọng, hình cầu, khi chín màu đen, có mùi thơm của sả.",
+    "tenKhoaHoc": "Litsea cubeba (Lour.) Pers."
   },
   {
     "id": "1758897233323",
@@ -959,6 +1039,7 @@
     "congDung": "(Y học cổ truyền): Chữa ho, viêm phế quản, lạnh bụng, ăn không tiêu.",
     "lieuDung": "Không có thông tin.",
     "luuY": "Dược liệu để càng lâu càng tốt.",
-    "dacDiemDuocLieu": "Vỏ quả quýt chín phơi khô, mặt ngoài màu cam, mặt trong màu trắng, có nhiều túi tiết tinh dầu."
+    "dacDiemDuocLieu": "Vỏ quả quýt chín phơi khô, mặt ngoài màu cam, mặt trong màu trắng, có nhiều túi tiết tinh dầu.",
+    "tenKhoaHoc": "Citrus reticulata Blanco"
   }
 ]
