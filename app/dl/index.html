@@ -646,16 +646,51 @@
                                 <i data-lucide="graduation-cap" class="w-10 h-10 text-blue-600"></i>
                             </div>
                             <h2 class="text-3xl font-bold">Ôn tập Dược liệu</h2>
-                            <p class="text-[var(--muted-foreground)] text-left">
-                                Hệ thống sẽ chọn ngẫu nhiên các câu hỏi về:
-                            </p>
-                            <ul class="text-left text-[var(--muted-foreground)] list-disc list-inside space-y-1 ml-4">
-                                <li>Họ thực vật (Khoa học & Tiếng Việt)</li>
-                                <li>Cây thuộc họ nào (Đáp án là Tên khoa học)</li>
-                                <li>Thành phần hóa học chính</li>
-                                <li>Tác dụng dược lý</li>
-                                <li>Công dụng chính</li>
-                            </ul>
+                            <div
+                                class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left max-w-lg mx-auto"
+                            >
+                                <h3 class="font-semibold mb-3 flex items-center gap-2">
+                                    <i data-lucide="filter" class="w-4 h-4"></i> Cấu hình nội dung thi:
+                                </h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="quiz-settings-form">
+                                    <label
+                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            name="quiz-type"
+                                            value="family"
+                                            checked
+                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
+                                        />
+                                        <span class="text-sm">Họ thực vật (Tên & Phân loại)</span>
+                                    </label>
+                                    <label
+                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            name="quiz-type"
+                                            value="chem"
+                                            checked
+                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
+                                        />
+                                        <span class="text-sm">Thành phần hóa học</span>
+                                    </label>
+                                    <label
+                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            name="quiz-type"
+                                            value="use"
+                                            checked
+                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
+                                        />
+                                        <span class="text-sm">Công dụng & Tác dụng</span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="flex flex-col sm:flex-row gap-4 justify-center w-full">
                                 <button
                                     id="start-quiz-btn"
@@ -814,7 +849,7 @@
                                     href="https://zalo.me/0867832917"
                                     target="_blank"
                                     class="p-3 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"
-                                    title="GitHub"
+                                    title="Zalo"
                                 >
                                     <i data-lucide="phone" class="w-6 h-6"></i>
                                 </a>
@@ -822,7 +857,7 @@
                                     href="https://www.instagram.com/eu_2iw/"
                                     target="_blank"
                                     class="p-3 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"
-                                    title="Facebook"
+                                    title="Instagram"
                                 >
                                     <i data-lucide="instagram" class="w-6 h-6"></i>
                                 </a>
@@ -1912,17 +1947,26 @@
                         this.els.quizQuestionScreen.classList.add("hidden");
                         this.els.quizResultScreen.classList.add("hidden");
                     }
-                    // [CẬP NHẬT] startQuiz nhận tham số mode
+                    // [CẬP NHẬT] startQuiz nhận tham số mode và xử lý checkbox
                     startQuiz(mode = "all") {
+                        // 1. Thu thập các loại câu hỏi từ Checkbox
+                        const checkboxes = document.querySelectorAll('input[name="quiz-type"]:checked');
+                        const selectedTypes = Array.from(checkboxes).map((cb) => cb.value);
+
+                        if (selectedTypes.length === 0) {
+                            this.showToast("Vui lòng chọn ít nhất một nội dung để ôn tập.", "error");
+                            return;
+                        }
+
                         this.quizState = {
                             questions: [],
                             currentQIndex: 0,
                             score: 0,
                             totalQ: 10,
-                            mode: mode, // Lưu mode lại
+                            mode: mode,
                         };
 
-                        // Lọc danh sách nguồn dựa trên mode
+                        // 2. Lọc danh sách nguồn
                         let sourceList = this.plants;
                         if (mode === "practice") {
                             sourceList = this.plants.filter((p) => p.isThucHanh === true);
@@ -1935,11 +1979,14 @@
                             }
                         }
 
-                        // Truyền sourceList vào hàm generateQuestions
-                        this.generateQuestions(sourceList);
+                        // 3. Truyền sourceList VÀ selectedTypes vào hàm generateQuestions
+                        this.generateQuestions(sourceList, selectedTypes);
 
                         if (this.quizState.questions.length < 4) {
-                            this.showToast("Không đủ dữ liệu hợp lệ (thiếu họ/thành phần...) để tạo câu hỏi.", "error");
+                            this.showToast(
+                                "Không đủ dữ liệu hợp lệ (thiếu thông tin cây) để tạo câu hỏi cho các mục đã chọn.",
+                                "error"
+                            );
                             this.navigateToQuizInternal(this.els.quizView);
                             return;
                         }
@@ -1951,57 +1998,97 @@
                         this.renderQuestion();
                     }
 
-                    // [CẬP NHẬT] generateQuestions nhận tham số sourcePlants
-                    generateQuestions(sourcePlants) {
-                        // Sử dụng sourcePlants thay vì this.plants
-                        const plantsWithData = sourcePlants.filter(
-                            (p) =>
-                                p.hoCay &&
-                                p.hoCay !== "Chưa cập nhật" &&
-                                p.thanhPhanHoaHocChinh &&
-                                p.thanhPhanHoaHocChinh !== "Chưa cập nhật"
-                            // Có thể bỏ bớt điều kiện nếu muốn quiz dễ tính hơn
-                        );
+                    // [CẬP NHẬT] Hàm generateQuestions hỗ trợ lọc loại câu hỏi
+                    generateQuestions(sourcePlants, allowedGroups = ["family", "chem", "use"]) {
+                        const targets = sourcePlants || this.plants;
 
-                        // ... (Phần logic lấy uniqueSci, uniqueVn giữ nguyên nhưng LƯU Ý:
-                        // uniqueSci và uniqueVn vẫn nên lấy từ TOÀN BỘ this.plants để làm đáp án nhiễu phong phú hơn)
-                        const families = this._getUniqueFamilyNames(); // Lấy từ toàn bộ data gốc
+                        // 1. Định nghĩa map giữa Nhóm (checkbox) và Loại câu hỏi (internal ID)
+                        const typeMapping = {
+                            family: ["family_sci_to_vn", "family_vn_to_sci", "plant_to_sci_family"],
+                            chem: ["plant_to_chem"],
+                            use: ["plant_to_congdung", "plant_to_tacdung"],
+                        };
+
+                        // 2. Tạo danh sách các loại câu hỏi được phép dựa trên checkbox
+                        let allowedTypes = [];
+                        allowedGroups.forEach((group) => {
+                            if (typeMapping[group]) {
+                                allowedTypes = allowedTypes.concat(typeMapping[group]);
+                            }
+                        });
+
+                        // 3. Lọc cây có đủ dữ liệu cho CÁC LOẠI CÂU HỎI ĐƯỢC CHỌN
+                        // Logic: Cây phải có ít nhất 1 trường dữ liệu liên quan đến loại câu hỏi đã chọn
+                        const plantsWithData = targets.filter((p) => {
+                            // Kiểm tra họ
+                            const hasFamily = p.hoCay && p.hoCay !== "Chưa cập nhật";
+                            // Kiểm tra hóa học
+                            const hasChem = p.thanhPhanHoaHocChinh && p.thanhPhanHoaHocChinh !== "Chưa cập nhật";
+                            // Kiểm tra công dụng
+                            const hasUse =
+                                (p.congDung && p.congDung !== "Chưa cập nhật") ||
+                                (p.tacDung && p.tacDung !== "Chưa cập nhật");
+
+                            // Chỉ giữ lại cây nếu nó có dữ liệu phục vụ cho ít nhất 1 nhóm đã chọn
+                            if (allowedGroups.includes("family") && hasFamily) return true;
+                            if (allowedGroups.includes("chem") && hasChem) return true;
+                            if (allowedGroups.includes("use") && hasUse) return true;
+
+                            return false;
+                        });
+
+                        // Dữ liệu nhiễu lấy từ toàn bộ kho
+                        const allPlantsData = this.plants;
+                        const families = this._getUniqueFamilyNames();
                         const uniqueSci = families.uniqueSci;
                         const uniqueVn = families.uniqueVn;
 
-                        const questionTypes = [
-                            "family_sci_to_vn",
-                            "family_vn_to_sci",
-                            "plant_to_sci_family",
-                            "plant_to_chem",
-                            "plant_to_congdung",
-                            "plant_to_tacdung",
-                        ];
-                        const total = Math.min(this.quizState.totalQ, plantsWithData.length * questionTypes.length);
+                        // Số lượng câu mong muốn
+                        const total = Math.min(this.quizState.totalQ, plantsWithData.length * allowedTypes.length);
+
                         let questionPool = [];
 
+                        // 4. Chỉ tạo pool câu hỏi từ allowedTypes
                         plantsWithData.forEach((plant) => {
-                            questionTypes.forEach((type) => {
+                            allowedTypes.forEach((type) => {
+                                // Kiểm tra kỹ lại dữ liệu cụ thể cho từng loại câu hỏi trước khi push
+                                const parsedFamily = this._parseHoCay(plant.hoCay);
+                                const hasFamilyData = parsedFamily.scientific && parsedFamily.vietnamese;
+
+                                if (type.includes("family") && !hasFamilyData) return;
+                                if (
+                                    type === "plant_to_chem" &&
+                                    (!plant.thanhPhanHoaHocChinh || plant.thanhPhanHoaHocChinh === "Chưa cập nhật")
+                                )
+                                    return;
+                                if (
+                                    type === "plant_to_congdung" &&
+                                    (!plant.congDung || plant.congDung === "Chưa cập nhật")
+                                )
+                                    return;
+                                if (
+                                    type === "plant_to_tacdung" &&
+                                    (!plant.tacDung || plant.tacDung === "Chưa cập nhật")
+                                )
+                                    return;
+
                                 questionPool.push({ plant, type });
                             });
                         });
 
+                        if (questionPool.length === 0) return;
+
+                        // Xáo trộn pool
                         questionPool.sort(() => 0.5 - Math.random());
                         const finalPool = questionPool.slice(0, total);
+
                         let generatedQuestions = [];
 
                         finalPool.forEach(({ plant, type }) => {
-                            // ... (Logic tạo câu hỏi giữ nguyên như cũ, chỉ cần copy lại nội dung vòng lặp)
-                            // LƯU Ý: Phần tạo đáp án nhiễu (wrongAnswers) vẫn nên lấy từ this.plants (toàn bộ)
-                            // để khó hơn, thay vì chỉ lấy trong sourcePlants (ít quá sẽ bị lặp).
                             let questionText = "";
                             let correctAnswer = "";
-                            // allAnswers nên lấy từ toàn bộ DB để làm nhiễu
                             let allAnswers = [];
-
                             const parsedFamily = this._parseHoCay(plant.hoCay);
-                            if (!parsedFamily.scientific || !parsedFamily.vietnamese || !plant.thanhPhanHoaHocChinh)
-                                return;
 
                             switch (type) {
                                 case "family_sci_to_vn":
@@ -2022,25 +2109,27 @@
                                 case "plant_to_chem":
                                     questionText = `Thành phần hóa học chính của <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
                                     correctAnswer = plant.thanhPhanHoaHocChinh;
-                                    allAnswers = this.plants.map((p) => p.thanhPhanHoaHocChinh); // Lấy nhiễu từ toàn bộ
+                                    allAnswers = allPlantsData.map((p) => p.thanhPhanHoaHocChinh);
                                     break;
                                 case "plant_to_congdung":
                                     questionText = `Công dụng chính của dược liệu <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
                                     correctAnswer = plant.congDung;
-                                    allAnswers = this.plants.map((p) => p.congDung);
+                                    allAnswers = allPlantsData.map((p) => p.congDung);
                                     break;
                                 case "plant_to_tacdung":
                                     questionText = `Tác dụng dược lý của dược liệu <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
                                     correctAnswer = plant.tacDung;
-                                    allAnswers = this.plants.map((p) => p.tacDung);
+                                    allAnswers = allPlantsData.map((p) => p.tacDung);
                                     break;
                             }
 
+                            // Tạo đáp án nhiễu
                             const uniqueAllAnswers = [...new Set(allAnswers)].filter(
-                                (ans) => ans && ans !== correctAnswer
+                                (ans) => ans && ans !== correctAnswer && ans !== "Chưa cập nhật"
                             );
                             const wrongAnswers = uniqueAllAnswers.sort(() => 0.5 - Math.random()).slice(0, 3);
                             while (wrongAnswers.length < 3) wrongAnswers.push("Chưa rõ thông tin");
+
                             const options = [correctAnswer, ...wrongAnswers].sort(() => 0.5 - Math.random());
 
                             generatedQuestions.push({
@@ -2067,127 +2156,6 @@
                         return { uniqueSci, uniqueVn };
                     }
 
-                    // [THAY THẾ HOÀN TOÀN] Hàm generateQuestions
-                    generateQuestions() {
-                        // Lọc các dược liệu có đủ thông tin cần thiết cho Quiz
-                        const plantsWithData = this.plants.filter(
-                            (p) =>
-                                p.hoCay &&
-                                p.hoCay !== "Chưa cập nhật" &&
-                                p.thanhPhanHoaHocChinh &&
-                                p.thanhPhanHoaHocChinh !== "Chưa cập nhật" &&
-                                p.congDung &&
-                                p.congDung !== "Chưa cập nhật" &&
-                                p.tacDung &&
-                                p.tacDung !== "Chưa cập nhật"
-                        );
-
-                        const families = this._getUniqueFamilyNames();
-                        const uniqueSci = families.uniqueSci;
-                        const uniqueVn = families.uniqueVn;
-
-                        // Tối đa 6 loại câu hỏi
-                        const questionTypes = [
-                            "family_sci_to_vn",
-                            "family_vn_to_sci",
-                            "plant_to_sci_family",
-                            "plant_to_chem",
-                            "plant_to_congdung",
-                            "plant_to_tacdung",
-                        ];
-
-                        // Số lượng câu hỏi cần tạo (tối đa 10)
-                        const total = Math.min(this.quizState.totalQ, plantsWithData.length * questionTypes.length);
-
-                        let questionPool = []; // Pool chứa tất cả các tổ hợp (dược liệu, loại câu hỏi) có thể có
-
-                        // Xây dựng pool
-                        plantsWithData.forEach((plant) => {
-                            questionTypes.forEach((type) => {
-                                questionPool.push({ plant, type });
-                            });
-                        });
-
-                        // Xáo trộn và chọn số lượng câu hỏi mong muốn
-                        questionPool.sort(() => 0.5 - Math.random());
-                        const finalPool = questionPool.slice(0, total);
-
-                        let generatedQuestions = [];
-
-                        finalPool.forEach(({ plant, type }) => {
-                            let questionText = "";
-                            let correctAnswer = "";
-                            let allAnswers = []; // Tất cả đáp án có thể có (cho việc tạo nhiễu)
-
-                            const parsedFamily = this._parseHoCay(plant.hoCay);
-
-                            // Bỏ qua nếu thiếu dữ liệu quan trọng cho loại câu hỏi này
-                            if (
-                                !parsedFamily.scientific ||
-                                !parsedFamily.vietnamese ||
-                                !plant.thanhPhanHoaHocChinh ||
-                                !plant.congDung ||
-                                !plant.tacDung
-                            )
-                                return;
-
-                            switch (type) {
-                                case "family_sci_to_vn":
-                                    questionText = `Họ khoa học <strong class="text-[var(--primary)]">${parsedFamily.scientific}</strong> có tên tiếng Việt là gì?`;
-                                    correctAnswer = parsedFamily.vietnamese;
-                                    allAnswers = uniqueVn;
-                                    break;
-                                case "family_vn_to_sci":
-                                    questionText = `Họ tiếng Việt <strong class="text-[var(--primary)]">${parsedFamily.vietnamese}</strong> có tên khoa học là gì?`;
-                                    correctAnswer = parsedFamily.scientific;
-                                    allAnswers = uniqueSci;
-                                    break;
-                                case "plant_to_sci_family":
-                                    // Yêu cầu: Đáp án phải là HỌ KHOA HỌC
-                                    questionText = `Dược liệu <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> thuộc họ nào?`;
-                                    correctAnswer = parsedFamily.scientific;
-                                    allAnswers = uniqueSci;
-                                    break;
-                                case "plant_to_chem":
-                                    questionText = `Thành phần hóa học chính của <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
-                                    correctAnswer = plant.thanhPhanHoaHocChinh;
-                                    allAnswers = plantsWithData.map((p) => p.thanhPhanHoaHocChinh);
-                                    break;
-                                case "plant_to_congdung":
-                                    questionText = `Công dụng chính của dược liệu <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
-                                    correctAnswer = plant.congDung;
-                                    allAnswers = plantsWithData.map((p) => p.congDung);
-                                    break;
-                                case "plant_to_tacdung":
-                                    questionText = `Tác dụng dược lý của dược liệu <strong class="text-[var(--primary)]">${plant.tenDuocLieu}</strong> là gì?`;
-                                    correctAnswer = plant.tacDung;
-                                    allAnswers = plantsWithData.map((p) => p.tacDung);
-                                    break;
-                            }
-
-                            // Tạo đáp án nhiễu (3 đáp án sai duy nhất)
-                            const uniqueAllAnswers = [...new Set(allAnswers)].filter(
-                                (ans) => ans && ans !== correctAnswer
-                            );
-                            const wrongAnswers = uniqueAllAnswers.sort(() => 0.5 - Math.random()).slice(0, 3);
-
-                            // Đảm bảo luôn có 4 đáp án
-                            while (wrongAnswers.length < 3) wrongAnswers.push("Chưa rõ thông tin");
-
-                            // Đáp án cuối cùng (Đáp án đúng + 3 Đáp án sai, sau đó xáo trộn)
-                            const options = [correctAnswer, ...wrongAnswers].sort(() => 0.5 - Math.random());
-
-                            generatedQuestions.push({
-                                text: questionText,
-                                correct: correctAnswer,
-                                options: options,
-                                type: type,
-                            });
-                        });
-
-                        this.quizState.questions = generatedQuestions;
-                        this.quizState.totalQ = generatedQuestions.length;
-                    }
                     renderQuestion() {
                         const q = this.quizState.questions[this.quizState.currentQIndex];
                         this.els.quizOptionsContainer.classList.remove("answered");
