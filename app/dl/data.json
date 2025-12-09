@@ -11,7 +11,8 @@
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Reserpin có thể gây loét dạ dày, tá tràng do tăng tiết dịch vị. Hiện nay ít dùng.",
     "dacDiemDuocLieu": "Rễ hình trụ, vỏ ngoài màu nâu vàng, có nhiều nếp nhăn dọc và sẹo của rễ con.",
-    "tenKhoaHoc": "Rauvolfia tetraphylla L."
+    "tenKhoaHoc": "Rauvolfia tetraphylla L.",
+    "isThucHanh": true
   },
   {
     "id": "2",
@@ -25,7 +26,8 @@
     "lieuDung": "Rất độc, chỉ dùng ngoài hoặc theo chỉ định nghiêm ngặt của bác sĩ.",
     "luuY": "Rất độc, có thể gây tử vong do liệt hô hấp.",
     "dacDiemDuocLieu": "Hạt hình đĩa dẹt như khuy áo, bề mặt phủ lông tơ bóng mượt màu xám tro hoặc vàng nhạt.",
-    "tenKhoaHoc": "Strychnos nux-vomica L."
+    "tenKhoaHoc": "Strychnos nux-vomica L.",
+    "isThucHanh": true
   },
   {
     "id": "3",
@@ -39,7 +41,8 @@
     "lieuDung": "Viên nén Rotundin 30mg, 60mg. Thuốc tiêm Rotundin sulphat 60mg/2ml.",
     "luuY": "Liều cao Rotundin có thể gây kích thích, co giật.",
     "dacDiemDuocLieu": "Củ to, tròn hoặc hình dạng thay đổi, vỏ ngoài xù xì màu nâu đen, phần thịt bên trong màu trắng ngà đến hơi vàng.",
-    "tenKhoaHoc": "Stephania glabra (Roxb.) Miers"
+    "tenKhoaHoc": "Stephania glabra (Roxb.) Miers",
+    "isThucHanh": true
   },
   {
     "id": "4",
@@ -67,7 +70,8 @@
     "lieuDung": "Chưa có thông tin.",
     "luuY": "Chống chỉ định cho phụ nữ có thai.",
     "dacDiemDuocLieu": "Thân rễ có nhiều đốt, cong queo, hình dáng giống chân gà nên còn gọi là 'Hoàng liên chân gà'. Bẻ ra có màu vàng tươi.",
-    "tenKhoaHoc": "Coptis chinensis Franch."
+    "tenKhoaHoc": "Coptis chinensis Franch.",
+    "isThucHanh": true
   },
   {
     "id": "6",
@@ -125,7 +129,8 @@
     "lieuDung": "Lá: 8-16g/ngày, dạng thuốc sắc hoặc nấu canh. Vỏ thân: 6-12g/ngày.",
     "luuY": "Chưa có thông tin.",
     "dacDiemDuocLieu": "Lá chét kép gồm 3 lá, lá chét giữa thường lớn hơn. Vỏ thân có gai ngắn.",
-    "tenKhoaHoc": "Erythrina variegata L."
+    "tenKhoaHoc": "Erythrina variegata L.",
+    "isThucHanh": true
   },
   {
     "id": "10",
@@ -139,7 +144,8 @@
     "lieuDung": "Tâm sen: 1.5-3g/ngày, dạng hãm trà.",
     "luuY": "Người tỳ vị hư yếu không nên dùng nhiều.",
     "dacDiemDuocLieu": "Tâm sen là mầm nhỏ màu xanh lục, nằm giữa hai lá mầm của hạt sen, vị đắng.",
-    "tenKhoaHoc": "Nelumbo nucifera Gaertn."
+    "tenKhoaHoc": "Nelumbo nucifera Gaertn.",
+    "isThucHanh": true
   },
   {
     "id": "11",
@@ -153,7 +159,8 @@
     "lieuDung": "Dùng hãm trà uống hàng ngày.",
     "luuY": "Uống nhiều vào buổi tối có thể gây mất ngủ. Không uống lúc đói.",
     "dacDiemDuocLieu": "Búp chè gồm 1 tôm (búp non chưa mở) và 2-3 lá non liền kề.",
-    "tenKhoaHoc": "Camellia sinensis (L.) Kuntze"
+    "tenKhoaHoc": "Camellia sinensis (L.) Kuntze",
+    "isThucHanh": true
   },
   {
     "id": "12",
@@ -167,7 +174,8 @@
     "lieuDung": "Dùng dưới dạng đồ uống, liều lượng tùy thuộc vào cá nhân.",
     "luuY": "Dùng quá liều có thể gây mất ngủ, tim đập nhanh, bồn chồn.",
     "dacDiemDuocLieu": "Hạt hình bầu dục, có rãnh dọc ở mặt phẳng. Màu xanh xám khi còn sống và màu nâu đen sau khi rang.",
-    "tenKhoaHoc": "Coffea arabica L."
+    "tenKhoaHoc": "Coffea arabica L.",
+    "isThucHanh": true
   },
   {
     "id": "13",
@@ -310,7 +318,8 @@
     "lieuDung": "Các chế phẩm chống ung thư chỉ được dùng tại bệnh viện dưới sự giám sát chặt chẽ.",
     "luuY": "Các thuốc chống ung thư từ Dừa cạn có nhiều tác dụng phụ và độc tính cao như rụng tóc, giảm bạch cầu, độc với thần kinh.",
     "dacDiemDuocLieu": "Cây thảo nhỏ, sống dai. Hoa có 5 cánh, thường màu hồng hoặc trắng. Lá mọc đối.",
-    "tenKhoaHoc": "Catharanthus roseus (L.) G. Don"
+    "tenKhoaHoc": "Catharanthus roseus (L.) G. Don",
+    "isThucHanh": true
   },
   {
     "id": "23",
@@ -338,7 +347,8 @@
     "lieuDung": "15-30g dược liệu khô/ngày, dạng thuốc sắc hoặc hãm trà.",
     "luuY": "Chưa có thông tin.",
     "dacDiemDuocLieu": "Dây leo bằng tua cuốn. Hoa đẹp, có nhiều màu sắc (trắng, tím), cấu trúc phức tạp. Quả mọng, khi chín có màu vàng.",
-    "tenKhoaHoc": "Passiflora foetida L."
+    "tenKhoaHoc": "Passiflora foetida L.",
+    "isThucHanh": true
   },
   {
     "id": "25",
@@ -352,7 +362,8 @@
     "lieuDung": "15-30g dược liệu khô/ngày, dạng thuốc sắc.",
     "luuY": "Chưa có thông tin.",
     "dacDiemDuocLieu": "Dây leo, thân và cành có lông. Lá mọc đối, hình bầu dục. Hoa nhỏ màu trắng, mọc thành cụm.",
-    "tenKhoaHoc": "Hedyotis capitellata Wall. ex G.Don"
+    "tenKhoaHoc": "Hedyotis capitellata Wall. ex G.Don",
+    "isThucHanh": true
   },
   {
     "id": "26",
@@ -438,7 +449,8 @@
     "lieuDung": "Vỏ thân: 10-15g/ngày, dạng thuốc sắc.",
     "luuY": "Tác dụng tương tự emetin nhưng ít độc hơn.",
     "dacDiemDuocLieu": "Vỏ thân dày, màu nâu xám, có nhiều vết nứt. Hạt nhỏ, dài, có chùm lông ở đầu.",
-    "tenKhoaHoc": "Holarrhena antidysenterica (L.) Wall."
+    "tenKhoaHoc": "Holarrhena antidysenterica (L.) Wall.",
+    "isThucHanh": true
   },
   {
     "id": "32",
@@ -452,7 +464,8 @@
     "lieuDung": "Cồn aconit 10% dùng để xoa bóp ngoài. Phụ tử chế dùng trong các bài thuốc với liều 4-12g/ngày theo chỉ định của thầy thuốc.",
     "luuY": "Rất độc, thuộc thuốc độc bảng A. Không được uống dược liệu chưa qua chế biến. Chế biến phải đúng cách để loại bỏ vị cay tê.",
     "dacDiemDuocLieu": "Rễ củ hình nón, màu nâu đen. Ô đầu là củ mẹ, to hơn. Phụ tử là củ con, nhỏ hơn, mọc bên cạnh củ mẹ.",
-    "tenKhoaHoc": "Aconitum fortunei Hemsl."
+    "tenKhoaHoc": "Aconitum fortunei Hemsl.",
+    "isThucHanh": true
   },
   {
     "id": "33",
@@ -466,7 +479,8 @@
     "lieuDung": "6-12g/ngày, dạng thuốc sắc hoặc ngâm rượu. Dùng ngoài: nấu nước để rửa hoặc thụt.",
     "luuY": "Chưa có thông tin.",
     "dacDiemDuocLieu": "Rễ củ mọc thành chùm, hình thoi, hai đầu thuôn nhọn, màu vàng ngà.",
-    "tenKhoaHoc": "Stemona tuberosa Lour."
+    "tenKhoaHoc": "Stemona tuberosa Lour.",
+    "isThucHanh": true
   },
   {
     "id": "1758897192217",
