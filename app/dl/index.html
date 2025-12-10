@@ -111,8 +111,21 @@
                 position: sticky;
                 top: 0;
                 z-index: 25;
-                max-height: 100px; /* Chiều cao tối đa lớn hơn chiều cao thực tế */
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 100%;
+                transition:
+                    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+                will-change: transform; /* Tối ưu hiệu năng render */
+            }
+
+            .header-scroll-hidden {
+                transform: translateY(-100%);
+                margin-top: -60px; /* Thêm dòng này (giá trị xấp xỉ chiều cao header) */
+            }
+            /* Đảm bảo khi vào chi tiết (header-hidden cũ) thì nó vẫn ẩn hẳn */
+            .header-hidden {
+                display: none !important;
             }
 
             .plant-card {
@@ -437,6 +450,10 @@
             html.dark .quiz-option.bg-red-100 .bg-red-600 {
                 background-color: #f87171 !important;
             }
+
+            .grid-locked {
+                pointer-events: none !important;
+            }
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -462,12 +479,19 @@
                                 type="text"
                                 id="search-input"
                                 placeholder="Tìm kiếm..."
-                                class="relative w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] bg-transparent focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all z-10"
+                                class="relative w-full pl-10 pr-9 py-2 rounded-lg border border-[var(--border)] bg-transparent focus:ring-2 focus:ring-[var(--ring)] outline-none transition-all z-10"
                                 autocomplete="off"
                             />
+                            <button
+                                id="search-clear-desktop"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)] z-20 hidden transition-colors"
+                            >
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
+
                             <div
                                 id="search-ghost-text"
-                                class="absolute inset-y-0 left-10 right-4 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"
+                                class="absolute inset-y-0 left-10 right-9 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"
                             ></div>
                         </div>
                         <div
@@ -489,77 +513,102 @@
                 </h2>
                 <nav id="groups-nav" class="flex-1 overflow-y-auto no-scrollbar"></nav>
                 <div class="mt-auto pt-4 border-t border-[var(--border)]">
-                    <div id="sidebar-bottom-actions" class="flex items-center justify-around">
-                        <button
-                            data-action="show-quiz"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i data-lucide="brain-circuit" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
-                            <span
-                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                    <div id="sidebar-bottom-actions" class="flex items-center gap-2 overflow-hidden">
+                        <div class="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1 pr-1 mask-linear">
+                            <button
+                                id="practice-list-btn-desktop"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                                Trắc nghiệm
-                            </span>
-                        </button>
-                        <button
-                            id="import-button-desktop"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
-                            <span
-                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
-                                >Nhập</span
+                                <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-current"></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >DS Thực hành</span
+                                >
+                            </button>
+                            <button
+                                data-action="show-quiz"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                        </button>
-                        <button
-                            id="export-button-desktop"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
-                            <span
-                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
-                                >Xuất</span
+                                <i data-lucide="brain-circuit" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Trắc nghiệm</span
+                                >
+                            </button>
+                            <button
+                                id="import-button-desktop"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                        </button>
-                        <button
-                            id="theme-toggle-desktop"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i
-                            ><i data-lucide="moon" class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"></i>
-                            <span
-                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                <i data-lucide="upload" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Nhập</span
+                                >
+                            </button>
+                            <button
+                                id="export-button-desktop"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                                Giao diện
-                            </span>
-                        </button>
-                        <button
-                            data-action="show-about"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i data-lucide="user-circle-2" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
-                            <span
-                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                <i data-lucide="download" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Xuất</span
+                                >
+                            </button>
+                            <button
+                                id="theme-toggle-desktop"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                                Giới thiệu
-                            </span>
-                        </button>
-                        <button
-                            id="sidebar-toggle"
-                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                        >
-                            <i
-                                data-lucide="chevrons-left"
-                                class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"
-                            ></i>
-                            <span
-                                class="tooltip-text absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                <i data-lucide="sun" class="w-5 h-5 text-[var(--muted-foreground)] light-icon"></i>
+                                <i
+                                    data-lucide="moon"
+                                    class="w-5 h-5 text-[var(--muted-foreground)] dark-icon hidden"
+                                ></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Giao diện</span
+                                >
+                            </button>
+                            <button
+                                data-action="show-about"
+                                class="flex-shrink-0 relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
                             >
-                                Thu gọn
-                            </span>
-                        </button>
+                                <i data-lucide="user-circle-2" class="w-5 h-5 text-[var(--muted-foreground)]"></i>
+                                <span
+                                    class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Giới thiệu</span
+                                >
+                            </button>
+                        </div>
+
+                        <div class="flex-shrink-0 border-l border-[var(--border)] pl-1">
+                            <button
+                                id="sidebar-toggle"
+                                class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
+                            >
+                                <i
+                                    data-lucide="chevrons-left"
+                                    class="w-5 h-5 text-[var(--muted-foreground)] toggle-icon transition-transform"
+                                ></i>
+                                <span
+                                    class="tooltip-text absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                                    >Thu gọn</span
+                                >
+                            </button>
+                        </div>
                     </div>
                     <div id="sidebar-bottom-actions-collapsed" class="hidden space-y-1">
+                        <button
+                            id="practice-list-btn-collapsed"
+                            class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
+                        >
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-current"></i>
+                            <span
+                                class="absolute bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                            >
+                                DS Thực hành
+                            </span>
+                        </button>
                         <button
                             data-action="show-quiz"
                             class="relative group flex justify-center items-center p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
@@ -623,9 +672,8 @@
                     <div class="flex items-center gap-2">
                         <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-[var(--accent)] custom-ring">
                             <i data-lucide="menu" class="menu-icon"></i>
-                            <i data-lucide="x" class="close-icon hidden"></i>
                         </button>
-                        <div class="flex items-center gap-2">
+                        <div id="mobile-logo-action" class="flex items-center gap-2 cursor-pointer select-none">
                             <i data-lucide="sprout" class="text-[var(--primary)]"></i>
                             <h1 class="text-xl font-bold">Dược liệu</h1>
                         </div>
@@ -956,12 +1004,19 @@
                             type="text"
                             id="search-view-input"
                             placeholder="Tìm kiếm dược liệu..."
-                            class="relative w-full pl-10 pr-4 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none z-10"
+                            class="relative w-full pl-10 pr-9 py-2 rounded-lg border-none bg-transparent focus:ring-0 outline-none z-10"
                             autocomplete="off"
                         />
+                        <button
+                            id="search-clear-mobile"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)] z-20 hidden transition-colors"
+                        >
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+
                         <div
                             id="search-view-ghost-text"
-                            class="absolute inset-y-0 left-10 right-4 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"
+                            class="absolute inset-y-0 left-10 right-9 flex items-center text-[var(--muted-foreground)] pointer-events-none overflow-hidden whitespace-nowrap"
                         ></div>
                     </div>
                 </div>
@@ -978,6 +1033,13 @@
                 <h2 class="text-sm font-semibold text-[var(--muted-foreground)] mb-2 px-2">NHÓM CHẤT</h2>
                 <nav id="groups-nav-mobile" class="flex-1 overflow-y-auto no-scrollbar"></nav>
                 <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
+                    <button
+                        id="practice-list-btn-mobile"
+                        class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
+                    >
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-current"></i>
+                        <span class="text-sm font-medium">Danh sách Thực hành</span>
+                    </button>
                     <button
                         data-action="show-quiz"
                         class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
@@ -1288,6 +1350,7 @@
                         this.plants = [];
                         this.currentFilter = { group: "all", search: "" };
                         this.lastScrollY = 0;
+                        this.handleListScroll = this.handleListScroll.bind(this);
                         this.activeAutocomplete = null;
                         this.selectedPlants = new Set();
                         this.isDragging = false;
@@ -1312,15 +1375,13 @@
                     openMenu() {
                         this.els.mobileMenu.classList.remove("hidden");
                         setTimeout(() => this.els.mobileMenu.classList.add("is-open"), 10);
-                        this.els.mobileMenuButton.querySelector(".menu-icon").classList.add("hidden");
-                        this.els.mobileMenuButton.querySelector(".close-icon").classList.remove("hidden");
+                        // Đã xóa dòng toggle class hidden cho icon
                     }
 
                     closeMenu() {
                         this.els.mobileMenu.classList.remove("is-open");
                         setTimeout(() => this.els.mobileMenu.classList.add("hidden"), 300);
-                        this.els.mobileMenuButton.querySelector(".menu-icon").classList.remove("hidden");
-                        this.els.mobileMenuButton.querySelector(".close-icon").classList.add("hidden");
+                        // Đã xóa dòng toggle class hidden cho icon
                     }
                     _normalizeText(str) {
                         if (!str) return "";
@@ -1426,6 +1487,7 @@
                             sidebarToggle: document.getElementById("sidebar-toggle"),
                             sidebarToggleCollapsed: document.getElementById("sidebar-toggle-collapsed"),
                             searchInput: document.getElementById("search-input"),
+                            searchClearDesktop: document.getElementById("search-clear-desktop"),
                             groupsNav: document.getElementById("groups-nav"),
                             groupsNavMobile: document.getElementById("groups-nav-mobile"),
                             plantListContainer: document.getElementById("plant-list-container"),
@@ -1446,6 +1508,7 @@
                             exportButtonDesktopCollapsed: document.getElementById("export-button-desktop-collapsed"),
                             themeToggleDesktopCollapsed: document.getElementById("theme-toggle-desktop-collapsed"),
                             mobileHeader: document.getElementById("mobile-header"),
+                            mobileLogoAction: document.getElementById("mobile-logo-action"),
                             mobileMenuButton: document.getElementById("mobile-menu-button"),
                             mobileMenu: document.getElementById("mobile-menu"),
                             stickyHeader: document.getElementById("sticky-header"),
@@ -1516,6 +1579,7 @@
                             searchView: document.getElementById("search-view"),
                             searchViewBackButton: document.getElementById("search-view-back-button"),
                             searchViewInput: document.getElementById("search-view-input"),
+                            searchClearMobile: document.getElementById("search-clear-mobile"),
                             searchResultsGrid: document.getElementById("search-results-grid"),
                             searchGhostText: document.getElementById("search-ghost-text"),
                             searchAutocompleteList: document.getElementById("search-autocomplete-list"),
@@ -1543,6 +1607,9 @@
                             quizStartBackBtn: document.getElementById("quiz-start-back-btn"),
                             quizCorrectCount: document.getElementById("quiz-correct-count"), // Mới
                             quizWrongCount: document.getElementById("quiz-wrong-count"), // Mới
+                            practiceListBtnDesktop: document.getElementById("practice-list-btn-desktop"),
+                            practiceListBtnCollapsed: document.getElementById("practice-list-btn-collapsed"),
+                            practiceListBtnMobile: document.getElementById("practice-list-btn-mobile"),
                         };
                     }
                     // [THÊM] Hàm helper để tách Họ khoa học và Họ tiếng Việt
@@ -1571,10 +1638,38 @@
                             }
                         });
                     }
+                    // [TÍNH NĂNG MỚI] Xử lý ẩn/hiện header khi cuộn
+                    handleListScroll() {
+                        if (this.currentView.type !== "list") return;
 
+                        const currentScrollY = this.els.plantListContainer.scrollTop;
+                        const header = this.els.mobileHeader;
+
+                        // Bỏ qua hiệu ứng nảy (bounce) trên iOS
+                        if (currentScrollY < 0) return;
+
+                        // Ngưỡng phát hiện cuộn (giảm xuống 5 để nhạy hơn)
+                        const delta = Math.abs(currentScrollY - this.lastScrollY);
+                        if (delta < 5) return;
+
+                        // Logic:
+                        // 1. Nếu cuộn xuống VÀ đã cuộn qua 50px -> ẨN
+                        // 2. Nếu cuộn lên (currentScrollY < lastScrollY) -> HIỆN NGAY LẬP TỨC
+                        if (currentScrollY > this.lastScrollY && currentScrollY > 50) {
+                            header.classList.add("header-scroll-hidden");
+                        } else if (currentScrollY < this.lastScrollY) {
+                            header.classList.remove("header-scroll-hidden");
+                        }
+
+                        this.lastScrollY = currentScrollY;
+                    }
                     handleStateChange(state) {
                         this.closeModal();
                         this.els.mobileMenu.classList.add("hidden");
+
+                        // [FIX] Reset triệt để trạng thái Menu Mobile: Ẩn và Xóa trạng thái mở
+                        this.els.mobileMenu.classList.add("hidden");
+                        this.els.mobileMenu.classList.remove("is-open"); // <-- THÊM DÒNG NÀY ĐỂ FIX LỖI BẤM 2 LẦN
 
                         // [FIX] Nếu state bị null (trường hợp load lại trang hoặc lỗi trình duyệt), tự tạo state mặc định
                         const currentState = state || { view: "list", filter: { group: "all", search: "" } };
@@ -1616,51 +1711,123 @@
                                 break;
                         }
                     }
+                    // THÊM HÀM MỚI NÀY VÀO CLASS MedicinalPlantApp
+                    showPracticeList() {
+                        this.currentFilter = { group: "practice", search: "" };
+                        this.currentListTitle = "Danh sách Thực hành";
+                        // Xóa ô tìm kiếm nếu có
+                        this.els.searchInput.value = "";
+                        this.els.searchClearDesktop.classList.add("hidden");
+                        // Đẩy state mới vào history
+                        const newState = { view: "list", filter: this.currentFilter };
+                        history.pushState(newState, "", "#list/practice");
+
+                        this.showListView();
+                        this.highlightActiveGroup(); // Cập nhật highlight menu
+                    }
                     initEventListeners() {
+                        this.els.plantListContainer.addEventListener("scroll", this.handleListScroll);
+                        if (this.els.mobileLogoAction) {
+                            this.els.mobileLogoAction.addEventListener("click", () => {
+                                // Nếu đang ở search view thì đóng lại trước
+                                if (this.currentView.type === "search") {
+                                    this.hideSearchView();
+                                }
+                                // Cuộn mượt lên đầu danh sách
+                                this.els.plantListContainer.scrollTo({ top: 0, behavior: "smooth" });
+                            });
+                        }
+                        // 1. Logic đóng mở Sidebar
                         [this.els.sidebarToggle, this.els.sidebarToggleCollapsed].forEach((btn) =>
                             btn.addEventListener("click", () => this.toggleSidebar())
                         );
+
+                        // 2. FIX DESKTOP SEARCH: Ép chuyển sang trạng thái search khi gõ
                         this.els.searchInput.addEventListener("input", (e) => {
-                            this.handleSearch(e.target.value);
-                            this.handleSearchAutocomplete(e.target.value, this.els.searchInput);
+                            const val = e.target.value;
+
+                            // Hiển thị/Ẩn nút X
+                            this.els.searchClearDesktop.classList.toggle("hidden", !val);
+
+                            if (this.currentView.type !== "search" && val.trim().length > 0) {
+                                this.navigateToSearch(val);
+                            } else {
+                                this.handleSearch(val);
+                            }
+                            this.handleSearchAutocomplete(val, this.els.searchInput);
                         });
+
+                        // [MỚI] Sự kiện click nút X Desktop
+                        this.els.searchClearDesktop.addEventListener("click", () => {
+                            this.els.searchInput.value = "";
+                            this.els.searchClearDesktop.classList.add("hidden");
+                            this.els.searchInput.focus();
+                            this.handleSearch(""); // Reset kết quả
+                            this.handleSearchAutocomplete("", this.els.searchInput);
+                        });
+
                         this.els.searchInput.addEventListener("keydown", (e) => {
                             if (e.key === "Tab" && this.els.searchGhostText.textContent) {
                                 e.preventDefault();
                                 e.target.value = this.els.searchGhostText.textContent;
-                                this.handleSearch(e.target.value);
+                                this.navigateToSearch(e.target.value); // Fix: Dùng navigate thay vì handleSearch
                                 this.handleSearchAutocomplete(e.target.value, this.els.searchInput);
                             }
                         });
+
+                        // 3. Sự kiện nút Search Collapsed
                         this.els.searchButtonCollapsed.addEventListener("click", () => {
                             if (this.els.sidebar.classList.contains("collapsed")) {
                                 this.toggleSidebar();
-                                this.els.searchInput.focus();
+                                setTimeout(() => this.els.searchInput.focus(), 100);
                             }
                         });
+
+                        // 4. FIX MOBILE SEARCH: Đảm bảo sự kiện click hoạt động
+                        // Xóa bỏ listener cũ nếu có, gán mới trực tiếp
+                        this.els.mobileSearchButton.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.navigateToSearch();
+                        };
+
+                        // 5. Sự kiện cho các nút "Danh sách Thực hành" (MỚI)
+                        [
+                            this.els.practiceListBtnDesktop,
+                            this.els.practiceListBtnCollapsed,
+                            this.els.practiceListBtnMobile,
+                        ].forEach((btn) => {
+                            if (btn) {
+                                btn.addEventListener("click", () => {
+                                    this.closeMenu();
+                                    this.showPracticeList();
+                                });
+                            }
+                        });
+
+                        // --- CÁC SỰ KIỆN KHÁC GIỮ NGUYÊN ---
                         this.els.plantForm.addEventListener("submit", (e) => this.handleFormSubmit(e));
                         this.els.closeModalButton.addEventListener("click", () => this.closeModal());
                         this.els.cancelButton.addEventListener("click", () => this.closeModal());
                         this.els.plantModal.addEventListener("click", (e) => {
                             if (e.target === this.els.plantModal) this.closeModal();
                         });
-                        // Đoạn code mới để mở/đóng menu với animation
-                        // Dán đoạn mã đã sửa lỗi này vào
 
                         this.els.mobileMenuButton.addEventListener("click", () => {
                             if (this.els.mobileMenu.classList.contains("is-open")) {
-                                this.closeMenu(); // Thêm this.
+                                this.closeMenu();
                             } else {
-                                this.openMenu(); // Thêm this.
+                                this.openMenu();
                             }
                         });
+
                         this.els.quizStartBackBtn.addEventListener("click", () => window.history.back());
                         this.els.mobileMenu.addEventListener("click", (e) => {
-                            if (e.target === this.els.mobileMenu) this.closeMenu(); // Thêm this.
+                            if (e.target === this.els.mobileMenu) this.closeMenu();
                         });
                         this.els.groupsNavMobile.addEventListener("click", (e) => {
                             if (e.target.closest(".group-link")) {
-                                this.closeMenu(); // Thêm this.
+                                this.closeMenu();
                             }
                         });
                         this.els.stickyBackButton.addEventListener("click", () => window.history.back());
@@ -1680,28 +1847,34 @@
                         this.els.deleteSelectedBtn.addEventListener("click", () => this.deleteSelectedPlants());
                         this.els.deselectAllBtn.addEventListener("click", () => this.clearSelection());
 
-                        this.els.mobileSearchButton.addEventListener("click", () => this.navigateToSearch());
+                        // Sự kiện Search View Back (Mobile)
                         this.els.searchViewBackButton.addEventListener("click", () => window.history.back());
+
+                        // [CẬP NHẬT] Logic tìm kiếm Mobile có thêm nút Clear
                         this.els.searchViewInput.addEventListener("input", (e) => {
-                            this.renderSearchResults(e.target.value);
-                            // handleSearchAutocomplete đã được gọi trong renderSearchResults
+                            const val = e.target.value;
+                            this.els.searchClearMobile.classList.toggle("hidden", !val);
+                            this.renderSearchResults(val);
                         });
-                        this.els.searchViewInput.addEventListener("keydown", (e) => {
-                            if (e.key === "Tab" && this.els.searchViewGhostText.textContent) {
-                                e.preventDefault();
-                                e.target.value = this.els.searchViewGhostText.textContent;
-                                this.renderSearchResults(e.target.value);
-                            }
+
+                        // [MỚI] Sự kiện click nút X Mobile
+                        this.els.searchClearMobile.addEventListener("click", () => {
+                            this.els.searchViewInput.value = "";
+                            this.els.searchClearMobile.classList.add("hidden");
+                            this.els.searchViewInput.focus();
+                            this.renderSearchResults(""); // Reset kết quả
                         });
+
                         this.els.searchAutocompleteList.addEventListener("mousedown", (e) => {
                             const item = e.target.closest(".autocomplete-item");
                             if (item) {
                                 this.els.searchInput.value = item.dataset.value;
-                                this.handleSearch(item.dataset.value);
+                                this.navigateToSearch(item.dataset.value); // Fix: Dùng navigate
                                 this.handleSearchAutocomplete(item.dataset.value, this.els.searchInput);
                                 this.els.searchAutocompleteList.classList.add("hidden");
                             }
                         });
+
                         this.setupAutocomplete("nhomChat", () => this.getDynamicSuggestions("nhomChat"), {
                             append: true,
                             separator: ">",
@@ -1720,6 +1893,7 @@
                         this.setupAutocomplete("congDung", () => this.getDynamicSuggestions("congDung"), {
                             append: true,
                         });
+
                         document.addEventListener("click", (e) => {
                             this.hideContextMenu();
                             if (
@@ -1730,27 +1904,24 @@
                                 this.hideAutocomplete();
                             }
                         });
+
                         document.querySelectorAll('[data-action="show-about"]').forEach((btn) => {
                             btn.addEventListener("click", () => this.navigateToAbout());
                         });
-
-                        // Thêm sự kiện click cho nút Trắc nghiệm
                         document.querySelectorAll('[data-action="show-quiz"]').forEach((btn) => {
                             btn.addEventListener("click", () => this.navigateToQuiz());
                         });
 
-                        // Sự kiện bên trong màn hình Quiz
                         this.els.startPracticeQuizBtn.addEventListener("click", () => this.startQuiz("practice"));
-                        // Sửa dòng cũ của startQuizBtn thành:
                         this.els.startQuizBtn.addEventListener("click", () => this.startQuiz("all"));
                         this.els.quizNextBtn.addEventListener("click", () => this.nextQuestion());
                         this.els.quizRestartBtn.addEventListener("click", () => this.startQuiz());
                         this.els.quizHomeBtn.addEventListener("click", () => this.goHome());
-                        // Tìm đến đoạn initEventListeners(), thêm dòng này ở cuối hàm (hoặc gần các sự kiện quiz khác):
                         this.els.quizQuitBtn.addEventListener("click", () =>
                             this.showConfirm("Bạn có chắc muốn thoát bài thi không?", () => this.goHome())
                         );
                     }
+
                     // THAY THẾ TOÀN BỘ HÀM CŨ BẰNG HÀM NÀY
                     handleLeafNodeClick(groupName) {
                         const pathParts = groupName.split(" > ");
@@ -1883,16 +2054,20 @@
 
                     renderGroups() {
                         const openGroups = new Set();
-                        this.els.groupsNav.querySelectorAll("details[open] > summary.group-link").forEach((summary) => {
-                            openGroups.add(summary.dataset.group);
-                        });
+                        // Lưu lại trạng thái mở của các nhóm
+                        this.els.groupsNav
+                            .querySelectorAll("details[open] > summary .group-name-action")
+                            .forEach((el) => {
+                                openGroups.add(el.dataset.group);
+                            });
                         const openGroupsMobile = new Set();
                         this.els.groupsNavMobile
-                            .querySelectorAll("details[open] > summary.group-link")
-                            .forEach((summary) => {
-                                openGroupsMobile.add(summary.dataset.group);
+                            .querySelectorAll("details[open] > summary .group-name-action")
+                            .forEach((el) => {
+                                openGroupsMobile.add(el.dataset.group);
                             });
 
+                        // Tự động mở nhóm đang active
                         const currentGroupPath = this.currentFilter.group;
                         if (currentGroupPath && currentGroupPath !== "all") {
                             const pathParts = currentGroupPath.split(" > ");
@@ -1921,61 +2096,115 @@
                                 });
                             });
                         });
+
                         const buildHTML = (node, path = "", level = 0) =>
                             Object.keys(node)
                                 .sort()
                                 .map((key) => {
                                     const children = node[key];
                                     const currentPath = path ? `${path} > ${key}` : key;
+
+                                    // Trường hợp 1: Nhóm Cha (Có con) -> TÁCH 2 PHẦN
                                     if (Object.keys(children).length > 0) {
-                                        return `<li><details class="group-details"><summary class="group-link flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}"><span class="flex-grow font-medium">${key}</span><i data-lucide="chevron-right" class="chevron w-4 h-4 flex-shrink-0"></i></summary><ul class="pl-4">${buildHTML(
-                                            children,
-                                            currentPath,
-                                            level + 1
-                                        )}</ul></details></li>`;
+                                        return `
+                    <li>
+                        <details class="group-details">
+                            <summary class="flex items-center justify-between gap-1 px-2 py-1 rounded-lg hover:bg-[var(--accent)] cursor-pointer group select-none">
+                                <span class="group-name-action flex-grow py-1.5 px-2 text-sm font-medium hover:text-[var(--primary)] transition-colors rounded" 
+                                      data-group="${currentPath}">
+                                    ${key}
+                                </span>
+                                <div class="chevron-action p-1.5 rounded-md text-[var(--muted-foreground)] hover:bg-[var(--background)] hover:text-[var(--foreground)] transition-colors">
+                                    <i data-lucide="chevron-right" class="chevron w-4 h-4 transition-transform duration-200"></i>
+                                </div>
+                            </summary>
+                            <ul class="pl-4 border-l border-[var(--border)] ml-3 mt-1 space-y-0.5">
+                                ${buildHTML(children, currentPath, level + 1)}
+                            </ul>
+                        </details>
+                    </li>`;
                                     }
-                                    return `<li><a href="#" class="group-link block pl-9 pr-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="${currentPath}" data-is-leaf="true">${key}</a></li>`;
+
+                                    // Trường hợp 2: Nhóm Lá (Không con) -> Link thường
+                                    return `<li>
+                    <a href="#" class="group-link block px-4 py-2 text-sm rounded-lg transition-colors hover:bg-[var(--accent)] hover:text-[var(--primary)]" 
+                       data-group="${currentPath}" data-is-leaf="true">
+                       ${key}
+                    </a>
+                </li>`;
                                 })
                                 .join("");
-                        const allLink = `<li><a href="#" class="group-link flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)]" data-group="Tất cả"><i data-lucide="library" class="w-5 h-5"></i><span class="sidebar-text">Tất cả Dược liệu</span></a></li>`;
+
+                        const allLink = `<li>
+        <a href="#" class="group-link flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[var(--accent)] font-medium" data-group="Tất cả">
+            <i data-lucide="library" class="w-5 h-5 text-[var(--primary)]"></i>
+            <span class="sidebar-text">Tất cả Dược liệu</span>
+        </a>
+    </li>`;
+
                         const html = `<ul class="space-y-1">${allLink}${buildHTML(tree)}</ul>`;
                         this.els.groupsNav.innerHTML = html;
                         this.els.groupsNavMobile.innerHTML = html;
 
-                        this.els.groupsNav.querySelectorAll("details > summary.group-link").forEach((summary) => {
-                            if (openGroups.has(summary.dataset.group)) {
-                                summary.closest("details").open = true;
+                        // --- KHÔI PHỤC TRẠNG THÁI MỞ ---
+                        const restoreState = (nav, openSet) => {
+                            nav.querySelectorAll(".group-name-action").forEach((el) => {
+                                if (openSet.has(el.dataset.group)) {
+                                    el.closest("details").open = true;
+                                }
+                            });
+                        };
+                        restoreState(this.els.groupsNav, openGroups);
+                        restoreState(this.els.groupsNavMobile, openGroupsMobile);
+
+                        // --- GÁN SỰ KIỆN ---
+
+                        // 1. Sự kiện cho Nhóm Cha (Click vào Tên -> Lọc, KHÔNG Toggle)
+                        const handleParentClick = (e) => {
+                            e.preventDefault(); // Chặn hành vi toggle mặc định của summary
+                            e.stopPropagation(); // Chặn nổi bọt
+
+                            const groupName = e.currentTarget.dataset.group;
+                            if (groupName === this.currentFilter.group) return;
+
+                            this.handleGroupFilter(groupName);
+
+                            if (this.isMobile()) {
+                                setTimeout(() => this.closeMenu(), 150);
                             }
-                        });
-                        this.els.groupsNavMobile.querySelectorAll("details > summary.group-link").forEach((summary) => {
-                            if (openGroupsMobile.has(summary.dataset.group)) {
-                                summary.closest("details").open = true;
-                            }
+                        };
+
+                        document.querySelectorAll(".group-name-action").forEach((el) => {
+                            el.addEventListener("click", handleParentClick);
                         });
 
+                        // 2. Sự kiện cho Nhóm Lá & Nút Tất cả (Link thường)
                         document.querySelectorAll(".group-link").forEach((link) => {
                             link.addEventListener("click", (e) => {
                                 e.preventDefault();
-                                const groupName =
-                                    e.currentTarget.dataset.group === "Tất cả" ? "all" : e.currentTarget.dataset.group;
-                                const isLeaf = e.currentTarget.dataset.isLeaf === "true";
+                                const groupName = link.dataset.group === "Tất cả" ? "all" : link.dataset.group;
 
-                                // Nếu là nhóm lá, xử lý theo logic mới
+                                // [LOGIC MỚI] Nếu bấm "Tất cả" -> Gọi goHome() để reset toàn bộ (tìm kiếm, lọc...)
+                                if (groupName === "all") {
+                                    this.goHome();
+                                    if (this.isMobile()) {
+                                        setTimeout(() => this.closeMenu(), 150);
+                                    }
+                                    return;
+                                }
+
+                                // Logic cũ cho các nhóm con và nhóm lá
+                                const isLeaf = link.dataset.isLeaf === "true";
+
                                 if (isLeaf) {
                                     this.handleLeafNodeClick(groupName);
-                                }
-                                // Nếu không, xử lý như bình thường
-                                else {
+                                } else {
                                     if (groupName === this.currentFilter.group) return;
                                     this.handleGroupFilter(groupName);
                                 }
 
                                 if (this.isMobile()) {
-                                    // Giờ dùng hàm closeMenu đã có sẵn
-                                    const closeMenu = this.els.mobileMenuButton.onclick;
-                                    if (this.els.mobileMenu.classList.contains("is-open")) {
-                                        setTimeout(() => closeMenu(), 150);
-                                    }
+                                    setTimeout(() => this.closeMenu(), 150);
                                 }
                             });
                         });
@@ -2026,6 +2255,7 @@
                             currentQIndex: 0,
                             correctCount: 0, // Sửa từ score thành count
                             wrongCount: 0, // Thêm biến đếm sai
+                            wrongAnswersList: [],
                             totalQ: 10,
                             mode: mode,
                         };
@@ -2301,6 +2531,14 @@
                         } else {
                             this.quizState.wrongCount++;
                             this.els.quizWrongCount.textContent = this.quizState.wrongCount;
+
+                            // [MỚI] Lưu lại câu sai
+                            this.quizState.wrongAnswersList.push({
+                                question: q.text,
+                                userChoice: selectedValue,
+                                correct: q.correct,
+                            });
+
                             this.els.quizWrongCount.parentElement.classList.add("scale-125");
                             setTimeout(() => this.els.quizWrongCount.parentElement.classList.remove("scale-125"), 200);
                         }
@@ -2359,9 +2597,64 @@
                         }
 
                         this.els.quizResultMessage.textContent = msg;
+                        // [MỚI] Thêm nút Xem lại lỗi (chỉ hiện nếu có lỗi)
+                        const hasWrong = this.quizState.wrongAnswersList.length > 0;
+                        const reviewBtnHTML = hasWrong
+                            ? `<button id="quiz-review-btn" class="px-6 py-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200">Xem câu sai (${this.quizState.wrongAnswersList.length})</button>`
+                            : "";
+
+                        this.els.quizResultScreen.innerHTML = `
+    <h2 class="text-3xl font-bold">Kết quả</h2>
+    <div class="text-6xl font-black text-[var(--primary)]" id="quiz-final-score">${finalScore}/${maxScore}</div>
+    <p id="quiz-result-message" class="text-[var(--muted-foreground)]">${msg}</p>
+    
+    <div id="quiz-review-section" class="hidden text-left bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 max-h-60 overflow-y-auto w-full max-w-lg mx-auto space-y-3">
+        ${this.quizState.wrongAnswersList
+            .map(
+                (w, i) => `
+            <div class="text-sm border-b border-[var(--border)] pb-2 last:border-0">
+                <p class="font-semibold mb-1">Câu ${i + 1}: ${w.question}</p>
+                <div class="flex flex-col gap-1">
+                    <span class="text-red-600"><i data-lucide="x" class="w-3 h-3 inline"></i> Bạn chọn: ${w.userChoice}</span>
+                    <span class="text-green-600"><i data-lucide="check" class="w-3 h-3 inline"></i> Đáp án: ${w.correct}</span>
+                </div>
+            </div>
+        `
+            )
+            .join("")}
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4 mt-4">
+        <button id="quiz-home-btn" class="px-6 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--accent)]">Về trang chủ</button>
+        ${reviewBtnHTML}
+        <button id="quiz-restart-btn" class="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90">Làm lại</button>
+    </div>
+`;
+
+                        // Gán lại sự kiện (vì innerHTML làm mất sự kiện cũ)
+                        this.els.quizResultScreen
+                            .querySelector("#quiz-home-btn")
+                            .addEventListener("click", () => this.goHome());
+                        this.els.quizResultScreen
+                            .querySelector("#quiz-restart-btn")
+                            .addEventListener("click", () => this.startQuiz(this.quizState.mode));
+
+                        if (hasWrong) {
+                            this.els.quizResultScreen
+                                .querySelector("#quiz-review-btn")
+                                .addEventListener("click", (e) => {
+                                    const section = this.els.quizResultScreen.querySelector("#quiz-review-section");
+                                    section.classList.toggle("hidden");
+                                    e.target.textContent = section.classList.contains("hidden")
+                                        ? `Xem câu sai (${this.quizState.wrongAnswersList.length})`
+                                        : "Ẩn xem lại";
+                                    lucide.createIcons();
+                                });
+                        }
+                        lucide.createIcons();
                     }
+                    // [CẬP NHẬT] renderPlantList - Fix lỗi gom nhóm ở Danh sách Thực hành
                     renderPlantList(plantsData) {
-                        // plantsData bây giờ là một đối tượng: { exactMatches, fuzzyMatches }
                         const { exactMatches, fuzzyMatches } = plantsData;
                         const hasSearch = !!this.currentFilter.search;
 
@@ -2382,45 +2675,50 @@
                             let html = "";
                             if (exactMatches.length > 0) {
                                 html += `
-                <div class="group-container mb-4">
-                    <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatches.length} kết quả khớp nhất</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                        ${exactMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
-                    </div>
-                </div>`;
+            <div class="group-container mb-4">
+                <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatches.length} kết quả khớp nhất</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                    ${exactMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
+                </div>
+            </div>`;
                             }
                             if (fuzzyMatches.length > 0) {
                                 html += `
-                <div class="group-container mb-4">
-                    <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm...</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
-                        ${fuzzyMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
-                    </div>
-                </div>`;
+            <div class="group-container mb-4">
+                <h2 class="sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có thể bạn đang tìm...</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                    ${fuzzyMatches.map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, this._normalizeText(this.currentFilter.search)))).join("")}
+                </div>
+            </div>`;
                             }
                             this.els.plantListGrid.innerHTML = html;
                             this.els.plantListGrid.className = "";
                         }
-                        // Trường hợp 2: Người dùng đang xem danh sách theo nhóm (KHÔNG tìm kiếm)
+                        // Trường hợp 2: Xem danh sách (Tất cả / Theo nhóm / Thực hành)
                         else {
                             const filter = this.currentFilter.group;
-                            const filterParts = filter === "all" ? [] : filter.split(" > ");
+                            const isPractice = filter === "practice";
+
+                            // [FIX] Nếu là practice, ta coi như đang ở cấp độ gốc (giống 'all') để lấy nhóm cha
+                            const filterParts = filter === "all" || isPractice ? [] : filter.split(" > ");
                             const currentLevel = filterParts.length;
                             this.els.plantListGrid.className = "";
 
                             const groups = {};
-                            // Khi không tìm kiếm, tất cả dược liệu hợp lệ nằm trong `exactMatches`
+
                             exactMatches.forEach((p) => {
-                                let key = "Các dược liệu khác";
+                                let key = "Chưa phân loại"; // Đổi tên mặc định cho rõ nghĩa hơn
                                 if (p.nhomChat) {
                                     const relevantPath = (
                                         p.nhomChat
                                             .split(",")
                                             .map((x) => x.trim())
-                                            .find((x) => filter === "all" || x.startsWith(filter)) || ""
+                                            // [FIX] Nếu là practice hoặc all, lấy bất kỳ nhóm nào. Nếu đang lọc nhóm con, phải khớp filter
+                                            .find((x) => filter === "all" || isPractice || x.startsWith(filter)) || ""
                                     )
                                         .split(">")
                                         .map((y) => y.trim());
+
                                     if (relevantPath.length > currentLevel) {
                                         key = relevantPath[currentLevel];
                                     }
@@ -2429,8 +2727,14 @@
                                 groups[key].push(p);
                             });
 
-                            this.els.plantListGrid.innerHTML = Object.keys(groups)
-                                .sort()
+                            // Sắp xếp nhóm: Đưa "Chưa phân loại" xuống cuối, các nhóm khác alphabet
+                            const sortedKeys = Object.keys(groups).sort((a, b) => {
+                                if (a === "Chưa phân loại") return 1;
+                                if (b === "Chưa phân loại") return -1;
+                                return a.localeCompare(b);
+                            });
+
+                            this.els.plantListGrid.innerHTML = sortedKeys
                                 .map(
                                     (key) => `
             <div class="group-container mb-4">
@@ -2443,7 +2747,6 @@
                                 .join("");
                         }
 
-                        // Các lệnh cuối hàm không đổi
                         this.addEventListenersToCards(this.els.plantListGrid);
                         this.els.plantListGrid
                             .querySelectorAll(".animate-on-scroll")
@@ -2451,9 +2754,10 @@
                         lucide.createIcons();
                         if (this.postRenderAction) {
                             this.postRenderAction();
-                            this.postRenderAction = null; // Xóa hành động sau khi thực thi
+                            this.postRenderAction = null;
                         }
                     }
+
                     // Thêm 3 hàm mới này
                     navigateToAbout() {
                         if (this.currentView.type === "about") return;
@@ -2490,6 +2794,8 @@
                     }
                     // [FIX LỖI TRẮNG MÀN HÌNH]
                     transitionView(fromEl, toEl, onTransitionCallback = null) {
+                        if (fromEl === this.els.plantListContainer) {
+                        }
                         // 1. Nếu có timer cũ đang chạy, hủy ngay lập tức
                         if (this.currentTransitionTimer) {
                             clearTimeout(this.currentTransitionTimer);
@@ -2547,27 +2853,35 @@
                         this.handleStateChange(newState);
                     }
 
+                    // [FIX] Cập nhật hàm navigateToSearch
                     navigateToSearch(searchTerm = "", fromTitle = null) {
                         if (this.currentView.type === "search") {
                             if (searchTerm) {
                                 this.els.searchViewInput.value = searchTerm;
+                                // [FIX] Hiện nút X ngay lập tức nếu có nội dung
+                                this.els.searchClearMobile.classList.remove("hidden");
                                 this.renderSearchResults(searchTerm);
                             }
                             return;
                         }
+
                         const newState = {
                             view: "search",
                             filter: this.currentFilter,
                             backTitle: fromTitle || this.currentListTitle,
                         };
+
                         history.pushState(newState, "", `#search`);
-                        this.handleStateChange(newState);
+
+                        this.showSearchView(false, newState);
+
                         if (searchTerm) {
                             this.els.searchViewInput.value = searchTerm;
+                            // [FIX] Hiện nút X ngay lập tức
+                            this.els.searchClearMobile.classList.remove("hidden");
                             this.renderSearchResults(searchTerm);
                         }
                     }
-
                     // [ĐÃ KHÔI PHỤC & KẾT HỢP] Hàm hiển thị chi tiết đầy đủ
                     showPlantDetail(id, isPoppedState = false, backTitle = "Quay lại", isTransition = true) {
                         this.els.mobileHeader.classList.add("header-hidden");
@@ -2841,21 +3155,32 @@
                             });
                         }
 
+                        // [CẬP NHẬT] setupDetailViewEventListeners - Chuyển hướng về Danh sách thay vì Search View
                         detailContent.addEventListener("click", (e) => {
                             const trigger = e.target.closest(".search-trigger");
                             if (trigger) {
                                 e.preventDefault();
                                 const term = trigger.dataset.searchTerm;
-                                if (this.isMobile()) {
-                                    this.navigateToSearch(term, plant.tenDuocLieu);
-                                } else {
-                                    this.currentFilter.group = "all";
-                                    this.currentFilter.search = term;
-                                    this.els.searchInput.value = term;
-                                    history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
-                                    this.showListView();
-                                }
+
+                                // 1. Cấu hình bộ lọc
+                                this.currentFilter.group = "all";
+                                this.currentFilter.search = term;
+
+                                // 2. Cập nhật giao diện ô tìm kiếm (Đồng bộ cả Desktop & Mobile)
+                                // Desktop
+                                this.els.searchInput.value = term;
+                                this.els.searchClearDesktop.classList.remove("hidden");
+
+                                // Mobile (Đồng bộ ngầm để nếu người dùng bấm icon kính lúp thì thấy chữ sẵn)
+                                this.els.searchViewInput.value = term;
+                                this.els.searchClearMobile.classList.remove("hidden");
+
+                                // 3. Chuyển hướng: Luôn về LIST VIEW (Thay vì kiểm tra isMobile để mở Search View)
+                                history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
+                                this.showListView();
                             }
+
+                            // ... (Phần xử lý link nav-link/plant-card giữ nguyên) ...
                             const link = e.target.closest(".nav-link, .plant-card");
                             if (link) {
                                 const plantIdToNav = link.dataset.id;
@@ -2914,12 +3239,18 @@
 
                     showListView(isPoppedState = false) {
                         this.currentView = { type: "list" };
-                        // Dòng code mới
+
+                        // Reset Header
                         this.els.mobileHeader.classList.remove("header-hidden");
+                        this.els.mobileHeader.classList.remove("header-scroll-hidden");
+
+                        // Xóa sự kiện cuộn của trang chi tiết nếu có
                         if (this.handleDetailScroll) {
                             this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
                         }
+
                         this.els.stickyHeader.classList.add("-translate-y-full");
+                        this.els.plantListGrid.classList.remove("grid-locked");
 
                         const fromView = this.getActiveViewElement();
 
@@ -2936,26 +3267,43 @@
                         });
                         this.els.plantDetailView.innerHTML = "";
                     }
-
+                    // [FIXED] Hàm hiển thị tìm kiếm Mobile
                     showSearchView(isPopped = false, state = {}) {
                         this.currentView = { type: "search" };
+
+                        // Ẩn header chính của mobile
                         this.els.mobileHeader.classList.add("header-hidden");
 
+                        // --- QUAN TRỌNG: Gỡ bỏ class 'hidden' do transitionView có thể đã thêm vào trước đó ---
+                        this.els.searchView.classList.remove("hidden");
+
+                        // Hiệu ứng trượt vào
                         this.els.searchView.classList.remove("translate-x-full");
-                        this.els.searchView.classList.remove("translate-x-full");
+
                         this.els.searchViewBackLabel.textContent = state.backTitle || "Quay lại";
-                        if (!isPopped) {
-                            this.els.searchViewInput.focus();
+
+                        // Logic focus: Luôn focus nếu input đang trống (tiện lợi hơn)
+                        if (!this.els.searchViewInput.value) {
+                            setTimeout(() => this.els.searchViewInput.focus(), 100);
                         }
+                        // Thêm vào cuối hàm
+                        this.els.searchClearMobile.classList.toggle("hidden", !this.els.searchViewInput.value);
                     }
 
                     hideSearchView(isPopped = false) {
                         if (this.currentView.type === "list") {
                             this.els.mobileHeader.classList.remove("header-hidden");
                         }
+
+                        // Trượt ra ngoài
                         this.els.searchView.classList.add("translate-x-full");
+
+                        // Thêm hidden sau khi animation chạy xong (tùy chọn, nhưng an toàn nhất là để transitionView lo)
+                        // Tuy nhiên, ta cần xóa giá trị input để lần sau mở ra nó sạch sẽ (trừ khi Back)
                         if (!isPopped) {
                             this.els.searchViewInput.value = "";
+                            this.els.searchClearMobile.classList.add("hidden"); // Ẩn nút X khi đóng
+                            this.renderSearchResults("");
                         }
                     }
 
@@ -3105,35 +3453,42 @@
                         this.updatePlant(id, data);
                         this.closeModal();
                     }
-                    // THAY THẾ TOÀN BỘ HÀM CŨ
                     getFilteredPlants() {
                         const rawQuery = this.currentFilter.search;
-                        const groupFilteredPlants = this.plants.filter((p) =>
-                            this.isPlantInGroup(p, this.currentFilter.group)
-                        );
+                        let groupFilteredPlants = [];
+
+                        // [LOGIC MỚI] Xử lý lọc theo nhóm
+                        if (this.currentFilter.group === "practice") {
+                            // Lọc các cây có đánh dấu thực hành
+                            groupFilteredPlants = this.plants.filter((p) => p.isThucHanh === true);
+                        } else {
+                            // Lọc theo nhóm bình thường
+                            groupFilteredPlants = this.plants.filter((p) =>
+                                this.isPlantInGroup(p, this.currentFilter.group)
+                            );
+                        }
 
                         if (!rawQuery) {
                             return { exactMatches: groupFilteredPlants, fuzzyMatches: [] };
                         }
 
+                        // ... (Phần logic tìm kiếm bên dưới giữ nguyên không đổi) ...
                         const normalizedQuery = this._normalizeText(rawQuery);
-
                         const exactMatches = [];
                         const fuzzyMatches = [];
                         const addedIds = new Set();
 
-                        // Vòng 1: Tìm các kết quả khớp nhất (tên & họ) và tính điểm
                         groupFilteredPlants.forEach((plant) => {
                             const tenDuocLieuNorm = this._normalizeText(plant.tenDuocLieu);
                             const hoCayNorm = this._normalizeText(plant.hoCay);
 
                             let score = 0;
                             if (tenDuocLieuNorm.startsWith(normalizedQuery)) {
-                                score = 100; // Ưu tiên cao nhất: Khớp đầu tên
+                                score = 100;
                             } else if (tenDuocLieuNorm.includes(normalizedQuery)) {
-                                score = 50; // Ưu tiên cao: Khớp trong tên
+                                score = 50;
                             } else if (hoCayNorm.includes(normalizedQuery)) {
-                                score = 20; // Ưu tiên trung bình: Khớp trong họ
+                                score = 20;
                             }
 
                             if (score > 0) {
@@ -3142,10 +3497,8 @@
                             }
                         });
 
-                        // Vòng 2: Tìm các kết quả liên quan (các trường khác)
                         groupFilteredPlants.forEach((plant) => {
                             if (addedIds.has(plant.id)) return;
-
                             const fuzzyKeys = [
                                 "nhomChat",
                                 "thanhPhanHoaHocChinh",
@@ -3158,23 +3511,17 @@
                                 if (plant[key] && this._normalizeText(plant[key]).includes(normalizedQuery)) {
                                     fuzzyMatches.push(plant);
                                     addedIds.add(plant.id);
-                                    break; // Tìm thấy là đủ, chuyển sang cây tiếp theo
+                                    break;
                                 }
                             }
                         });
 
-                        // Sắp xếp các kết quả khớp nhất: điểm cao hơn trước, sau đó đến alphabet
                         exactMatches.sort((a, b) => {
-                            if (a.score !== b.score) {
-                                return b.score - a.score;
-                            }
+                            if (a.score !== b.score) return b.score - a.score;
                             return a.tenDuocLieu.localeCompare(b.tenDuocLieu);
                         });
 
-                        // Bỏ thuộc tính score đi trước khi trả về
-                        const finalExactMatches = exactMatches.map(({ score, ...rest }) => rest);
-
-                        return { exactMatches: finalExactMatches, fuzzyMatches };
+                        return { exactMatches: exactMatches.map(({ score, ...rest }) => rest), fuzzyMatches };
                     }
 
                     _findMatchContext(plant, normalizedQuery) {
@@ -3280,6 +3627,7 @@
                         this.isDragging = false;
                         this.pointerStartPos.y = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
                     }
+                    // [CẬP NHẬT] handlePointerUp - Tối ưu chặn click kép bằng CSS
                     handlePointerUp(e, id, fromSearch = false) {
                         if (e.type === "touchend") e.preventDefault();
                         if (this.isDragging) {
@@ -3287,10 +3635,17 @@
                             return;
                         }
 
-                        // Logic được thực thi ngay lập tức
                         if (this.selectedPlants.size > 0 && !fromSearch) {
                             this.togglePlantSelection(id);
                         } else {
+                            // [TỐI ƯU] Khóa tương tác ngay lập tức ở cấp độ DOM
+                            // Không dùng biến boolean, dùng CSS để trình duyệt chặn sự kiện vật lý
+                            if (fromSearch) {
+                                this.els.searchResultsGrid.classList.add("grid-locked");
+                            } else {
+                                this.els.plantListGrid.classList.add("grid-locked");
+                            }
+
                             this.navigateToDetail(id);
                         }
                     }
@@ -3352,11 +3707,49 @@
                         this.els.plantModal.close();
                     }
                     highlightActiveGroup() {
-                        document.querySelectorAll(".group-link").forEach((link) => {
-                            const groupName = link.dataset.group === "Tất cả" ? "all" : link.dataset.group;
-                            const isActive = groupName === this.currentFilter.group;
-                            link.classList.toggle("bg-[var(--primary)]", isActive);
-                            link.classList.toggle("text-[var(--primary-foreground)]", isActive);
+                        // Reset highlight
+                        document.querySelectorAll(".group-link, .group-name-action").forEach((link) => {
+                            link.classList.remove("text-[var(--primary)]", "bg-[var(--accent)]", "font-bold");
+                        });
+
+                        // Highlight nút Tất cả
+                        if (this.currentFilter.group === "all") {
+                            document
+                                .querySelectorAll('.group-link[data-group="Tất cả"]')
+                                .forEach((l) => l.classList.add("bg-[var(--accent)]"));
+                        }
+
+                        // Highlight nhóm hiện tại
+                        const currentG = this.currentFilter.group;
+                        if (currentG && currentG !== "all") {
+                            // Tìm cả link thường và action name
+                            const selector = `.group-link[data-group="${currentG}"], .group-name-action[data-group="${currentG}"]`;
+                            document.querySelectorAll(selector).forEach((el) => {
+                                el.classList.add("text-[var(--primary)]", "font-bold");
+                                // Nếu là leaf node (link thường), thêm background cho rõ
+                                if (el.classList.contains("group-link")) {
+                                    el.classList.add("bg-[var(--accent)]");
+                                }
+                            });
+                        }
+
+                        // Highlight nút Practice (giữ nguyên logic cũ)
+                        const isPractice = this.currentFilter.group === "practice";
+                        [
+                            this.els.practiceListBtnDesktop,
+                            this.els.practiceListBtnCollapsed,
+                            this.els.practiceListBtnMobile,
+                        ].forEach((btn) => {
+                            if (btn) {
+                                btn.classList.toggle("bg-yellow-100", isPractice);
+                                btn.classList.toggle("text-yellow-700", isPractice);
+                                if (document.documentElement.classList.contains("dark") && isPractice) {
+                                    btn.classList.add("bg-yellow-900/30", "text-yellow-400");
+                                    btn.classList.remove("bg-yellow-100", "text-yellow-700");
+                                } else {
+                                    btn.classList.remove("bg-yellow-900/30", "text-yellow-400");
+                                }
+                            }
                         });
                     }
                     clearSelection() {
@@ -3443,6 +3836,7 @@
                         }
                         this.currentFilter = { group: "all", search: "" };
                         this.els.searchInput.value = "";
+                        this.els.searchClearDesktop.classList.add("hidden");
                         this.clearSelection();
                         const newState = { view: "list", filter: this.currentFilter };
                         history.pushState(newState, "", "#list");
@@ -3584,7 +3978,7 @@
                             ".detail-section > .bg-\\[var\\(--card\\)\\]"
                         );
                         if (!editableContainer) return;
-
+                        const titleBlock = editableContainer.querySelector(".flex-1");
                         // Ẩn nút menu 3 chấm
                         const actionsBtn = editableContainer.querySelector("#detail-actions-btn");
                         if (actionsBtn) actionsBtn.classList.add("hidden");
