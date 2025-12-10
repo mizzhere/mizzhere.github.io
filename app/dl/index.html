@@ -81,6 +81,9 @@
             }
             .view-fade-in {
                 animation-name: view-fade-in-anim;
+                /* Sử dụng curve giống hệt header để chuyển động cùng nhịp */
+                animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                animation-duration: 300ms; /* Tăng nhẹ lên 300ms cho bằng header */
             }
             .view-fade-out {
                 animation-name: view-fade-out-anim;
@@ -121,11 +124,18 @@
 
             .header-scroll-hidden {
                 transform: translateY(-100%);
-                margin-top: -60px; /* Thêm dòng này (giá trị xấp xỉ chiều cao header) */
+                margin-top: -57px; /* Thêm dòng này (giá trị xấp xỉ chiều cao header) */
             }
             /* Đảm bảo khi vào chi tiết (header-hidden cũ) thì nó vẫn ẩn hẳn */
             .header-hidden {
-                display: none !important;
+                max-height: 0 !important;
+                opacity: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                overflow: hidden;
+                border-bottom-width: 0px !important;
+                /* Bổ sung transition để đảm bảo nó trượt lên êm ái */
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
 
             .plant-card {
@@ -1081,10 +1091,7 @@
         </div>
 
         <!-- Context Menu, Modals, Toast -->
-        <div
-            id="context-menu"
-            class="hidden fixed bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-50 text-sm w-40"
-        ></div>
+
         <dialog id="plant-modal" class="p-0 rounded-xl shadow-2xl w-11/12 max-w-2xl">
             <form id="plant-form" class="p-6 md:p-8">
                 <div class="flex justify-between items-center mb-6">
@@ -1353,8 +1360,7 @@
                         this.handleListScroll = this.handleListScroll.bind(this);
                         this.activeAutocomplete = null;
                         this.selectedPlants = new Set();
-                        this.isDragging = false;
-                        this.pointerStartPos = { x: 0, y: 0 };
+
                         this.isTransitioning = false;
                         this.observer = null;
                         this.currentView = { type: "list" };
@@ -1527,7 +1533,7 @@
                             confirmMessage: document.getElementById("confirm-message"),
                             confirmCancel: document.getElementById("confirm-cancel"),
                             confirmProceed: document.getElementById("confirm-proceed"),
-                            contextMenu: document.getElementById("context-menu"),
+
                             selectionToolbar: document.getElementById("selection-toolbar"),
                             selectionCount: document.getElementById("selection-count"),
                             deleteSelectedBtn: document.getElementById("delete-selected-btn"),
@@ -1650,7 +1656,7 @@
 
                         // Ngưỡng phát hiện cuộn (giảm xuống 5 để nhạy hơn)
                         const delta = Math.abs(currentScrollY - this.lastScrollY);
-                        if (delta < 5) return;
+                        if (delta < 10) return;
 
                         // Logic:
                         // 1. Nếu cuộn xuống VÀ đã cuộn qua 50px -> ẨN
@@ -1705,9 +1711,22 @@
                                 break;
                             case "list":
                             default:
+                                // [FIX] Khôi phục bộ lọc từ lịch sử, nếu không có thì reset về mặc định
                                 this.currentFilter = currentState.filter || { group: "all", search: "" };
+
+                                // [FIX] Đồng bộ lại ô tìm kiếm và tiêu đề
+                                this.els.searchInput.value = this.currentFilter.search || "";
+                                this.currentListTitle =
+                                    this.currentFilter.group === "all" ? "Tất cả Dược liệu" : this.currentFilter.group;
+
+                                // Ẩn search view nếu đang mở
                                 this.hideSearchView(true);
+
+                                // Gọi hiển thị list (quan trọng là tham số true để biết là đang back)
                                 this.showListView(true);
+
+                                // [FIX] Highlight lại menu bên trái để đồng bộ
+                                this.highlightActiveGroup();
                                 break;
                         }
                     }
@@ -1895,7 +1914,7 @@
                         });
 
                         document.addEventListener("click", (e) => {
-                            this.hideContextMenu();
+                            // Đã xóa this.hideContextMenu();
                             if (
                                 this.activeAutocomplete &&
                                 !this.els[this.activeAutocomplete].input.contains(e.target) &&
@@ -2566,20 +2585,22 @@
                             this.showPlantDetail(id, true, history.state?.backTitle || "Quay lại", false);
                         }
                     }
+                    // [FIX LỖI] finishQuiz - Đảm bảo nút "Làm lại" nhớ đúng chế độ (Thực hành/Tất cả)
                     finishQuiz() {
+                        // 1. LƯU LẠI CHẾ ĐỘ THI HIỆN TẠI NGAY LẬP TỨC
+                        const currentMode = this.quizState.mode || "all";
+
                         this.els.quizQuestionScreen.classList.add("hidden");
                         this.els.quizResultScreen.classList.remove("hidden");
                         this.els.quizResultScreen.classList.remove("animate-on-scroll");
                         this.els.quizResultScreen.style.opacity = "1";
                         this.els.quizResultScreen.style.transform = "translateY(0)";
 
-                        // Tính điểm dựa trên số câu đúng (mỗi câu 10 điểm)
+                        // Tính điểm
                         const finalScore = this.quizState.correctCount * 10;
                         const maxScore = this.quizState.totalQ * 10;
 
                         this.els.quizFinalScore.textContent = `${finalScore}/${maxScore}`;
-                        // Hoặc hiển thị số câu đúng:
-                        // this.els.quizFinalScore.textContent = `${this.quizState.correctCount}/${this.quizState.totalQ} câu đúng`;
 
                         const percentage = (finalScore / maxScore) * 100;
                         let msg = "";
@@ -2597,47 +2618,50 @@
                         }
 
                         this.els.quizResultMessage.textContent = msg;
-                        // [MỚI] Thêm nút Xem lại lỗi (chỉ hiện nếu có lỗi)
+
+                        // Nút Xem lại lỗi
                         const hasWrong = this.quizState.wrongAnswersList.length > 0;
                         const reviewBtnHTML = hasWrong
                             ? `<button id="quiz-review-btn" class="px-6 py-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200">Xem câu sai (${this.quizState.wrongAnswersList.length})</button>`
                             : "";
 
                         this.els.quizResultScreen.innerHTML = `
-    <h2 class="text-3xl font-bold">Kết quả</h2>
-    <div class="text-6xl font-black text-[var(--primary)]" id="quiz-final-score">${finalScore}/${maxScore}</div>
-    <p id="quiz-result-message" class="text-[var(--muted-foreground)]">${msg}</p>
-    
-    <div id="quiz-review-section" class="hidden text-left bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 max-h-60 overflow-y-auto w-full max-w-lg mx-auto space-y-3">
-        ${this.quizState.wrongAnswersList
-            .map(
-                (w, i) => `
-            <div class="text-sm border-b border-[var(--border)] pb-2 last:border-0">
-                <p class="font-semibold mb-1">Câu ${i + 1}: ${w.question}</p>
-                <div class="flex flex-col gap-1">
-                    <span class="text-red-600"><i data-lucide="x" class="w-3 h-3 inline"></i> Bạn chọn: ${w.userChoice}</span>
-                    <span class="text-green-600"><i data-lucide="check" class="w-3 h-3 inline"></i> Đáp án: ${w.correct}</span>
+        <h2 class="text-3xl font-bold">Kết quả</h2>
+        <div class="text-6xl font-black text-[var(--primary)]" id="quiz-final-score">${finalScore}/${maxScore}</div>
+        <p id="quiz-result-message" class="text-[var(--muted-foreground)]">${msg}</p>
+        
+        <div id="quiz-review-section" class="hidden text-left bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 max-h-60 overflow-y-auto w-full max-w-lg mx-auto space-y-3">
+            ${this.quizState.wrongAnswersList
+                .map(
+                    (w, i) => `
+                <div class="text-sm border-b border-[var(--border)] pb-2 last:border-0">
+                    <p class="font-semibold mb-1">Câu ${i + 1}: ${w.question}</p>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-red-600"><i data-lucide="x" class="w-3 h-3 inline"></i> Bạn chọn: ${w.userChoice}</span>
+                        <span class="text-green-600"><i data-lucide="check" class="w-3 h-3 inline"></i> Đáp án: ${w.correct}</span>
+                    </div>
                 </div>
-            </div>
-        `
-            )
-            .join("")}
-    </div>
+            `
+                )
+                .join("")}
+        </div>
 
-    <div class="flex flex-wrap justify-center gap-4 mt-4">
-        <button id="quiz-home-btn" class="px-6 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--accent)]">Về trang chủ</button>
-        ${reviewBtnHTML}
-        <button id="quiz-restart-btn" class="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90">Làm lại</button>
-    </div>
-`;
+        <div class="flex flex-wrap justify-center gap-4 mt-4">
+            <button id="quiz-home-btn" class="px-6 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--accent)]">Về trang chủ</button>
+            ${reviewBtnHTML}
+            <button id="quiz-restart-btn" class="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90">Làm lại</button>
+        </div>
+    `;
 
-                        // Gán lại sự kiện (vì innerHTML làm mất sự kiện cũ)
+                        // Gán sự kiện
                         this.els.quizResultScreen
                             .querySelector("#quiz-home-btn")
                             .addEventListener("click", () => this.goHome());
+
+                        // [QUAN TRỌNG] Dùng biến currentMode đã lưu ở trên để restart đúng chế độ
                         this.els.quizResultScreen
                             .querySelector("#quiz-restart-btn")
-                            .addEventListener("click", () => this.startQuiz(this.quizState.mode));
+                            .addEventListener("click", () => this.startQuiz(currentMode));
 
                         if (hasWrong) {
                             this.els.quizResultScreen
@@ -2653,6 +2677,7 @@
                         }
                         lucide.createIcons();
                     }
+
                     // [CẬP NHẬT] renderPlantList - Fix lỗi gom nhóm ở Danh sách Thực hành
                     renderPlantList(plantsData) {
                         const { exactMatches, fuzzyMatches } = plantsData;
@@ -2792,46 +2817,49 @@
 
                         lucide.createIcons();
                     }
-                    // [FIX LỖI TRẮNG MÀN HÌNH]
-                    transitionView(fromEl, toEl, onTransitionCallback = null) {
-                        if (fromEl === this.els.plantListContainer) {
-                        }
-                        // 1. Nếu có timer cũ đang chạy, hủy ngay lập tức
-                        if (this.currentTransitionTimer) {
-                            clearTimeout(this.currentTransitionTimer);
-                            this.currentTransitionTimer = null;
-                        }
+                    // [CẬP NHẬT] Thêm tham số immediateSwap = false
+                    async transitionView(fromEl, toEl, onTransitionCallback = null, immediateSwap = false) {
+                        if (this.isTransitioning) return;
+                        this.isTransitioning = true;
+                        document.body.style.pointerEvents = "none";
 
-                        // 2. Reset trạng thái CSS của TẤT CẢ các view quan trọng để tránh bị ẩn nhầm
-                        const allViews = [
-                            this.els.plantListContainer,
-                            this.els.plantDetailView,
-                            this.els.searchView,
-                            this.els.aboutView,
-                            this.els.quizView,
-                        ];
-
-                        allViews.forEach((view) => {
-                            view.classList.remove("view-fade-in", "view-fade-out"); // Xóa class animation
-                            if (view !== toEl) {
-                                view.classList.add("hidden"); // Ẩn các view không dùng
+                        try {
+                            // 1. Xử lý View cũ
+                            if (fromEl && !fromEl.classList.contains("hidden")) {
+                                // Nếu immediateSwap = true (ví dụ: vào chi tiết), ta bỏ qua hiệu ứng mờ dần
+                                // để view mới hiện lên ngay lập tức cùng lúc với header.
+                                if (!immediateSwap) {
+                                    fromEl.classList.add("view-fade-out");
+                                    await new Promise((resolve) => setTimeout(resolve, 250));
+                                    fromEl.classList.remove("view-fade-out");
+                                }
+                                // Ẩn view cũ
+                                fromEl.classList.add("hidden");
                             }
-                        });
 
-                        // 3. Hiển thị View đích ngay lập tức
-                        toEl.classList.remove("hidden");
+                            // 2. Dọn dẹp view rác
+                            [
+                                this.els.plantListContainer,
+                                this.els.plantDetailView,
+                                this.els.searchView,
+                                this.els.aboutView,
+                                this.els.quizView,
+                            ].forEach((el) => {
+                                if (el && el !== toEl) el.classList.add("hidden");
+                            });
 
-                        // 4. Chạy callback (render dữ liệu) ngay lập tức để người dùng thấy nội dung
-                        if (onTransitionCallback) onTransitionCallback();
+                            // 3. Hiện View mới
+                            toEl.classList.remove("hidden");
+                            if (onTransitionCallback) onTransitionCallback();
 
-                        // 5. Thêm hiệu ứng Fade-in nhẹ nhàng
-                        toEl.classList.add("view-fade-in");
-
-                        // 6. Lưu timer để có thể hủy nếu người dùng bấm Back tiếp
-                        this.currentTransitionTimer = setTimeout(() => {
+                            toEl.classList.add("view-fade-in");
+                            // Chờ animation vào (300ms cho khớp CSS mới)
+                            await new Promise((resolve) => setTimeout(resolve, 300));
                             toEl.classList.remove("view-fade-in");
-                            this.currentTransitionTimer = null;
-                        }, 250);
+                        } finally {
+                            this.isTransitioning = false;
+                            document.body.style.pointerEvents = "auto";
+                        }
                     }
                     navigateToDetail(id) {
                         this.saveCurrentScrollPosition();
@@ -2882,9 +2910,30 @@
                             this.renderSearchResults(searchTerm);
                         }
                     }
-                    // [ĐÃ KHÔI PHỤC & KẾT HỢP] Hàm hiển thị chi tiết đầy đủ
                     showPlantDetail(id, isPoppedState = false, backTitle = "Quay lại", isTransition = true) {
-                        this.els.mobileHeader.classList.add("header-hidden");
+                        // --- LOGIC MỚI: Xử lý ẩn Header thông minh ---
+                        // Kiểm tra: Nếu header đang bị ẩn do cuộn (có class header-scroll-hidden)
+                        if (this.els.mobileHeader.classList.contains("header-scroll-hidden")) {
+                            // 1. Tắt transition ngay lập tức (dùng !important để đè CSS)
+                            this.els.mobileHeader.style.setProperty("transition", "none", "important");
+
+                            // 2. Thêm class ẩn hẳn và Gỡ class ẩn do cuộn
+                            this.els.mobileHeader.classList.add("header-hidden");
+                            this.els.mobileHeader.classList.remove("header-scroll-hidden");
+
+                            // 3. Force Reflow (Bắt trình duyệt cập nhật giao diện ngay lập tức)
+                            void this.els.mobileHeader.offsetWidth;
+
+                            // 4. Trả lại transition sau 50ms để khi bấm Quay lại (Back), header hiện ra mượt mà
+                            setTimeout(() => {
+                                this.els.mobileHeader.style.removeProperty("transition");
+                            }, 50);
+                        } else {
+                            // Nếu header ĐANG HIỆN -> Giữ nguyên hiệu ứng lướt lên cho mượt
+                            this.els.mobileHeader.classList.add("header-hidden");
+                        }
+                        // ---------------------------------------------
+
                         const plant = this.plants.find((p) => p.id === id);
                         if (!plant) {
                             this.showToast("Không tìm thấy dược liệu.", "error");
@@ -2892,7 +2941,11 @@
                             return;
                         }
 
-                        // --- 1. LOGIC ĐIỀU HƯỚNG ---
+                        // --- KHÔI PHỤC: Gán dữ liệu vào Sticky Header (Cái gương) ---
+                        this.els.stickyTitle.textContent = plant.tenDuocLieu;
+                        this.els.stickySubtitle.textContent = plant.hoCay;
+                        // -----------------------------------------------------------
+
                         const { exactMatches, fuzzyMatches } = this.getFilteredPlants();
                         const currentFilteredList = [...exactMatches, ...fuzzyMatches];
                         const currentIndex = currentFilteredList.findIndex((p) => p.id === id);
@@ -2902,24 +2955,18 @@
                                 ? currentFilteredList[currentIndex + 1]
                                 : null;
 
-                        // --- 2. LOGIC TÌM CÂY CÙNG HỌ ---
                         const relatedFamilyPlants = this.plants.filter(
                             (p) => p.hoCay === plant.hoCay && p.id !== plant.id
                         );
-
-                        // --- 3. [KHÔI PHỤC] LOGIC TÌM CÂY CÙNG NHÓM CHẤT ---
                         const relatedGroupsData = [];
                         const primaryGroupPath = (plant.nhomChat || "").split(",")[0].trim();
 
                         if (primaryGroupPath) {
                             const groupParts = primaryGroupPath.split(">").map((p) => p.trim());
                             let currentPath = "";
-                            // Duyệt qua từng cấp của nhóm chất (Ví dụ: Alkaloid -> Indol)
                             for (const part of groupParts) {
                                 currentPath = currentPath ? `${currentPath} > ${part}` : part;
                                 const normalizedCurrentPath = this._normalizeGroup(currentPath);
-
-                                // Tìm các cây khác có chứa nhóm chất này
                                 const relatedPlants = this.plants.filter(
                                     (p) =>
                                         p.id !== plant.id &&
@@ -2930,7 +2977,6 @@
                                                 this._normalizeGroup(g.trim()).startsWith(normalizedCurrentPath)
                                             )
                                 );
-
                                 if (relatedPlants.length > 0) {
                                     relatedGroupsData.push({
                                         groupName: part,
@@ -2941,180 +2987,159 @@
                             }
                         }
 
-                        // --- 4. XỬ LÝ GIAO DIỆN (Icon sao, Tên khoa học) ---
+                        // Formatting functions
                         const isThucHanh = plant.isThucHanh === true;
                         const starClass = isThucHanh
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-[var(--muted-foreground)]";
-
                         const tenKhoaHocDisplay = plant.tenKhoaHoc
-                            ? `<a href="https://www.google.com/search?q=${encodeURIComponent(plant.tenKhoaHoc)}" 
-                  target="_blank" 
-                  title="Bấm để tìm kiếm trên Google"
-                  class="group flex items-center gap-2 w-fit text-lg italic text-[var(--primary)] mb-1 hover:text-blue-600 transition-colors">
-                    <span>${plant.tenKhoaHoc}</span>
-                    <i data-lucide="search" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-               </a>`
+                            ? `<a href="https://www.google.com/search?q=${encodeURIComponent(plant.tenKhoaHoc)}" target="_blank" class="group flex items-center gap-2 w-fit text-lg italic text-[var(--primary)] mb-1 hover:text-blue-600 transition-colors"><span>${plant.tenKhoaHoc}</span><i data-lucide="search" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i></a>`
                             : `<p class="text-lg italic text-[var(--muted-foreground)] opacity-50 mb-1">Chưa cập nhật tên khoa học</p>`;
-                        // --- 5. [KHÔI PHỤC] CÁC HÀM FORMAT VĂN BẢN CHUẨN (BẢN CŨ) ---
 
-                        // Render text thường (xuống dòng là gạch đầu dòng)
-                        const renderMultilineText = (s) => {
-                            if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-                            const items = s
-                                .split(/(?:;|\.\s+|\n)/g)
-                                .map((i) => i.trim())
-                                .filter(Boolean);
-                            if (items.length <= 1) return `<p>${s}</p>`;
-                            return `<ul class="list-disc pl-5 space-y-1">${items.map((i) => `<li>${i.replace(/\.$/, "")}</li>`).join("")}</ul>`;
-                        };
+                        const renderMultilineText = (s) =>
+                            !s || !s.trim()
+                                ? "<p>Chưa có thông tin</p>"
+                                : s.split(/(?:;|\.\s+|\n)/g).filter(Boolean).length <= 1
+                                  ? `<p>${s}</p>`
+                                  : `<ul class="list-disc pl-5 space-y-1">${s
+                                        .split(/(?:;|\.\s+|\n)/g)
+                                        .map((i) => i.trim())
+                                        .filter(Boolean)
+                                        .map((i) => `<li>${i.replace(/\.$/, "")}</li>`)
+                                        .join("")}</ul>`;
+                        const renderTacDung = (s) =>
+                            !s || !s.trim()
+                                ? "<p>Chưa có thông tin</p>"
+                                : `<ul class="list-disc pl-5 space-y-2">${s
+                                      .split(";")
+                                      .map((i) => {
+                                          const p = i.trim().split(":");
+                                          return p.length === 2
+                                              ? `<li><span class="font-semibold">${p[0].trim()}:</span> ${p[1].trim()}</li>`
+                                              : `<li>${i.trim()}</li>`;
+                                      })
+                                      .join("")}</ul>`;
+                        const renderCongDung = (s) =>
+                            !s || !s.trim()
+                                ? "<p>Chưa có thông tin</p>"
+                                : `<ul class="list-disc pl-5 space-y-2">${s
+                                      .split(/(?:;|\.\s*(?=\())/g)
+                                      .map((i) => i.trim())
+                                      .filter(Boolean)
+                                      .map((item) => {
+                                          const m = item.match(/^\((.*?)\):\s*(.*)/);
+                                          if (m)
+                                              return `<li><span class="font-semibold text-[var(--primary)]">${m[1].trim()}:</span> ${m[2].trim().replace(/\.$/, "")}</li>`;
+                                          const m2 = item.match(/^(Khác):\s*(.*)/);
+                                          if (m2)
+                                              return `<li><span class="font-semibold text-[var(--primary)]">${m2[1].trim()}:</span> ${m2[2].trim().replace(/\.$/, "")}</li>`;
+                                          return `<li>${item}</li>`;
+                                      })
+                                      .join("")}</ul>`;
 
-                        // Render Tác dụng (Tách dấu hai chấm in đậm)
-                        const renderTacDung = (s) => {
-                            if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-                            return `<ul class="list-disc pl-5 space-y-2">${s
-                                .split(";")
-                                .map((i) => {
-                                    const p = i.trim().split(":");
-                                    return p.length === 2
-                                        ? `<li><span class="font-semibold">${p[0].trim()}:</span> ${p[1].trim()}</li>`
-                                        : `<li>${i.trim()}</li>`;
-                                })
-                                .join("")}</ul>`;
-                        };
-
-                        // Render Công dụng (Xử lý các mục trong ngoặc đơn, ví dụ "(Khác):")
-                        const renderCongDung = (s) => {
-                            if (!s || s.trim() === "") return "<p>Chưa có thông tin</p>";
-                            const items = s
-                                .split(/(?:;|\.\s*(?=\())/g)
-                                .map((i) => i.trim())
-                                .filter(Boolean);
-                            return `<ul class="list-disc pl-5 space-y-2">${items
-                                .map((item) => {
-                                    const m = item.match(/^\((.*?)\):\s*(.*)/);
-                                    if (m) {
-                                        return `<li><span class="font-semibold text-[var(--primary)]">${m[1].trim()}:</span> ${m[2].trim().replace(/\.$/, "")}</li>`;
-                                    }
-                                    const m2 = item.match(/^(Khác):\s*(.*)/);
-                                    if (m2) {
-                                        return `<li><span class="font-semibold text-[var(--primary)]">${m2[1].trim()}:</span> ${m2[2].trim().replace(/\.$/, "")}</li>`;
-                                    }
-                                    return `<li>${item}</li>`;
-                                })
-                                .join("")}</ul>`;
-                        };
-
-                        // --- 6. RENDER HTML ---
+                        // Render HTML
                         this.els.plantDetailView.innerHTML = `
-            <div class="max-w-4xl mx-auto">
-                <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20 flex items-center justify-between">
-                    <button id="back-to-list-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring max-w-[calc(100%-60px)]">
-                        <i data-lucide="chevron-left" class="w-5 h-5 flex-shrink-0"></i>
-                        <span class="truncate">${backTitle}</span>
-                    </button>
-                    <button id="detail-home-btn-mobile" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="home"></i></button>
-                </div>
-                
-                <div class="hidden md:flex items-center justify-between mb-4">
-                    <button id="back-to-list-desktop" class="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
-                        <i data-lucide="arrow-left"></i><span>${backTitle}</span>
-                    </button>
-                    <button id="detail-home-btn-desktop" class="p-2 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)] transition-colors custom-ring"><i data-lucide="home"></i></button>
-                </div>
+                        <div class="max-w-4xl mx-auto">
+                            <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20 flex items-center justify-between">
+                                <button id="back-to-list-mobile" class="flex items-center gap-1 text-sm font-medium text-[var(--primary)] p-2 rounded-lg custom-ring max-w-[calc(100%-60px)]">
+                                    <i data-lucide="chevron-left" class="w-5 h-5 flex-shrink-0"></i><span class="truncate">${backTitle}</span>
+                                </button>
+                                <button id="detail-home-btn-mobile" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="home"></i></button>
+                            </div>
+                            <div class="hidden md:flex items-center justify-between mb-4">
+                                <button id="back-to-list-desktop" class="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
+                                    <i data-lucide="arrow-left"></i><span>${backTitle}</span>
+                                </button>
+                                <button id="detail-home-btn-desktop" class="p-2 rounded-full text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)] transition-colors custom-ring"><i data-lucide="home"></i></button>
+                            </div>
 
-                <div class="detail-section animate-on-scroll">
-                    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
-                        <div class="flex flex-col md:flex-row justify-between md:items-start mb-6 gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-start gap-3">
-                                    <h2 class="text-3xl font-bold">${plant.tenDuocLieu}</h2>
-                                    <button onclick="app.togglePractice('${plant.id}')" class="mt-1 p-2 rounded-full hover:bg-[var(--accent)] transition-colors custom-ring" title="${isThucHanh ? "Bỏ đánh dấu thực hành" : "Đánh dấu thực hành"}">
-                                        <i data-lucide="star" class="w-6 h-6 ${starClass}"></i>
-                                    </button>
+                            <div class="detail-section animate-on-scroll">
+                                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
+                                    <div class="flex flex-col md:flex-row justify-between md:items-start mb-6 gap-4">
+                                        <div class="flex-1 plant-title-block">
+                                            <div class="flex items-start gap-3">
+                                                <h2 class="text-3xl font-bold">${plant.tenDuocLieu}</h2>
+                                                <button onclick="app.togglePractice('${plant.id}')" class="mt-1 p-2 rounded-full hover:bg-[var(--accent)] transition-colors custom-ring">
+                                                    <i data-lucide="star" class="w-6 h-6 ${starClass}"></i>
+                                                </button>
+                                            </div>
+                                            ${tenKhoaHocDisplay}
+                                            <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(plant.hoCay)}</p>
+                                        </div>
+                                        <div class="relative flex-shrink-0">
+                                            <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
+                                            <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
+                                                <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-6">
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div data-key-value="nhomChat">${this._renderClickableItems(plant.nhomChat)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div data-key-value="thanhPhanHoaHocChinh">${this._renderClickableItems(plant.thanhPhanHoaHocChinh)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div data-key-value="boPhanDung">${this._renderClickableItems(plant.boPhanDung)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng</h4><div data-key-value="tacDung">${renderTacDung(plant.tacDung)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4><div data-key-value="congDung">${renderCongDung(plant.congDung)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Liều dùng</h4><div data-key-value="lieuDung">${renderMultilineText(plant.lieuDung)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Lưu ý</h4><div data-key-value="luuY">${renderMultilineText(plant.luuY)}</div></div>
+                                        <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Đặc điểm dược liệu</h4><div data-key-value="dacDiemDuocLieu">${renderMultilineText(plant.dacDiemDuocLieu)}</div></div>
+                                    </div>
                                 </div>
-                                ${tenKhoaHocDisplay}
-                                <p class="text-lg text-[var(--muted-foreground)]">${this._createSearchTrigger(plant.hoCay)}</p>
                             </div>
                             
-                            <div class="relative flex-shrink-0">
-                                <button id="detail-actions-btn" class="p-2 bg-[var(--secondary)] hover:bg-[var(--accent)] rounded-full custom-ring"><i data-lucide="more-vertical"></i></button>
-                                <div id="detail-actions-menu" class="detail-actions-menu hidden absolute top-full right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg p-1 z-10">
-                                    <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-[var(--accent)]" data-action="edit"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button>
-                                    <button class="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>
-                                </div>
-                            </div>
-                        </div>
+                            ${
+                                prevPlant || nextPlant
+                                    ? `<div class="detail-section mt-8"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${prevPlant ? `<a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Trước</p><h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
+                                ${nextPlant ? `<a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Sau <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
+                            </div></div>`
+                                    : ""
+                            }
 
-                        <div class="space-y-6">
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Nhóm chất</h4><div data-key-value="nhomChat">${this._renderClickableItems(plant.nhomChat)}</div></div>
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Thành phần hóa học chính</h4><div data-key-value="thanhPhanHoaHocChinh">${this._renderClickableItems(plant.thanhPhanHoaHocChinh)}</div></div>
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Bộ phận dùng</h4><div data-key-value="boPhanDung">${this._renderClickableItems(plant.boPhanDung)}</div></div>
-                            
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Tác dụng</h4><div data-key-value="tacDung">${renderTacDung(plant.tacDung)}</div></div>
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Công dụng</h4><div data-key-value="congDung">${renderCongDung(plant.congDung)}</div></div>
-                            
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Liều dùng</h4><div data-key-value="lieuDung">${renderMultilineText(plant.lieuDung)}</div></div>
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Lưu ý</h4><div data-key-value="luuY">${renderMultilineText(plant.luuY)}</div></div>
-                            <div><h4 class="font-semibold text-sm uppercase text-[var(--muted-foreground)] mb-2">Đặc điểm dược liệu</h4><div data-key-value="dacDiemDuocLieu">${renderMultilineText(plant.dacDiemDuocLieu)}</div></div>
-                        </div>
-                    </div>
-                </div>
-                
-                ${
-                    prevPlant || nextPlant
-                        ? `<div class="detail-section mt-8"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${prevPlant ? `<a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Trước</p><h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
-                    ${nextPlant ? `<a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Sau <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
-                </div></div>`
-                        : ""
-                }
+                            ${
+                                relatedFamilyPlants.length > 0
+                                    ? `
+                            <div class="detail-section mt-8">
+                                <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng họ</h3>${relatedFamilyPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>` : ""}</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${relatedFamilyPlants
+                                    .slice(0, 3)
+                                    .map((p) => this.createPlantCardHTML(p))
+                                    .join("")}</div>
+                            </div>`
+                                    : ""
+                            }
 
-                ${
-                    relatedFamilyPlants.length > 0
-                        ? `
-                <div class="detail-section mt-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold">Cây cùng họ</h3>
-                        ${relatedFamilyPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>` : ""}
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${relatedFamilyPlants
-                            .slice(0, 3)
-                            .map((p) => this.createPlantCardHTML(p))
-                            .join("")}
-                    </div>
-                </div>`
-                        : ""
-                }
+                            ${relatedGroupsData
+                                .map(
+                                    (groupData) => `
+                            <div class="detail-section mt-8">
+                                <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng nhóm ${groupData.groupName}</h3>${groupData.plants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${groupData.fullPath}">Xem tất cả (${groupData.plants.length})</button>` : ""}</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${groupData.plants
+                                    .slice(0, 3)
+                                    .map((p) => this.createPlantCardHTML(p))
+                                    .join("")}</div>
+                            </div>`
+                                )
+                                .join("")}
+                        </div>`;
 
-                ${relatedGroupsData
-                    .map(
-                        (groupData) => `
-                <div class="detail-section mt-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold">Cây cùng nhóm ${groupData.groupName}</h3>
-                        ${groupData.plants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${groupData.fullPath}">Xem tất cả (${groupData.plants.length})</button>` : ""}
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${groupData.plants
-                            .slice(0, 3)
-                            .map((p) => this.createPlantCardHTML(p))
-                            .join("")}
-                    </div>
-                </div>`
-                    )
-                    .join("")}
-
-            </div>`;
-
+                        // --- KHÔI PHỤC: Gọi hàm transition đúng kiểu cũ ---
                         if (isTransition) {
-                            this.transitionView(this.getActiveViewElement(), this.els.plantDetailView);
+                            // [CẬP NHẬT] Thêm tham số true (immediateSwap) vào cuối
+                            // Để List biến mất ngay và Detail hiện lên cùng lúc Header chạy
+                            this.transitionView(this.getActiveViewElement(), this.els.plantDetailView, null, true);
                         }
-
                         this.els.plantDetailView.scrollTop = 0;
+
+                        // --- KHÔI PHỤC: Logic cuộn hiện Header Gương ---
+                        if (this.handleDetailScroll) {
+                            this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
+                        }
+                        // Gán lại ngữ cảnh cho hàm handleDetailScroll
                         this.handleDetailScroll = this.handleDetailScroll.bind(this);
                         this.els.plantDetailView.addEventListener("scroll", this.handleDetailScroll);
+                        // ------------------------------------------------
+
                         this.setupDetailViewEventListeners(id);
                     }
                     setupDetailViewEventListeners(plantId) {
@@ -3123,6 +3148,7 @@
                         const plant = this.plants.find((p) => p.id === plantId);
                         if (!plant) return;
 
+                        // --- CÁC SỰ KIỆN NÚT BẤM (GIỮ NGUYÊN) ---
                         detailContent
                             .querySelector("#back-to-list-desktop")
                             ?.addEventListener("click", () => window.history.back());
@@ -3155,32 +3181,23 @@
                             });
                         }
 
-                        // [CẬP NHẬT] setupDetailViewEventListeners - Chuyển hướng về Danh sách thay vì Search View
                         detailContent.addEventListener("click", (e) => {
                             const trigger = e.target.closest(".search-trigger");
                             if (trigger) {
                                 e.preventDefault();
                                 const term = trigger.dataset.searchTerm;
-
-                                // 1. Cấu hình bộ lọc
-                                this.currentFilter.group = "all";
-                                this.currentFilter.search = term;
-
-                                // 2. Cập nhật giao diện ô tìm kiếm (Đồng bộ cả Desktop & Mobile)
-                                // Desktop
-                                this.els.searchInput.value = term;
-                                this.els.searchClearDesktop.classList.remove("hidden");
-
-                                // Mobile (Đồng bộ ngầm để nếu người dùng bấm icon kính lúp thì thấy chữ sẵn)
-                                this.els.searchViewInput.value = term;
-                                this.els.searchClearMobile.classList.remove("hidden");
-
-                                // 3. Chuyển hướng: Luôn về LIST VIEW (Thay vì kiểm tra isMobile để mở Search View)
-                                history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
-                                this.showListView();
+                                // Fix logic điều hướng search để mượt hơn
+                                if (this.isMobile()) {
+                                    this.navigateToSearch(term);
+                                } else {
+                                    this.currentFilter.group = "all";
+                                    this.currentFilter.search = term;
+                                    this.els.searchInput.value = term;
+                                    this.els.searchClearDesktop.classList.remove("hidden");
+                                    history.pushState({ view: "list", filter: this.currentFilter }, "", "#list");
+                                    this.showListView();
+                                }
                             }
-
-                            // ... (Phần xử lý link nav-link/plant-card giữ nguyên) ...
                             const link = e.target.closest(".nav-link, .plant-card");
                             if (link) {
                                 const plantIdToNav = link.dataset.id;
@@ -3191,29 +3208,33 @@
                             }
                         });
 
-                        // --- DÁN MÃ MỚI VÀO ĐÂY ---
+                        // --- [FIX] ĐOẠN MÃ QUAN TRỌNG ĐỂ TẠO HIỆU ỨNG ---
 
-                        // 1. Animate khối thông tin chính và các nút điều hướng (trước/sau)
+                        // 1. Reset trạng thái animation trước khi chạy (để đảm bảo nó chạy lại mỗi lần mở)
+                        const allAnimated = detailContent.querySelectorAll(".animate-on-scroll");
+                        allAnimated.forEach((el) => el.classList.remove("is-visible"));
+
+                        // 2. Animate khối thông tin chính (Header, các dòng thông tin, nút điều hướng)
+                        // Lưu ý: Đã bỏ ":scope >" để tìm kiếm linh hoạt hơn
                         const mainAnimatedElements = detailContent.querySelectorAll(
-                            ":scope > .detail-section.animate-on-scroll, :scope > .detail-section .nav-link.animate-on-scroll"
+                            ".detail-section.animate-on-scroll, .detail-section .nav-link.animate-on-scroll"
                         );
+
                         mainAnimatedElements.forEach((el, index) => {
-                            // Áp dụng delay so le cho các mục chính này
-                            el.style.transitionDelay = `${index * 80}ms`;
+                            // Delay tăng dần: 0ms, 100ms, 200ms... tạo hiệu ứng domino rõ rệt
+                            el.style.transitionDelay = `${index * 100}ms`;
                             this.observer.observe(el);
                         });
 
-                        // 2. Animate riêng từng khối gợi ý ("Cây cùng họ", "Cây cùng nhóm")
-                        // Tìm tất cả các khối gợi ý (là những .detail-section không có class .animate-on-scroll)
+                        // 3. Animate riêng từng khối gợi ý (Cây cùng họ, cùng nhóm)
                         const suggestionSections = detailContent.querySelectorAll(
                             ".detail-section:not(.animate-on-scroll)"
                         );
                         suggestionSections.forEach((section) => {
-                            // Bên trong mỗi khối, tìm các card để animate
                             const elementsToAnimate = section.querySelectorAll(".plant-card.animate-on-scroll");
                             elementsToAnimate.forEach((card, index) => {
-                                // Áp dụng delay so le, chỉ số `index` được reset lại cho mỗi khối
-                                card.style.transitionDelay = `${index * 100}ms`;
+                                // Reset delay cho từng nhóm card để chúng chạy đẹp mắt
+                                card.style.transitionDelay = `${index * 80}ms`;
                                 this.observer.observe(card);
                             });
                         });
@@ -3240,31 +3261,34 @@
                     showListView(isPoppedState = false) {
                         this.currentView = { type: "list" };
 
-                        // Reset Header
+                        // Reset Header về trạng thái chuẩn
                         this.els.mobileHeader.classList.remove("header-hidden");
                         this.els.mobileHeader.classList.remove("header-scroll-hidden");
-
-                        // Xóa sự kiện cuộn của trang chi tiết nếu có
-                        if (this.handleDetailScroll) {
-                            this.els.plantDetailView.removeEventListener("scroll", this.handleDetailScroll);
-                        }
-
                         this.els.stickyHeader.classList.add("-translate-y-full");
+
+                        // Mở khóa grid (nếu bị khóa bởi sự kiện click trước đó)
                         this.els.plantListGrid.classList.remove("grid-locked");
 
                         const fromView = this.getActiveViewElement();
 
                         this.transitionView(fromView, this.els.plantListContainer, () => {
+                            // [QUAN TRỌNG] Render lại dữ liệu NGAY LẬP TỨC trước khi hiện ra
                             this.renderAll();
+
                             if (isPoppedState) {
+                                // Nếu là Back, khôi phục vị trí cuộn
                                 const scrollY = history.state?.scrollY || 0;
+                                // Dùng setTimeout 0 để đảm bảo DOM đã render xong mới cuộn
                                 setTimeout(() => {
                                     this.els.plantListContainer.scrollTop = scrollY;
                                 }, 0);
                             } else {
+                                // Nếu là mới vào, cuộn lên đầu
                                 this.els.plantListContainer.scrollTop = 0;
                             }
                         });
+
+                        // Dọn dẹp view chi tiết cho nhẹ máy
                         this.els.plantDetailView.innerHTML = "";
                     }
                     // [FIXED] Hàm hiển thị tìm kiếm Mobile
@@ -3603,43 +3627,24 @@
             </div>`;
                     }
 
+                    // [CẬP NHẬT] Sử dụng sự kiện 'click' chuẩn để tránh lỗi khi cuộn
                     addEventListenersToCards(container, fromSearch = false) {
                         container.querySelectorAll(".plant-card").forEach((card) => {
                             const id = card.dataset.id;
-                            card.addEventListener("mousemove", (e) => this.handlePointerMove(e));
-                            card.addEventListener("touchmove", (e) => this.handlePointerMove(e), { passive: true });
-                            card.addEventListener("mousedown", (e) => this.handlePointerDown(e, id));
-                            card.addEventListener("touchstart", (e) => this.handlePointerDown(e, id), {
-                                passive: true,
-                            });
-                            card.addEventListener("mouseup", (e) => this.handlePointerUp(e, id, fromSearch));
-                            card.addEventListener("touchend", (e) => this.handlePointerUp(e, id, fromSearch));
-                            card.addEventListener("mouseleave", () => this.handlePointerLeave());
-                            card.addEventListener("touchcancel", () => this.handlePointerLeave());
-                            card.addEventListener("contextmenu", (e) => {
-                                this.handlePointerLeave();
-                                this.showContextMenu(e, id);
-                            });
+
+                            // Chỉ dùng đúng 1 sự kiện click.
+                            // Trình duyệt sẽ tự động KHÔNG gọi sự kiện này nếu bạn đang cuộn trang.
+                            card.addEventListener("click", (e) => this.handleCardClick(e, id, fromSearch));
+
+                            // Đã xóa bỏ contextmenu (nhấn giữ/chuột phải)
                         });
                     }
-                    handlePointerDown(e, id) {
-                        if (e.type === "mousedown" && e.button === 2) return;
-                        this.isDragging = false;
-                        this.pointerStartPos.y = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
-                    }
-                    // [CẬP NHẬT] handlePointerUp - Tối ưu chặn click kép bằng CSS
-                    handlePointerUp(e, id, fromSearch = false) {
-                        if (e.type === "touchend") e.preventDefault();
-                        if (this.isDragging) {
-                            this.isDragging = false;
-                            return;
-                        }
-
+                    handleCardClick(e, id, fromSearch = false) {
+                        // Nếu đang ở chế độ chọn nhiều (Selection Mode)
                         if (this.selectedPlants.size > 0 && !fromSearch) {
                             this.togglePlantSelection(id);
                         } else {
-                            // [TỐI ƯU] Khóa tương tác ngay lập tức ở cấp độ DOM
-                            // Không dùng biến boolean, dùng CSS để trình duyệt chặn sự kiện vật lý
+                            // [TỐI ƯU] Khóa tương tác ngay lập tức bằng CSS để chặn click đúp/click liên tục
                             if (fromSearch) {
                                 this.els.searchResultsGrid.classList.add("grid-locked");
                             } else {
@@ -3649,16 +3654,7 @@
                             this.navigateToDetail(id);
                         }
                     }
-                    handlePointerMove(e) {
-                        const curY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-                        if (Math.abs(curY - this.pointerStartPos.y) > 10) {
-                            this.isDragging = true;
-                        }
-                    }
 
-                    handlePointerLeave() {
-                        // Không cần làm gì ở đây nữa
-                    }
                     togglePlantSelection(id) {
                         const card = document.querySelector(`.plant-card[data-id="${id}"]`);
                         if (this.selectedPlants.has(id)) {
@@ -3764,32 +3760,7 @@
                         this.els.selectionCount.textContent = `${c} mục đã chọn`;
                         this.els.selectionToolbar.classList.toggle("hidden", c === 0);
                     }
-                    showContextMenu(e, id) {
-                        e.preventDefault();
-                        this.hideContextMenu();
-                        const isSel = this.selectedPlants.has(id);
-                        this.els.contextMenu.innerHTML = `<button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="select" data-id="${id}"><i data-lucide="${
-                            isSel ? "check-square" : "square"
-                        }" class="w-4 h-4"></i><span>${
-                            isSel ? "Bỏ chọn" : "Chọn"
-                        }</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--accent)]" data-action="edit" data-id="${id}"><i data-lucide="edit-3" class="w-4 h-4"></i><span>Chỉnh sửa</span></button><button class="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" data-action="delete" data-id="${id}"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Xóa</span></button>`;
-                        lucide.createIcons();
-                        this.els.contextMenu.style.top = `${e.pageY}px`;
-                        this.els.contextMenu.style.left = `${e.pageX}px`;
-                        this.els.contextMenu.classList.remove("hidden");
-                        this.els.contextMenu.querySelectorAll("button").forEach((btn) =>
-                            btn.addEventListener("click", (e) => {
-                                const { action, id } = e.currentTarget.dataset;
-                                if (action === "select") this.togglePlantSelection(id);
-                                if (action === "edit") this.openModal(id);
-                                if (action === "delete") this.deletePlant(id);
-                                this.hideContextMenu();
-                            })
-                        );
-                    }
-                    hideContextMenu() {
-                        this.els.contextMenu.classList.add("hidden");
-                    }
+
                     initTheme() {
                         const t = localStorage.getItem("theme") || "light";
                         this.setTheme(t);
