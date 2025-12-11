@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <title>mizz AIsub</title>
+        <title>Trình xem Phim Chuyên nghiệp</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -797,6 +797,76 @@
             .episode-item.playing .episode-number {
                 color: #eee;
             }
+            /* --- [MỚI] Badge số tập ở Library --- */
+            .episode-badge {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: #fff;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                backdrop-filter: blur(4px);
+                z-index: 5;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            /* --- [MỚI] Marker trên thanh tiến trình --- */
+            .timeline-marker {
+                position: absolute;
+                top: 0;
+                width: 2px;
+                height: 100%; /* Chiều cao bằng progress bar */
+                background-color: rgba(255, 255, 255, 0.5);
+                z-index: 2;
+                pointer-events: none;
+            }
+            .timeline-marker:hover::after {
+                content: attr(data-label);
+                position: absolute;
+                bottom: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            /* --- [MỚI] Nút Bỏ qua (Skip Intro) --- */
+            #skip-btn {
+                position: absolute;
+                bottom: 150px; /* Cao hơn thanh control một chút */
+                right: 0;
+                background-color: #fff;
+                color: #000;
+                border: none;
+                padding: 10px 20px;
+                font-size: 1rem;
+                font-weight: 700;
+                border-radius: 4px; /* Bo góc kiểu Netflix */
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 50;
+                opacity: 0;
+                transform: translateX(100%); /* Ẩn sang phải */
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+            #skip-btn.visible {
+                opacity: 1;
+                transform: translateX(-20px); /* Trượt vào */
+                pointer-events: auto;
+            }
+            #skip-btn:hover {
+                background-color: #e6e6e6;
+            }
             /* ========================================= */
             /* END: CSS CHO PLAYER V5                    */
             /* ========================================= */
@@ -805,7 +875,7 @@
     <body>
         <main>
             <header id="page-header">
-                <h1 id="main-title">MIZZSUB</h1>
+                <h1 id="main-title">Khám Phá</h1>
                 <div id="actions-container">
                     <div id="search-container">
                         <svg id="search-icon" viewBox="0 0 24 24">
@@ -979,7 +1049,12 @@
                         ><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05" />
                     </div>
                 </div>
-
+                <button id="skip-btn" class="hidden">
+                    Bỏ qua giới thiệu
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path>
+                    </svg>
+                </button>
                 <!-- "Up Next" Overlay -->
                 <div id="up-next-overlay">
                     <p>Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
@@ -1035,6 +1110,7 @@
             const episodesSidebar = doc.getElementById("episodes-sidebar");
             const episodesContent = doc.getElementById("episodes-content");
             const closeEpisodesBtn = doc.getElementById("close-episodes-btn");
+            const skipBtn = doc.getElementById("skip-btn");
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -1045,6 +1121,7 @@
             let upNextTimeout, upNextInterval; // Dùng cho tính năng "Tập tiếp theo"
             let lastClickInfo = { time: 0, area: null }; // Dùng để phát hiện double-click THEO VÙNG
             let isEnding = false; // Cờ để chống lặp khi video kết thúc
+            let currentSkipTarget = null; // Thời điểm bỏ qua hiện tại
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
 
             // --- Initialization ---
@@ -1106,10 +1183,18 @@
                     section.innerHTML = `<h2 class="program-title">${programName}</h2><div class="video-list">${groupedByProgram[
                         programName
                     ]
-                        .map(
-                            (video) =>
-                                `<div class="video-card" data-video-id="${video.videoId}"><img src="${video.thumbnailUrl || video.thumbnailUrl_auto}" alt="${video.userTitle || video.title}" class="video-thumbnail" loading="lazy"></div>`
-                        )
+                        .map((video) => {
+                            // [MỚI] Logic hiển thị nhãn tập
+                            const episodeBadge = video.episode
+                                ? `<div class="episode-badge">EP ${video.episode}</div>`
+                                : "";
+
+                            return `
+        <div class="video-card" data-video-id="${video.videoId}">
+            ${episodeBadge} <img src="${video.thumbnailUrl || video.thumbnailUrl_auto}" alt="${video.userTitle || video.title}" class="video-thumbnail" loading="lazy">
+        </div>
+    `;
+                        })
                         .join("")}</div>`;
                     libraryContainer.appendChild(section);
                 }
@@ -1213,8 +1298,8 @@
                     e.preventDefault();
                     handleFileDrop(e);
                 });
+                skipBtn.addEventListener("click", handleSkipClick);
 
-                // 2. Thêm Event Listener (đặt trong setupEventListeners)
                 episodesBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     toggleEpisodesSidebar();
@@ -1440,62 +1525,44 @@
                 modalPlayBtn.dataset.videoId = videoData.videoId;
                 openModal(detailModalOverlay);
             }
+
+            // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
-                const containerId = "bookmark-overlay";
-                let container = document.getElementById(containerId);
-                if (!container) {
-                    container = document.createElement("div");
-                    container.id = containerId;
-                    container.style.position = "absolute";
-                    container.style.bottom = "60px";
-                    container.style.left = "0";
-                    container.style.width = "100%";
-                    container.style.display = "flex";
-                    container.style.gap = "4px";
-                    container.style.zIndex = "11";
-                    container.style.padding = "0 60px";
-                    playerContainer.appendChild(container);
-                }
-                container.innerHTML = ""; // reset
+                // 1. Xóa các marker cũ trên thanh progress
+                const oldMarkers = document.querySelectorAll(".timeline-marker");
+                oldMarkers.forEach((m) => m.remove());
+
+                // 2. Ẩn nút skip cũ nếu có
+                skipBtn.classList.remove("visible");
 
                 const duration = player.getDuration?.() || 0;
-                if (!duration || bookmarks.length === 0) return;
+                if (!duration || !bookmarks || bookmarks.length === 0) return;
+
+                const progressContainer = document.querySelector(".progress-container");
 
                 bookmarks.forEach((b) => {
-                    const percent = (srtTimeToSeconds(b.time) / duration) * 100;
-                    const btn = document.createElement("button");
-                    btn.textContent = b.label;
-                    btn.style.position = "absolute";
-                    btn.style.left = `calc(${percent}% - 30px)`;
-                    btn.style.bottom = "30px";
-                    btn.style.background = "rgba(255,255,255,0.1)";
-                    btn.style.color = "#fff";
-                    btn.style.border = "1px solid #666";
-                    btn.style.borderRadius = "4px";
-                    btn.style.padding = "4px 8px";
-                    btn.style.fontSize = "0.8rem";
-                    btn.style.cursor = "pointer";
-                    btn.style.transition = "all 0.2s";
-                    btn.onmouseenter = () => (btn.style.background = "#e50914");
-                    btn.onmouseleave = () => (btn.style.background = "rgba(255,255,255,0.1)");
-                    btn.onclick = () => {
-                        const t = srtTimeToSeconds(b.time);
-                        player.seekTo(t, true);
-                        startSubtitleSync();
-                    };
+                    const timeSec = srtTimeToSeconds(b.time);
+                    const percent = (timeSec / duration) * 100;
 
-                    container.appendChild(btn);
+                    // Tạo vạch trắng nhỏ trên thanh bar
+                    const marker = document.createElement("div");
+                    marker.className = "timeline-marker";
+                    marker.style.left = `${percent}%`;
+                    marker.setAttribute("data-label", b.label); // Để hover hiện tên
+
+                    progressContainer.appendChild(marker);
                 });
+            }
 
-                // Tự đổi màu theo thời gian
-                const highlight = () => {
-                    const now = player.getCurrentTime?.();
-                    for (const btn of container.children) {
-                        const time = srtTimeToSeconds(bookmarks[Array.from(container.children).indexOf(btn)].time);
-                        btn.style.opacity = now >= time ? "1" : "0.5";
-                    }
-                };
-                setInterval(highlight, 500);
+            // [MỚI] Hàm xử lý click nút Skip
+            function handleSkipClick(e) {
+                e.stopPropagation();
+                if (currentSkipTarget !== null) {
+                    player.seekTo(currentSkipTarget, true);
+                    skipBtn.classList.remove("visible");
+                    // Update UI thanh bar ngay lập tức
+                    updateProgressBarUI(currentSkipTarget, player.getDuration());
+                }
             }
 
             async function launchPlayer(videoData, preloadedSubtitles = null) {
@@ -1727,13 +1794,18 @@
             function startProgressSync() {
                 stopProgressSync();
                 const tDisplay = doc.getElementById("time-display");
+
                 progressInterval = setInterval(() => {
                     if (!player || typeof player.getDuration !== "function") return;
-                    const d = player.getDuration(),
-                        c = player.getCurrentTime();
+                    const d = player.getDuration();
+                    const c = player.getCurrentTime();
                     if (isNaN(d) || d === 0) return;
 
-                    updateProgressBarUI(c, d); // Dùng hàm mới
+                    updateProgressBarUI(c, d);
+
+                    // --- LOGIC SKIP INTRO MỚI ---
+                    checkSkipLogic(c, d);
+                    // -----------------------------
 
                     const formatTime = (s) => {
                         const t = Math.round(s);
@@ -1746,6 +1818,49 @@
                     }
                 }, 250);
             }
+
+            // [MỚI] Logic tính toán xem có hiện nút Skip không
+            function checkSkipLogic(currentTime, duration) {
+                if (!currentVideoData || !currentVideoData.bookmarks) return;
+
+                // Sắp xếp bookmark theo thời gian
+                const bookmarks = currentVideoData.bookmarks
+                    .map((b) => ({ ...b, sec: srtTimeToSeconds(b.time) }))
+                    .sort((a, b) => a.sec - b.sec);
+
+                let foundSkip = null;
+
+                for (let i = 0; i < bookmarks.length; i++) {
+                    const currentB = bookmarks[i];
+                    const nextB = bookmarks[i + 1];
+
+                    // Xác định điểm kết thúc của đoạn này
+                    // Nếu có đoạn sau thì end là start đoạn sau. Nếu không thì coi như hết video hoặc +60s
+                    const endTime = nextB ? nextB.sec : currentB.sec + 80;
+
+                    // Nếu đang nằm trong vùng của bookmark này VÀ nó có skip=true
+                    if (currentTime >= currentB.sec && currentTime < endTime && currentB.skip) {
+                        foundSkip = {
+                            label: currentB.label,
+                            target: endTime, // Nhảy tới đầu đoạn sau
+                        };
+                        break;
+                    }
+                }
+
+                if (foundSkip) {
+                    skipBtn.innerHTML = `Bỏ qua ${foundSkip.label} <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path></svg>`;
+                    skipBtn.classList.remove("hidden");
+                    // setTimeout nhẹ để kích hoạt animation CSS
+                    setTimeout(() => skipBtn.classList.add("visible"), 10);
+                    currentSkipTarget = foundSkip.target;
+                } else {
+                    skipBtn.classList.remove("visible");
+                    setTimeout(() => skipBtn.classList.add("hidden"), 300); // Chờ animation ẩn xong mới hidden
+                    currentSkipTarget = null;
+                }
+            }
+
             function startSubtitleSync() {
                 stopSubtitleSync();
                 subtitleCheckInterval = setInterval(() => {
