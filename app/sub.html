@@ -451,6 +451,7 @@
                 display: flex;
                 align-items: center;
                 gap: 20px;
+                pointer-events: none !important;
             }
             #video-title-container {
                 overflow: hidden;
@@ -479,6 +480,18 @@
                 padding: 10px clamp(20px, 5vw, 60px);
                 background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
                 z-index: 12;
+                pointer-events: none !important;
+            }
+            #custom-controls > * {
+                pointer-events: auto;
+            }
+
+            /* Riêng cái khoảng trắng (spacer) phải cho click xuyên qua để bấm nút Skip Ad (thường nằm ở góc phải dưới) */
+            .spacer {
+                pointer-events: none;
+            }
+            #video-header-overlay > * {
+                pointer-events: auto;
             }
             .progress-container {
                 position: relative;
@@ -870,6 +883,13 @@
             /* ========================================= */
             /* END: CSS CHO PLAYER V5                    */
             /* ========================================= */
+            #modal-original-title {
+                margin: -10px 0 15px 0; /* Kéo sát lên tên chính một chút */
+                font-size: 1rem;
+                font-weight: 400;
+                color: #888; /* Màu xám nhạt cho đỡ rối */
+                font-style: italic; /* In nghiêng cho "nghệ" */
+            }
         </style>
     </head>
     <body>
@@ -923,6 +943,7 @@
                 </header>
                 <div id="modal-body">
                     <h3 id="modal-title"></h3>
+                    <h4 id="modal-original-title"></h4>
                     <div id="modal-meta">
                         <span id="modal-program"></span>
                         <span id="modal-author"></span>
@@ -1111,6 +1132,7 @@
             const episodesContent = doc.getElementById("episodes-content");
             const closeEpisodesBtn = doc.getElementById("close-episodes-btn");
             const skipBtn = doc.getElementById("skip-btn");
+            const modalOriginalTitle = doc.getElementById("modal-original-title");
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -1470,7 +1492,12 @@
                 modalThumbnail.onerror = () => {
                     modalThumbnail.src = thumbnailUrl;
                 };
-
+                if (videoData.originalTitle_auto) {
+                    modalOriginalTitle.textContent = videoData.originalTitle_auto;
+                    modalOriginalTitle.style.display = "block";
+                } else {
+                    modalOriginalTitle.style.display = "none";
+                }
                 // Sửa tiêu đề: Thêm số tập nếu có
                 let titleText = videoData.userTitle || videoData.title;
                 if (videoData.episode) {
