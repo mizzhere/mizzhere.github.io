@@ -1307,7 +1307,14 @@
     "luuY": "Không dùng cho người bị ho do ngoại cảm phong hàn (ho mới mắc), đờm dễ khạc.",
     "dacDiemDuocLieu": "Thân dẹt, đầu hình tam giác nhọn, mắt to không có mi. Đuôi nguyên vẹn được coi là loại tốt.",
     "tenKhoaHoc": "Gekko gecko L.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233335_1765532060180.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233336",
