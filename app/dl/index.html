@@ -497,6 +497,38 @@
                 padding: 0 2px;
                 border-radius: 2px;
             }
+            /* Gallery Styles */
+.gallery-thumbs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px 0;
+    scrollbar-width: thin;
+}
+.thumb-item {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    object-fit: cover;
+    opacity: 0.6;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.thumb-item:hover { opacity: 1; }
+.thumb-item.active {
+    border-color: var(--primary);
+    opacity: 1;
+    transform: scale(1.05);
+}
+.img-caption {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted-foreground);
+    margin-top: 8px;
+    font-style: italic;
+}
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -3070,7 +3102,26 @@
                                       .join("")}</ul>`;
 
                         // Render HTML
-                        const imgUrl = `./images/${plant.id}.jpg`;
+                        const defaultImg = `./images/${plant.id}.jpg`;
+                        let mainImgSrc = defaultImg;
+                        let mainImgCaption = "";
+                        let galleryHTML = "";
+
+                        // Nếu có gallery, ưu tiên lấy ảnh đầu tiên làm ảnh chính (hoặc giữ default)
+                        if (plant.gallery && Array.isArray(plant.gallery) && plant.gallery.length > 0) {
+                            mainImgSrc = `./images/${plant.gallery[0].src}`; 
+                            mainImgCaption = plant.gallery[0].title || "";
+
+                            // Tạo HTML cho danh sách ảnh nhỏ
+                            const thumbs = plant.gallery.map((img, index) => `
+                                <img src="./images/${img.src}" 
+                                     class="thumb-item ${index === 0 ? 'active' : ''}" 
+                                     onclick="app.switchGalleryImage(this, '${img.src}', '${img.title || ''}')"
+                                     onerror="this.style.display='none'">
+                            `).join("");
+                            
+                            galleryHTML = `<div class="gallery-thumbs mt-3">${thumbs}</div>`;
+                        }
 
                         // Render HTML
                         this.els.plantDetailView.innerHTML = `
@@ -3092,11 +3143,17 @@
                             <div class="detail-section animate-on-scroll">
                                 <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
                                     
-                                    <div class="w-full flex justify-center bg-[var(--accent)]/30 rounded-lg mb-6 overflow-hidden">
-                                        <img src="${imgUrl}" 
-                                             alt="${plant.tenDuocLieu}" 
-                                             class="plant-img-detail" 
-                                             onerror="this.style.display='none'; this.parentElement.style.display='none'">
+                                    <div class="w-full flex flex-col items-center mb-6">
+                                        <div class="w-full flex justify-center bg-[var(--accent)]/30 rounded-lg overflow-hidden relative">
+                                            <img id="detail-main-img" 
+                                                 src="${mainImgSrc}" 
+                                                 alt="${plant.tenDuocLieu}" 
+                                                 class="plant-img-detail mb-0" 
+                                                 style="margin-bottom: 0;"
+                                                 onerror="this.style.display='none';">
+                                        </div>
+                                        <p id="detail-img-caption" class="img-caption">${mainImgCaption}</p>
+                                        ${galleryHTML}
                                     </div>
                                     <div class="flex flex-col md:flex-row justify-between md:items-start mb-6 gap-4">
                                         <div class="flex-1 plant-title-block">
@@ -3177,6 +3234,25 @@
                         // ------------------------------------------------
 
                         this.setupDetailViewEventListeners(id);
+                    }
+                    switchGalleryImage(thumbEl, src, caption) {
+                        // 1. Đổi ảnh lớn
+                        const mainImg = document.getElementById('detail-main-img');
+                        const captionEl = document.getElementById('detail-img-caption');
+                        
+                        // Hiệu ứng mờ nhẹ khi đổi
+                        mainImg.style.opacity = 0.5;
+                        setTimeout(() => {
+                            mainImg.src = `./images/${src}`;
+                            mainImg.style.opacity = 1;
+                        }, 150);
+
+                        // 2. Đổi chú thích
+                        if(captionEl) captionEl.textContent = caption;
+
+                        // 3. Đổi active class cho thumbnail
+                        document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
+                        thumbEl.classList.add('active');
                     }
                     setupDetailViewEventListeners(plantId) {
                         const detailContent = this.els.plantDetailView.querySelector(".max-w-4xl");
