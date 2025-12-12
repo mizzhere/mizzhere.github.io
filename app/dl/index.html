@@ -3333,6 +3333,7 @@
 
                     // THAY THẾ TOÀN BỘ HÀM CŨ
                     renderSearchResults(query) {
+                        this.els.searchResultsGrid.classList.remove("grid-locked");
                         const normalizedQuery = this._normalizeText(query);
                         if (!normalizedQuery) {
                             this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm dược liệu theo tên, họ, ...</p></div>`;
