@@ -1025,7 +1025,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Borneol: thể rắn, kết tinh, mùi thơm tương tự long não.",
     "tenKhoaHoc": "Blumea balsamifera (L.) DC.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233318_1765530320156.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233319",
