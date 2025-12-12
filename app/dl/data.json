@@ -414,7 +414,14 @@
     "luuY": "Arecolin có độc tính. Dùng liều cao có thể gây ngừng tim, liệt hô hấp.",
     "dacDiemDuocLieu": "Hạt (Binh lang): rất cứng, hình nón cụt, mặt cắt có vân như đá hoa. Vỏ quả (Đại phúc bì): vỏ ngoài của quả cau, phơi khô.",
     "tenKhoaHoc": "Areca catechu L.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "28_1765539125464.jpg",
+        "title": "Binh lang",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "29",
