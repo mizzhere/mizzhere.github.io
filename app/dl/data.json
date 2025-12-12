@@ -1073,7 +1073,14 @@
     "luuY": "Chất màu curcumin không phải là thành phần của tinh dầu.",
     "dacDiemDuocLieu": "Thân rễ có vỏ màu nâu xám, ruột màu vàng cam đặc trưng.",
     "tenKhoaHoc": "Curcuma longa L.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233319_1765532497456.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233320",
