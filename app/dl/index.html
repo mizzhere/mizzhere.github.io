@@ -3074,7 +3074,7 @@ this.els.quizQuestionScreen.addEventListener('focusin', (e) => {
                     }
                     // --- LOGIC ÔN TẬP NHANH (QUICK PRACTICE) ---
 
-// 1. Khởi động chế độ nhanh
+// 1. Khởi động chế độ nhanh (ĐÃ CẬP NHẬT BIẾN ĐẾM)
 startQuickPracticeSession() {
     // Lọc cây có đánh dấu thực hành
     const practicePlants = this.plants.filter(p => p.isThucHanh === true);
@@ -3087,12 +3087,11 @@ startQuickPracticeSession() {
     // Chọn 5 cây ngẫu nhiên khác nhau
     const selectedPlants = practicePlants.sort(() => 0.5 - Math.random()).slice(0, 5);
 
-    // Chuẩn bị dữ liệu (Mỗi cây chọn sẵn 1 ảnh)
+    // Chuẩn bị dữ liệu
     const sessionItems = selectedPlants.map(p => {
         let imgSrc = `${p.id}.jpg`;
         let correctName = p.tenDuocLieu;
 
-        // Ưu tiên ảnh gallery nếu có
         if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 0) {
             const randomImg = p.gallery[Math.floor(Math.random() * p.gallery.length)];
             imgSrc = randomImg.src;
@@ -3105,35 +3104,34 @@ startQuickPracticeSession() {
             plant: p,
             imgSrc: imgSrc,
             correctName: correctName,
-            // 3 giai đoạn: 0 (Tên), 1 (Họ Việt), 2 (Họ KH)
             stage: 0 
         };
     });
 
     this.quickState = {
         items: sessionItems,
-        plantIndex: 0, // Cây hiện tại (0-4)
-        isFeedbackShowing: false
+        plantIndex: 0,
+        isFeedbackShowing: false,
+        correctCount: 0, // [MỚI] Biến đếm số cây trả lời đúng hoàn toàn
+        totalPlants: 5
     };
 
-    // UI Setup: Dùng chung màn hình Question nhưng ẩn nav bar đi
+    // UI Setup
     this.els.quizStartScreen.classList.add("hidden");
     this.els.quizResultScreen.classList.add("hidden");
     this.els.quizQuestionScreen.classList.remove("hidden");
     
-    // Ẩn nút Nộp bài và Nav bar của chế độ thường
+    // Ẩn nút Nộp bài
     const submitBtn = document.getElementById('practice-submit-all');
     if(submitBtn) submitBtn.classList.add("hidden");
     const navContainer = document.getElementById('practice-nav-container');
-    if(navContainer) navContainer.innerHTML = ''; // Xóa nav cũ
+    if(navContainer) navContainer.innerHTML = ''; 
 
     this.renderQuickQuestion();
 }
-
-// 2. Render câu hỏi hiện tại
+// 2. Render câu hỏi hiện tại (ĐÃ TỐI ƯU GIAO DIỆN DESKTOP)
 renderQuickQuestion() {
-    // Kiểm tra nếu hết 5 cây -> Kết thúc
-    if (this.quickState.plantIndex >= 5) {
+    if (this.quickState.plantIndex >= this.quickState.totalPlants) {
         this.finishQuickSession();
         return;
     }
@@ -3142,7 +3140,6 @@ renderQuickQuestion() {
     const stage = currentItem.stage;
     const p = currentItem.plant;
 
-    // Xác định câu hỏi dựa trên Stage
     let questionLabel = "";
     let placeholder = "";
     
@@ -3157,53 +3154,57 @@ renderQuickQuestion() {
         placeholder = "Ví dụ: Rubiaceae";
     }
 
-    // Render giao diện (Tận dụng layout cũ nhưng sửa nội dung cột phải)
+    // Hiển thị ảnh (Cột trái)
     const imgEl = document.getElementById('practice-image');
-    if (imgEl) imgEl.src = `./images/${currentItem.imgSrc}`;
+    if (imgEl) {
+        imgEl.src = `./images/${currentItem.imgSrc}`;
+        imgEl.style.display = 'block';
+        // Reset lại fallback lỗi ảnh
+        imgEl.onerror = () => { imgEl.style.display = 'none'; };
+    }
 
-    // DOM Inject cho cột phải (Form)
-    // Lưu ý: Ta xóa hết form cũ, thay bằng form đơn giản của Quick Mode
+    // DOM Inject cho Cột phải (Form) - [TỐI ƯU LAYOUT TẠI ĐÂY]
     const rightColumn = document.querySelector('#quiz-question-screen .grid-cols-1 > div:nth-child(2)');
     
+    // Sử dụng h-full và justify-center để căn giữa theo chiều dọc
+    // w-full để chiếm hết chiều ngang cột phải
     rightColumn.innerHTML = `
-        <div class="flex flex-col justify-center h-full gap-4 quick-input-container">
-            <div class="flex justify-between text-sm text-[var(--muted-foreground)] uppercase font-bold">
-                <span>Cây ${this.quickState.plantIndex + 1}/5</span>
-                <span>Câu hỏi ${stage + 1}/3</span>
+        <div class="flex flex-col justify-center h-full gap-6 quick-input-container w-full px-2 md:px-8">
+            <div class="flex justify-between items-center text-sm text-[var(--muted-foreground)] uppercase font-bold tracking-wider border-b border-[var(--border)] pb-2">
+                <span class="flex items-center gap-2"><i data-lucide="sprout" class="w-4 h-4"></i> Cây ${this.quickState.plantIndex + 1}/${this.quickState.totalPlants}</span>
+                <span class="bg-[var(--accent)] px-2 py-1 rounded text-xs">Câu hỏi ${stage + 1}/3</span>
             </div>
             
-            <div class="practice-input-group">
-                <label class="text-lg text-[var(--primary)]">${questionLabel}</label>
-                <input type="text" id="quick-input" class="practice-input mt-2 p-3 text-lg" placeholder="${placeholder}" autocomplete="off">
+            <div class="practice-input-group space-y-3">
+                <label class="text-xl md:text-2xl font-bold text-[var(--primary)] block">${questionLabel}</label>
+                <input type="text" id="quick-input" class="practice-input mt-2 p-4 text-lg md:text-xl border-2 focus:border-[var(--primary)] shadow-sm w-full" placeholder="${placeholder}" autocomplete="off">
             </div>
 
-            <button id="quick-submit-btn" class="w-full py-3 bg-[var(--primary)] text-white font-bold rounded-lg hover:opacity-90 shadow-md">
+            <button id="quick-submit-btn" class="w-full py-4 bg-[var(--primary)] text-white text-lg font-bold rounded-xl hover:opacity-90 shadow-lg hover:shadow-xl transition-all transform active:scale-95">
                 Xác nhận (Enter)
             </button>
 
-            <p class="text-xs text-[var(--muted-foreground)] text-center mt-2 italic">
-                Trả lời đúng để sang câu tiếp theo. Sai sẽ hiện đáp án và qua cây mới.
+            <p class="text-sm text-[var(--muted-foreground)] text-center mt-2 italic opacity-80">
+                Trả lời đúng để đi tiếp. Sai sẽ chuyển cây mới.
             </p>
         </div>
     `;
+    lucide.createIcons();
 
-    // Focus vào ô input
+    // Focus vào ô input và xử lý cuộn bàn phím
     const inputEl = document.getElementById('quick-input');
     
-    // [FIX] Tăng delay lên 300ms và thêm scrollIntoView để đẩy ô nhập lên giữa màn hình
     setTimeout(() => {
         inputEl.focus();
         inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 300);
 
-    // [FIX] Gán thêm sự kiện click để nếu người dùng bấm ra ngoài rồi bấm lại, nó vẫn cuộn lên
     inputEl.addEventListener('click', () => {
         setTimeout(() => {
             inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
     });
 
-    // Gán sự kiện Enter và Click nút xác nhận
     const handleSubmit = () => this.handleQuickAnswer(inputEl.value);
     
     document.getElementById('quick-submit-btn').onclick = handleSubmit;
@@ -3211,8 +3212,7 @@ renderQuickQuestion() {
         if (e.key === 'Enter') handleSubmit();
     });
 }
-
-// 3. Xử lý đáp án
+// 3. Xử lý đáp án (ĐÃ CẬP NHẬT TÍNH ĐIỂM)
 handleQuickAnswer(userVal) {
     if (this.quickState.isFeedbackShowing) return;
 
@@ -3230,26 +3230,23 @@ handleQuickAnswer(userVal) {
     const isCorrect = this._normalizeStr(userVal) === this._normalizeStr(correctVal);
 
     if (isCorrect) {
-        // ĐÚNG -> Sang câu tiếp theo của cây này
         this.showToast("Chính xác! ✨", "success");
+        currentItem.stage++; 
         
-        currentItem.stage++; // Tăng stage
-        
-        // Nếu đã xong stage 2 (Họ KH) -> Qua cây mới
+        // Nếu đã xong stage 2 (Hoàn thành cây này)
         if (currentItem.stage > 2) {
+            this.quickState.correctCount++; // [MỚI] Cộng điểm vì trả lời đúng hết 3 câu
             this.quickState.plantIndex++;
         }
         
         this.renderQuickQuestion();
 
     } else {
-        // SAI -> Hiện đáp án full, lưu lịch sử, qua cây mới
-        this.saveWrongHistory(p); // Lưu vào localstorage
+        // SAI -> Hiện đáp án và lưu lịch sử
+        this.saveWrongHistory(p); 
         this.showQuickFeedback(p, currentItem.correctName, familyInfo);
     }
 }
-
-// --- THAY THẾ HÀM showQuickFeedback CŨ BẰNG HÀM NÀY ---
 
 showQuickFeedback(plant, imgName, famInfo) {
     this.quickState.isFeedbackShowing = true;
@@ -3308,14 +3305,77 @@ saveWrongHistory(plant) {
     }
 }
 
-// 6. Kết thúc phiên nhanh
+// 6. Kết thúc phiên nhanh (HIỂN THỊ MÀN HÌNH KẾT QUẢ)
 finishQuickSession() {
-    this.showToast("Đã hoàn thành lượt ôn tập nhanh!", "success");
-    // Quay về màn hình Start Quiz
+    // Ẩn màn hình câu hỏi, Hiện màn hình kết quả
     this.els.quizQuestionScreen.classList.add("hidden");
-    this.els.quizStartScreen.classList.remove("hidden");
-}
-                    // [FIX] Cập nhật hàm navigateToSearch
+    this.els.quizResultScreen.classList.remove("hidden");
+    
+    // Reset style animation
+    this.els.quizResultScreen.classList.remove("animate-on-scroll");
+    this.els.quizResultScreen.style.opacity = "1";
+    this.els.quizResultScreen.style.transform = "translateY(0)";
+
+    // Tính toán kết quả
+    const correct = this.quickState.correctCount;
+    const total = this.quickState.totalPlants;
+    
+    // Set nội dung điểm số
+    this.els.quizFinalScore.textContent = `${correct}/${total} Cây`;
+    this.els.quizFinalScore.classList.remove('text-[var(--primary)]');
+    
+    // Màu sắc và lời nhắn dựa trên điểm số
+    let msg = "";
+    let colorClass = "text-green-600";
+
+    if (correct === total) {
+        msg = "Xuất sắc! Bạn đã thuộc làu 5 cây này.";
+    } else if (correct >= total - 1) {
+        msg = "Rất tốt! Chỉ sai sót một chút thôi.";
+    } else if (correct >= total / 2) {
+        msg = "Khá tốt. Hãy cố gắng ở lượt sau nhé.";
+        colorClass = "text-yellow-600";
+    } else {
+        msg = "Cần ôn tập nhiều hơn!";
+        colorClass = "text-red-600";
+    }
+    
+    this.els.quizFinalScore.className = `text-6xl font-black ${colorClass} mb-4 block`;
+    this.els.quizResultMessage.innerHTML = `
+        ${msg}<br>
+        <span class="text-sm opacity-80">(Chế độ Ôn tập Nhanh)</span>
+    `;
+
+    // Render lại nội dung màn hình kết quả để tùy biến nút bấm
+    const resultContainer = this.els.quizResultScreen;
+    
+    // Tìm và ẩn phần review section (vì chế độ nhanh không lưu log chi tiết từng câu để review kiểu kia)
+    const reviewSection = resultContainer.querySelector("#quiz-review-section");
+    if(reviewSection) reviewSection.classList.add("hidden");
+    const reviewBtn = resultContainer.querySelector("#quiz-review-btn");
+    if(reviewBtn) reviewBtn.classList.add("hidden");
+
+    // Xử lý nút bấm
+    const homeBtn = resultContainer.querySelector("#quiz-home-btn");
+    const restartBtn = resultContainer.querySelector("#quiz-restart-btn");
+
+    // Gán lại sự kiện cho nút Làm lại để nó gọi đúng hàm Quick Practice
+    // Clone node để xóa event listener cũ (của Quiz thường)
+    const newRestartBtn = restartBtn.cloneNode(true);
+    restartBtn.parentNode.replaceChild(newRestartBtn, restartBtn);
+    
+    newRestartBtn.textContent = "Làm lượt mới";
+    newRestartBtn.onclick = () => {
+        this.startQuickPracticeSession();
+    };
+
+    // Nút về trang chủ giữ nguyên logic
+    const newHomeBtn = homeBtn.cloneNode(true);
+    homeBtn.parentNode.replaceChild(newHomeBtn, homeBtn);
+    newHomeBtn.onclick = () => this.goHome();
+}   
+
+// [FIX] Cập nhật hàm navigateToSearch
                     navigateToSearch(searchTerm = "", fromTitle = null) {
                         if (this.currentView.type === "search") {
                             if (searchTerm) {
