@@ -932,7 +932,14 @@
     "luuY": "Anethol có thể dùng để tổng hợp dẫn chất Amphetamin.",
     "dacDiemDuocLieu": "Quả khô gồm 8 đại, hình sao. Tinh dầu: chất lỏng không màu hoặc vàng nhạt, mùi đặc biệt, vị ngọt, kết tinh khi để lạnh (tối thiểu 15 độ C).",
     "tenKhoaHoc": "Illicium verum Hook.f.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233312_1765530351740.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233313",
