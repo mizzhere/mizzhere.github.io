@@ -3787,40 +3787,54 @@ this.els.startPracticeQuizBtn.addEventListener("click", () => {
                     }
                     // --- BẮT ĐẦU THÊM VÀO TRONG CLASS MedicinalPlantApp ---
 
-// 1. Hàm khởi tạo chế độ Thực hành (Thay thế hoặc bổ sung logic trong startQuiz)
+// --- THAY THẾ HÀM startPracticeSession CŨ BẰNG HÀM NÀY ---
+
 startPracticeSession() {
-    // Lọc ra các cây có ảnh (dựa vào ID hoặc Gallery)
-    const candidates = [];
-    this.plants.forEach(p => {
-        // Ảnh mặc định theo ID
-        candidates.push({
-            plant: p,
-            imgSrc: `${p.id}.jpg`,
-            correctName: p.tenDuocLieu // Mặc định tên theo cây
-        });
+    // 1. Lọc ra các cây có đánh dấu THỰC HÀNH
+    const practicePlants = this.plants.filter(p => p.isThucHanh === true);
 
-        // Ảnh trong Gallery
-        if (p.gallery && Array.isArray(p.gallery)) {
-            p.gallery.forEach(g => {
-                candidates.push({
-                    plant: p,
-                    imgSrc: g.src,
-                    // YÊU CẦU CỦA BẠN: Nếu gallery có tên (title), dùng nó làm đáp án. Nếu không, dùng tên cây gốc.
-                    correctName: g.title && g.title.trim() ? g.title.trim() : p.tenDuocLieu
-                });
-            });
-        }
-    });
-
-    if (candidates.length < 5) {
-        this.showToast("Không đủ dữ liệu ảnh để tạo bài thi (Cần tối thiểu 5 ảnh).", "error");
+    if (practicePlants.length < 5) {
+        this.showToast("Cần ít nhất 5 dược liệu thuộc danh sách 'Thực hành' để bắt đầu.", "error");
         return;
     }
 
-    // Random lấy 5 câu
-    const sessionItems = candidates.sort(() => 0.5 - Math.random()).slice(0, 5);
+    // 2. Trộn ngẫu nhiên danh sách cây thực hành và lấy 5 CÂY KHÁC NHAU
+    // Việc lấy cây trước khi lấy ảnh đảm bảo không bao giờ bị trùng cây trong 1 lượt.
+    const selectedPlants = practicePlants.sort(() => 0.5 - Math.random()).slice(0, 5);
 
-    // Khởi tạo state cho bài thi
+    // 3. Với mỗi cây, chọn ngẫu nhiên 1 ảnh (Ava hoặc Gallery) để làm đề
+    const sessionItems = selectedPlants.map(p => {
+        // Tập hợp tất cả ảnh khả dụng của cây này
+        const availableImages = [];
+
+        // Ảnh mặc định theo ID
+        availableImages.push({
+            src: `${p.id}.jpg`,
+            name: p.tenDuocLieu // Đáp án mặc định
+        });
+
+        // Ảnh trong Gallery (nếu có)
+        if (p.gallery && Array.isArray(p.gallery)) {
+            p.gallery.forEach(g => {
+                availableImages.push({
+                    src: g.src,
+                    // Nếu ảnh gallery có tên riêng (title) thì dùng nó làm đáp án, không thì dùng tên cây
+                    name: g.title && g.title.trim() ? g.title.trim() : p.tenDuocLieu
+                });
+            });
+        }
+
+        // Chọn ngẫu nhiên 1 ảnh trong số các ảnh của cây này
+        const randomImg = availableImages[Math.floor(Math.random() * availableImages.length)];
+
+        return {
+            plant: p,
+            imgSrc: randomImg.src,
+            correctName: randomImg.name
+        };
+    });
+
+    // --- PHẦN UI SETUP (GIỮ NGUYÊN) ---
     this.practiceState = {
         items: sessionItems,
         currentIndex: 0,
@@ -3847,7 +3861,6 @@ startPracticeSession() {
     this.renderPracticeNav();
     this.renderPracticeQuestion(0);
 }
-
 // 2. Render thanh điều hướng (1, 2, 3, 4, 5)
 renderPracticeNav() {
     const container = document.getElementById('practice-nav-container');
