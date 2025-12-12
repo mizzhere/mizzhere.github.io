@@ -465,7 +465,14 @@
     "luuY": "Rất độc, thuộc thuốc độc bảng A. Không được uống dược liệu chưa qua chế biến. Chế biến phải đúng cách để loại bỏ vị cay tê.",
     "dacDiemDuocLieu": "Rễ củ hình nón, màu nâu đen. Ô đầu là củ mẹ, to hơn. Phụ tử là củ con, nhỏ hơn, mọc bên cạnh củ mẹ.",
     "tenKhoaHoc": "Aconitum fortunei Hemsl.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "32_1765517266110.jpg",
+        "title": "Phụ tử",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "33",
