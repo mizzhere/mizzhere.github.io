@@ -896,7 +896,14 @@
     "luuY": "Tinh dầu có tỷ trọng lớn hơn 1.",
     "dacDiemDuocLieu": "Nụ hoa khô, màu nâu sẫm, hình dáng giống chiếc đinh, mùi thơm mạnh.",
     "tenKhoaHoc": "Syzygium aromaticum (L.) Merr. & L.M.Perry",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233309_1765532612042.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233310",
