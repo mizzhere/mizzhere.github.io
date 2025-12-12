@@ -715,7 +715,8 @@
     "lieuDung": "Không có thông tin.",
     "luuY": "Không dùng cho trẻ em do có thể gây ngừng thở và ngừng tim.",
     "dacDiemDuocLieu": "Menthol: thể rắn, kết tinh hình kim, không màu, mùi thơm mát đặc trưng.",
-    "tenKhoaHoc": "Mentha arvensis L."
+    "tenKhoaHoc": "Mentha arvensis L.",
+    "isThucHanh": true
   },
   {
     "id": "1758897233298",
@@ -1343,7 +1344,7 @@
     "luuY": "Phụ nữ có thai, người tỳ vị hư hàn (ăn kém, hay đi lỏng) không được dùng.",
     "dacDiemDuocLieu": "Mai hình bầu dục hoặc trứng, mặt ngoài màu xám nâu hoặc lục xám, có nếp nhăn dạng lưới, không có lớp sừng.",
     "tenKhoaHoc": "Trionyx sinensis Wiegmann",
-    "isThucHanh": false,
+    "isThucHanh": true,
     "gallery": [
       {
         "src": "1758897233336_1765532391228.jpg",
