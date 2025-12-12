@@ -598,14 +598,14 @@ html.dark .practice-input.incorrect { background-color: rgba(239, 68, 68, 0.1); 
 }
 /* CSS CHO CHẾ ĐỘ NHANH */
 .quick-feedback-overlay {
-    position: absolute;
+    position: fixed; /* ĐỔI TỪ absolute SANG fixed */
     inset: 0;
     background: rgba(0,0,0,0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 50;
+    z-index: 1000; /* Tăng Z-index lên cao để đè lên mọi thứ */
     color: white;
     padding: 2rem;
     text-align: center;
@@ -3189,9 +3189,21 @@ renderQuickQuestion() {
 
     // Focus vào ô input
     const inputEl = document.getElementById('quick-input');
-    setTimeout(() => inputEl.focus(), 100);
+    
+    // [FIX] Tăng delay lên 300ms và thêm scrollIntoView để đẩy ô nhập lên giữa màn hình
+    setTimeout(() => {
+        inputEl.focus();
+        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
 
-    // Gán sự kiện Enter và Click
+    // [FIX] Gán thêm sự kiện click để nếu người dùng bấm ra ngoài rồi bấm lại, nó vẫn cuộn lên
+    inputEl.addEventListener('click', () => {
+        setTimeout(() => {
+            inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    });
+
+    // Gán sự kiện Enter và Click nút xác nhận
     const handleSubmit = () => this.handleQuickAnswer(inputEl.value);
     
     document.getElementById('quick-submit-btn').onclick = handleSubmit;
@@ -3237,25 +3249,28 @@ handleQuickAnswer(userVal) {
     }
 }
 
-// 4. Hiển thị bảng đáp án khi sai
+// --- THAY THẾ HÀM showQuickFeedback CŨ BẰNG HÀM NÀY ---
+
 showQuickFeedback(plant, imgName, famInfo) {
     this.quickState.isFeedbackShowing = true;
 
     // Tạo overlay
     const overlay = document.createElement('div');
     overlay.className = 'quick-feedback-overlay';
+    
+    // [SỬA LỖI Ở DÒNG DƯỚI]: Thay 'animate-on-scroll' bằng 'view-fade-in'
     overlay.innerHTML = `
-        <div class="bg-[var(--card)] text-[var(--foreground)] p-6 rounded-xl max-w-sm w-full shadow-2xl border-2 border-red-500 animate-on-scroll">
+        <div class="bg-[var(--card)] text-[var(--foreground)] p-6 rounded-xl max-w-sm w-full shadow-2xl border-2 border-red-500 view-fade-in relative">
             <div class="text-red-500 mb-4 flex justify-center"><i data-lucide="x-circle" class="w-12 h-12"></i></div>
             <h3 class="text-xl font-bold mb-4 text-center">Sai rồi!</h3>
             
             <div class="text-left space-y-2 text-sm bg-[var(--accent)] p-4 rounded-lg mb-4">
-                <p><strong>Tên cây:</strong> <span class="text-[var(--primary)]">${imgName}</span></p>
+                <p><strong>Tên cây:</strong> <span class="text-[var(--primary)] text-base font-bold">${imgName}</span></p>
                 <p><strong>Họ Tiếng Việt:</strong> ${famInfo.vietnamese}</p>
                 <p><strong>Họ Khoa học:</strong> ${famInfo.scientific}</p>
             </div>
 
-            <button id="next-plant-btn" class="w-full py-2 bg-[var(--primary)] text-white rounded-lg font-bold">
+            <button id="next-plant-btn" class="w-full py-3 bg-[var(--primary)] text-white rounded-lg font-bold hover:opacity-90 transition-opacity shadow-md">
                 Qua cây tiếp theo
             </button>
         </div>
@@ -3265,14 +3280,20 @@ showQuickFeedback(plant, imgName, famInfo) {
     lucide.createIcons();
 
     // Sự kiện nút Next
-    document.getElementById('next-plant-btn').onclick = () => {
-        overlay.remove();
-        this.quickState.isFeedbackShowing = false;
-        this.quickState.plantIndex++; // Buộc qua cây mới
-        this.renderQuickQuestion();
-    };
+    // Sử dụng setTimeout nhỏ để đảm bảo DOM đã render xong mới gán sự kiện (an toàn hơn)
+    setTimeout(() => {
+        const nextBtn = document.getElementById('next-plant-btn');
+        if(nextBtn) {
+            nextBtn.onclick = () => {
+                overlay.remove();
+                this.quickState.isFeedbackShowing = false;
+                this.quickState.plantIndex++; // Buộc qua cây mới
+                this.renderQuickQuestion();
+            };
+            nextBtn.focus(); // Focus vào nút để người dùng có thể bấm Enter ngay
+        }
+    }, 50);
 }
-
 // 5. Lưu lịch sử sai vào LocalStorage
 saveWrongHistory(plant) {
     let history = JSON.parse(localStorage.getItem('wrong_practice_history') || '[]');
