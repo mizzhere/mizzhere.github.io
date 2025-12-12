@@ -1507,34 +1507,41 @@
       }
     ]
   },
-{
-  "id": "1758897233343",
-  "tenDuocLieu": "Thiên niên kiện",
-  "hoCay": "Araceae (Họ Ráy)",
-  "nhomChat": "Tinh dầu > Monoterpen > Alcol",
-  "thanhPhanHoaHocChinh": "Linalol, Terpineol, Sabinen, Limonen, Acetat linalyl",
-  "boPhanDung": "Thân rễ",
-  "tacDung": "Trừ phong thấp, mạnh gân cốt, chỉ thống (giảm đau).",
-  "congDung": "(Y học cổ truyền): Chuyên trị phong tê thấp, đau nhức xương khớp, chân tay tê bại, người già hay đau người, nhức xương. Chữa đau dạ dày, đau bụng kinh. (Y học hiện đại): Là nguồn nguyên liệu chiết xuất Linalol dùng trong hương liệu.",
-  "lieuDung": "6 - 12g/ngày. Dạng thuốc sắc hoặc ngâm rượu uống/xoa bóp.",
-  "luuY": "Người âm hư nội nhiệt (nóng trong, táo bón, miệng khô), người hay nhức đầu không nên dùng.",
-  "dacDiemDuocLieu": "Thân rễ mập, khô, có nhiều vết nhăn dọc và vết tích của rễ con. Đặc điểm nhận dạng quan trọng: Khi bẻ ngang thấy có nhiều xơ cứng và dai nổi lên như bàn chải, mùi thơm nồng, vị cay, nóng.",
-  "tenKhoaHoc": "Homalomena occulta (Lour.) Schott",
-  "isThucHanh": true
-},
-{
-  "id": "1758897233344",
-  "tenDuocLieu": "Nhân trần",
-  "hoCay": "Scrophulariaceae (Họ Hoa mõm chó)",
-  "nhomChat": "Tinh dầu > Flavonoid",
-  "thanhPhanHoaHocChinh": "Tinh dầu (Cineol), Flavonoid, Saponin",
-  "boPhanDung": "Phần trên mặt đất (Herba Adenosmatis caerulei)",
-  "tacDung": "Lợi mật, tăng thải độc gan, kháng khuẩn, chống viêm, hạ huyết áp.",
-  "congDung": "(Y học cổ truyền): Thanh nhiệt, lợi thấp, thoái hoàng (trị vàng da). Chữa viêm gan vàng da, tiểu tiện vàng, phụ nữ sau sinh ăn chậm tiêu. (Y học hiện đại): Điều trị viêm gan cấp và mạn tính, viêm túi mật.",
-  "lieuDung": "10 - 20g/ngày. Dạng thuốc sắc, siro hoặc hãm nước uống.",
-  "luuY": "Không nên uống thay nước trà hàng ngày nếu không có bệnh về gan mật (do tính lợi tiểu và tăng tiết mật quá mức gây mệt mỏi). Cẩn trọng khi dùng chung với Cam thảo (có tính giữ nước).",
-  "dacDiemDuocLieu": "Thân hình trụ, màu nâu tím, có lông dày mịn. Lá mọc đối, hình trái xoan, mép khía răng cưa. Cụm hoa bông mọc ở kẽ lá hoặc đầu cành, hoa màu tím lam. Toàn cây có mùi thơm hắc đặc trưng.",
-  "tenKhoaHoc": "Adenosma caeruleum R.Br.",
-  "isThucHanh": true
-}
+  {
+    "id": "1758897233343",
+    "tenDuocLieu": "Thiên niên kiện",
+    "hoCay": "Araceae (Họ Ráy)",
+    "nhomChat": "Tinh dầu > Monoterpen > Alcol",
+    "thanhPhanHoaHocChinh": "Linalol, Terpineol, Sabinen, Limonen, Acetat linalyl",
+    "boPhanDung": "Thân rễ",
+    "tacDung": "Trừ phong thấp, mạnh gân cốt, chỉ thống (giảm đau).",
+    "congDung": "(Y học cổ truyền): Chuyên trị phong tê thấp, đau nhức xương khớp, chân tay tê bại, người già hay đau người, nhức xương. Chữa đau dạ dày, đau bụng kinh. (Y học hiện đại): Là nguồn nguyên liệu chiết xuất Linalol dùng trong hương liệu.",
+    "lieuDung": "6 - 12g/ngày. Dạng thuốc sắc hoặc ngâm rượu uống/xoa bóp.",
+    "luuY": "Người âm hư nội nhiệt (nóng trong, táo bón, miệng khô), người hay nhức đầu không nên dùng.",
+    "dacDiemDuocLieu": "Thân rễ mập, khô, có nhiều vết nhăn dọc và vết tích của rễ con. Đặc điểm nhận dạng quan trọng: Khi bẻ ngang thấy có nhiều xơ cứng và dai nổi lên như bàn chải, mùi thơm nồng, vị cay, nóng.",
+    "tenKhoaHoc": "Homalomena occulta (Lour.) Schott",
+    "isThucHanh": true
+  },
+  {
+    "id": "1758897233344",
+    "tenDuocLieu": "Nhân trần",
+    "hoCay": "Scrophulariaceae (Họ Hoa mõm chó)",
+    "nhomChat": "Tinh dầu > Flavonoid",
+    "thanhPhanHoaHocChinh": "Tinh dầu (Cineol), Flavonoid, Saponin",
+    "boPhanDung": "Phần trên mặt đất (Herba Adenosmatis caerulei)",
+    "tacDung": "Lợi mật, tăng thải độc gan, kháng khuẩn, chống viêm, hạ huyết áp.",
+    "congDung": "(Y học cổ truyền): Thanh nhiệt, lợi thấp, thoái hoàng (trị vàng da). Chữa viêm gan vàng da, tiểu tiện vàng, phụ nữ sau sinh ăn chậm tiêu. (Y học hiện đại): Điều trị viêm gan cấp và mạn tính, viêm túi mật.",
+    "lieuDung": "10 - 20g/ngày. Dạng thuốc sắc, siro hoặc hãm nước uống.",
+    "luuY": "Không nên uống thay nước trà hàng ngày nếu không có bệnh về gan mật (do tính lợi tiểu và tăng tiết mật quá mức gây mệt mỏi). Cẩn trọng khi dùng chung với Cam thảo (có tính giữ nước).",
+    "dacDiemDuocLieu": "Thân hình trụ, màu nâu tím, có lông dày mịn. Lá mọc đối, hình trái xoan, mép khía răng cưa. Cụm hoa bông mọc ở kẽ lá hoặc đầu cành, hoa màu tím lam. Toàn cây có mùi thơm hắc đặc trưng.",
+    "tenKhoaHoc": "Adenosma caeruleum R.Br.",
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233344_1765536537593.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
+  }
 ]
