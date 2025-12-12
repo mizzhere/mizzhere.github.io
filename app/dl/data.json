@@ -1336,7 +1336,14 @@
     "luuY": "Phụ nữ có thai, người tỳ vị hư hàn (ăn kém, hay đi lỏng) không được dùng.",
     "dacDiemDuocLieu": "Mai hình bầu dục hoặc trứng, mặt ngoài màu xám nâu hoặc lục xám, có nếp nhăn dạng lưới, không có lớp sừng.",
     "tenKhoaHoc": "Trionyx sinensis Wiegmann",
-    "isThucHanh": false
+    "isThucHanh": false,
+    "gallery": [
+      {
+        "src": "1758897233336_1765532391228.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233337",
