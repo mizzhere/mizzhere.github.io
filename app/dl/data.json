@@ -772,7 +772,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Quả nang khô, hình cầu, có gai mềm, mùi thơm.",
     "tenKhoaHoc": "Amomum villosum Lour.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233301_1765531910728.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233302",
