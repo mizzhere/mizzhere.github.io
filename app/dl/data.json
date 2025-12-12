@@ -716,7 +716,14 @@
     "luuY": "Không dùng cho trẻ em do có thể gây ngừng thở và ngừng tim.",
     "dacDiemDuocLieu": "Menthol: thể rắn, kết tinh hình kim, không màu, mùi thơm mát đặc trưng.",
     "tenKhoaHoc": "Mentha arvensis L.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233297_1765533607378.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233298",
