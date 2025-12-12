@@ -947,7 +947,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Vỏ thân khô, dạng mảnh hoặc cuộn tròn, màu nâu đỏ, mùi thơm, vị cay ngọt.",
     "tenKhoaHoc": "Cinnamomum cassia (L.) J.Presl",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233313_1765530198394.jpg",
+        "title": "Quế nhục",
+        "note": "Là vỏ thân"
+      }
+    ]
   },
   {
     "id": "1758897233314",
