@@ -513,16 +513,17 @@
   {
     "id": "1758897192219",
     "tenDuocLieu": "Hoàng đằng",
-    "hoCay": "Menispermaceae (Họ Tiết dê)",
-    "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin (bậc IV)",
-    "thanhPhanHoaHocChinh": "Palmatin, Columbamin, Jatrorrhizin",
-    "boPhanDung": "Thân",
-    "tacDung": "",
-    "congDung": "",
-    "lieuDung": "",
-    "luuY": "",
-    "dacDiemDuocLieu": "Dây leo gỗ lớn, thân cắt ngang có màu vàng, vị đắng.",
-    "tenKhoaHoc": "Fibraurea tinctoria Lour."
+  "hoCay": "Menispermaceae (Họ Tiết dê)",
+  "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
+  "thanhPhanHoaHocChinh": "Palmatin, Jatrorrhizin, Columbamin",
+  "boPhanDung": "Thân và rễ",
+  "tacDung": "Palmatin: Có tác dụng kháng khuẩn (đặc biệt với tụ cầu khuẩn và liên cầu khuẩn), chống nấm, chống viêm.",
+  "congDung": "(Y học hiện đại): Là nguồn nguyên liệu chính để chiết xuất Palmatin làm thuốc viên chữa lỵ, viêm ruột hoặc thuốc nhỏ mắt chữa viêm kết mạc. (Y học cổ truyền): Chữa các chứng nhiệt độc, kiết lỵ, tiêu chảy, đau mắt đỏ, mụn nhọt, lở ngứa.",
+  "lieuDung": "6 - 12g/ngày, dạng thuốc sắc hoặc bột.",
+  "luuY": "Dược liệu có tính hàn, người tỳ vị hư hàn (bụng lạnh, hay đi ngoài lỏng) cần thận trọng khi dùng.",
+  "dacDiemDuocLieu": "Thân leo to, mặt cắt ngang thân và rễ có hình bánh xe với các tia gỗ màu vàng tươi đặc trưng, vị rất đắng.",
+  "tenKhoaHoc": "Fibraurea tinctoria Lour.",
+  "isThucHanh": true
   },
   {
     "id": "1758897192220",
