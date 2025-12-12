@@ -857,7 +857,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Lá khô có mùi thơm rất bền.",
     "tenKhoaHoc": "Pogostemon cablin (Blanco) Benth.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233307_1765527213906.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233308",
