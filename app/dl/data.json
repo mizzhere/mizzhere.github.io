@@ -1362,18 +1362,25 @@
     ]
   },
   {
-  "id": "1758897233341",
-  "tenDuocLieu": "Phấn hoa",
-  "hoCay": "Apidae (Họ Ong)",
-  "nhomChat": "Động vật > Protein & Vitamin",
-  "thanhPhanHoaHocChinh": "Protein, Acid amin, Carbohydrat, Vitamin (nhóm B, C, E), Flavonoid",
-  "boPhanDung": "Hạt phấn do ong thợ thu gom",
-  "tacDung": "Bồi bổ sức khỏe, nâng cao miễn dịch, chống oxy hóa.",
-  "congDung": "(Y học cổ truyền): Kiện tỳ, ích khí, bổ huyết. Chữa suy nhược cơ thể, biếng ăn, hoa mắt chóng mặt, mất ngủ. (Y học hiện đại): Hỗ trợ điều trị phì đại tiền liệt tuyến, phục hồi sức khỏe sau ốm, làm đẹp da.",
-  "lieuDung": "5 - 20g/ngày. Ăn trực tiếp, pha với nước ấm hoặc mật ong.",
-  "luuY": "Người có tiền sử dị ứng với phấn hoa (viêm mũi dị ứng, hen phế quản) cần thận trọng, thử liều nhỏ trước.",
-  "dacDiemDuocLieu": "Dạng hạt nhỏ (viên phấn), màu sắc thay đổi (vàng, cam, đỏ, nâu) tùy loại hoa, tơi xốp, mùi thơm đặc trưng, vị ngọt nhẹ, hơi ngậy.",
-  "tenKhoaHoc": "Apis cerana Fabricius hoặc Apis mellifera L.",
-  "isThucHanh": true
-}
+    "id": "1758897233341",
+    "tenDuocLieu": "Phấn hoa",
+    "hoCay": "Apidae (Họ Ong)",
+    "nhomChat": "Động vật > Protein & Vitamin",
+    "thanhPhanHoaHocChinh": "Protein, Acid amin, Carbohydrat, Vitamin (nhóm B, C, E), Flavonoid",
+    "boPhanDung": "Hạt phấn do ong thợ thu gom",
+    "tacDung": "Bồi bổ sức khỏe, nâng cao miễn dịch, chống oxy hóa.",
+    "congDung": "(Y học cổ truyền): Kiện tỳ, ích khí, bổ huyết. Chữa suy nhược cơ thể, biếng ăn, hoa mắt chóng mặt, mất ngủ. (Y học hiện đại): Hỗ trợ điều trị phì đại tiền liệt tuyến, phục hồi sức khỏe sau ốm, làm đẹp da.",
+    "lieuDung": "5 - 20g/ngày. Ăn trực tiếp, pha với nước ấm hoặc mật ong.",
+    "luuY": "Người có tiền sử dị ứng với phấn hoa (viêm mũi dị ứng, hen phế quản) cần thận trọng, thử liều nhỏ trước.",
+    "dacDiemDuocLieu": "Dạng hạt nhỏ (viên phấn), màu sắc thay đổi (vàng, cam, đỏ, nâu) tùy loại hoa, tơi xốp, mùi thơm đặc trưng, vị ngọt nhẹ, hơi ngậy.",
+    "tenKhoaHoc": "Apis cerana Fabricius hoặc Apis mellifera L.",
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233341_1765529712002.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
+  }
 ]
