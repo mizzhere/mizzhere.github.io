@@ -464,6 +464,31 @@
             .grid-locked {
                 pointer-events: none !important;
             }
+            /* --- CSS CHO ẢNH DƯỢC LIỆU --- */
+            .plant-img-thumb {
+                width: 100%;
+                height: 160px; /* Chiều cao cố định cho ảnh thẻ */
+                object-fit: cover; /* Đảm bảo ảnh đầy khung mà không bị méo */
+                background-color: var(--muted); /* Màu nền khi ảnh đang tải */
+                border-bottom: 1px solid var(--border);
+                transition: opacity 0.3s ease;
+            }
+
+            .plant-img-detail {
+                width: 100%;
+                max-height: 400px;
+                object-fit: contain; /* Hiển thị trọn vẹn ảnh trong chi tiết */
+                background-color: var(--card); /* Nền tối/sáng tùy theme */
+                border-radius: 0.75rem;
+                margin-bottom: 1.5rem;
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-sm);
+            }
+
+            /* Ẩn ảnh nếu lỗi tải (để giao diện sạch) */
+            img.img-error {
+                display: none !important;
+            }
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -760,7 +785,7 @@
                                             checked
                                             class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
                                         />
-                                        <span class="text-sm">Họ thực vật (Tên & Phân loại)</span>
+                                        <span class="text-sm">Họ thực vật</span>
                                     </label>
                                     <label
                                         class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
@@ -775,16 +800,15 @@
                                         <span class="text-sm">Thành phần hóa học</span>
                                     </label>
                                     <label
-                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
+                                        class="hidden flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
                                     >
                                         <input
                                             type="checkbox"
                                             name="quiz-type"
                                             value="use"
-                                            checked
                                             class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
                                         />
-                                        <span class="text-sm">Công dụng & Tác dụng</span>
+                                        <span class="text-sm">Công dụng & Tác dụng (Tạm khóa)</span>
                                     </label>
                                 </div>
                             </div>
@@ -2321,7 +2345,7 @@
                         const typeMapping = {
                             family: ["family_sci_to_vn", "family_vn_to_sci", "plant_to_sci_family"],
                             chem: ["plant_to_chem"],
-                            use: ["plant_to_congdung", "plant_to_tacdung"],
+                            //use: ["plant_to_congdung", "plant_to_tacdung"],
                         };
 
                         // 2. Tạo danh sách các loại câu hỏi được phép dựa trên checkbox
@@ -3038,6 +3062,9 @@
                                       .join("")}</ul>`;
 
                         // Render HTML
+                        const imgUrl = `./images/${plant.id}.jpg`;
+
+                        // Render HTML
                         this.els.plantDetailView.innerHTML = `
                         <div class="max-w-4xl mx-auto">
                             <div class="md:hidden -mx-4 px-2 pt-2 pb-1 mb-2 top-0 bg-[var(--background)]/80 backdrop-blur-sm z-20 flex items-center justify-between">
@@ -3046,6 +3073,7 @@
                                 </button>
                                 <button id="detail-home-btn-mobile" class="p-2 rounded-full hover:bg-[var(--accent)] custom-ring"><i data-lucide="home"></i></button>
                             </div>
+
                             <div class="hidden md:flex items-center justify-between mb-4">
                                 <button id="back-to-list-desktop" class="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium custom-ring rounded-md -ml-2 p-1">
                                     <i data-lucide="arrow-left"></i><span>${backTitle}</span>
@@ -3055,6 +3083,13 @@
 
                             <div class="detail-section animate-on-scroll">
                                 <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 md:p-8">
+                                    
+                                    <div class="w-full flex justify-center bg-[var(--accent)]/30 rounded-lg mb-6 overflow-hidden">
+                                        <img src="${imgUrl}" 
+                                             alt="${plant.tenDuocLieu}" 
+                                             class="plant-img-detail" 
+                                             onerror="this.style.display='none'; this.parentElement.style.display='none'">
+                                    </div>
                                     <div class="flex flex-col md:flex-row justify-between md:items-start mb-6 gap-4">
                                         <div class="flex-1 plant-title-block">
                                             <div class="flex items-start gap-3">
@@ -3090,37 +3125,30 @@
                             ${
                                 prevPlant || nextPlant
                                     ? `<div class="detail-section mt-8"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                ${prevPlant ? `<a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Trước</p><h4 class="font-semibold text-lg">${prevPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
-                                ${nextPlant ? `<a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Sau <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg">${nextPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
+                                ${prevPlant ? `<a href="#detail/${prevPlant.id}" data-id="${prevPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-left group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1"></i> Trước</p><h4 class="font-semibold text-lg truncate">${prevPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
+                                ${nextPlant ? `<a href="#detail/${nextPlant.id}" data-id="${nextPlant.id}" class="nav-link block p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all text-right group animate-on-scroll"><p class="text-sm text-[var(--muted-foreground)] flex items-center justify-end gap-2">Sau <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i></p><h4 class="font-semibold text-lg truncate">${nextPlant.tenDuocLieu}</h4></a>` : "<div></div>"}
                             </div></div>`
                                     : ""
                             }
-
                             ${
                                 relatedFamilyPlants.length > 0
-                                    ? `
-                            <div class="detail-section mt-8">
-                                <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng họ</h3>${relatedFamilyPlants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${plant.hoCay}">Xem tất cả (${relatedFamilyPlants.length})</button>` : ""}</div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${relatedFamilyPlants
-                                    .slice(0, 3)
-                                    .map((p) => this.createPlantCardHTML(p))
-                                    .join("")}</div>
-                            </div>`
+                                    ? `<div class="detail-section mt-8"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng họ</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${relatedFamilyPlants
+                                          .slice(0, 3)
+                                          .map((p) => this.createPlantCardHTML(p))
+                                          .join("")}</div></div>`
                                     : ""
                             }
+                            
+                             ${relatedGroupsData
+                                 .map(
+                                     (groupData) =>
+                                         `<div class="detail-section mt-8"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng nhóm ${groupData.groupName}</h3></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${groupData.plants
+                                             .slice(0, 3)
+                                             .map((p) => this.createPlantCardHTML(p))
+                                             .join("")}</div></div>`
+                                 )
+                                 .join("")}
 
-                            ${relatedGroupsData
-                                .map(
-                                    (groupData) => `
-                            <div class="detail-section mt-8">
-                                <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Cây cùng nhóm ${groupData.groupName}</h3>${groupData.plants.length > 3 ? `<button class="search-trigger text-sm font-medium text-[var(--primary)] hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]" data-search-term="${groupData.fullPath}">Xem tất cả (${groupData.plants.length})</button>` : ""}</div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${groupData.plants
-                                    .slice(0, 3)
-                                    .map((p) => this.createPlantCardHTML(p))
-                                    .join("")}</div>
-                            </div>`
-                                )
-                                .join("")}
                         </div>`;
 
                         // --- KHÔI PHỤC: Gọi hàm transition đúng kiểu cũ ---
@@ -3331,53 +3359,70 @@
                         }
                     }
 
-                    // THAY THẾ TOÀN BỘ HÀM CŨ
+                    // Thay thế hoàn toàn phương thức renderSearchResults cũ
                     renderSearchResults(query) {
                         this.els.searchResultsGrid.classList.remove("grid-locked");
                         const normalizedQuery = this._normalizeText(query);
+
+                        // 1. Xử lý khi input rỗng
                         if (!normalizedQuery) {
-                            this.els.searchResultsGrid.innerHTML = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i><p>Tìm kiếm dược liệu theo tên, họ, ...</p></div>`;
+                            this.els.searchResultsGrid.innerHTML = `
+            <div class="text-center text-[var(--muted-foreground)] pt-10 animate-on-scroll is-visible">
+                <i data-lucide="search" class="w-12 h-12 mx-auto mb-4"></i>
+                <p>Tìm kiếm dược liệu theo tên, họ, ...</p>
+            </div>`;
                             this.handleSearchAutocomplete(query, this.els.searchViewInput);
                             lucide.createIcons();
                             return;
                         }
 
+                        // 2. Logic lọc dữ liệu (Data processing layer)
                         const originalFilter = { ...this.currentFilter };
                         this.currentFilter.group = "all";
                         this.currentFilter.search = query;
                         const { exactMatches, fuzzyMatches } = this.getFilteredPlants();
                         this.currentFilter = originalFilter;
 
+                        // 3. Render HTML (Presentation layer)
                         let html = "";
-
                         if (exactMatches.length === 0 && fuzzyMatches.length === 0) {
-                            html = `<div class="text-center text-[var(--muted-foreground)] pt-10"><i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i><p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p></div>`;
+                            html = `
+            <div class="col-span-full text-center text-[var(--muted-foreground)] pt-10 animate-on-scroll">
+                <i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4"></i>
+                <p class="font-semibold">Không tìm thấy kết quả cho "${query}"</p>
+            </div>`;
                         } else {
                             if (exactMatches.length > 0) {
-                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider">Có ${exactMatches.length} kết quả khớp nhất</h2>`;
+                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mb-2">Có ${exactMatches.length} kết quả khớp nhất</h2>`;
                                 html += exactMatches
                                     .map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery)))
                                     .join("");
                             }
                             if (fuzzyMatches.length > 0) {
-                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mt-6">Có thể bạn đang tìm...</h2>`;
+                                html += `<h2 class="col-span-full sticky-group-header text-sm font-semibold uppercase text-[var(--muted-foreground)] tracking-wider mt-6 mb-2">Có thể bạn đang tìm...</h2>`;
                                 html += fuzzyMatches
                                     .map((p) => this.createPlantCardHTML(p, this._findMatchContext(p, normalizedQuery)))
                                     .join("");
                             }
                         }
 
-                        this.els.searchResultsGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${html}</div>`;
+                        this.els.searchResultsGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-20">${html}</div>`;
 
+                        // 4. Kích hoạt Animation & Events (Interaction layer)
                         this.addEventListenersToCards(this.els.searchResultsGrid, true);
-                        this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll").forEach((el, i) => {
-                            el.style.transitionDelay = `${i * 50}ms`;
+
+                        // [FIX QUAN TRỌNG] Reset và thêm delay cho animation
+                        const animatedElements = this.els.searchResultsGrid.querySelectorAll(".animate-on-scroll");
+                        animatedElements.forEach((el, i) => {
+                            el.classList.remove("is-visible"); // Reset trạng thái để animation chạy lại
+                            el.style.transitionDelay = `${i * 50}ms`; // Hiệu ứng domino (50ms mỗi item)
                             this.observer.observe(el);
                         });
 
                         this.handleSearchAutocomplete(query, this.els.searchViewInput);
                         lucide.createIcons();
                     }
+
                     // THÊM HÀM MỚI NÀY
                     handleSearchAutocomplete(value, inputEl) {
                         const isMobile = inputEl.id === "search-view-input";
@@ -3596,6 +3641,7 @@
                         let hoCayHTML = plant.hoCay;
                         let contextHTML = "";
 
+                        // Logic highlight tìm kiếm (giữ nguyên)
                         if (this.currentFilter.search) {
                             tenDuocLieuHTML = this._highlightText(plant.tenDuocLieu, this.currentFilter.search);
                             hoCayHTML = this._highlightText(plant.hoCay, this.currentFilter.search);
@@ -3608,21 +3654,41 @@
                             }
                         }
 
+                        // Đường dẫn ảnh (Giả định ảnh là .jpg và tên file là ID)
+                        // Thêm timestamp để tránh cache khi bạn cập nhật ảnh mới
+                        const imgUrl = `./images/${plant.id}.jpg`;
+
                         return `
             <div class="plant-card animate-on-scroll ${isSelected ? "selected" : ""}" data-id="${plant.id}">
-                <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col">
-                    <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenDuocLieuHTML}</h3>
-                    <p class="text-sm text-[var(--muted-foreground)] mb-2">${hoCayHTML}</p>
-                    <div class="flex-grow"></div>
-                    ${contextHTML}
-                    <div class="flex flex-wrap gap-1 mt-2">${(plant.nhomChat || "")
-                        .split(",")
-                        .slice(0, 3)
-                        .map(
-                            (g) =>
-                                `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${g.trim().split(">").pop()}</span>`
-                        )
-                        .join("")}
+                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col overflow-hidden hover:border-[var(--primary)] transition-colors">
+                    
+                    <div class="relative w-full">
+                        <img src="${imgUrl}" 
+                             alt="${plant.tenDuocLieu}" 
+                             class="plant-img-thumb" 
+                             loading="lazy"
+                             onerror="this.classList.add('img-error'); this.parentElement.style.display='none'">
+                    </div>
+
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenDuocLieuHTML}</h3>
+                        <p class="text-sm text-[var(--muted-foreground)] mb-2">${hoCayHTML}</p>
+                        
+                        <div class="flex-grow"></div>
+                        ${contextHTML}
+                        
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${(plant.nhomChat || "")
+                                .split(",")
+                                .slice(0, 3)
+                                .map((g) => {
+                                    const label = g.trim().split(">").pop();
+                                    return label
+                                        ? `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${label}</span>`
+                                        : "";
+                                })
+                                .join("")}
+                        </div>
                     </div>
                 </div>
             </div>`;
