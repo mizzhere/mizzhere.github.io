@@ -701,7 +701,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Quả (hạt) nhỏ, hình cầu, màu vàng nâu, có mùi thơm đặc trưng.",
     "tenKhoaHoc": "Coriandrum sativum L.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233296_1765533747407.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233297",
