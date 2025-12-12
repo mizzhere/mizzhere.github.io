@@ -34,9 +34,9 @@
     "tenDuocLieu": "Bình vôi",
     "hoCay": "Menispermaceae (Họ Tiết dê)",
     "nhomChat": "Alkaloid > Alkaloid thực > Isoquinolin",
-    "thanhPhanHoaHocChinh": "Rotundin, Cepharanthin",
+    "thanhPhanHoaHocChinh": "Rotundin (L-tetrahydropalmatin), Cepharanthin",
     "boPhanDung": "Thân củ",
-    "tacDung": "Rotundin: An thần, gây ngủ, hạ huyết áp, giảm đau; Cepharanthin: Tăng cường sinh sản kháng thể, tốt cho người bị giảm bạch cầu.",
+    "tacDung": "Rotundin (L-tetrahydropalmatin): An thần, gây ngủ, hạ huyết áp, giảm đau; Cepharanthin: Tăng cường sinh sản kháng thể, tốt cho người bị giảm bạch cầu.",
     "congDung": "(Y học hiện đại): Dùng làm thuốc an thần gây ngủ, giảm đau trong bệnh loét dạ dày, điều trị rối loạn tâm thần. (Y học cổ truyền): Chữa mất ngủ, ho hen, sốt, lỵ, đau bụng.",
     "lieuDung": "Viên nén Rotundin 30mg, 60mg. Thuốc tiêm Rotundin sulphat 60mg/2ml.",
     "luuY": "Liều cao Rotundin có thể gây kích thích, co giật.",
@@ -896,14 +896,7 @@
     "luuY": "Tinh dầu có tỷ trọng lớn hơn 1.",
     "dacDiemDuocLieu": "Nụ hoa khô, màu nâu sẫm, hình dáng giống chiếc đinh, mùi thơm mạnh.",
     "tenKhoaHoc": "Syzygium aromaticum (L.) Merr. & L.M.Perry",
-    "isThucHanh": true,
-    "gallery": [
-      {
-        "src": "1758897233309_1765532612042.jpg",
-        "title": "",
-        "note": ""
-      }
-    ]
+    "isThucHanh": true
   },
   {
     "id": "1758897233310",
@@ -1081,14 +1074,7 @@
     "luuY": "Chất màu curcumin không phải là thành phần của tinh dầu.",
     "dacDiemDuocLieu": "Thân rễ có vỏ màu nâu xám, ruột màu vàng cam đặc trưng.",
     "tenKhoaHoc": "Curcuma longa L.",
-    "isThucHanh": true,
-    "gallery": [
-      {
-        "src": "1758897233319_1765532497456.jpg",
-        "title": "",
-        "note": ""
-      }
-    ]
+    "isThucHanh": true
   },
   {
     "id": "1758897233320",
