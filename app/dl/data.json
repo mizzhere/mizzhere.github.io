@@ -1163,7 +1163,7 @@
   {
     "id": "1758897233330",
     "tenDuocLieu": "Lanolin (Mỡ lông cừu)",
-    "hoCay": "Không áp dụng (Nguồn gốc động vật)",
+    "hoCay": "Nguồn gốc động vật",
     "nhomChat": "Lipid > Sáp",
     "thanhPhanHoaHocChinh": "Ester của alcol phân tử lượng cao với acid béo, Cholesterol, Lanosterol",
     "boPhanDung": "Tinh chế từ chất béo của lông cừu",
@@ -1208,7 +1208,7 @@
   {
     "id": "1758897233333",
     "tenDuocLieu": "Dầu cá",
-    "hoCay": "Không áp dụng (Nguồn gốc động vật)",
+    "hoCay": "Nguồn gốc động vật",
     "nhomChat": "Lipid > Dầu động vật",
     "thanhPhanHoaHocChinh": "Vitamin A, Vitamin D, Omega 3 (EPA, DHA) ",
     "boPhanDung": "Gan cá hoặc mỡ cá ",
