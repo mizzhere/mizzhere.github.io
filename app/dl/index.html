@@ -489,6 +489,14 @@
             img.img-error {
                 display: none !important;
             }
+            /* Style riêng cho highlight trong thẻ Overlay màu tối */
+            .search-context-overlay .search-highlight,
+            .plant-card .text-white .search-highlight {
+                background-color: rgba(255, 255, 0, 0.3); /* Vàng trong suốt */
+                color: #fff;
+                padding: 0 2px;
+                border-radius: 2px;
+            }
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -3641,7 +3649,7 @@
                         let hoCayHTML = plant.hoCay;
                         let contextHTML = "";
 
-                        // Logic highlight tìm kiếm (giữ nguyên)
+                        // Logic highlight tìm kiếm
                         if (this.currentFilter.search) {
                             tenDuocLieuHTML = this._highlightText(plant.tenDuocLieu, this.currentFilter.search);
                             hoCayHTML = this._highlightText(plant.hoCay, this.currentFilter.search);
@@ -3650,47 +3658,54 @@
                                     searchContext.context,
                                     this.currentFilter.search
                                 );
-                                contextHTML = `<p class="search-context"><strong>${searchContext.field}:</strong> ${highlightedContext}</p>`;
+                                // Context hiển thị nhỏ gọn hơn trong style mới
+                                contextHTML = `<div class="mt-1 pt-1 border-t border-white/20 text-xs text-gray-300 line-clamp-1 search-context-overlay"><strong>${searchContext.field}:</strong> ${highlightedContext}</div>`;
                             }
                         }
 
-                        // Đường dẫn ảnh (Giả định ảnh là .jpg và tên file là ID)
-                        // Thêm timestamp để tránh cache khi bạn cập nhật ảnh mới
                         const imgUrl = `./images/${plant.id}.jpg`;
 
-                        return `
-            <div class="plant-card animate-on-scroll ${isSelected ? "selected" : ""}" data-id="${plant.id}">
-                <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] cursor-pointer h-full flex flex-col overflow-hidden hover:border-[var(--primary)] transition-colors">
-                    
-                    <div class="relative w-full">
-                        <img src="${imgUrl}" 
-                             alt="${plant.tenDuocLieu}" 
-                             class="plant-img-thumb" 
-                             loading="lazy"
-                             onerror="this.classList.add('img-error'); this.parentElement.style.display='none'">
-                    </div>
+                        // Render Tags (Nhóm chất) - Chỉ hiện tối đa 2 tag để đỡ rối
+                        const tagsHTML = (plant.nhomChat || "")
+                            .split(",")
+                            .slice(0, 2)
+                            .map((g) => {
+                                const label = g.trim().split(">").pop();
+                                return label
+                                    ? `<span class="inline-block text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded backdrop-blur-sm border border-white/10">${label}</span>`
+                                    : "";
+                            })
+                            .join("");
 
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h3 class="font-bold text-lg text-[var(--card-foreground)]">${tenDuocLieuHTML}</h3>
-                        <p class="text-sm text-[var(--muted-foreground)] mb-2">${hoCayHTML}</p>
+                        return `
+            <div class="plant-card animate-on-scroll relative group aspect-square rounded-2xl overflow-hidden border border-[var(--border)] cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 ${isSelected ? "ring-2 ring-[var(--primary)]" : ""}" data-id="${plant.id}">
+                
+                <div class="absolute inset-0 bg-[var(--muted)] flex items-center justify-center overflow-hidden">
+                    <i data-lucide="image" class="w-12 h-12 text-[var(--muted-foreground)] opacity-20 absolute"></i>
+                    
+                    <img src="${imgUrl}" 
+                         alt="${plant.tenDuocLieu}" 
+                         class="relative z-10 w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110" 
+                         loading="lazy"
+                         onerror="this.style.opacity='0'">
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none z-20"></div>
+
+                <div class="absolute bottom-0 left-0 right-0 z-30 p-3 bg-black/60 backdrop-blur-md border-t border-white/10 transition-all duration-300 translate-y-0">
+                    <div class="flex flex-col gap-0.5">
+                        <h3 class="font-bold text-base leading-tight text-white drop-shadow-md line-clamp-1" title="${plant.tenDuocLieu}">${tenDuocLieuHTML}</h3>
+                        <p class="text-xs text-gray-300 font-medium line-clamp-1">${hoCayHTML}</p>
                         
-                        <div class="flex-grow"></div>
                         ${contextHTML}
-                        
-                        <div class="flex flex-wrap gap-1 mt-2">
-                            ${(plant.nhomChat || "")
-                                .split(",")
-                                .slice(0, 3)
-                                .map((g) => {
-                                    const label = g.trim().split(">").pop();
-                                    return label
-                                        ? `<span class="text-xs bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-1 rounded-full">${label}</span>`
-                                        : "";
-                                })
-                                .join("")}
+
+                        <div class="flex flex-wrap gap-1 mt-1.5 opacity-90">
+                            ${tagsHTML}
                         </div>
                     </div>
                 </div>
+
+                ${isSelected ? `<div class="absolute top-2 right-2 z-40 bg-[var(--primary)] text-white p-1 rounded-full shadow-lg"><i data-lucide="check" class="w-4 h-4"></i></div>` : ""}
             </div>`;
                     }
 
