@@ -529,6 +529,65 @@
     margin-top: 8px;
     font-style: italic;
 }
+/* --- CSS CHO CHẾ ĐỘ ÔN TẬP THỰC HÀNH --- */
+.practice-nav-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--card);
+    transition: all 0.2s;
+}
+.practice-nav-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.practice-nav-btn.completed {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--accent);
+}
+
+.practice-input-group label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+.practice-input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--background);
+    transition: border-color 0.2s;
+}
+.practice-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--ring);
+}
+.practice-input.correct {
+    border-color: #22c55e;
+    background-color: #f0fdf4;
+}
+.practice-input.incorrect {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+html.dark .practice-input.correct { background-color: rgba(34, 197, 94, 0.1); }
+html.dark .practice-input.incorrect { background-color: rgba(239, 68, 68, 0.1); }
+
+.diff-result {
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+.diff-correct { color: #16a34a; }
+.diff-missed { color: #dc2626; font-style: italic; }
         </style>
     </head>
     <body class="h-[100dvh] w-screen overflow-hidden">
@@ -864,73 +923,73 @@
                                     id="start-practice-quiz-btn"
                                     class="flex-1 sm:flex-none px-8 py-3 bg-orange-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
                                 >
-                                    <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                    Chỉ mục Thực hành
+                                    <i data-lucide="image" class="w-5 h-5 fill-current"></i> Ôn tập Thực hành (Xem hình)
                                 </button>
                             </div>
                         </div>
 
-                        <div id="quiz-question-screen" class="hidden flex flex-col h-full relative overflow-hidden">
-                            <div class="flex-shrink-0 bg-[var(--background)] z-10 pb-2 pt-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <button
-                                        id="quiz-quit-btn"
-                                        class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 rounded-lg hover:bg-[var(--accent)] transition-colors text-sm"
-                                    >
-                                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Thoát
-                                    </button>
+                        <div id="quiz-question-screen" class="hidden flex flex-col h-full relative overflow-hidden bg-[var(--background)]">
+    <div class="flex-shrink-0 z-10 p-2 border-b border-[var(--border)] bg-[var(--card)] flex justify-between items-center">
+        <button id="quiz-quit-btn" class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 rounded-lg hover:bg-[var(--accent)] transition-colors text-sm">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Thoát
+        </button>
+        <h3 class="font-bold text-lg">Thi Thực hành</h3>
+        <button id="practice-submit-all" class="px-4 py-1.5 bg-[var(--primary)] text-white text-sm font-bold rounded-lg shadow-sm hover:opacity-90">
+            Nộp bài
+        </button>
+    </div>
 
-                                    <div
-                                        class="flex items-center gap-4 text-sm font-bold bg-[var(--card)] border border-[var(--border)] px-3 py-1 rounded-full shadow-sm"
-                                    >
-                                        <div class="flex items-center gap-1 text-green-600">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                                            <span id="quiz-correct-count">0</span>
-                                        </div>
-                                        <div class="w-px h-4 bg-[var(--border)]"></div>
-                                        <div class="flex items-center gap-1 text-red-500">
-                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
-                                            <span id="quiz-wrong-count">0</span>
-                                        </div>
-                                    </div>
+    <div class="flex-shrink-0 p-3 flex justify-center gap-2 overflow-x-auto" id="practice-nav-container">
+        </div>
 
-                                    <span
-                                        id="quiz-progress"
-                                        class="text-xs font-semibold text-[var(--muted-foreground)] w-16 text-right"
-                                        >1/10</span
-                                    >
-                                </div>
+    <div class="flex-1 overflow-y-auto p-4">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+            
+            <div class="flex flex-col">
+                <div class="relative aspect-square md:aspect-[4/3] rounded-xl overflow-hidden border border-[var(--border)] bg-black/5 shadow-inner">
+                    <img id="practice-image" src="" class="w-full h-full object-contain" alt="Dược liệu">
+                    <div class="absolute inset-0 flex items-center justify-center -z-10 text-[var(--muted-foreground)]">
+                        <i data-lucide="image-off" class="w-10 h-10"></i>
+                    </div>
+                </div>
+                <p class="text-center text-sm text-[var(--muted-foreground)] mt-2 italic">Quan sát kỹ đặc điểm trong ảnh để định danh.</p>
+            </div>
 
-                                <div class="w-full bg-[var(--border)] h-1.5 rounded-full overflow-hidden">
-                                    <div
-                                        id="quiz-progress-bar"
-                                        class="bg-[var(--primary)] h-full transition-all duration-300"
-                                        style="width: 0%"
-                                    ></div>
-                                </div>
-                            </div>
+            <div class="flex flex-col gap-4 bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+                <div class="practice-input-group">
+                    <label>Tên Dược liệu</label>
+                    <input type="text" class="practice-input" data-field="name" placeholder="Nhập tên cây...">
+                    <div class="diff-container" id="res-name"></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="practice-input-group">
+                        <label>Họ (Tiếng Việt)</label>
+                        <input type="text" class="practice-input" data-field="familyVn" placeholder="Vd: Họ Cà phê">
+                        <div class="diff-container" id="res-familyVn"></div>
+                    </div>
+                    <div class="practice-input-group">
+                        <label>Họ (Khoa học)</label>
+                        <input type="text" class="practice-input" data-field="familySci" placeholder="Vd: Rubiaceae">
+                        <div class="diff-container" id="res-familySci"></div>
+                    </div>
+                </div>
 
-                            <div class="flex-1 overflow-y-auto no-scrollbar py-2">
-                                <div
-                                    class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm min-h-full flex flex-col justify-center"
-                                >
-                                    <h3
-                                        id="quiz-question-text"
-                                        class="text-lg font-bold mb-4 text-center leading-snug text-[var(--card-foreground)]"
-                                    ></h3>
-                                    <div id="quiz-options-container" class="grid grid-cols-1 gap-2"></div>
-                                </div>
-                            </div>
+                <div class="practice-input-group">
+                    <label>Bộ phận dùng</label>
+                    <input type="text" class="practice-input" data-field="part" placeholder="Vd: Rễ, củ...">
+                    <div class="diff-container" id="res-part"></div>
+                </div>
 
-                            <div class="flex-shrink-0 h-14 flex items-center justify-end pt-2 bg-[var(--background)]">
-                                <button
-                                    id="quiz-next-btn"
-                                    class="invisible w-full sm:w-auto px-6 py-2.5 bg-[var(--primary)] text-white rounded-lg font-bold hover:opacity-90 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
-                                >
-                                    Câu tiếp theo <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
+                <div class="practice-input-group">
+                    <label>Thành phần hóa học chính</label>
+                    <input type="text" class="practice-input" data-field="chem" placeholder="Vd: Alcaloid, Strychnin...">
+                    <div class="diff-container" id="res-chem"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                         <div id="quiz-result-screen" class="hidden text-center space-y-6">
                             <h2 class="text-3xl font-bold">Kết quả</h2>
@@ -1995,8 +2054,12 @@
                             btn.addEventListener("click", () => this.navigateToQuiz());
                         });
 
-                        this.els.startPracticeQuizBtn.addEventListener("click", () => this.startQuiz("practice"));
-                        this.els.startQuizBtn.addEventListener("click", () => this.startQuiz("all"));
+this.els.startPracticeQuizBtn.addEventListener("click", () => {
+    // Đóng màn hình Start
+    this.els.quizStartScreen.classList.add("hidden");
+    // Gọi chế độ thực hành mới
+    this.startPracticeSession(); 
+});                        this.els.startQuizBtn.addEventListener("click", () => this.startQuiz("all"));
                         this.els.quizNextBtn.addEventListener("click", () => this.nextQuestion());
                         this.els.quizRestartBtn.addEventListener("click", () => this.startQuiz());
                         this.els.quizHomeBtn.addEventListener("click", () => this.goHome());
@@ -3718,7 +3781,264 @@
                         const queryRegex = new RegExp(`(${escapeRegExp(this.currentFilter.search)})`, "gi");
                         return text.replace(queryRegex, `<mark class="search-highlight">$1</mark>`);
                     }
+                    // --- BẮT ĐẦU THÊM VÀO TRONG CLASS MedicinalPlantApp ---
 
+// 1. Hàm khởi tạo chế độ Thực hành (Thay thế hoặc bổ sung logic trong startQuiz)
+startPracticeSession() {
+    // Lọc ra các cây có ảnh (dựa vào ID hoặc Gallery)
+    const candidates = [];
+    this.plants.forEach(p => {
+        // Ảnh mặc định theo ID
+        candidates.push({
+            plant: p,
+            imgSrc: `${p.id}.jpg`,
+            correctName: p.tenDuocLieu // Mặc định tên theo cây
+        });
+
+        // Ảnh trong Gallery
+        if (p.gallery && Array.isArray(p.gallery)) {
+            p.gallery.forEach(g => {
+                candidates.push({
+                    plant: p,
+                    imgSrc: g.src,
+                    // YÊU CẦU CỦA BẠN: Nếu gallery có tên (title), dùng nó làm đáp án. Nếu không, dùng tên cây gốc.
+                    correctName: g.title && g.title.trim() ? g.title.trim() : p.tenDuocLieu
+                });
+            });
+        }
+    });
+
+    if (candidates.length < 5) {
+        this.showToast("Không đủ dữ liệu ảnh để tạo bài thi (Cần tối thiểu 5 ảnh).", "error");
+        return;
+    }
+
+    // Random lấy 5 câu
+    const sessionItems = candidates.sort(() => 0.5 - Math.random()).slice(0, 5);
+
+    // Khởi tạo state cho bài thi
+    this.practiceState = {
+        items: sessionItems,
+        currentIndex: 0,
+        userAnswers: sessionItems.map(() => ({
+            name: '', familyVn: '', familySci: '', part: '', chem: ''
+        })),
+        isSubmitted: false
+    };
+
+    // UI Setup
+    this.els.quizStartScreen.classList.add("hidden");
+    this.els.quizResultScreen.classList.add("hidden");
+    this.els.quizQuestionScreen.classList.remove("hidden");
+    
+    // Ẩn nút Next/Prev của Quiz cũ nếu có, hiển thị nút Submit
+    const submitBtn = document.getElementById('practice-submit-all');
+    if(submitBtn) {
+        submitBtn.classList.remove("hidden");
+        submitBtn.onclick = () => this.submitPractice();
+        submitBtn.textContent = "Nộp bài";
+        submitBtn.disabled = false;
+    }
+
+    this.renderPracticeNav();
+    this.renderPracticeQuestion(0);
+}
+
+// 2. Render thanh điều hướng (1, 2, 3, 4, 5)
+renderPracticeNav() {
+    const container = document.getElementById('practice-nav-container');
+    if (!container) return;
+    
+    container.innerHTML = this.practiceState.items.map((_, idx) => `
+        <button class="practice-nav-btn ${idx === this.practiceState.currentIndex ? 'active' : ''}" 
+                onclick="app.switchPracticeQuestion(${idx})">
+            ${idx + 1}
+        </button>
+    `).join('');
+}
+
+// 3. Chuyển câu hỏi
+switchPracticeQuestion(index) {
+    if (this.practiceState.isSubmitted) {
+        // Nếu đã nộp bài thì chỉ chuyển view để xem lại
+        this.renderPracticeQuestion(index);
+        return;
+    }
+
+    // Lưu dữ liệu của câu hiện tại trước khi chuyển
+    this.saveCurrentPracticeInput();
+    
+    this.renderPracticeQuestion(index);
+}
+
+// 4. Lưu input người dùng vào state
+saveCurrentPracticeInput() {
+    if (this.practiceState.isSubmitted) return;
+    
+    const inputs = document.querySelectorAll('.practice-input');
+    const currentAns = this.practiceState.userAnswers[this.practiceState.currentIndex];
+    
+    inputs.forEach(input => {
+        const field = input.dataset.field;
+        currentAns[field] = input.value;
+    });
+    
+    // Cập nhật style nút nav nếu đã điền
+    const navBtn = document.querySelectorAll('.practice-nav-btn')[this.practiceState.currentIndex];
+    const hasData = Object.values(currentAns).some(v => v.trim() !== '');
+    if (hasData && navBtn) navBtn.classList.add('completed');
+}
+
+// 5. Hiển thị câu hỏi (Ảnh + Reset Form)
+renderPracticeQuestion(index) {
+    this.practiceState.currentIndex = index;
+    const item = this.practiceState.items[index];
+    const userAnswer = this.practiceState.userAnswers[index];
+
+    // Cập nhật Nav active
+    document.querySelectorAll('.practice-nav-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+    });
+
+    // Cập nhật Ảnh
+    const imgEl = document.getElementById('practice-image');
+    if (imgEl) {
+        imgEl.src = `./images/${item.imgSrc}`;
+        // Reset fallback
+        imgEl.style.display = 'block';
+        imgEl.onerror = () => { imgEl.style.display = 'none'; };
+    }
+
+    // Cập nhật Form
+    const inputs = document.querySelectorAll('.practice-input');
+    const diffContainers = document.querySelectorAll('.diff-container');
+
+    inputs.forEach(input => {
+        const field = input.dataset.field;
+        input.value = userAnswer[field] || '';
+        
+        // Nếu đã nộp bài, disable input và tô màu
+        input.disabled = this.practiceState.isSubmitted;
+        if (!this.practiceState.isSubmitted) {
+            input.classList.remove('correct', 'incorrect');
+        }
+    });
+
+    // Nếu đã nộp bài, hiển thị kết quả chấm
+    if (this.practiceState.isSubmitted) {
+        this.renderPracticeDiff(index);
+    } else {
+        diffContainers.forEach(div => div.innerHTML = '');
+    }
+}
+
+// 6. Xử lý Nộp bài
+submitPractice() {
+    this.saveCurrentPracticeInput(); // Lưu câu cuối cùng
+    
+    this.showConfirm("Bạn có chắc muốn nộp bài? Bạn sẽ không thể sửa lại sau khi nộp.", () => {
+        this.practiceState.isSubmitted = true;
+        document.getElementById('practice-submit-all').textContent = "Đã nộp bài";
+        document.getElementById('practice-submit-all').disabled = true;
+        
+        // Render lại câu hiện tại để hiện kết quả
+        this.renderPracticeQuestion(this.practiceState.currentIndex);
+        
+        // Tính tổng điểm
+        this.calculatePracticeScore();
+    });
+}
+
+// 7. Logic chuẩn hóa chuỗi và so sánh
+_normalizeStr(str) {
+    return str.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// 8. Chấm điểm và hiển thị sai khác (Hàm quan trọng nhất)
+renderPracticeDiff(index) {
+    const item = this.practiceState.items[index];
+    const user = this.practiceState.userAnswers[index];
+    const p = item.plant;
+    
+    // Lấy thông tin họ
+    const familyInfo = this._parseHoCay(p.hoCay);
+
+    // Định nghĩa đáp án đúng
+    const correctData = {
+        name: item.correctName,
+        familyVn: familyInfo.vietnamese,
+        familySci: familyInfo.scientific,
+        part: p.boPhanDung,
+        chem: p.thanhPhanHoaHocChinh
+    };
+
+    // Helper: So sánh và render UI
+    const checkField = (fieldKey, userVal, correctVal, type = 'text') => {
+        const inputEl = document.querySelector(`.practice-input[data-field="${fieldKey}"]`);
+        const resEl = document.getElementById(`res-${fieldKey}`);
+        let isCorrect = false;
+
+        // Logic so sánh
+        if (type === 'text') {
+            // So sánh chuỗi cơ bản
+            isCorrect = this._normalizeStr(userVal) === this._normalizeStr(correctVal);
+            // Đặc biệt cho Tên Dược Liệu: Chấp nhận nếu người dùng nhập đúng tên trong ngoặc hoặc tên chính
+            // (Đơn giản hóa: So sánh chính xác tương đối)
+        } else if (type === 'part') {
+            // Bộ phận dùng: Chấp nhận từ khóa. Ví dụ đáp án "Thân rễ (củ)" -> User nhập "thân rễ" OK, "củ" OK.
+            const keywords = this._extractKeywords(correctVal);
+            const userKeywords = this._extractKeywords(userVal);
+            // Đúng nếu user chứa ít nhất 1 từ khóa chính của đáp án
+            isCorrect = keywords.some(k => this._normalizeStr(userVal).includes(this._normalizeStr(k)));
+        } else if (type === 'chem') {
+            // Hóa học: Tách dấu phẩy, đếm số lượng trùng
+            const correctItems = correctVal.split(/[,;]/).map(s => this._normalizeStr(s)).filter(s=>s);
+            const userItems = userVal.split(/[,;]/).map(s => this._normalizeStr(s)).filter(s=>s);
+            
+            // Tìm các chất đúng
+            const matches = userItems.filter(u => correctItems.some(c => c.includes(u) || u.includes(c)));
+            isCorrect = matches.length > 0 && matches.length >= (correctItems.length / 2); // Đúng > 50% số chất là OK (tạm tính)
+            
+            if (matches.length > 0) isCorrect = true; // Nới lỏng: Đúng ít nhất 1 chất là xanh, nhưng hiện thiếu
+        }
+
+        // Update UI Input
+        inputEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+        // Render đáp án bên dưới
+        if (!isCorrect) {
+            resEl.innerHTML = `<div class="diff-result">
+                <span class="diff-missed">Đáp án: ${correctVal}</span>
+            </div>`;
+        } else {
+            resEl.innerHTML = `<div class="diff-result"><i data-lucide="check" class="w-3 h-3 inline text-green-600"></i> <span class="diff-correct">Chính xác</span></div>`;
+        }
+        
+        lucide.createIcons();
+    };
+
+    checkField('name', user.name, correctData.name);
+    checkField('familyVn', user.familyVn, correctData.familyVn);
+    checkField('familySci', user.familySci, correctData.familySci);
+    checkField('part', user.part, correctData.part, 'part');
+    checkField('chem', user.chem, correctData.chem, 'chem');
+}
+
+// Helper tách từ khóa (bỏ ngoặc)
+_extractKeywords(str) {
+    if(!str) return [];
+    // Tách các cụm trong ngoặc và ngoài ngoặc
+    // Vd: "Thân rễ (Củ)" -> ["Thân rễ", "Củ"]
+    return str.split(/[\(\)]/).map(s => s.trim()).filter(s => s.length > 1);
+}
+
+calculatePracticeScore() {
+    // Hàm này có thể mở rộng để tính điểm chi tiết
+    // Hiện tại chỉ cần hiển thị đúng sai trên UI
+    this.showToast("Đã hoàn thành bài ôn tập. Hãy xem lại các câu trả lời!", "success");
+}
+
+// --- KẾT THÚC THÊM MỚI ---
                     createPlantCardHTML(plant, searchContext = null) {
                         const isSelected = this.selectedPlants.has(plant.id);
                         let tenDuocLieuHTML = plant.tenDuocLieu;
