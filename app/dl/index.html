@@ -538,6 +538,10 @@
     border: 1px solid var(--border);
     background: var(--card);
     transition: all 0.2s;
+    /* THÊM 2 DÒNG DƯỚI */
+    cursor: pointer;
+    position: relative; 
+    z-index: 10;
 }
 .practice-nav-btn.active {
     background: var(--primary);
@@ -3849,28 +3853,47 @@ renderPracticeNav() {
     const container = document.getElementById('practice-nav-container');
     if (!container) return;
     
+    // Tạo HTML cho các nút
     container.innerHTML = this.practiceState.items.map((_, idx) => `
         <button class="practice-nav-btn ${idx === this.practiceState.currentIndex ? 'active' : ''}" 
-                onclick="app.switchPracticeQuestion(${idx})">
+                data-index="${idx}"
+                type="button">
             ${idx + 1}
         </button>
     `).join('');
-}
 
+    // [FIX] Gán sự kiện trực tiếp bằng JS thay vì onclick="..."
+    container.querySelectorAll('.practice-nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Lấy index từ data attribute
+            const idx = parseInt(e.currentTarget.dataset.index);
+            this.switchPracticeQuestion(idx);
+        });
+    });
+}
 // 3. Chuyển câu hỏi
 switchPracticeQuestion(index) {
-    if (this.practiceState.isSubmitted) {
-        // Nếu đã nộp bài thì chỉ chuyển view để xem lại
+    try {
+        // Chặn nếu index không hợp lệ
+        if (typeof index !== 'number' || index < 0 || index >= this.practiceState.items.length) {
+            return;
+        }
+
+        // Nếu đã nộp bài, chỉ chuyển câu để xem, không lưu input nữa
+        if (this.practiceState.isSubmitted) {
+            this.renderPracticeQuestion(index);
+            return;
+        }
+
+        // Lưu dữ liệu câu hiện tại trước khi chuyển
+        this.saveCurrentPracticeInput();
+        
+        // Chuyển sang câu mới
         this.renderPracticeQuestion(index);
-        return;
+    } catch (err) {
+        console.error("Lỗi chuyển câu:", err);
     }
-
-    // Lưu dữ liệu của câu hiện tại trước khi chuyển
-    this.saveCurrentPracticeInput();
-    
-    this.renderPracticeQuestion(index);
 }
-
 // 4. Lưu input người dùng vào state
 saveCurrentPracticeInput() {
     if (this.practiceState.isSubmitted) return;
