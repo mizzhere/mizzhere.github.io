@@ -1119,7 +1119,7 @@
   },
   {
     "id": "1758897233323",
-    "tenDuocLieu": "Quýt (Trần bì)",
+    "tenDuocLieu": "Trần bì",
     "hoCay": "Rutaceae (Họ Cam)",
     "nhomChat": "Tinh dầu > Monoterpen > Hydrocarbon",
     "thanhPhanHoaHocChinh": "Limonen, Flavonoid",
@@ -1130,7 +1130,7 @@
     "luuY": "Dược liệu để càng lâu càng tốt.",
     "dacDiemDuocLieu": "Vỏ quả quýt chín phơi khô, mặt ngoài màu cam, mặt trong màu trắng, có nhiều túi tiết tinh dầu.",
     "tenKhoaHoc": "Citrus reticulata Blanco",
-    "isThucHanh": false
+    "isThucHanh": true
   },
   {
     "id": "1758897233324",
