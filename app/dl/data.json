@@ -145,7 +145,14 @@
     "luuY": "Người tỳ vị hư yếu không nên dùng nhiều.",
     "dacDiemDuocLieu": "Tâm sen là mầm nhỏ màu xanh lục, nằm giữa hai lá mầm của hạt sen, vị đắng.",
     "tenKhoaHoc": "Nelumbo nucifera Gaertn.",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "10_1765538929874.jpg",
+        "title": "Liên tâm",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "11",
