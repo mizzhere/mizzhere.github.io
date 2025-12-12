@@ -3739,20 +3739,18 @@
                             }
                         }
 
-                        const imgUrl = `./images/${plant.id}.jpg`;
+                        // --- SỬA ĐOẠN NÀY: Thay Nhóm chất bằng Thành phần hóa học ---
+    // 1. Lấy dữ liệu thành phần hóa học, tách dấu phẩy hoặc chấm phẩy
+    const chemList = (plant.thanhPhanHoaHocChinh || "Chưa cập nhật")
+        .split(/,|;/)
+        .map(c => c.trim())
+        .filter(Boolean);
 
-                        // Render Tags (Nhóm chất) - Chỉ hiện tối đa 2 tag để đỡ rối
-                        const tagsHTML = (plant.nhomChat || "")
-                            .split(",")
-                            .slice(0, 2)
-                            .map((g) => {
-                                const label = g.trim().split(">").pop();
-                                return label
-                                    ? `<span class="inline-block text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded backdrop-blur-sm border border-white/10">${label}</span>`
-                                    : "";
-                            })
-                            .join("");
-
+    // 2. Tạo HTML các thẻ (Tag), thêm class flex-shrink-0 để không bị co lại
+    const chemHTML = chemList.map(c => 
+        `<span class="flex-shrink-0 inline-block text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10 whitespace-nowrap">${c}</span>`
+    ).join("");
+    // -------------------------------------------------------------
                         return `
             <div class="plant-card animate-on-scroll relative group aspect-square rounded-2xl overflow-hidden border border-[var(--border)] cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 ${isSelected ? "ring-2 ring-[var(--primary)]" : ""}" data-id="${plant.id}">
                 
