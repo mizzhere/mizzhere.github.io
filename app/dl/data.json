@@ -679,7 +679,14 @@
     "luuY": "Tinh dầu cất ra không có mùi đặc trưng nên ít có ý nghĩa sử dụng.",
     "dacDiemDuocLieu": "Quả hình trứng, màu nâu đỏ, có nhiều rãnh dọc và mùi thơm đặc trưng.",
     "tenKhoaHoc": "Amomum tsaoko Crevost et Lemarie",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233295_1765528356069.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "1758897233296",
