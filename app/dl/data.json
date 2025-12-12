@@ -607,7 +607,14 @@
     "luuY": "Không có thông tin.",
     "dacDiemDuocLieu": "Tinh dầu vỏ quả (Orange oil): Chất lỏng màu vàng hoặc nâu vàng, mùi thơm, vị không đắng.",
     "tenKhoaHoc": "Citrus sinensis (L.) Osbeck",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "1758897233290_1765518013550.jpg",
+        "title": "Chỉ thực",
+        "note": "Quả non nhỏ"
+      }
+    ]
   },
   {
     "id": "1758897233291",
