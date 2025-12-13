@@ -887,174 +887,165 @@ html.dark .practice-input.incorrect { background-color: rgba(239, 68, 68, 0.1); 
                     class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden"
                 ></div>
                 <div id="quiz-view" class="flex-1 overflow-y-auto p-4 md:p-8 bg-[var(--background)] hidden">
-                    <div class="max-w-2xl mx-auto h-full flex flex-col justify-center">
-                        <div id="quiz-start-screen" class="text-center space-y-6">
-                            <div class="flex justify-start w-full mb-2">
-                                <button
-                                    id="quiz-start-back-btn"
-                                    class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 -ml-2 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
-                                >
-                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                                    <span>Quay lại</span>
-                                </button>
-                            </div>
-
-                            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                                <i data-lucide="graduation-cap" class="w-10 h-10 text-blue-600"></i>
-                            </div>
-                            <h2 class="text-3xl font-bold">Ôn tập Dược liệu</h2>
-                            <div
-                                class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left max-w-lg mx-auto"
-                            >
-                                <h3 class="font-semibold mb-3 flex items-center gap-2">
-                                    <i data-lucide="filter" class="w-4 h-4"></i> Cấu hình nội dung thi:
-                                </h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="quiz-settings-form">
-                                    <label
-                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="quiz-type"
-                                            value="family"
-                                            checked
-                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
-                                        />
-                                        <span class="text-sm">Họ thực vật</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="quiz-type"
-                                            value="chem"
-                                            checked
-                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
-                                        />
-                                        <span class="text-sm">Thành phần hóa học</span>
-                                    </label>
-                                    <label
-                                        class="hidden flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="quiz-type"
-                                            value="use"
-                                            class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300"
-                                        />
-                                        <span class="text-sm">Công dụng & Tác dụng (Tạm khóa)</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                                <button
-                                    id="start-quiz-btn"
-                                    class="flex-1 sm:flex-none px-8 py-3 bg-[var(--primary)] text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
-                                >
-                                    <i data-lucide="layers" class="w-5 h-5"></i>
-                                    Tất cả danh sách
-                                </button>
-                                <button
-                                    id="start-practice-quiz-btn"
-                                    class="flex-1 sm:flex-none px-8 py-3 bg-orange-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
-                                >
-                                    <i data-lucide="image" class="w-5 h-5 fill-current"></i> Ôn tập Thực hành (Xem hình)
-                                </button>
-                                <button
-        id="start-quick-practice-btn"
-        class="flex-1 sm:flex-none px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
-    >
-        <i data-lucide="zap" class="w-5 h-5 fill-current"></i> 
-        Ôn tập Nhanh
-    </button>
-                            </div>
-                        </div>
-
-                        <div id="quiz-question-screen" class="hidden flex flex-col h-full relative overflow-hidden bg-[var(--background)]">
-    <div class="flex-shrink-0 z-10 p-2 border-b border-[var(--border)] bg-[var(--card)] flex justify-between items-center">
-        <button id="quiz-quit-btn" class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 rounded-lg hover:bg-[var(--accent)] transition-colors text-sm">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i> Thoát
-        </button>
-        <h3 class="font-bold text-lg">Thi Thực hành</h3>
-        <button id="practice-submit-all" class="px-4 py-1.5 bg-[var(--primary)] text-white text-sm font-bold rounded-lg shadow-sm hover:opacity-90">
-            Nộp bài
-        </button>
-    </div>
-
-    <div class="flex-shrink-0 p-3 flex justify-center gap-2 overflow-x-auto" id="practice-nav-container">
+    <div id="quiz-start-screen" class="max-w-2xl mx-auto h-full flex flex-col justify-center text-center space-y-6">
+        <div class="flex justify-start w-full mb-2">
+            <button
+                id="quiz-start-back-btn"
+                class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 -ml-2 rounded-lg hover:bg-[var(--accent)] transition-colors custom-ring"
+            >
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                <span>Quay lại</span>
+            </button>
         </div>
 
-    <div class="flex-1 overflow-y-auto p-4">
-        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+            <i data-lucide="graduation-cap" class="w-10 h-10 text-blue-600"></i>
+        </div>
+        <h2 class="text-3xl font-bold">Ôn tập Dược liệu</h2>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left max-w-lg mx-auto">
+            <h3 class="font-semibold mb-3 flex items-center gap-2">
+                <i data-lucide="filter" class="w-4 h-4"></i> Cấu hình nội dung thi:
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="quiz-settings-form">
+                <label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all">
+                    <input type="checkbox" name="quiz-type" value="family" checked class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300" />
+                    <span class="text-sm">Họ thực vật</span>
+                </label>
+                <label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all">
+                    <input type="checkbox" name="quiz-type" value="chem" checked class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300" />
+                    <span class="text-sm">Thành phần hóa học</span>
+                </label>
+                <label class="hidden flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--accent)] cursor-pointer border border-transparent hover:border-[var(--border)] transition-all">
+                    <input type="checkbox" name="quiz-type" value="use" class="w-5 h-5 text-[var(--primary)] rounded focus:ring-[var(--primary)] border-gray-300" />
+                    <span class="text-sm">Công dụng & Tác dụng (Tạm khóa)</span>
+                </label>
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center w-full">
+            <button
+                id="start-quiz-btn"
+                class="flex-1 sm:flex-none px-8 py-3 bg-[var(--primary)] text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+            >
+                <i data-lucide="layers" class="w-5 h-5"></i>
+                Tất cả danh sách
+            </button>
+            <button
+                id="start-practice-quiz-btn"
+                class="flex-1 sm:flex-none px-8 py-3 bg-orange-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+            >
+                <i data-lucide="image" class="w-5 h-5 fill-current"></i> Ôn tập Thực hành (Xem hình)
+            </button>
+            <button
+                id="start-quick-practice-btn"
+                class="flex-1 sm:flex-none px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+            >
+                <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+                Ôn tập Nhanh
+            </button>
+        </div>
+    </div>
+
+    <div id="quiz-question-screen" class="hidden flex flex-col h-full w-full relative overflow-hidden bg-[var(--background)]">
+        <div class="flex-shrink-0 z-10 p-2 border-b border-[var(--border)] bg-[var(--card)] flex justify-between items-center">
+            <button id="quiz-quit-btn" class="flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--primary)] font-medium p-2 rounded-lg hover:bg-[var(--accent)] transition-colors text-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Thoát
+            </button>
             
-            <div class="flex flex-col">
-                <div class="relative aspect-square md:aspect-[4/3] rounded-xl overflow-hidden border border-[var(--border)] bg-black/5 shadow-inner">
-                    <img id="practice-image" src="" class="w-full h-full object-contain" alt="Dược liệu">
-                    <div class="absolute inset-0 flex items-center justify-center -z-10 text-[var(--muted-foreground)]">
-                        <i data-lucide="image-off" class="w-10 h-10"></i>
-                    </div>
+            <div id="quiz-score" class="hidden items-center gap-4 text-sm font-medium">
+                <span class="text-green-600 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> <span id="quiz-correct-count">0</span></span>
+                <span class="text-red-600 flex items-center gap-1"><i data-lucide="x-circle" class="w-4 h-4"></i> <span id="quiz-wrong-count">0</span></span>
+            </div>
+            
+            <h3 class="font-bold text-lg hidden md:block">Thi Thực hành</h3> <button id="practice-submit-all" class="px-4 py-1.5 bg-[var(--primary)] text-white text-sm font-bold rounded-lg shadow-sm hover:opacity-90">
+                Nộp bài
+            </button>
+        </div>
+
+        <div class="flex-shrink-0 p-3 flex justify-center gap-2 overflow-x-auto" id="practice-nav-container"></div>
+
+        <div id="quiz-progress-bar-container" class="w-full bg-[var(--border)] h-1.5 hidden">
+            <div id="quiz-progress-bar" class="bg-[var(--primary)] h-1.5 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            
+            <div id="normal-quiz-container" class="max-w-2xl mx-auto h-full flex flex-col justify-center hidden">
+                <div class="mb-6">
+                    <span id="quiz-progress" class="text-xs font-bold uppercase text-[var(--muted-foreground)] tracking-widest">CÂU HỎI 1/10</span>
+                    <h3 id="quiz-question-text" class="text-xl md:text-2xl font-bold mt-2 leading-relaxed"></h3>
                 </div>
-                <p class="text-center text-sm text-[var(--muted-foreground)] mt-2 italic">Quan sát kỹ đặc điểm trong ảnh để định danh.</p>
+                <div id="quiz-options-container" class="space-y-3"></div>
+                <button id="quiz-next-btn" class="mt-8 w-full py-3 bg-[var(--primary)] text-white font-bold rounded-xl hover:opacity-90 shadow-lg invisible">
+                    Câu tiếp theo
+                </button>
             </div>
 
-            <div class="flex flex-col gap-4 bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
-                <div class="practice-input-group">
-                    <label>Tên Dược liệu</label>
-                    <input type="text" class="practice-input" data-field="name" placeholder="Nhập tên cây...">
-                    <div class="diff-container" id="res-name"></div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="practice-input-group">
-                        <label>Họ (Tiếng Việt)</label>
-                        <input type="text" class="practice-input" data-field="familyVn" placeholder="Vd: Họ Cà phê">
-                        <div class="diff-container" id="res-familyVn"></div>
+            <div id="practice-quiz-container" class="w-full h-full">
+                <div class="w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                    
+                    <div class="flex flex-col h-full justify-center">
+                        <div class="relative w-full aspect-square md:aspect-auto md:h-[60vh] lg:h-[75vh] rounded-2xl overflow-hidden border border-[var(--border)] bg-black/5 shadow-inner">
+                            <img id="practice-image" src="" class="w-full h-full object-contain" alt="Dược liệu">
+                            <div class="absolute inset-0 flex items-center justify-center -z-10 text-[var(--muted-foreground)]">
+                                <i data-lucide="image-off" class="w-10 h-10"></i>
+                            </div>
+                        </div>
+                        <p class="text-center text-sm text-[var(--muted-foreground)] mt-3 italic">Quan sát kỹ đặc điểm trong ảnh để định danh.</p>
                     </div>
-                    <div class="practice-input-group">
-                        <label>Họ (Khoa học)</label>
-                        <input type="text" class="practice-input" data-field="familySci" placeholder="Vd: Rubiaceae">
-                        <div class="diff-container" id="res-familySci"></div>
+
+                    <div class="flex flex-col justify-center">
+                        <div id="practice-form-container" class="flex flex-col gap-5 bg-[var(--card)] p-6 rounded-2xl border border-[var(--border)] shadow-sm max-w-2xl w-full mx-auto lg:mx-0">
+                            <div class="practice-input-group">
+                                <label>Tên Dược liệu</label>
+                                <input type="text" class="practice-input" data-field="name" placeholder="Nhập tên cây...">
+                                <div class="diff-container" id="res-name"></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="practice-input-group">
+                                    <label>Họ (Tiếng Việt)</label>
+                                    <input type="text" class="practice-input" data-field="familyVn" placeholder="Vd: Họ Cà phê">
+                                    <div class="diff-container" id="res-familyVn"></div>
+                                </div>
+                                <div class="practice-input-group">
+                                    <label>Họ (Khoa học)</label>
+                                    <input type="text" class="practice-input" data-field="familySci" placeholder="Vd: Rubiaceae">
+                                    <div class="diff-container" id="res-familySci"></div>
+                                </div>
+                            </div>
+
+                            <div class="practice-input-group">
+                                <label>Bộ phận dùng</label>
+                                <input type="text" class="practice-input" data-field="part" placeholder="Vd: Rễ, củ...">
+                                <div class="diff-container" id="res-part"></div>
+                            </div>
+
+                            <div class="practice-input-group">
+                                <label>Thành phần hóa học chính</label>
+                                <input type="text" class="practice-input" data-field="chem" placeholder="Vd: Alcaloid, Strychnin...">
+                                <div class="diff-container" id="res-chem"></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="practice-input-group">
-                    <label>Bộ phận dùng</label>
-                    <input type="text" class="practice-input" data-field="part" placeholder="Vd: Rễ, củ...">
-                    <div class="diff-container" id="res-part"></div>
-                </div>
-
-                <div class="practice-input-group">
-                    <label>Thành phần hóa học chính</label>
-                    <input type="text" class="practice-input" data-field="chem" placeholder="Vd: Alcaloid, Strychnin...">
-                    <div class="diff-container" id="res-chem"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="quiz-result-screen" class="hidden max-w-2xl mx-auto h-full flex flex-col justify-center text-center space-y-6">
+        <h2 class="text-3xl font-bold">Kết quả</h2>
+        <div class="text-6xl font-black text-[var(--primary)]" id="quiz-final-score">0/10</div>
+        <p id="quiz-result-message" class="text-[var(--muted-foreground)]"></p>
+        <div class="flex justify-center gap-4">
+            <button id="quiz-home-btn" class="px-6 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--accent)]">
+                Về trang chủ
+            </button>
+            <button id="quiz-restart-btn" class="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90">
+                Làm lại
+            </button>
         </div>
     </div>
 </div>
-
-                        <div id="quiz-result-screen" class="hidden text-center space-y-6">
-                            <h2 class="text-3xl font-bold">Kết quả</h2>
-                            <div class="text-6xl font-black text-[var(--primary)]" id="quiz-final-score">0/10</div>
-                            <p id="quiz-result-message" class="text-[var(--muted-foreground)]"></p>
-                            <div class="flex justify-center gap-4">
-                                <button
-                                    id="quiz-home-btn"
-                                    class="px-6 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--accent)]"
-                                >
-                                    Về trang chủ
-                                </button>
-                                <button
-                                    id="quiz-restart-btn"
-                                    class="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90"
-                                >
-                                    Làm lại
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- Selection Toolbar -->
                 <div
                     id="selection-toolbar"
@@ -2455,7 +2446,9 @@ this.els.quizQuestionScreen.addEventListener('focusin', (e) => {
                         // 1. Thu thập các loại câu hỏi từ Checkbox
                         const checkboxes = document.querySelectorAll('input[name="quiz-type"]:checked');
                         const selectedTypes = Array.from(checkboxes).map((cb) => cb.value);
-
+                        // Trong startQuiz
+this.els.quizQuestionScreen.querySelector('#normal-quiz-container').classList.remove('hidden');
+this.els.quizQuestionScreen.querySelector('#practice-quiz-container').classList.add('hidden');
                         if (selectedTypes.length === 0) {
                             this.showToast("Vui lòng chọn ít nhất một nội dung để ôn tập.", "error");
                             return;
@@ -3077,6 +3070,9 @@ this.els.quizQuestionScreen.addEventListener('focusin', (e) => {
 // --- CẬP NHẬT HÀM startQuickPracticeSession (THÔNG MINH) ---
 
 startQuickPracticeSession() {
+    // Trong startPracticeSession / startQuickPracticeSession
+this.els.quizQuestionScreen.querySelector('#normal-quiz-container').classList.add('hidden');
+this.els.quizQuestionScreen.querySelector('#practice-quiz-container').classList.remove('hidden');
     // 1. Lọc cây có đánh dấu thực hành
     const practicePlants = this.plants.filter(p => p.isThucHanh === true);
 
@@ -4257,7 +4253,9 @@ startPracticeSession() {
     this.els.quizStartScreen.classList.add("hidden");
     this.els.quizResultScreen.classList.add("hidden");
     this.els.quizQuestionScreen.classList.remove("hidden");
-    
+    // Trong startQuiz
+this.els.quizQuestionScreen.querySelector('#normal-quiz-container').classList.remove('hidden');
+this.els.quizQuestionScreen.querySelector('#practice-quiz-container').classList.add('hidden');
     // Ẩn nút Next/Prev của Quiz cũ nếu có, hiển thị nút Submit
     const submitBtn = document.getElementById('practice-submit-all');
     if(submitBtn) {
