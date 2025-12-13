@@ -151,6 +151,11 @@
         "src": "10_1765538929874.jpg",
         "title": "Liên tâm",
         "note": ""
+      },
+      {
+        "src": "10_1765622423380.jpg",
+        "title": "Liên diệp",
+        "note": "Là lá sen"
       }
     ]
   },
@@ -1403,13 +1408,13 @@
     "nhomChat": "Động vật > Giàu Khoáng (Vỏ)",
     "thanhPhanHoaHocChinh": "Calci carbonat, Chitin, Chất keo",
     "boPhanDung": "Mai (vỏ trong) phơi hay sấy khô của con Mực nang, Mực ván",
-  "tacDung": "Thông huyết mạch, khứ hàn thấp, chỉ huyết (cầm máu), trung hòa acid dịch vị, thấm thấp.",
-  "congDung": "(Y học cổ truyền): Chữa các chứng chảy máu (thổ huyết, băng huyết, đại tiện ra máu, trĩ), di tinh, khí hư (bạch đới). (Y học hiện đại): Chữa đau dạ dày do thừa acid (ợ chua, đau rát), loét dạ dày tá tràng. Dùng ngoài rắc bột để cầm máu vết thương, chữa mụn nhọt lở loét.",
-  "lieuDung": "4 - 12g/ngày. Dạng thuốc sắc hoặc thuốc bột. Dùng ngoài không kể liều lượng.",
-  "luuY": "Người âm hư hỏa vượng (người nóng, táo bón, miệng khô, khát nước) không nên dùng lâu dài. Nếu dùng lâu có thể gây táo bón.",
-  "dacDiemDuocLieu": "Dược liệu hình bầu dục dẹt, ở giữa dày, mép mỏng, màu trắng ngà hoặc hơi hồng. Mặt lưng có những vân gợn sóng nhỏ. Mặt bụng phủ lớp màng mỏng, xốp, dễ bẻ gãy.",
-  "tenKhoaHoc": "Sepia spp.",
-  "isThucHanh": true,
+    "tacDung": "Thông huyết mạch, khứ hàn thấp, chỉ huyết (cầm máu), trung hòa acid dịch vị, thấm thấp.",
+    "congDung": "(Y học cổ truyền): Chữa các chứng chảy máu (thổ huyết, băng huyết, đại tiện ra máu, trĩ), di tinh, khí hư (bạch đới). (Y học hiện đại): Chữa đau dạ dày do thừa acid (ợ chua, đau rát), loét dạ dày tá tràng. Dùng ngoài rắc bột để cầm máu vết thương, chữa mụn nhọt lở loét.",
+    "lieuDung": "4 - 12g/ngày. Dạng thuốc sắc hoặc thuốc bột. Dùng ngoài không kể liều lượng.",
+    "luuY": "Người âm hư hỏa vượng (người nóng, táo bón, miệng khô, khát nước) không nên dùng lâu dài. Nếu dùng lâu có thể gây táo bón.",
+    "dacDiemDuocLieu": "Dược liệu hình bầu dục dẹt, ở giữa dày, mép mỏng, màu trắng ngà hoặc hơi hồng. Mặt lưng có những vân gợn sóng nhỏ. Mặt bụng phủ lớp màng mỏng, xốp, dễ bẻ gãy.",
+    "tenKhoaHoc": "Sepia spp.",
+    "isThucHanh": true,
     "gallery": [
       {
         "src": "1758897233338_1765530118968.jpg",
