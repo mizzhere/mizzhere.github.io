@@ -3074,9 +3074,10 @@ this.els.quizQuestionScreen.addEventListener('focusin', (e) => {
                     }
                     // --- LOGIC ÔN TẬP NHANH (QUICK PRACTICE) ---
 
-// 1. Khởi động chế độ nhanh (ĐÃ CẬP NHẬT BIẾN ĐẾM)
+// --- CẬP NHẬT HÀM startQuickPracticeSession (THÔNG MINH) ---
+
 startQuickPracticeSession() {
-    // Lọc cây có đánh dấu thực hành
+    // 1. Lọc cây có đánh dấu thực hành
     const practicePlants = this.plants.filter(p => p.isThucHanh === true);
 
     if (practicePlants.length < 5) {
@@ -3084,10 +3085,46 @@ startQuickPracticeSession() {
         return;
     }
 
-    // Chọn 5 cây ngẫu nhiên khác nhau
-    const selectedPlants = practicePlants.sort(() => 0.5 - Math.random()).slice(0, 5);
+    // 2. Phân loại cây dựa trên lịch sử
+    const wrongIDs = this._getHistoryIDs('wrong_practice_history');
+    const correctIDs = this._getHistoryIDs('correct_practice_history');
 
-    // Chuẩn bị dữ liệu
+    // Nhóm 1: Chưa học bao giờ (Không nằm trong sai, không nằm trong đúng)
+    const neverLearned = practicePlants.filter(p => !wrongIDs.has(p.id) && !correctIDs.has(p.id));
+    
+    // Nhóm 2: Đang làm sai (Cần ôn lại)
+    const needsReview = practicePlants.filter(p => wrongIDs.has(p.id));
+    
+    // Nhóm 3: Đã làm đúng (Mastered)
+    const mastered = practicePlants.filter(p => correctIDs.has(p.id));
+
+    let selectedPlants = [];
+
+    // --- THUẬT TOÁN CHỌN ĐỀ ---
+    // Ưu tiên: Chưa học + Đang sai
+    let priorityPool = [...neverLearned, ...needsReview];
+
+    if (priorityPool.length >= 5) {
+        // Trường hợp A: Còn nhiều cây chưa thuộc -> Chọn ngẫu nhiên 5 cây trong nhóm này
+        selectedPlants = priorityPool.sort(() => 0.5 - Math.random()).slice(0, 5);
+    } else {
+        // Trường hợp B: Gần thuộc hết rồi (còn ít hơn 5 cây chưa thuộc)
+        // -> Lấy hết cây chưa thuộc + Bù thêm cây đã thuộc cho đủ 5
+        const needed = 5 - priorityPool.length;
+        const fillFromMastered = mastered.sort(() => 0.5 - Math.random()).slice(0, needed);
+        selectedPlants = [...priorityPool, ...fillFromMastered];
+        
+        // Nếu vẫn chưa đủ (do tổng số cây thực hành < 5, dù đã check ở trên nhưng cứ an toàn)
+        if (selectedPlants.length < 5) {
+             // Fallback: Lấy random toàn bộ
+             selectedPlants = practicePlants.sort(() => 0.5 - Math.random()).slice(0, 5);
+        }
+    }
+    
+    // Xáo trộn lại danh sách cuối cùng để thứ tự câu hỏi không bị đoán trước
+    selectedPlants.sort(() => 0.5 - Math.random());
+
+    // 3. Chuẩn bị dữ liệu (Giữ nguyên logic chọn ảnh cũ)
     const sessionItems = selectedPlants.map(p => {
         let imgSrc = `${p.id}.jpg`;
         let correctName = p.tenDuocLieu;
@@ -3112,8 +3149,8 @@ startQuickPracticeSession() {
         items: sessionItems,
         plantIndex: 0,
         isFeedbackShowing: false,
-        correctCount: 0, // [MỚI] Biến đếm số cây trả lời đúng hoàn toàn
-        totalPlants: 5
+        correctCount: 0,
+        totalPlants: sessionItems.length
     };
 
     // UI Setup
@@ -3121,7 +3158,6 @@ startQuickPracticeSession() {
     this.els.quizResultScreen.classList.add("hidden");
     this.els.quizQuestionScreen.classList.remove("hidden");
     
-    // Ẩn nút Nộp bài
     const submitBtn = document.getElementById('practice-submit-all');
     if(submitBtn) submitBtn.classList.add("hidden");
     const navContainer = document.getElementById('practice-nav-container');
@@ -3129,6 +3165,7 @@ startQuickPracticeSession() {
 
     this.renderQuickQuestion();
 }
+
 // 2. Render câu hỏi hiện tại (ĐÃ TỐI ƯU GIAO DIỆN DESKTOP)
 renderQuickQuestion() {
     if (this.quickState.plantIndex >= this.quickState.totalPlants) {
@@ -3212,7 +3249,8 @@ renderQuickQuestion() {
         if (e.key === 'Enter') handleSubmit();
     });
 }
-// 3. Xử lý đáp án (ĐÃ CẬP NHẬT TÍNH ĐIỂM)
+// --- CẬP NHẬT HÀM handleQuickAnswer (LƯU TRẠNG THÁI) ---
+
 handleQuickAnswer(userVal) {
     if (this.quickState.isFeedbackShowing) return;
 
@@ -3226,7 +3264,6 @@ handleQuickAnswer(userVal) {
     else if (stage === 1) correctVal = familyInfo.vietnamese;
     else if (stage === 2) correctVal = familyInfo.scientific;
 
-    // Chuẩn hóa và so sánh
     const isCorrect = this._normalizeStr(userVal) === this._normalizeStr(correctVal);
 
     if (isCorrect) {
@@ -3235,15 +3272,24 @@ handleQuickAnswer(userVal) {
         
         // Nếu đã xong stage 2 (Hoàn thành cây này)
         if (currentItem.stage > 2) {
-            this.quickState.correctCount++; // [MỚI] Cộng điểm vì trả lời đúng hết 3 câu
+            this.quickState.correctCount++;
+            
+            // [LOGIC MỚI] Đánh dấu là ĐÃ THUỘC
+            this._updateHistory('correct_practice_history', p);
+            // Xóa khỏi danh sách sai (nếu trước đó từng sai)
+            this._removeFromHistory('wrong_practice_history', p.id);
+            
             this.quickState.plantIndex++;
         }
         
         this.renderQuickQuestion();
 
     } else {
-        // SAI -> Hiện đáp án và lưu lịch sử
-        this.saveWrongHistory(p); 
+        // [LOGIC MỚI] Đánh dấu là CẦN ÔN LẠI
+        this._updateHistory('wrong_practice_history', p);
+        // Xóa khỏi danh sách đúng (vì giờ lại quên rồi)
+        this._removeFromHistory('correct_practice_history', p.id);
+
         this.showQuickFeedback(p, currentItem.correctName, familyInfo);
     }
 }
@@ -4813,6 +4859,38 @@ const imgUrl = `./images/${plant.id}.jpg`;
                             { once: true }
                         );
                     }
+                    // --- CÁC HÀM QUẢN LÝ LỊCH SỬ HỌC TẬP (MỚI) ---
+
+// Lấy danh sách ID từ LocalStorage
+_getHistoryIDs(key) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(arr.map(item => item.id)); // Trả về Set các ID để tra cứu cho nhanh
+}
+
+// Lưu cây vào lịch sử (Đúng hoặc Sai)
+_updateHistory(key, plant) {
+    let history = JSON.parse(localStorage.getItem(key) || '[]');
+    // Nếu chưa có thì thêm vào
+    if (!history.some(h => h.id === plant.id)) {
+        history.push({
+            id: plant.id,
+            name: plant.tenDuocLieu,
+            time: new Date().toISOString()
+        });
+        localStorage.setItem(key, JSON.stringify(history));
+    }
+}
+
+// Xóa cây khỏi lịch sử (Ví dụ: Đã trả lời đúng thì xóa khỏi danh sách sai)
+_removeFromHistory(key, plantId) {
+    let history = JSON.parse(localStorage.getItem(key) || '[]');
+    const newHistory = history.filter(h => h.id !== plantId);
+    if (newHistory.length !== history.length) {
+        localStorage.setItem(key, JSON.stringify(newHistory));
+    }
+}
                     // -------- BẮT ĐẦU DÁN MÃ ĐÃ SỬA LỖI --------
 
                     enterEditMode(plantId) {
