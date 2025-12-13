@@ -331,7 +331,14 @@
     "luuY": "Các thuốc chống ung thư từ Dừa cạn có nhiều tác dụng phụ và độc tính cao như rụng tóc, giảm bạch cầu, độc với thần kinh.",
     "dacDiemDuocLieu": "Cây thảo nhỏ, sống dai. Hoa có 5 cánh, thường màu hồng hoặc trắng. Lá mọc đối.",
     "tenKhoaHoc": "Catharanthus roseus (L.) G. Don",
-    "isThucHanh": true
+    "isThucHanh": true,
+    "gallery": [
+      {
+        "src": "22_1765630663456.jpg",
+        "title": "",
+        "note": ""
+      }
+    ]
   },
   {
     "id": "23",
@@ -1188,7 +1195,6 @@
     "tenKhoaHoc": "Elsholtzia ciliata (Thunb.) Hyland",
     "isThucHanh": true,
     "gallery": [
-      
       {
         "src": "1758897233324_1765531290754.jpg",
         "title": "",
