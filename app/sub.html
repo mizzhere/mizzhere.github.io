@@ -167,8 +167,8 @@
     /* CƠ CHẾ CUỘN NGANG */
     display: flex;
     gap: 15px;
-    /* overflow-x: auto; */
-    overflow-y: visible;
+     overflow-x: auto;
+    /*overflow-y: visible;*/
     /* padding: 40px 10px; */
     /* margin: -40px -10px; */
     scroll-behavior: smooth;
@@ -1292,6 +1292,7 @@
         <script type="module">
     
     import { computePosition, autoUpdate, flip, shift, offset, size } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3/+esm';
+    window.FloatingUIDOM = { computePosition, autoUpdate, flip, shift, offset, size };
         </script>
         <script>
             const doc = document;
@@ -2472,11 +2473,17 @@ el.innerHTML = `
             }
             // END: Các hàm mới
             /* --- LOGIC FLOATING UI --- */
-let cleanupFloating = null; // Biến lưu hàm dọn dẹp
+/* --- LOGIC FLOATING UI --- */
+let cleanupFloating = null;
 
 function setupFloatingForCard(card) {
     const info = card.querySelector('.card-info');
     if (!info) return;
+    
+    // Lấy các hàm từ window (đã import ở bước 1)
+    // Nếu chưa load xong thì return (an toàn)
+    if (!window.FloatingUIDOM) return; 
+    const { computePosition, autoUpdate, flip, shift, offset, size } = window.FloatingUIDOM;
 
     // Khi chuột vào Card
     card.addEventListener('mouseenter', () => {
@@ -2485,18 +2492,12 @@ function setupFloatingForCard(card) {
         // autoUpdate: Tự động tính lại vị trí khi cuộn hoặc resize
         cleanupFloating = autoUpdate(card, info, () => {
             computePosition(card, info, {
-                placement: 'bottom', // Mặc định hiện ở dưới
-                strategy: 'fixed',   // Dùng fixed để thoát thanh cuộn
+                placement: 'bottom', 
+                strategy: 'fixed',   // QUAN TRỌNG: Fixed giúp thoát khỏi overflow
                 middleware: [
-                    offset(0), // Dính sát vào card (hoặc chỉnh số px nếu muốn hở ra)
-                    
-                    // 1. FLIP: Hết chỗ dưới thì lật lên trên
+                    offset(0), 
                     flip(), 
-                    
-                    // 2. SHIFT: Hết chỗ trái/phải thì đẩy vào trong (ko bị mất mép)
                     shift({ padding: 5 }), 
-                    
-                    // 3. SIZE: Bắt buộc Info rộng bằng đúng Card (User yêu cầu)
                     size({
                         apply({rects, elements}) {
                             Object.assign(elements.floating.style, {
@@ -2506,13 +2507,12 @@ function setupFloatingForCard(card) {
                     }),
                 ],
             }).then(({x, y, placement}) => {
-                // Gán tọa độ đã tính toán vào CSS
                 Object.assign(info.style, {
                     left: `${x}px`,
                     top: `${y}px`,
+                    position: 'fixed' // Đảm bảo luôn là fixed
                 });
 
-                // Tùy chỉnh bo góc dựa trên vị trí (Nếu lật lên trên thì bo góc trên, dưới thì bo dưới)
                 const isTop = placement.startsWith('top');
                 info.style.borderRadius = isTop ? '6px 6px 0 0' : '0 0 6px 6px';
             });
@@ -2523,11 +2523,11 @@ function setupFloatingForCard(card) {
     card.addEventListener('mouseleave', () => {
         info.classList.remove('is-visible');
         if (cleanupFloating) {
-            cleanupFloating(); // Dừng tính toán để tiết kiệm hiệu năng
+            cleanupFloating();
             cleanupFloating = null;
         }
     });
 }
-        </script>
+</script>
     </body>
 </html>
