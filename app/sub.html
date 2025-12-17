@@ -291,37 +291,21 @@
 
 /* Phần thông tin (Mặc định ẩn hoặc thu gọn) */
 .card-info {
-    /* Bước A: Thoát khỏi overflow của cha */
-    position: fixed; 
-    
-    /* Bước B: Kết nối với Neo (Lấy từ biến CSS inline) */
-    position-anchor: var(--target-anchor);
-    
-    /* Bước C: Định vị trí dựa trên Neo */
-    /* Top của info nằm ngay sát Bottom của Neo */
-    top: anchor(bottom); 
-    
-    /* Left của info trùng với Left của Neo */
-    left: anchor(left);
-    
-    /* Độ rộng bằng đúng độ rộng của Neo */
-    width: anchor-size(width);
-    position-try-options: flip-block;
-    position-try: flip-block, flip-inline;
-    /* --- Các style giao diện cũ giữ nguyên --- */
+    position: absolute;
+    top: 100%; /* Nằm ngay bên dưới ảnh */
+    left: 0;
+    width: 100%;
     background-color: var(--secondary-bg);
     padding: 12px;
     box-sizing: border-box;
     border-radius: 0 0 6px 6px;
-    
-    /* Hiệu ứng ẩn hiện */
-    opacity: 0;
+    opacity: 0; /* Ẩn đi */
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(-10px); /* Dịch lên một chút */
+    transition: all 0.3s ease;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    z-index: 9999; /* Luôn nổi trên cùng */
-    pointer-events: none;
+    z-index: 2;
+    pointer-events: none; /* Không bắt chuột khi ẩn */
 }
 
 /* Title trong card */
@@ -364,14 +348,6 @@
         transform: translateY(0);
         pointer-events: auto;
     }
-    @supports not (anchor-name: --foo) {
-    .card-info {
-        position: absolute; /* Quay về cách cũ nếu trình duyệt cùi */
-        top: 100%;
-        left: 0;
-        width: 100%;
-    }
-}
     
     /* Bo lại góc dưới của ảnh khi info hiện ra để liền mạch */
     .video-card:hover .card-image-wrapper {
@@ -1313,6 +1289,10 @@
         <div id="notification-area"></div>
          </main>
         <script src="https://www.youtube.com/iframe_api"></script>
+        <script type="module">
+    
+    import { computePosition, autoUpdate, flip, shift, offset, size } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3/+esm';
+        </script>
         <script>
             const doc = document;
             // --- DOM Elements ---
@@ -1429,30 +1409,24 @@
 }
 
 /* --- [HÀM PHỤ] Tạo HTML cho thẻ Video (để tái sử dụng) --- */
-/* --- [CẬP NHẬT] createVideoCardHtml với Anchor Positioning --- */
 function createVideoCardHtml(video) {
     const episodeBadge = video.episode 
         ? `<div class="episode-badge">EP ${video.episode}</div>` 
         : "";
+    
+    // Lấy thể loại đầu tiên
     const displayGenre = (video.genres && video.genres.length > 0) ? video.genres[0] : "";
+    
+    // Thumbnail & Title
     const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
     const title = video.userTitle || video.title;
 
-    // TẠO UNIQUE ID CHO ANCHOR (Quan trọng)
-    // Dùng videoId làm định danh duy nhất.
-    // CSS variable --anchor-name sẽ được truyền xuống style.
-    const uniqueAnchorName = `--anchor-${video.videoId}`;
-
     return `
-    <div class="video-card" 
-         data-video-id="${video.videoId}" 
-         style="anchor-name: ${uniqueAnchorName}; --target-anchor: ${uniqueAnchorName};">
-         
+    <div class="video-card" data-video-id="${video.videoId}">
         <div class="card-image-wrapper">
             ${episodeBadge}
             <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
         </div>
-
         <div class="card-info">
             <div class="card-title">${title}</div>
             <div class="card-meta">
@@ -1463,6 +1437,7 @@ function createVideoCardHtml(video) {
     </div>
     `;
 }
+
 
 /* --- LOGIC RENDER MỚI: GROUP BY PROGRAM & CAROUSEL --- */
 
@@ -1577,6 +1552,11 @@ function renderVideoRows(videoArray) {
         createCarouselSection("🎬 Phim & Video Lẻ", singleCards);
     }
     */
+
+    const allCards = doc.querySelectorAll('.video-card');
+    allCards.forEach(card => {
+        setupFloatingForCard(card);
+    });
 }
 
 // Hàm tạo HTML cho 1 Row (Carousel)
@@ -2491,6 +2471,63 @@ el.innerHTML = `
                 if (card) card.onclick = null; // Gỡ listener để tránh memory leak
             }
             // END: Các hàm mới
+            /* --- LOGIC FLOATING UI --- */
+let cleanupFloating = null; // Biến lưu hàm dọn dẹp
+
+function setupFloatingForCard(card) {
+    const info = card.querySelector('.card-info');
+    if (!info) return;
+
+    // Khi chuột vào Card
+    card.addEventListener('mouseenter', () => {
+        info.classList.add('is-visible');
+
+        // autoUpdate: Tự động tính lại vị trí khi cuộn hoặc resize
+        cleanupFloating = autoUpdate(card, info, () => {
+            computePosition(card, info, {
+                placement: 'bottom', // Mặc định hiện ở dưới
+                strategy: 'fixed',   // Dùng fixed để thoát thanh cuộn
+                middleware: [
+                    offset(0), // Dính sát vào card (hoặc chỉnh số px nếu muốn hở ra)
+                    
+                    // 1. FLIP: Hết chỗ dưới thì lật lên trên
+                    flip(), 
+                    
+                    // 2. SHIFT: Hết chỗ trái/phải thì đẩy vào trong (ko bị mất mép)
+                    shift({ padding: 5 }), 
+                    
+                    // 3. SIZE: Bắt buộc Info rộng bằng đúng Card (User yêu cầu)
+                    size({
+                        apply({rects, elements}) {
+                            Object.assign(elements.floating.style, {
+                                width: `${rects.reference.width}px`
+                            });
+                        },
+                    }),
+                ],
+            }).then(({x, y, placement}) => {
+                // Gán tọa độ đã tính toán vào CSS
+                Object.assign(info.style, {
+                    left: `${x}px`,
+                    top: `${y}px`,
+                });
+
+                // Tùy chỉnh bo góc dựa trên vị trí (Nếu lật lên trên thì bo góc trên, dưới thì bo dưới)
+                const isTop = placement.startsWith('top');
+                info.style.borderRadius = isTop ? '6px 6px 0 0' : '0 0 6px 6px';
+            });
+        });
+    });
+
+    // Khi chuột rời Card
+    card.addEventListener('mouseleave', () => {
+        info.classList.remove('is-visible');
+        if (cleanupFloating) {
+            cleanupFloating(); // Dừng tính toán để tiết kiệm hiệu năng
+            cleanupFloating = null;
+        }
+    });
+}
         </script>
     </body>
 </html>
