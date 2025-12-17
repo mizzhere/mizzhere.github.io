@@ -163,18 +163,16 @@
 
 /* .video-list là không gian bên trong cái kệ để xếp video */
 .video-list {
-    display: flex;             /* Xếp các thẻ video nằm ngang hàng nhau */
-    gap: 15px;                 /* Khoảng cách giữa các thẻ video */
-    
+  
     /* CƠ CHẾ CUỘN NGANG */
-    overflow-x: auto;          /* Cho phép cuộn ngang khi nội dung tràn */
-    overflow-y: visible;       /* QUAN TRỌNG: Để khi hover, thẻ phóng to không bị cắt đầu cắt đuôi */
-    
-    padding: 40px 10px;        /* Đệm trên dưới 40px để thẻ phóng to thoải mái, đệm trái phải 10px */
-    margin: -40px -10px;       /* Margin âm để bù lại padding, giúp layout không bị lệch */
-    
-    scroll-behavior: smooth;   /* Hiệu ứng trượt mượt mà */
-    
+    display: flex;
+    gap: 15px;
+    /* overflow-x: auto; */
+    overflow-y: visible;
+    /* padding: 40px 10px; */
+    /* margin: -40px -10px; */
+    scroll-behavior: smooth;
+    scrollbar-width: none;
     /* Ẩn thanh cuộn xấu xí đi */
     scrollbar-width: none;     /* Firefox */
     -ms-overflow-style: none;  /* IE/Edge */
@@ -194,6 +192,7 @@
 .video-card {
     background-color: var(--secondary-bg);
     border-radius: 6px;
+    flex: 0 0 auto;
     position: relative; /* Quan trọng để định vị */
     cursor: pointer;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s 0.3s; /* Delay z-index khi thu nhỏ */
