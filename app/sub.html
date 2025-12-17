@@ -291,21 +291,37 @@
 
 /* Phần thông tin (Mặc định ẩn hoặc thu gọn) */
 .card-info {
-    position: absolute;
-    top: 100%; /* Nằm ngay bên dưới ảnh */
-    left: 0;
-    width: 100%;
+    /* Bước A: Thoát khỏi overflow của cha */
+    position: fixed; 
+    
+    /* Bước B: Kết nối với Neo (Lấy từ biến CSS inline) */
+    position-anchor: var(--target-anchor);
+    
+    /* Bước C: Định vị trí dựa trên Neo */
+    /* Top của info nằm ngay sát Bottom của Neo */
+    top: anchor(bottom); 
+    
+    /* Left của info trùng với Left của Neo */
+    left: anchor(left);
+    
+    /* Độ rộng bằng đúng độ rộng của Neo */
+    width: anchor-size(width);
+    position-try-options: flip-block;
+    position-try: flip-block, flip-inline;
+    /* --- Các style giao diện cũ giữ nguyên --- */
     background-color: var(--secondary-bg);
     padding: 12px;
     box-sizing: border-box;
     border-radius: 0 0 6px 6px;
-    opacity: 0; /* Ẩn đi */
+    
+    /* Hiệu ứng ẩn hiện */
+    opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px); /* Dịch lên một chút */
-    transition: all 0.3s ease;
+    transform: translateY(-10px);
+    transition: opacity 0.3s, transform 0.3s;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    z-index: 2;
-    pointer-events: none; /* Không bắt chuột khi ẩn */
+    z-index: 9999; /* Luôn nổi trên cùng */
+    pointer-events: none;
 }
 
 /* Title trong card */
@@ -348,6 +364,14 @@
         transform: translateY(0);
         pointer-events: auto;
     }
+    @supports not (anchor-name: --foo) {
+    .card-info {
+        position: absolute; /* Quay về cách cũ nếu trình duyệt cùi */
+        top: 100%;
+        left: 0;
+        width: 100%;
+    }
+}
     
     /* Bo lại góc dưới của ảnh khi info hiện ra để liền mạch */
     .video-card:hover .card-image-wrapper {
@@ -1405,24 +1429,30 @@
 }
 
 /* --- [HÀM PHỤ] Tạo HTML cho thẻ Video (để tái sử dụng) --- */
+/* --- [CẬP NHẬT] createVideoCardHtml với Anchor Positioning --- */
 function createVideoCardHtml(video) {
     const episodeBadge = video.episode 
         ? `<div class="episode-badge">EP ${video.episode}</div>` 
         : "";
-    
-    // Lấy thể loại đầu tiên
     const displayGenre = (video.genres && video.genres.length > 0) ? video.genres[0] : "";
-    
-    // Thumbnail & Title
     const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
     const title = video.userTitle || video.title;
 
+    // TẠO UNIQUE ID CHO ANCHOR (Quan trọng)
+    // Dùng videoId làm định danh duy nhất.
+    // CSS variable --anchor-name sẽ được truyền xuống style.
+    const uniqueAnchorName = `--anchor-${video.videoId}`;
+
     return `
-    <div class="video-card" data-video-id="${video.videoId}">
+    <div class="video-card" 
+         data-video-id="${video.videoId}" 
+         style="anchor-name: ${uniqueAnchorName}; --target-anchor: ${uniqueAnchorName};">
+         
         <div class="card-image-wrapper">
             ${episodeBadge}
             <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
         </div>
+
         <div class="card-info">
             <div class="card-title">${title}</div>
             <div class="card-meta">
