@@ -154,21 +154,83 @@
                 font-weight: 600;
                 margin: 0 0 20px 0;
             }
-            .video-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 15px;
-            }
-            /* --- [MỚI] VIDEO CARD - Hover hiện info bên dưới --- */
-.video-card {
-    background-color: var(--secondary-bg);
-    border-radius: 6px;
-    position: relative; /* Quan trọng để định vị */
-    cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s 0.3s; /* Delay z-index khi thu nhỏ */
-    /* Không dùng overflow: hidden để info có thể trồi ra ngoài hoặc mở rộng */
+            /* --- [MỚI] Layout trượt ngang kiểu Netflix --- */
+.program-row {
+    margin-bottom: 40px;
+    padding-left: clamp(20px, 4vw, 60px); /* Canh lề trái cho tiêu đề */
+    position: relative;
 }
 
+.video-list {
+    display: flex; /* Xếp ngang */
+    gap: 15px;
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    padding: 40px clamp(20px, 4vw, 60px); /* Padding trên dưới rộng để khi hover phóng to không bị cắt */
+    margin-top: -30px; /* Kéo lên để bù lại padding hover */
+    scroll-behavior: smooth;
+    
+    /* Ẩn thanh cuộn nhưng vẫn cuộn được */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+}
+.video-list::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.video-card {
+    min-width: 280px; /* Kích thước cố định cho mỗi thẻ trong băng chuyền */
+    flex-shrink: 0;   /* Không cho co lại */
+    /* Giữ nguyên các hiệu ứng hover cũ */
+}
+
+/* --- [MỚI] Danh sách tập trong Modal Chi tiết --- */
+#modal-episodes-section {
+    margin-top: 20px;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+}
+#modal-episodes-section h4 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 15px;
+}
+.modal-episode-item {
+    display: flex;
+    gap: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-items: center;
+    border-bottom: 1px solid #2a2a2a;
+}
+.modal-episode-item:hover {
+    background-color: #333;
+}
+.modal-ep-thumb {
+    width: 120px;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.modal-ep-info {
+    flex: 1;
+}
+.modal-ep-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #eee;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.modal-ep-number {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: 500;
+}
 /* Container chứa ảnh để bo góc */
 .card-image-wrapper {
     position: relative;
@@ -1045,6 +1107,10 @@
                     </div>
                     <!-- Chỗ chứa mới cho mô tả -->
                     <p id="modal-description"></p>
+                    <div id="modal-episodes-section" class="hidden">
+    <h4>Danh sách tập</h4>
+    <div id="modal-episodes-list"></div>
+</div>
                     <div id="modal-participants-container" class="hidden">
                         <h4 id="modal-participants-title">Với sự tham gia của:</h4>
                         <ul id="modal-participants-list"></ul>
@@ -1326,7 +1392,14 @@ function createVideoCardHtml(video) {
     `;
 }
 
-/* --- [CHÍNH] Render Video theo phong cách Netflix (Mới nhất lên đầu) --- */
+/* --- LOGIC RENDER MỚI: GROUP BY PROGRAM & CAROUSEL --- */
+
+// Helper: Lấy điểm thời gian (để sort)
+const getDateScore = (v) => {
+    if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
+    return 0;
+};
+
 function renderVideoRows(videoArray) {
     libraryContainer.innerHTML = "";
     if (videoArray.length === 0) {
@@ -1334,74 +1407,115 @@ function renderVideoRows(videoArray) {
         return;
     }
 
-    // 1. Helper lấy ngày upload (để so sánh thời gian)
-    // Nếu không có ngày upload, dùng index (giả định video mới thêm nằm đầu mảng)
-    const getDateScore = (v) => {
-        if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
-        return 0; 
-    };
+    // 1. GOM NHÓM: Biến danh sách Video phẳng thành danh sách Chương trình
+    const programsMap = {};
+    const singleVideos = [];
 
-    // 2. Tạo hàng đặc biệt: "🔥 Mới cập nhật"
-    // Lấy 10 video mới nhất từ danh sách hiện tại
-    const latestVideos = [...videoArray]
-        .sort((a, b) => getDateScore(b) - getDateScore(a))
-        .slice(0, 12); // Lấy top 12
-
-    if (latestVideos.length > 0) {
-        const section = doc.createElement("section");
-        section.className = "program-row";
-        section.innerHTML = `
-            <h2 class="program-title" style="color: var(--accent-color); display: flex; align-items: center; gap: 10px;">
-                🔥 Mới cập nhật
-            </h2>
-            <div class="video-list">
-                ${latestVideos.map(createVideoCardHtml).join("")}
-            </div>
-        `;
-        libraryContainer.appendChild(section);
-    }
-
-    // 3. Nhóm video theo Chương trình
-    const groupedByProgram = videoArray.reduce((acc, video) => {
-        const program = video.program || "Chương trình khác";
-        if (!acc[program]) acc[program] = [];
-        acc[program].push(video);
-        return acc;
-    }, {});
-
-    // 4. Sắp xếp thứ tự CÁC CHƯƠNG TRÌNH (Smart Ordering)
-    // Chương trình nào có video mới hơn -> Đứng trước
-    const programOrder = Object.keys(groupedByProgram).sort((progA, progB) => {
-        // Tìm ngày mới nhất trong nhóm A
-        const maxDateA = groupedByProgram[progA].reduce((max, v) => Math.max(max, getDateScore(v)), 0);
-        // Tìm ngày mới nhất trong nhóm B
-        const maxDateB = groupedByProgram[progB].reduce((max, v) => Math.max(max, getDateScore(v)), 0);
+    videoArray.forEach(video => {
+        const progName = video.program;
         
-        // So sánh giảm dần
-        return maxDateB - maxDateA;
+        // Nếu không có tên chương trình, coi là Video Lẻ
+        if (!progName) {
+            singleVideos.push(video);
+            return;
+        }
+
+        if (!programsMap[progName]) {
+            programsMap[progName] = {
+                title: progName,
+                videos: [],
+                genres: new Set(),
+                latestUpdate: 0
+            };
+        }
+        
+        programsMap[progName].videos.push(video);
+        // Cập nhật ngày mới nhất của chương trình
+        const score = getDateScore(video);
+        if (score > programsMap[progName].latestUpdate) {
+            programsMap[progName].latestUpdate = score;
+        }
+        // Gom thể loại
+        if (video.genres) video.genres.forEach(g => programsMap[progName].genres.add(g));
     });
 
-    // 5. Render từng dòng chương trình
-    for (const programName of programOrder) {
-        // Sắp xếp video TRONG mỗi chương trình:
-        // Ưu tiên số tập (Tập 10 trước tập 9), nếu không có tập thì theo ngày
-        const videosInProgram = groupedByProgram[programName].sort((a, b) => {
-            if (a.episode && b.episode) return b.episode - a.episode;
-            return getDateScore(b) - getDateScore(a);
+    // 2. CHUẨN BỊ DỮ LIỆU HIỂN THỊ
+    // Sắp xếp các tập trong mỗi chương trình (Mới nhất lên đầu)
+    Object.values(programsMap).forEach(prog => {
+        prog.videos.sort((a, b) => {
+            if (a.episode && b.episode) return b.episode - a.episode; // Số tập giảm dần
+            return getDateScore(b) - getDateScore(a); // Hoặc ngày giảm dần
         });
+        // Lấy video đại diện là video mới nhất (đầu danh sách sau khi sort)
+        prog.thumbnailVideo = prog.videos[0]; 
+    });
 
-        const section = doc.createElement("section");
-        section.className = "program-row";
-        section.innerHTML = `
-            <h2 class="program-title">${programName}</h2>
-            <div class="video-list">
-                ${videosInProgram.map(createVideoCardHtml).join("")}
-            </div>
-        `;
-        libraryContainer.appendChild(section);
+    // Danh sách chương trình (để render row "Mới cập nhật" hoặc "Tất cả")
+    const allPrograms = Object.values(programsMap).sort((a, b) => b.latestUpdate - a.latestUpdate);
+    // Danh sách video lẻ (cũng sort theo ngày)
+    singleVideos.sort((a, b) => getDateScore(b) - getDateScore(a));
+
+    // 3. RENDER CÁC ROW (HÀNG NGANG)
+
+    // --- ROW 1: "🔥 Chương trình Mới cập nhật" ---
+    if (allPrograms.length > 0) {
+        createCarouselSection("🔥 Chương trình Mới cập nhật", allPrograms.map(p => createProgramCard(p)));
     }
+
+    // --- ROW 2: "🎬 Video Lẻ / Movies" (Nếu có) ---
+    if (singleVideos.length > 0) {
+        // Với video lẻ, ta coi mỗi video như 1 program nhưng click vào là play luôn (hoặc hiện modal ít thông tin)
+        createCarouselSection("🎬 Video Lẻ", singleVideos.map(v => createVideoCardHtml(v)));
+    }
+
+    // --- ROW 3+: "📺 Tất cả chương trình" (Hoặc có thể chia theo thể loại ở đây nếu muốn) ---
+    // Hiện tại mình gom hết vào row trên rồi, nên nếu bạn muốn tách Thể loại thì làm tương tự logic Filter.
 }
-            // --- Event Handling ---
+
+// Hàm tạo HTML cho 1 Row (Carousel)
+function createCarouselSection(title, cardsHtmlArray) {
+    if (cardsHtmlArray.length === 0) return;
+    const section = doc.createElement("section");
+    section.className = "program-row";
+    section.innerHTML = `
+        <h2 class="program-title">${title}</h2>
+        <div class="video-list">
+            ${cardsHtmlArray.join("")}
+        </div>
+    `;
+    libraryContainer.appendChild(section);
+}
+
+// Hàm tạo HTML thẻ Program (Khác thẻ Video một chút)
+function createProgramCard(program) {
+    const video = program.thumbnailVideo; // Dùng video mới nhất làm ảnh bìa
+    const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
+    // Hiển thị số lượng tập
+    const episodeCount = program.videos.length;
+    const badge = `<div class="episode-badge">${episodeCount} Tập</div>`;
+    const displayGenre = program.genres.size > 0 ? Array.from(program.genres)[0] : "";
+
+    // Lưu program-name vào data attribute để click handler xử lý
+    return `
+    <div class="video-card program-card" data-program-name="${program.title}">
+        <div class="card-image-wrapper">
+            ${badge}
+            <img src="${thumbUrl}" alt="${program.title}" class="video-thumbnail" loading="lazy">
+        </div>
+        <div class="card-info">
+            <div class="card-title">${program.title}</div>
+            <div class="card-meta">
+                <span class="card-ep">Cập nhật mới nhất</span>
+                <span class="card-genre">${displayGenre}</span>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+// --- Event Handling ---
+          
+          
             function setupEventListeners() {
                 // ... các event listener từ đầu đến backBtn giữ nguyên ...
                 searchInput.addEventListener("input", handleSearchAndFilter);
@@ -1601,13 +1715,29 @@ function handleSearchAndFilter() {
                 }
             }
             function handleCardClick(e) {
-                const card = e.target.closest(".video-card");
-                if (card) {
-                    const videoId = card.dataset.videoId;
-                    const videoData = libraryData.find((v) => v.videoId === videoId);
-                    if (videoData) openDetailModal(videoData);
-                }
-            }
+    const card = e.target.closest(".video-card");
+    if (!card) return;
+
+    // Trường hợp 1: Click vào Thẻ Chương Trình (Program Card)
+    if (card.dataset.programName) {
+        const progName = card.dataset.programName;
+        // Lấy lại danh sách video của chương trình này từ libraryData
+        const videos = libraryData
+            .filter(v => v.program === progName)
+            .sort((a, b) => (b.episode || 0) - (a.episode || 0)); // Sort tập mới nhất lên đầu
+        
+        if (videos.length > 0) {
+            // Mở modal với thông tin của video mới nhất, nhưng truyền thêm danh sách tập
+            openDetailModal(videos[0], videos); 
+        }
+    } 
+    // Trường hợp 2: Click vào Video Lẻ (Video Card thường)
+    else if (card.dataset.videoId) {
+        const videoId = card.dataset.videoId;
+        const videoData = libraryData.find((v) => v.videoId === videoId);
+        if (videoData) openDetailModal(videoData, null); // null nghĩa là không có list tập
+    }
+}
             function handleModalPlay() {
                 const videoId = modalPlayBtn.dataset.videoId;
                 const videoData = libraryData.find((v) => v.videoId === videoId);
@@ -1664,73 +1794,108 @@ function handleSearchAndFilter() {
                 modal.classList.remove("visible");
                 setTimeout(() => modal.classList.add("hidden"), 300);
             }
-            function openDetailModal(videoData) {
-                // Sửa lỗi thumbnail: Tự động dùng 'thumbnailUrl_auto' nếu 'thumbnailUrl' không có
-                const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-                modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
-                modalThumbnail.onerror = () => {
-                    modalThumbnail.src = thumbnailUrl;
-                };
-                if (videoData.originalTitle_auto) {
-                    modalOriginalTitle.textContent = videoData.originalTitle_auto;
-                    modalOriginalTitle.style.display = "block";
-                } else {
-                    modalOriginalTitle.style.display = "none";
-                }
-                // Sửa tiêu đề: Thêm số tập nếu có
-                let titleText = videoData.userTitle || videoData.title;
-                if (videoData.episode) {
-                    titleText = `Tập ${videoData.episode}: ${titleText}`;
-                }
-                modalTitle.textContent = titleText;
+/**
+ * Mở modal chi tiết, có thể hiển thị danh sách tập nếu là một PROGRAM (Series).
+ * @param {Object} videoData Dữ liệu của video/tập mới nhất được chọn.
+ * @param {Array<Object> | null} programEpisodes Danh sách các tập của chương trình, nếu là Program Card.
+ */
+function openDetailModal(videoData, programEpisodes = null) {
+    // Lấy các DOM element cần thiết
+    const modalThumbnail = doc.getElementById("modal-thumbnail");
+    const modalTitle = doc.getElementById("modal-title");
+    const modalOriginalTitle = doc.getElementById("modal-original-title");
+    const modalProgram = doc.getElementById("modal-program");
+    const modalAuthor = doc.getElementById("modal-author");
+    const modalDescription = doc.getElementById("modal-description");
+    const modalPlayBtn = doc.getElementById("modal-play-btn");
+    const modalParticipants = doc.getElementById("modal-participants");
+    const modalGenres = doc.getElementById("modal-genres");
+    const modalEpisodeSection = doc.getElementById("modal-episodes-section");
+    const modalEpisodesList = doc.getElementById("modal-episodes-list");
+    
+    // Xử lý thumbnail
+    const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+    modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
+    modalThumbnail.onerror = () => { modalThumbnail.src = thumbnailUrl; }; // Dùng HQ nếu MAXRES không tải được
 
-                modalProgram.textContent = videoData.program || "";
-                // Sửa lỗi tên tác giả: Tự động dùng 'authorName_auto'
-                modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
+    // Xử lý TIÊU ĐỀ
+    if (programEpisodes) {
+        // Nếu là Program Card: Hiển thị tên Chương trình làm tiêu đề chính
+        modalTitle.textContent = videoData.program;
+        modalOriginalTitle.textContent = videoData.userTitle || videoData.title; // Tên tập mới nhất làm phụ
+        modalOriginalTitle.style.display = "block";
+    } else {
+        // Nếu là Video Lẻ: Hiển thị tên video
+        modalTitle.textContent = videoData.userTitle || videoData.title;
+        modalOriginalTitle.style.display = videoData.originalTitle_auto ? "block" : "none";
+        if(videoData.originalTitle_auto) modalOriginalTitle.textContent = videoData.originalTitle_auto;
+    }
 
-                // -- PHẦN MỚI: Xử lý THỂ LOẠI (genres) --
-                const modalGenresContainer = doc.getElementById("modal-genres-container");
-                const modalGenresList = doc.getElementById("modal-genres-list");
-                modalGenresList.innerHTML = "";
-                if (videoData.genres && videoData.genres.length > 0) {
-                    videoData.genres.forEach((name) => {
-                        const li = doc.createElement("li");
-                        li.className = "genre-tag"; // Sử dụng class CSS mới
-                        li.textContent = name;
-                        modalGenresList.appendChild(li);
-                    });
-                    modalGenresContainer.classList.remove("hidden");
-                } else {
-                    modalGenresContainer.classList.add("hidden");
-                }
+    // Các thông tin cơ bản khác (Lấy từ video mới nhất)
+    modalProgram.textContent = videoData.program || "";
+    modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
+    modalDescription.textContent = videoData.description || "Chưa có mô tả chi tiết.";
 
-                // -- PHẦN MỚI: Xử lý MÔ TẢ (description) --
-                const modalDescription = doc.getElementById("modal-description");
-                if (videoData.description) {
-                    modalDescription.textContent = videoData.description;
-                    modalDescription.classList.remove("hidden");
-                } else {
-                    modalDescription.textContent = "";
-                    modalDescription.classList.add("hidden");
-                }
+    // Xử lý GENRES (Thể loại)
+    modalGenres.innerHTML = "";
+    if (videoData.genres && videoData.genres.length > 0) {
+        modalGenres.innerHTML = `<span style="font-weight: 700; color: var(--text-color);">Thể loại: </span>` + videoData.genres.join(", ");
+    }
 
-                // Xử lý người tham gia (giữ nguyên)
-                modalParticipantsList.innerHTML = "";
-                if (videoData.participants && videoData.participants.length > 0) {
-                    videoData.participants.forEach((name) => {
-                        const li = doc.createElement("li");
-                        li.className = "participant-tag";
-                        li.textContent = name;
-                        modalParticipantsList.appendChild(li);
-                    });
-                    modalParticipantsContainer.classList.remove("hidden");
-                } else {
-                    modalParticipantsContainer.classList.add("hidden");
-                }
+    // Xử lý PARTICIPANTS (Người tham gia)
+    modalParticipants.innerHTML = "";
+    if (videoData.participants && videoData.participants.length > 0) {
+        modalParticipants.innerHTML = `<span style="font-weight: 700; color: var(--text-color);">Diễn viên: </span>` + videoData.participants.join(", ");
+    }
+    
+    // --- [LOGIC MỚI] XỬ LÝ DANH SÁCH TẬP TRONG MODAL ---
+    modalEpisodesList.innerHTML = "";
 
-                modalPlayBtn.dataset.videoId = videoData.videoId;
-                openModal(detailModalOverlay);
-            }
+    if (programEpisodes && programEpisodes.length > 0) {
+        modalEpisodeSection.classList.remove("hidden");
+        
+        programEpisodes.forEach(ep => {
+            const el = doc.createElement("div");
+            el.className = "modal-episode-item";
+            const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
+            
+            // Đánh dấu tập đang xem (nếu có logic lưu trạng thái)
+            const isLatest = ep.videoId === videoData.videoId ? ' style="color: var(--accent-color); font-weight: 700;"' : '';
+
+            el.innerHTML = `
+                <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
+                <div class="modal-ep-info">
+                    <div class="modal-ep-number"${isLatest}>Tập ${ep.episode || "Lẻ"}</div>
+                    <div class="modal-ep-title">${ep.userTitle || ep.title}</div>
+                </div>
+                <div style="font-size: 1.5rem; color: #fff;">▶</div>
+            `;
+            
+            // Gán sự kiện click: Click vào tập nào thì play tập đó
+            el.onclick = () => {
+                closeModal(detailModalOverlay);
+                launchPlayer(ep);
+            };
+            modalEpisodesList.appendChild(el);
+        });
+
+        // Nút Play lớn ở header sẽ play TẬP MỚI NHẤT (tập đầu tiên trong list sau khi sort)
+        modalPlayBtn.onclick = () => {
+            closeModal(detailModalOverlay);
+            launchPlayer(programEpisodes[0]);
+        };
+
+    } else {
+        // Nếu là video lẻ, ẩn danh sách tập
+        modalEpisodeSection.classList.add("hidden");
+        // Nút Play lớn sẽ play video hiện tại
+        modalPlayBtn.onclick = handleModalPlay; 
+        modalPlayBtn.dataset.videoId = videoData.videoId;
+    }
+
+    // Cuối cùng, mở Modal
+    openModal(detailModalOverlay);
+}
 
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
