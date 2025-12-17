@@ -1800,7 +1800,7 @@ function handleSearchAndFilter() {
  * @param {Array<Object> | null} programEpisodes Danh sách các tập của chương trình, nếu là Program Card.
  */
 function openDetailModal(videoData, programEpisodes = null) {
-    // Lấy các DOM element cần thiết
+    // 1. Lấy đúng ID từ HTML hiện tại
     const modalThumbnail = doc.getElementById("modal-thumbnail");
     const modalTitle = doc.getElementById("modal-title");
     const modalOriginalTitle = doc.getElementById("modal-original-title");
@@ -1808,49 +1808,61 @@ function openDetailModal(videoData, programEpisodes = null) {
     const modalAuthor = doc.getElementById("modal-author");
     const modalDescription = doc.getElementById("modal-description");
     const modalPlayBtn = doc.getElementById("modal-play-btn");
-    const modalParticipants = doc.getElementById("modal-participants");
-    const modalGenres = doc.getElementById("modal-genres");
+
+    // SỬA: Lấy đúng ID list và container để xử lý ẩn/hiện
+    const modalParticipantsList = doc.getElementById("modal-participants-list");
+    const modalParticipantsContainer = doc.getElementById("modal-participants-container");
+    
+    const modalGenresList = doc.getElementById("modal-genres-list");
+    const modalGenresContainer = doc.getElementById("modal-genres-container");
+    
     const modalEpisodeSection = doc.getElementById("modal-episodes-section");
     const modalEpisodesList = doc.getElementById("modal-episodes-list");
     
-    // Xử lý thumbnail
+    // 2. Xử lý thumbnail
     const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
     modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
-    modalThumbnail.onerror = () => { modalThumbnail.src = thumbnailUrl; }; // Dùng HQ nếu MAXRES không tải được
+    modalThumbnail.onerror = () => { modalThumbnail.src = thumbnailUrl; };
 
-    // Xử lý TIÊU ĐỀ
+    // 3. Xử lý TIÊU ĐỀ
     if (programEpisodes) {
-        // Nếu là Program Card: Hiển thị tên Chương trình làm tiêu đề chính
         modalTitle.textContent = videoData.program;
-        modalOriginalTitle.textContent = videoData.userTitle || videoData.title; // Tên tập mới nhất làm phụ
+        modalOriginalTitle.textContent = videoData.userTitle || videoData.title;
         modalOriginalTitle.style.display = "block";
     } else {
-        // Nếu là Video Lẻ: Hiển thị tên video
         modalTitle.textContent = videoData.userTitle || videoData.title;
         modalOriginalTitle.style.display = videoData.originalTitle_auto ? "block" : "none";
         if(videoData.originalTitle_auto) modalOriginalTitle.textContent = videoData.originalTitle_auto;
     }
 
-    // Các thông tin cơ bản khác (Lấy từ video mới nhất)
+    // 4. Các thông tin cơ bản
     modalProgram.textContent = videoData.program || "";
     modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
     modalDescription.textContent = videoData.description || "Chưa có mô tả chi tiết.";
 
-    // Xử lý GENRES (Thể loại)
-    modalGenres.innerHTML = "";
+    // 5. Xử lý GENRES (Sửa lỗi logic cũ)
+    // HTML của bạn dùng <ul> nên ta render thẻ <li> hoặc text bên trong, và phải gỡ class hidden ở container
+    modalGenresList.innerHTML = "";
     if (videoData.genres && videoData.genres.length > 0) {
-        modalGenres.innerHTML = `<span style="font-weight: 700; color: var(--text-color);">Thể loại: </span>` + videoData.genres.join(", ");
+        // Hiển thị dạng text đơn giản bên trong thẻ ul
+        modalGenresList.innerHTML = `<span style="font-weight: 700; color: #fff; margin-right: 5px;">Thể loại:</span>` + 
+                                    videoData.genres.map(g => `<span class="genre-tag">${g}</span>`).join(" ");
+        modalGenresContainer.classList.remove("hidden"); // Quan trọng: Hiện container
+    } else {
+        modalGenresContainer.classList.add("hidden");
     }
 
-    // Xử lý PARTICIPANTS (Người tham gia)
-    modalParticipants.innerHTML = "";
+    // 6. Xử lý PARTICIPANTS (Sửa lỗi logic cũ)
+    modalParticipantsList.innerHTML = "";
     if (videoData.participants && videoData.participants.length > 0) {
-        modalParticipants.innerHTML = `<span style="font-weight: 700; color: var(--text-color);">Diễn viên: </span>` + videoData.participants.join(", ");
+        modalParticipantsList.innerHTML = videoData.participants.map(p => `<li class="participant-tag">${p}</li>`).join("");
+        modalParticipantsContainer.classList.remove("hidden"); // Quan trọng: Hiện container
+    } else {
+        modalParticipantsContainer.classList.add("hidden");
     }
     
-    // --- [LOGIC MỚI] XỬ LÝ DANH SÁCH TẬP TRONG MODAL ---
+    // 7. Xử lý DANH SÁCH TẬP
     modalEpisodesList.innerHTML = "";
-
     if (programEpisodes && programEpisodes.length > 0) {
         modalEpisodeSection.classList.remove("hidden");
         
@@ -1858,8 +1870,6 @@ function openDetailModal(videoData, programEpisodes = null) {
             const el = doc.createElement("div");
             el.className = "modal-episode-item";
             const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
-            
-            // Đánh dấu tập đang xem (nếu có logic lưu trạng thái)
             const isLatest = ep.videoId === videoData.videoId ? ' style="color: var(--accent-color); font-weight: 700;"' : '';
 
             el.innerHTML = `
@@ -1871,7 +1881,6 @@ function openDetailModal(videoData, programEpisodes = null) {
                 <div style="font-size: 1.5rem; color: #fff;">▶</div>
             `;
             
-            // Gán sự kiện click: Click vào tập nào thì play tập đó
             el.onclick = () => {
                 closeModal(detailModalOverlay);
                 launchPlayer(ep);
@@ -1879,25 +1888,21 @@ function openDetailModal(videoData, programEpisodes = null) {
             modalEpisodesList.appendChild(el);
         });
 
-        // Nút Play lớn ở header sẽ play TẬP MỚI NHẤT (tập đầu tiên trong list sau khi sort)
         modalPlayBtn.onclick = () => {
             closeModal(detailModalOverlay);
             launchPlayer(programEpisodes[0]);
         };
 
     } else {
-        // Nếu là video lẻ, ẩn danh sách tập
         modalEpisodeSection.classList.add("hidden");
-        // Nút Play lớn sẽ play video hiện tại
         modalPlayBtn.onclick = handleModalPlay; 
         modalPlayBtn.dataset.videoId = videoData.videoId;
     }
 
-    // Cuối cùng, mở Modal
+    // 8. Mở Modal
     openModal(detailModalOverlay);
 }
-
-            // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
+// [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
                 // 1. Xóa các marker cũ trên thanh progress
                 const oldMarkers = document.querySelectorAll(".timeline-marker");
