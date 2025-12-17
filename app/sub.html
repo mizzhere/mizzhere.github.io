@@ -146,89 +146,94 @@
                 flex-direction: column;
                 gap: 50px;
             }
-           
+            .program-row {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+    /* Không được set overflow: hidden ở đây nếu muốn card trồi ra ngoài */
+}
+
+/* Hiệu ứng hover cho card (cập nhật nhẹ để mượt hơn) */
+
             .program-title {
                 font-size: 1.8rem;
                 font-weight: 600;
                 margin: 0 0 20px 0;
             }
-            
-/* --- [UPDATED] Layout Carousel (Netflix Style) --- */
-.program-row {
-    margin-bottom: 30px;
-    position: relative;
-    /* Giữ nguyên tắc context stacking cho z-index */
-    z-index: 1; 
+            .video-list {
+    display: flex;             /* Xếp hàng ngang */
+    gap: 15px;                 /* Khoảng cách giữa các card */
+    overflow-x: auto;          /* Cho phép cuộn ngang */
+    overflow-y: visible;       /* Để hiệu ứng hover (scale) không bị cắt trên dưới */
+    padding: 40px 0;           /* QUAN TRỌNG: Tạo khoảng thở trên/dưới để khi card phóng to không bị mất đỉnh/đáy */
+    scroll-behavior: smooth;   /* Cuộn mượt */
+    
+    /* Ẩn thanh cuộn cho đẹp */
+    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
 }
-
-/* Tiêu đề mục giữ padding để thẳng hàng với header */
-.program-title {
-    font-size: 1.5rem; /* Điều chỉnh lại cho tinh tế hơn */
-    font-weight: 600;
-    margin: 0 0 5px 0;
-    padding-left: clamp(20px, 4vw, 60px); 
-    color: var(--text-light);
-}
-
-.video-list {
-    display: flex; /* Chuyển từ Grid sang Flex */
-    gap: 12px;
-    
-    /* Logic cuộn ngang */
-    overflow-x: auto;
-    overflow-y: visible; /* Quan trọng: Để hover card không bị mất phần trên/dưới */
-    
-    /* Padding rộng để tạo không gian cho card phóng to (scale) */
-    padding: 40px clamp(20px, 4vw, 60px);
-    
-    /* Kéo margin âm để bù lại padding bên trên, giúp layout không bị rỗng */
-    margin-top: -40px; 
-    margin-bottom: -20px;
-
-    scroll-behavior: smooth;
-    
-    /* Ẩn thanh cuộn nhưng vẫn giữ chức năng cuộn */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-}
-
-/* Ẩn thanh cuộn cho Webkit (Chrome/Safari) */
 .video-list::-webkit-scrollbar {
-    display: none; 
+    display: none;             /* Chrome/Safari */
 }
-
+            /* --- [MỚI] VIDEO CARD - Hover hiện info bên dưới --- */
 .video-card {
-    /* Kích thước card cơ sở, dùng min-width để không bị co trong flex */
-    min-width: clamp(200px, 18vw, 300px); 
-    flex-shrink: 0; /* Ngăn card bị co lại khi hết chỗ */
-    
     background-color: var(--secondary-bg);
     border-radius: 6px;
-    position: relative;
+    position: relative; /* Quan trọng để định vị */
     cursor: pointer;
-    
-    /* Transition mượt mà cho transform và z-index */
-    transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.3s ease;
-    transform-origin: center center;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s 0.3s; /* Delay z-index khi thu nhỏ */
+    /* Không dùng overflow: hidden để info có thể trồi ra ngoài hoặc mở rộng */
 }
-
-/* Điều chỉnh lại logic Hover cho phù hợp với Carousel */
-@media (hover: hover) {
-    .video-card:hover {
-        transform: scale(1.2); /* Phóng to 1.2 lần */
-        z-index: 100; /* Nổi lên trên cùng */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.7);
-    }
-
-    /* Xử lý card đầu dòng và cuối dòng để khi phóng to không bị mất */
-    .video-card:first-child:hover {
-        transform-origin: left center;
-    }
-    .video-card:last-child:hover {
-        transform-origin: right center;
-    }
+/* --- BỔ SUNG: CSS cho List tập trong Modal (Style Netflix) --- */
+.modal-episode-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
 }
-
+.modal-episode-item:hover {
+    background-color: #333;
+}
+.modal-ep-thumb {
+    width: 140px;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.modal-ep-info {
+    flex: 1; /* Chiếm phần còn lại */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.modal-ep-number {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ddd;
+    margin-bottom: 4px;
+}
+.modal-ep-title {
+    font-size: 0.95rem;
+    color: #aaa;
+    display: -webkit-box;
+    line-clamp: 2; /* Cắt dòng nếu tên quá dài */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.modal-episode-item .play-icon {
+    width: 32px;
+    height: 32px;
+    fill: white;
+    opacity: 0; /* Ẩn nút play bình thường */
+    transition: opacity 0.2s;
+}
+.modal-episode-item:hover .play-icon {
+    opacity: 1; /* Hiện khi hover */
+}
 /* Container chứa ảnh để bo góc */
 .card-image-wrapper {
     position: relative;
@@ -292,8 +297,8 @@
 }
 @media (hover: hover) {
     .video-card:hover {
-        transform: scale(1.15); /* Phóng to 1.15 lần */
-        z-index: 100; /* Nổi lên trên cùng */
+            transform: scale(1.3); /* Phóng to hơn chút nữa cho giống Netflix */
+    z-index: 999; /* Đảm bảo nổi hẳn lên trên */
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s; /* Z-index đổi ngay lập tức */
         box-shadow: 0 0 0 2px rgba(255,255,255,0.1); /* Viền sáng nhẹ */
     }
@@ -455,97 +460,6 @@
                 list-style: none;
                 padding: 0;
             }
-
-            /* --- [NEW] CSS cho Danh sách tập trong Modal --- */
-#modal-episodes-section {
-    margin-top: 30px;
-    border-top: 1px solid #333;
-    padding-top: 20px;
-    width: 100%;
-}
-
-#modal-episodes-section h4 {
-    font-size: 1.2rem;
-    color: #fff;
-    margin: 0 0 20px 0;
-    font-weight: 700;
-}
-
-#modal-episodes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.modal-episode-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    border-radius: 6px;
-    background-color: rgba(255, 255, 255, 0.05); /* Nền mờ nhẹ */
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.modal-episode-item:hover {
-    background-color: #333;
-    border-color: #555;
-    transform: translateX(5px); /* Hiệu ứng trượt nhẹ sang phải */
-}
-
-.modal-ep-thumb {
-    width: 140px;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 4px;
-    flex-shrink: 0; /* Ảnh không bị méo */
-}
-
-.modal-ep-info {
-    flex: 1; /* Chiếm toàn bộ không gian còn lại */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-}
-
-.modal-ep-number {
-    font-size: 0.85rem;
-    color: var(--accent-color);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.modal-ep-title {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #eee;
-    line-height: 1.4;
-    
-    /* Giới hạn 2 dòng */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Nút Play icon bên phải item */
-.modal-episode-item .play-icon {
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.2s ease;
-    fill: #fff;
-}
-
-.modal-episode-item:hover .play-icon {
-    opacity: 1;
-    transform: scale(1);
-}
-
-
             .participant-tag {
                 background-color: var(--secondary-bg);
                 padding: 5px 12px;
@@ -1961,7 +1875,8 @@ function openDetailModal(videoData, programEpisodes = null) {
             const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
             const isLatest = ep.videoId === videoData.videoId ? ' style="color: var(--accent-color); font-weight: 700;"' : '';
 
-            el.innerHTML = `
+            // Tìm đoạn render html trong openDetailModal và thay bằng đoạn này:
+el.innerHTML = `
     <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
     <div class="modal-ep-info">
         <div class="modal-ep-number"${isLatest}>Tập ${ep.episode || "N/A"}</div>
