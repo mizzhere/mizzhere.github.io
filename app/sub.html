@@ -10,7 +10,8 @@
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
-       <style>
+        <style>
+    /* --- CẤU HÌNH CƠ BẢN --- */
     :root {
         --primary-bg: #141414;
         --secondary-bg: #1e1e1e;
@@ -26,248 +27,181 @@
         overflow-x: hidden; /* Chặn cuộn ngang toàn trang */
     }
     main {
-        padding: clamp(20px, 4vw, 60px);
+        /* Padding cho toàn bộ nội dung chính */
+        padding: 20px 40px; 
         box-sizing: border-box;
     }
-    .hidden {
-        display: none !important;
-    }
+    .hidden { display: none !important; }
 
     /* --- HEADER & SEARCH --- */
     #page-header {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 40px;
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 20px; margin-bottom: 30px;
     }
     #main-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--accent-color);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin: 0;
+        font-size: 2.5rem; font-weight: 700; color: var(--accent-color);
+        text-transform: uppercase; letter-spacing: 2px; margin: 0;
     }
-    #actions-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+    #actions-container { display: flex; align-items: center; gap: 10px; }
     #search-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        display: flex; align-items: center; gap: 10px;
         background-color: var(--secondary-bg);
-        border: 1px solid #333;
-        border-radius: 4px;
-        padding: 5px 15px;
+        border: 1px solid #333; border-radius: 4px; padding: 5px 15px;
     }
-    #search-icon {
-        width: 20px;
-        height: 20px;
-        fill: #888;
-    }
+    #search-icon { width: 20px; height: 20px; fill: #888; }
     #search-input {
-        background: none;
-        border: none;
-        outline: none;
-        color: var(--text-color);
-        font-size: 1rem;
-        padding: 10px 0;
-        width: 250px;
+        background: none; border: none; outline: none;
+        color: var(--text-color); font-size: 1rem; padding: 10px 0; width: 250px;
     }
     #add-video-btn {
-        background-color: var(--secondary-bg);
-        border: 1px solid #333;
-        border-radius: 4px;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        fill: #ccc;
-        transition: background-color 0.2s;
+        background-color: var(--secondary-bg); border: 1px solid #333; border-radius: 4px;
+        width: 44px; height: 44px; display: flex; justify-content: center; align-items: center;
+        cursor: pointer; fill: #ccc; transition: background-color 0.2s;
     }
-    #add-video-btn:hover {
-        background-color: #333;
-    }
+    #add-video-btn:hover { background-color: #333; }
 
-    /* --- FILTER TAGS --- */
+    /* --- FILTER TAGS (Bộ lọc) --- */
     #filter-tags {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
-        white-space: nowrap;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #222;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        display: flex; gap: 12px; overflow-x: auto; white-space: nowrap;
+        padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #222;
+        scrollbar-width: none; -ms-overflow-style: none;
     }
-    #filter-tags::-webkit-scrollbar {
-        display: none;
-    }
+    #filter-tags::-webkit-scrollbar { display: none; }
     .filter-tag {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #ccc;
-        padding: 8px 20px;
-        border-radius: 50px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
+        background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ccc; padding: 8px 20px; border-radius: 50px; cursor: pointer;
+        font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; flex-shrink: 0;
     }
-    .filter-tag:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        border-color: #fff;
-        color: #fff;
-    }
+    .filter-tag:hover { background-color: rgba(255, 255, 255, 0.2); border-color: #fff; color: #fff; }
     .filter-tag.active {
-        background-color: var(--text-light);
-        color: #000;
-        border-color: var(--text-light);
-        font-weight: 700;
-        transform: scale(1.05);
+        background-color: var(--text-light); color: #000; border-color: var(--text-light);
+        font-weight: 700; transform: scale(1.05);
     }
 
-    /* --- LIBRARY LAYOUT (NETFLIX STYLE) --- */
+    /* --- [QUAN TRỌNG] LAYOUT DANH SÁCH VIDEO (NETFLIX STYLE) --- */
     #library-container {
-        display: flex;
-        flex-direction: column;
-        gap: 50px;
-    }
-    .program-row {
-        text-align: left;
-        margin-bottom: 40px;
-        padding-left: clamp(20px, 4vw, 60px);
-        position: relative;
-    }
-    .program-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0 0 20px 0;
-    }
-    .video-list {
-        display: flex;
-        gap: 15px;
-        overflow-x: auto;
-        padding: 40px clamp(20px, 4vw, 60px);
-        margin-top: -30px;
-        scroll-behavior: smooth;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-    .video-list::-webkit-scrollbar {
-        display: none;
+        display: flex; flex-direction: column; gap: 10px; /* Khoảng cách giữa các hàng */
     }
 
-    /* --- VIDEO CARD --- */
+    /* Hàng chứa (Row) */
+    .program-row {
+        position: relative;
+        margin-bottom: 40px;
+    }
+
+    /* Tiêu đề của hàng */
+    .program-title {
+        font-size: 1.5rem; font-weight: 700; color: #fff;
+        margin: 0 0 10px 0; padding-left: 5px;
+    }
+
+    /* Băng chuyền chứa các thẻ video */
+    .video-list {
+        display: flex;             /* BẮT BUỘC: Để xếp ngang */
+        flex-direction: row;       /* BẮT BUỘC: Hướng ngang */
+        flex-wrap: nowrap;         /* BẮT BUỘC: Không xuống dòng */
+        overflow-x: auto;          /* Cho phép cuộn ngang */
+        gap: 15px;                 /* Khoảng cách giữa các thẻ */
+        
+        /* Padding để khi hover thẻ to ra không bị cắt mất */
+        padding: 40px 10px 80px 10px; 
+        margin-top: -30px; margin-bottom: -50px; margin-left: -10px; /* Căn chỉnh lại vị trí */
+        
+        scroll-behavior: smooth;
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .video-list::-webkit-scrollbar { display: none; }
+
+    /* THẺ VIDEO (CARD) - ĐÃ SỬA LỖI TO ĐÙNG */
     .video-card {
-        min-width: 280px;
-        flex-shrink: 0;
-        background-color: var(--secondary-bg);
-        border-radius: 6px;
+        /* Kích thước cứng - Ngăn chặn việc bung to */
+        width: 260px;       
+        min-width: 260px;   
+        max-width: 260px;
+        
+        /* Flex property: Không co, không giãn, kích thước cơ sở auto */
+        flex: 0 0 auto;     
+        
         position: relative;
         cursor: pointer;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s 0.3s;
+        border-radius: 6px;
+        background-color: var(--secondary-bg);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 1;
     }
+
+    /* Vùng chứa ảnh (Giữ tỉ lệ 16:9) */
     .card-image-wrapper {
-        position: relative;
         width: 100%;
         aspect-ratio: 16 / 9;
         border-radius: 6px;
         overflow: hidden;
+        position: relative;
         z-index: 1;
     }
+
     .video-thumbnail {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
+        width: 100%; height: 100%; object-fit: cover; display: block;
     }
+
+    /* Badge số tập */
     .episode-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: #fff;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        backdrop-filter: blur(4px);
-        z-index: 5;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: absolute; top: 8px; right: 8px;
+        background-color: rgba(0, 0, 0, 0.7); color: #fff;
+        padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;
+        backdrop-filter: blur(4px); z-index: 5; border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
-    /* Info Panel (Hover) */
+
+    /* --- THÔNG TIN VIDEO (Hiện khi Hover) --- */
     .card-info {
         position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: var(--secondary-bg);
+        top: 98%; /* Dính ngay mép dưới ảnh */
+        left: 0; width: 100%;
+        background-color: #181818;
         padding: 12px;
         box-sizing: border-box;
         border-radius: 0 0 6px 6px;
-        opacity: 0;
-        visibility: hidden;
+        
+        opacity: 0; visibility: hidden;
         transform: translateY(-10px);
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         z-index: 2;
         pointer-events: none;
     }
+
     .card-title {
-        font-size: 0.95rem;
-        font-weight: 700;
-        margin: 0 0 5px 0;
-        color: #fff;
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Fix cú pháp cũ */
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        font-size: 0.9rem; font-weight: 700; color: #fff; margin: 0 0 6px 0;
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;
     }
     .card-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 0.75rem;
-        color: #aaa;
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 0.75rem; color: #aaa;
     }
-    .card-genre {
-        color: var(--accent-color);
-        font-weight: 600;
-    }
+    .card-genre { color: var(--accent-color); font-weight: 600; }
 
-    /* Hiệu ứng Hover Card trên máy tính */
+    /* Hiệu ứng Hover (Chỉ trên PC) */
     @media (hover: hover) {
         .video-card:hover {
-            transform: scale(1.15);
-            z-index: 100;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+            transform: scale(1.2); /* Phóng to 1.2 lần */
+            z-index: 100; /* Nổi lên trên cùng */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .video-card:hover .card-info {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            pointer-events: auto;
+            opacity: 1; visibility: visible;
+            transform: translateY(0); pointer-events: auto;
         }
         .video-card:hover .card-image-wrapper {
-            border-radius: 6px 6px 0 0;
+            border-radius: 6px 6px 0 0; /* Bo góc trên, vuông góc dưới */
         }
     }
 
+    /* Skeleton Loading (Lúc chưa tải xong) */
     .skeleton-card {
         background-color: #2a2a2a;
         animation: pulse 1.5s infinite ease-in-out;
+        height: 146px; /* Chiều cao khớp với width 260px tỉ lệ 16:9 */
     }
     @keyframes pulse {
         0% { background-color: #2a2a2a; }
@@ -275,68 +209,36 @@
         100% { background-color: #2a2a2a; }
     }
 
-    /* --- MODALS (General) --- */
+    /* --- MODAL CHUNG --- */
     .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(5px);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        box-sizing: border-box;
-        z-index: 2000;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+        display: flex; justify-content: center; align-items: center;
+        padding: 20px; box-sizing: border-box; z-index: 2000;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
     }
-    .modal-overlay.visible {
-        opacity: 1;
-        pointer-events: auto;
-    }
+    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
     .modal-content {
-        background-color: var(--primary-bg);
-        border-radius: 8px;
+        background-color: var(--primary-bg); border-radius: 8px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        transform: scale(0.95);
-        transition: transform 0.3s ease;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        max-height: 90vh;
+        transform: scale(0.95); transition: transform 0.3s ease;
+        position: relative; display: flex; flex-direction: column; max-height: 90vh;
     }
-    .modal-overlay.visible .modal-content {
-        transform: scale(1);
-    }
+    .modal-overlay.visible .modal-content { transform: scale(1); }
     .modal-close-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(20, 20, 20, 0.7);
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        fill: white;
-        z-index: 10;
+        position: absolute; top: 15px; right: 15px;
+        background: rgba(20, 20, 20, 0.7); border: none; border-radius: 50%;
+        width: 36px; height: 36px; cursor: pointer; display: flex;
+        justify-content: center; align-items: center; fill: white; z-index: 10;
     }
 
-    /* --- DETAIL MODAL --- */
+    /* --- MODAL CHI TIẾT --- */
     #detail-modal-content { width: 100%; max-width: 800px; }
     #modal-header { position: relative; aspect-ratio: 16 / 9; flex-shrink: 0; }
     #modal-thumbnail { width: 100%; height: 100%; object-fit: cover; border-radius: 8px 8px 0 0; }
     #modal-header::after {
         content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-        background: linear-gradient(to top, var(--primary-bg) 20%, transparent 100%);
-        pointer-events: none;
+        background: linear-gradient(to top, var(--primary-bg) 20%, transparent 100%); pointer-events: none;
     }
     #modal-play-btn {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -350,9 +252,14 @@
     #modal-original-title { margin: -10px 0 15px 0; font-size: 1rem; font-weight: 400; color: #888; font-style: italic; }
     #modal-meta { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; color: #aaa; }
     
-    #modal-participants-list, #modal-genres-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin-bottom: 10px; }
-    .participant-tag { background-color: var(--secondary-bg); padding: 5px 12px; border-radius: 4px; font-size: 0.9rem; }
-    .genre-tag { background-color: #333; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; color: #ccc; }
+    #modal-participants-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; }
+    #modal-participants-list, #modal-genres-list {
+        display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin-bottom: 20px;
+    }
+    .participant-tag, .genre-tag {
+        background-color: var(--secondary-bg); padding: 5px 12px; border-radius: 4px; font-size: 0.9rem;
+    }
+    .genre-tag { background-color: #333; color: #ccc; }
     #modal-description { color: #bbb; line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
 
     /* Modal Episode List */
@@ -374,9 +281,8 @@
     #load-video-btn { width: 100%; padding: 15px; font-size: 1.1rem; font-weight: 600; background-color: var(--accent-color); color: var(--text-light); border: none; border-radius: 4px; cursor: pointer; }
 
     /* ================================================= */
-    /* START: PLAYER V5 CSS (ĐÃ TỐI ƯU HÓA)              */
+    /* PLAYER V5 CSS (Đã tích hợp đầy đủ)                */
     /* ================================================= */
-
     #player-container {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         background-color: #000; display: flex; justify-content: center; align-items: center;
@@ -385,86 +291,38 @@
     #player-container.no-cursor { cursor: none; }
     #youtube-player { position: absolute; width: 100%; height: 100%; border: none; }
 
-    /* --- Layers Structure --- */
-    /* Layer 1: Youtube Iframe
-       Layer 2: Interaction Overlay (z-index 10) - Bắt click Play/Pause/Seek
-       Layer 3: Controls & Header (z-index 12) - Hiển thị nút bấm
-       Layer 4: Buttons (z-index 20) - Nút bấm phải nổi lên trên cùng để click được
-    */
-
-    /* Base Styles cho Controls */
-    #video-header-overlay,
-    #custom-controls,
-    #center-play-pause-btn {
-        opacity: 0;
-        transition: opacity 0.25s ease-out;
-        position: absolute; left: 0; width: 100%; box-sizing: border-box;
-        pointer-events: none !important; /* Mặc định click xuyên qua */
+    #video-header-overlay, #custom-controls, #center-play-pause-btn {
+        opacity: 0; transition: opacity 0.25s ease-out; position: absolute; left: 0; width: 100%; box-sizing: border-box; pointer-events: none;
     }
-    
-    /* Vùng tương tác vô hình */
-    #interaction-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        z-index: 10; display: flex;
-    }
-    #seek-backward-zone, #play-pause-zone, #seek-forward-zone { flex: 1; }
-
-    /* --- Active State (Khi hiện Controls) --- */
     #player-container.controls-active > #video-header-overlay,
     #player-container.controls-active > #custom-controls,
-    #player-container.controls-active > #center-play-pause-btn {
-        opacity: 1;
-    }
-    
-    /* Quan trọng: Chỉ bật pointer-events cho NÚT BẤM */
+    #player-container.controls-active > #center-play-pause-btn { opacity: 1; }
     #player-container.controls-active > #center-play-pause-btn { pointer-events: auto; }
-    
-    #video-header-overlay button, 
-    #custom-controls button,
-    #custom-controls input[type="range"] {
-        pointer-events: auto;
-        position: relative;
-        z-index: 20;
-        cursor: pointer;
-    }
 
-    /* Các thành phần Text không được chặn click */
-    #video-title-display, #time-display, #video-program-display, .spacer {
-        pointer-events: none;
+    #video-header-overlay button, #custom-controls button, #custom-controls input[type="range"] {
+        pointer-events: auto; position: relative; z-index: 20; cursor: pointer;
     }
+    #video-title-display, #time-display, #video-program-display, .spacer { pointer-events: none; }
 
-    /* --- Header Overlay --- */
     #video-header-overlay {
-        top: 0;
-        padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
+        top: 0; padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-        z-index: 12;
-        display: flex; align-items: center; gap: 20px;
+        z-index: 12; display: flex; align-items: center; gap: 20px;
     }
     #back-btn { background: none; border: none; fill: white; width: 44px; height: 44px; padding: 0; flex-shrink: 0; }
+    #video-title-display { font-size: clamp(0.7rem, 0.5vw, 1rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
 
-    /* --- Custom Controls Bottom --- */
     #custom-controls {
-        bottom: 0;
-        padding: 10px clamp(20px, 5vw, 60px);
+        bottom: 0; padding: 10px clamp(20px, 5vw, 60px);
         background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
         z-index: 12;
     }
     .progress-container { position: relative; width: 100%; margin-bottom: 8px; }
     #progress-bar {
-        appearance: none; width: 100%; height: 4px; border-radius: 5px; transition: height 0.2s;
+        appearance: none; width: 100%; height: 4px; cursor: pointer; border-radius: 5px; transition: height 0.2s;
         background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) var(--progress-percent, 0%), rgba(255, 255, 255, 0.3) 100%);
     }
     #progress-bar:hover { height: 8px; }
-    
-    .timeline-marker {
-        position: absolute; top: 0; width: 2px; height: 100%; background-color: rgba(255, 255, 255, 0.5); z-index: 2; pointer-events: none;
-    }
-    .timeline-marker:hover::after {
-        content: attr(data-label); position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap;
-    }
-
     .controls-row { display: flex; align-items: center; gap: 20px; }
     .controls-row button { background: transparent; border: none; padding: 5px; }
     .controls-row button svg { fill: white; width: 28px; height: 28px; display: block; }
@@ -473,16 +331,16 @@
     .video-title-inline { font-size: 1rem; color: #eee; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
     .spacer { flex-grow: 1; }
 
-    /* Center Button */
     #center-play-pause-btn {
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 70px; height: 70px; background: rgba(0, 0, 0, 0.4);
-        border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%;
+        top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px;
+        background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%;
         display: flex; justify-content: center; align-items: center; padding: 0; z-index: 15;
     }
     #center-play-pause-btn svg { fill: white; width: 40px; height: 40px; }
 
-    /* --- Subtitles & Settings --- */
+    #interaction-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; }
+    #seek-backward-zone, #play-pause-zone, #seek-forward-zone { flex: 1; }
+
     #subtitle-display {
         position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); z-index: 20;
         max-width: 90%; padding: 8px 20px; text-align: center; border-radius: 6px;
@@ -494,15 +352,15 @@
     #settings-menu {
         position: absolute; bottom: 80px; right: clamp(20px, 5vw, 60px); z-index: 30;
         background-color: rgba(20, 20, 20, 0.9); backdrop-filter: blur(5px);
-        padding: 15px; border-radius: 8px; width: 280px; box-sizing: border-box;
-        display: none; flex-direction: column; gap: 15px; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;
+        padding: 15px; border-radius: 8px; width: 280px; box-sizing: border-box; display: none;
+        flex-direction: column; gap: 15px; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;
     }
     #settings-menu.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .control-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
     .control-group input[type="range"] { width: 100%; }
     .control-group input[type="color"] { width: 100%; height: 35px; border: none; padding: 0; background: none; cursor: pointer; }
 
-    /* --- Sidebar & Up Next --- */
+    /* Sidebar Episodes */
     #episodes-sidebar {
         position: absolute; top: 0; right: 0; width: 350px; max-width: 80vw; height: 100%;
         background-color: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px);
@@ -514,7 +372,6 @@
     #episodes-header h3 { margin: 0; font-size: 1.2rem; color: #fff; }
     #close-episodes-btn { background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
     #episodes-content { flex: 1; overflow-y: auto; padding: 10px; }
-    
     .episode-item { display: flex; gap: 10px; padding: 10px; border-radius: 4px; cursor: pointer; transition: background 0.2s; margin-bottom: 5px; align-items: center; }
     .episode-item:hover { background-color: #333; }
     .episode-item.playing { background-color: #e50914; color: white; }
@@ -524,28 +381,36 @@
     .episode-number { font-size: 0.8rem; color: #aaa; }
     .episode-item.playing .episode-number { color: #eee; }
 
+    /* Timeline Marker */
+    .timeline-marker { position: absolute; top: 0; width: 2px; height: 100%; background-color: rgba(255, 255, 255, 0.5); z-index: 2; pointer-events: none; }
+    .timeline-marker:hover::after {
+        content: attr(data-label); position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap;
+    }
+
+    /* Skip Button */
+    #skip-btn {
+        position: absolute; bottom: 150px; right: 0; background-color: #fff; color: #000; border: none;
+        padding: 10px 20px; font-size: 1rem; font-weight: 700; border-radius: 4px; cursor: pointer;
+        display: flex; align-items: center; gap: 10px; z-index: 50; opacity: 0; transform: translateX(100%);
+        transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    #skip-btn.visible { opacity: 1; transform: translateX(-20px); pointer-events: auto; }
+    #skip-btn:hover { background-color: #e6e6e6; }
+
+    /* Up Next */
     #up-next-overlay {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 40;
-        background-color: rgba(0, 0, 0, 0.85); display: none;
-        flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        background-color: rgba(0, 0, 0, 0.85); display: none; flex-direction: column;
+        justify-content: center; align-items: center; text-align: center;
     }
     #up-next-overlay p { font-size: 1.2rem; color: #aaa; margin: 0; }
     #up-next-card { cursor: pointer; margin-top: 20px; }
     #up-next-thumbnail { width: 250px; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px; }
     #up-next-title { margin: 10px 0 0 0; font-size: 1.4rem; }
-    #up-next-cancel-btn { background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer; }
-
-    /* --- SKIP BUTTON --- */
-    #skip-btn {
-        position: absolute; bottom: 150px; right: 0;
-        background-color: #fff; color: #000; border: none; padding: 10px 20px;
-        font-size: 1rem; font-weight: 700; border-radius: 4px; cursor: pointer;
-        display: flex; align-items: center; gap: 10px; z-index: 50;
-        opacity: 0; transform: translateX(100%); transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    #up-next-cancel-btn {
+        background: none; border: 1px solid #888; color: #ccc; padding: 8px 16px; border-radius: 4px; margin-top: 30px; cursor: pointer;
     }
-    #skip-btn.visible { opacity: 1; transform: translateX(-20px); pointer-events: auto; }
-    #skip-btn:hover { background-color: #e6e6e6; }
 </style>
     </head>
     <body>
