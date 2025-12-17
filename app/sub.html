@@ -590,7 +590,7 @@
                 margin-bottom: 8px;
             }
             #progress-bar {
-                -webkit-appearance: none;
+                appearance: none;
                 width: 100%;
                 height: 4px;
                 cursor: pointer;
@@ -889,7 +889,7 @@
                 font-weight: 500;
                 margin-bottom: 4px;
                 display: -webkit-box;
-                -webkit-line-clamp: 2;
+                line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             }
@@ -1296,7 +1296,37 @@
     });
 }
 
-/* --- [MỚI] Render Video Card với cấu trúc HTML mới --- */
+/* --- [HÀM PHỤ] Tạo HTML cho thẻ Video (để tái sử dụng) --- */
+function createVideoCardHtml(video) {
+    const episodeBadge = video.episode 
+        ? `<div class="episode-badge">EP ${video.episode}</div>` 
+        : "";
+    
+    // Lấy thể loại đầu tiên
+    const displayGenre = (video.genres && video.genres.length > 0) ? video.genres[0] : "";
+    
+    // Thumbnail & Title
+    const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
+    const title = video.userTitle || video.title;
+
+    return `
+    <div class="video-card" data-video-id="${video.videoId}">
+        <div class="card-image-wrapper">
+            ${episodeBadge}
+            <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
+        </div>
+        <div class="card-info">
+            <div class="card-title">${title}</div>
+            <div class="card-meta">
+                <span class="card-ep">${video.episode ? 'Tập ' + video.episode : 'Video lẻ'}</span>
+                <span class="card-genre">${displayGenre}</span>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+/* --- [CHÍNH] Render Video theo phong cách Netflix (Mới nhất lên đầu) --- */
 function renderVideoRows(videoArray) {
     libraryContainer.innerHTML = "";
     if (videoArray.length === 0) {
@@ -1304,6 +1334,34 @@ function renderVideoRows(videoArray) {
         return;
     }
 
+    // 1. Helper lấy ngày upload (để so sánh thời gian)
+    // Nếu không có ngày upload, dùng index (giả định video mới thêm nằm đầu mảng)
+    const getDateScore = (v) => {
+        if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
+        return 0; 
+    };
+
+    // 2. Tạo hàng đặc biệt: "🔥 Mới cập nhật"
+    // Lấy 10 video mới nhất từ danh sách hiện tại
+    const latestVideos = [...videoArray]
+        .sort((a, b) => getDateScore(b) - getDateScore(a))
+        .slice(0, 12); // Lấy top 12
+
+    if (latestVideos.length > 0) {
+        const section = doc.createElement("section");
+        section.className = "program-row";
+        section.innerHTML = `
+            <h2 class="program-title" style="color: var(--accent-color); display: flex; align-items: center; gap: 10px;">
+                🔥 Mới cập nhật
+            </h2>
+            <div class="video-list">
+                ${latestVideos.map(createVideoCardHtml).join("")}
+            </div>
+        `;
+        libraryContainer.appendChild(section);
+    }
+
+    // 3. Nhóm video theo Chương trình
     const groupedByProgram = videoArray.reduce((acc, video) => {
         const program = video.program || "Chương trình khác";
         if (!acc[program]) acc[program] = [];
@@ -1311,52 +1369,38 @@ function renderVideoRows(videoArray) {
         return acc;
     }, {});
 
-    const programOrder = Object.keys(groupedByProgram).sort((a, b) =>
-        a === "Chương trình khác" ? 1 : b === "Chương trình khác" ? -1 : a.localeCompare(b)
-    );
+    // 4. Sắp xếp thứ tự CÁC CHƯƠNG TRÌNH (Smart Ordering)
+    // Chương trình nào có video mới hơn -> Đứng trước
+    const programOrder = Object.keys(groupedByProgram).sort((progA, progB) => {
+        // Tìm ngày mới nhất trong nhóm A
+        const maxDateA = groupedByProgram[progA].reduce((max, v) => Math.max(max, getDateScore(v)), 0);
+        // Tìm ngày mới nhất trong nhóm B
+        const maxDateB = groupedByProgram[progB].reduce((max, v) => Math.max(max, getDateScore(v)), 0);
+        
+        // So sánh giảm dần
+        return maxDateB - maxDateA;
+    });
 
+    // 5. Render từng dòng chương trình
     for (const programName of programOrder) {
+        // Sắp xếp video TRONG mỗi chương trình:
+        // Ưu tiên số tập (Tập 10 trước tập 9), nếu không có tập thì theo ngày
+        const videosInProgram = groupedByProgram[programName].sort((a, b) => {
+            if (a.episode && b.episode) return b.episode - a.episode;
+            return getDateScore(b) - getDateScore(a);
+        });
+
         const section = doc.createElement("section");
         section.className = "program-row";
-        
-        // Tạo HTML cho danh sách video
-        const videosHtml = groupedByProgram[programName].map((video) => {
-            const episodeBadge = video.episode 
-                ? `<div class="episode-badge">EP ${video.episode}</div>` 
-                : "";
-            
-            // Lấy thể loại đầu tiên để hiển thị cho gọn
-            const displayGenre = (video.genres && video.genres.length > 0) ? video.genres[0] : "";
-            
-            // Thumbnail
-            const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
-            const title = video.userTitle || video.title;
-
-            return `
-            <div class="video-card" data-video-id="${video.videoId}">
-                <div class="card-image-wrapper">
-                    ${episodeBadge}
-                    <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">${title}</div>
-                    <div class="card-meta">
-                        <span class="card-ep">${video.episode ? 'Tập ' + video.episode : 'Video lẻ'}</span>
-                        <span class="card-genre">${displayGenre}</span>
-                    </div>
-                </div>
-            </div>
-            `;
-        }).join("");
-
         section.innerHTML = `
             <h2 class="program-title">${programName}</h2>
-            <div class="video-list">${videosHtml}</div>
+            <div class="video-list">
+                ${videosInProgram.map(createVideoCardHtml).join("")}
+            </div>
         `;
         libraryContainer.appendChild(section);
     }
 }
-
             // --- Event Handling ---
             function setupEventListeners() {
                 // ... các event listener từ đầu đến backBtn giữ nguyên ...
