@@ -432,15 +432,17 @@
             }
 
             /* --- Trạng thái hiển thị controls --- */
-            #player-container.controls-active > #video-header-overlay,
-            #player-container.controls-active > #custom-controls,
-            #player-container.controls-active > #center-play-pause-btn {
-                opacity: 1;
-                pointer-events: auto; /* Kích hoạt khi control hiện */
-            }
-            #player-container.playing.controls-active > #center-play-pause-btn {
-                opacity: 0; /* Ẩn nút giữa khi đang phát và control hiện */
-            }
+#player-container.controls-active > #video-header-overlay,
+#player-container.controls-active > #custom-controls,
+#player-container.controls-active > #center-play-pause-btn {
+    opacity: 1;
+    /* ĐÃ XÓA pointer-events: auto ở đây để click xuyên qua vùng trống */
+}
+
+/* Chỉ riêng nút Play khổng lồ ở giữa là cần nhận click toàn bộ */
+#player-container.controls-active > #center-play-pause-btn {
+    pointer-events: auto;
+}
 
             /* --- Định vị và style cho các lớp phủ --- */
             #video-header-overlay {
@@ -482,17 +484,24 @@
                 z-index: 12;
                 pointer-events: none !important;
             }
-            #custom-controls > * {
-                pointer-events: auto;
-            }
+            #video-header-overlay button, 
+#custom-controls button,
+#custom-controls input[type="range"] {
+    pointer-events: auto;
+    position: relative;
+    z-index: 20; /* Đảm bảo nút luôn nằm trên cùng */
+}
 
             /* Riêng cái khoảng trắng (spacer) phải cho click xuyên qua để bấm nút Skip Ad (thường nằm ở góc phải dưới) */
             .spacer {
                 pointer-events: none;
             }
-            #video-header-overlay > * {
-                pointer-events: auto;
-            }
+            #video-title-display,
+#time-display,
+#video-program-display,
+.spacer {
+    pointer-events: none;
+}
             .progress-container {
                 position: relative;
                 width: 100%;
