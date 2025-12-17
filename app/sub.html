@@ -333,26 +333,32 @@
     color: var(--accent-color);
     font-weight: 600;
 }
-@media (hover: hover) {
-    .video-card:hover {
-            transform: scale(1.3); /* Phóng to hơn chút nữa cho giống Netflix */
-    z-index: 999; /* Đảm bảo nổi hẳn lên trên */
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s; /* Z-index đổi ngay lập tức */
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.1); /* Viền sáng nhẹ */
-    }
+/* 2. STYLE cho Global Hover Card (Thẻ bóng ma) */
+#global-hover-card {
+    position: fixed; /* Thoát khỏi mọi overflow */
+    z-index: 10000;  /* Luôn trên cùng */
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), opacity 0.2s;
+    transform-origin: center center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
-    /* Khi hover vào card, phần info hiện ra */
-    .video-card:hover .card-info {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
-    
-    /* Bo lại góc dưới của ảnh khi info hiện ra để liền mạch */
-    .video-card:hover .card-image-wrapper {
-        border-radius: 6px 6px 0 0;
-    }
+#global-hover-card.visible {
+    opacity: 1;
+    pointer-events: auto; /* Để click được */
+    transform: scale(1.3); /* Phóng to ở đây */
+}
+
+/* Đảm bảo info trong thẻ bóng ma luôn hiện */
+#global-hover-card .card-info {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    position: absolute; /* Bám theo thẻ bóng ma */
+    bottom: -80px; /* Đẩy xuống dưới ảnh */
+    left: 0;
+    width: 100%;
 }
             .skeleton-card {
                 background-color: #2a2a2a;
@@ -1287,6 +1293,18 @@
             <!-- END: Cấu trúc Player HOÀN CHỈNH v5 -->
         </div>
         <div id="notification-area"></div>
+        <div id="global-hover-card" class="video-card hidden">
+    <div class="card-image-wrapper">
+        <img src="" class="video-thumbnail" />
+    </div>
+    <div class="card-info">
+        <div class="card-title"></div>
+        <div class="card-meta">
+            <span class="card-ep"></span>
+            <span class="card-genre"></span>
+        </div>
+    </div>
+</div>
          </main>
         <script src="https://www.youtube.com/iframe_api"></script>
         <script type="module">
@@ -2527,6 +2545,104 @@ function setupFloatingForCard(card) {
             cleanupFloating = null;
         }
     });
+}
+// --- LOGIC GLOBAL HOVER CARD (PORTAL) ---
+const globalCard = document.getElementById("global-hover-card");
+let hoverTimeout;
+let isHoveringGlobal = false;
+
+function setupFloatingForCard(originalCard) {
+    // Khi chuột vào thẻ gốc
+    originalCard.addEventListener("mouseenter", () => {
+        // Debounce: Chờ 300ms để chắc chắn người dùng muốn xem, tránh nháy loạn xạ khi lướt nhanh
+        clearTimeout(hoverTimeout);
+        hoverTimeout = setTimeout(() => {
+            showGlobalCard(originalCard);
+        }, 300); 
+    });
+
+    // Khi chuột rời thẻ gốc
+    originalCard.addEventListener("mouseleave", () => {
+        // Chờ xíu xem chuột có chạy sang thẻ Global không
+        setTimeout(() => {
+            if (!isHoveringGlobal) {
+                hideGlobalCard();
+            }
+        }, 100);
+    });
+}
+
+// Setup sự kiện cho chính thẻ Global
+globalCard.addEventListener("mouseenter", () => {
+    isHoveringGlobal = true;
+});
+globalCard.addEventListener("mouseleave", () => {
+    isHoveringGlobal = false;
+    hideGlobalCard();
+});
+
+// Click vào thẻ Global cũng phải mở phim như thẻ thật
+globalCard.addEventListener("click", (e) => {
+    // Bắn lại sự kiện click vào thẻ gốc tương ứng
+    const originalId = globalCard.dataset.originId;
+    if (originalId) {
+        // Tìm thẻ gốc dựa trên ID (ta sẽ gán ID tạm thời nếu cần hoặc query)
+        // Cách đơn giản: Gọi lại logic xử lý click với dữ liệu đã copy
+        const mockTarget = { 
+            closest: () => ({ 
+                dataset: { 
+                    videoId: globalCard.dataset.videoId,
+                    programName: globalCard.dataset.programName 
+                } 
+            }) 
+        };
+        // Gọi hàm xử lý click của bạn (giả lập event)
+        handleCardClick({ target: mockTarget }); 
+    }
+});
+
+function showGlobalCard(targetCard) {
+    // 1. Copy dữ liệu từ thẻ thật sang thẻ bóng ma
+    const thumb = targetCard.querySelector(".video-thumbnail").src;
+    const title = targetCard.querySelector(".card-title").textContent;
+    const ep = targetCard.querySelector(".card-ep").textContent;
+    const genre = targetCard.querySelector(".card-genre").textContent;
+    
+    globalCard.querySelector(".video-thumbnail").src = thumb;
+    globalCard.querySelector(".card-title").textContent = title;
+    globalCard.querySelector(".card-ep").textContent = ep;
+    globalCard.querySelector(".card-genre").textContent = genre;
+
+    // Copy data attributes quan trọng để xử lý click
+    globalCard.dataset.videoId = targetCard.dataset.videoId || "";
+    globalCard.dataset.programName = targetCard.dataset.programName || "";
+    globalCard.dataset.originId = "temp-origin"; // Đánh dấu
+
+    // 2. Tính toán vị trí (Dùng getBoundingClientRect là đủ, không cần Floating UI phức tạp)
+    const rect = targetCard.getBoundingClientRect();
+
+    // 3. Gán vị trí cho thẻ bóng ma
+    globalCard.style.width = `${rect.width}px`;
+    globalCard.style.height = `${rect.height}px`; // Chỉ lấy chiều cao ảnh, không tính info
+    globalCard.style.top = `${rect.top}px`;
+    globalCard.style.left = `${rect.left}px`;
+    
+    // Reset class hidden/visible
+    globalCard.classList.remove("hidden");
+    // setTimeout nhỏ để CSS transition hoạt động (từ scale 1 -> 1.3)
+    requestAnimationFrame(() => {
+        globalCard.classList.add("visible");
+    });
+}
+
+function hideGlobalCard() {
+    globalCard.classList.remove("visible");
+    clearTimeout(hoverTimeout);
+    setTimeout(() => {
+        if (!globalCard.classList.contains("visible")) {
+             globalCard.classList.add("hidden");
+        }
+    }, 200); // Chờ animation tắt hẳn
 }
 </script>
     </body>
