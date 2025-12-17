@@ -148,8 +148,7 @@
             }
             /* Mỗi .program-row là một cái "kệ" */
 .program-row {
-    display: block;            /* Chiếm trọn dòng để xếp chồng dọc */
-    margin-bottom: 50px;       /* Khoảng cách giữa tiêu đề hàng này với hàng kia */
+
     position: relative;        /* Để xử lý z-index khi hover */
 }
 
@@ -1420,76 +1419,111 @@ const getDateScore = (v) => {
     return 0;
 };
 
+/* --- LOGIC RENDER MỚI: TỰ ĐỘNG TẠO HÀNG THEO THỂ LOẠI (GENRES) --- */
 function renderVideoRows(videoArray) {
-    libraryContainer.innerHTML = "";
+    libraryContainer.innerHTML = ""; // Xóa sạch cũ
     if (videoArray.length === 0) {
-        libraryContainer.innerHTML = `<p style="text-align: center;">Không tìm thấy video.</p>`;
+        libraryContainer.innerHTML = `<p style="text-align: center; margin-top: 50px;">Không tìm thấy video nào.</p>`;
         return;
     }
 
-    // 1. GOM NHÓM: Biến danh sách Video phẳng thành danh sách Chương trình
-    const programsMap = {};
-    const singleVideos = [];
+    // --- BƯỚC 1: XỬ LÝ DỮ LIỆU ---
+    const programsMap = {}; // Chứa các series (Gom nhóm)
+    const singleVideos = []; // Chứa video lẻ
 
     videoArray.forEach(video => {
         const progName = video.program;
-        
-        // Nếu không có tên chương trình, coi là Video Lẻ
         if (!progName) {
             singleVideos.push(video);
-            return;
+        } else {
+            if (!programsMap[progName]) {
+                programsMap[progName] = {
+                    type: 'program',
+                    title: progName,
+                    videos: [],
+                    genres: new Set(),
+                    latestUpdate: 0,
+                    thumbnailVideo: null
+                };
+            }
+            programsMap[progName].videos.push(video);
+            programsMap[progName].genres.add(...(video.genres || []));
+            
+            // Cập nhật thời gian để sort
+            const score = getDateScore(video);
+            if (score > programsMap[progName].latestUpdate) {
+                programsMap[progName].latestUpdate = score;
+            }
         }
-
-        if (!programsMap[progName]) {
-            programsMap[progName] = {
-                title: progName,
-                videos: [],
-                genres: new Set(),
-                latestUpdate: 0
-            };
-        }
-        
-        programsMap[progName].videos.push(video);
-        // Cập nhật ngày mới nhất của chương trình
-        const score = getDateScore(video);
-        if (score > programsMap[progName].latestUpdate) {
-            programsMap[progName].latestUpdate = score;
-        }
-        // Gom thể loại
-        if (video.genres) video.genres.forEach(g => programsMap[progName].genres.add(g));
     });
 
-    // 2. CHUẨN BỊ DỮ LIỆU HIỂN THỊ
-    // Sắp xếp các tập trong mỗi chương trình (Mới nhất lên đầu)
+    // Sort video trong từng program để lấy thumbnail mới nhất
     Object.values(programsMap).forEach(prog => {
-        prog.videos.sort((a, b) => {
-            if (a.episode && b.episode) return b.episode - a.episode; // Số tập giảm dần
-            return getDateScore(b) - getDateScore(a); // Hoặc ngày giảm dần
-        });
-        // Lấy video đại diện là video mới nhất (đầu danh sách sau khi sort)
+        prog.videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
         prog.thumbnailVideo = prog.videos[0]; 
     });
 
-    // Danh sách chương trình (để render row "Mới cập nhật" hoặc "Tất cả")
-    const allPrograms = Object.values(programsMap).sort((a, b) => b.latestUpdate - a.latestUpdate);
-    // Danh sách video lẻ (cũng sort theo ngày)
-    singleVideos.sort((a, b) => getDateScore(b) - getDateScore(a));
+    const allPrograms = Object.values(programsMap);
 
-    // 3. RENDER CÁC ROW (HÀNG NGANG)
+    // --- BƯỚC 2: RENDER HÀNG "MỚI CẬP NHẬT" (Trộn cả Program & Video lẻ mới nhất) ---
+    // Lấy top 10 cái mới nhất bất kể là lẻ hay bộ
+    const mixedLatest = [...allPrograms, ...singleVideos]
+        .sort((a, b) => {
+            const timeA = a.type === 'program' ? a.latestUpdate : getDateScore(a);
+            const timeB = b.type === 'program' ? b.latestUpdate : getDateScore(b);
+            return timeB - timeA;
+        })
+        .slice(0, 15); // Lấy 15 cái mới nhất
 
-    // --- ROW 1: "🔥 Chương trình Mới cập nhật" ---
-    if (allPrograms.length > 0) {
-        createCarouselSection("🔥 Chương trình Mới cập nhật", allPrograms.map(p => createProgramCard(p)));
+    // Render hàng Video
+    const latestCards = mixedLatest.map(item => {
+        return item.type === 'program' ? createProgramCard(item) : createVideoCardHtml(item);
+    });
+    
+    if (latestCards.length > 0) {
+        createCarouselSection("🔥 Mới & Nổi bật", latestCards);
     }
 
-    // --- ROW 2: "🎬 Video Lẻ / Movies" (Nếu có) ---
+    // --- BƯỚC 3: TỰ ĐỘNG QUÉT VÀ TẠO HÀNG CHO TỪNG THỂ LOẠI ---
+    // Lấy danh sách tất cả thể loại duy nhất
+    const allGenres = [...new Set(videoArray.flatMap(v => v.genres || []))].sort();
+
+    allGenres.forEach(genre => {
+        // 1. Tìm các Program thuộc thể loại này
+        const progsInGenre = allPrograms.filter(p => p.genres.has(genre));
+        
+        // 2. Tìm các Video lẻ thuộc thể loại này
+        const videosInGenre = singleVideos.filter(v => v.genres && v.genres.includes(genre));
+
+        // 3. Gộp lại
+        const itemsInGenre = [...progsInGenre, ...videosInGenre];
+
+        // Nếu có nội dung thì mới vẽ ra hàng
+        if (itemsInGenre.length > 0) {
+            // Sort nội dung trong hàng này (Mới nhất lên đầu)
+            itemsInGenre.sort((a, b) => {
+                 const timeA = a.type === 'program' ? a.latestUpdate : getDateScore(a);
+                 const timeB = b.type === 'program' ? b.latestUpdate : getDateScore(b);
+                 return timeB - timeA;
+            });
+
+            // Tạo HTML cho card
+            const cardsHtml = itemsInGenre.map(item => {
+                return item.type === 'program' ? createProgramCard(item) : createVideoCardHtml(item);
+            });
+
+            createCarouselSection(genre, cardsHtml);
+        }
+    });
+
+    // --- BƯỚC 4: HÀNG DÀNH RIÊNG CHO VIDEO LẺ (Nếu muốn tách biệt) ---
+    // (Optional: Nếu bạn thích có 1 hàng chuyên video lẻ ở cuối cùng)
+    /*
     if (singleVideos.length > 0) {
-        // Với video lẻ, ta coi mỗi video như 1 program nhưng click vào là play luôn (hoặc hiện modal ít thông tin)
-        createCarouselSection("🎬 Video Lẻ", singleVideos.map(v => createVideoCardHtml(v)));
+        const singleCards = singleVideos.map(v => createVideoCardHtml(v));
+        createCarouselSection("🎬 Phim & Video Lẻ", singleCards);
     }
-
-    // --- ROW 3+: "📺 Tất cả chương trình" (Hoặc có thể chia theo thể loại ở đây nếu muốn) ---
-    // Hiện tại mình gom hết vào row trên rồi, nên nếu bạn muốn tách Thể loại thì làm tương tự logic Filter.
+    */
 }
 
 // Hàm tạo HTML cho 1 Row (Carousel)
