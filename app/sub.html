@@ -146,32 +146,48 @@
                 flex-direction: column;
                 gap: 50px;
             }
-            .program-row {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 20px;
-    /* Không được set overflow: hidden ở đây nếu muốn card trồi ra ngoài */
+            /* Mỗi .program-row là một cái "kệ" */
+.program-row {
+    display: block;            /* Chiếm trọn dòng để xếp chồng dọc */
+    margin-bottom: 50px;       /* Khoảng cách giữa tiêu đề hàng này với hàng kia */
+    position: relative;        /* Để xử lý z-index khi hover */
 }
 
-/* Hiệu ứng hover cho card (cập nhật nhẹ để mượt hơn) */
+.program-title {
+    font-size: 1.5rem;         /* Cỡ chữ tiêu đề (VD: Phim hành động) */
+    font-weight: 600;
+    margin-bottom: 15px;       /* Khoảng cách từ tiêu đề xuống list video */
+    color: #fff;
+    padding-left: 0;           /* Căn lề trái thẳng hàng */
+}
 
-            .program-title {
-                font-size: 1.8rem;
-                font-weight: 600;
-                margin: 0 0 20px 0;
-            }
-            .video-list {
-    display: flex;             /* Xếp hàng ngang */
-    gap: 15px;                 /* Khoảng cách giữa các card */
-    overflow-x: auto;          /* Cho phép cuộn ngang */
-    overflow-y: visible;       /* Để hiệu ứng hover (scale) không bị cắt trên dưới */
-    padding: 40px 0;           /* QUAN TRỌNG: Tạo khoảng thở trên/dưới để khi card phóng to không bị mất đỉnh/đáy */
-    scroll-behavior: smooth;   /* Cuộn mượt */
+
+/* .video-list là không gian bên trong cái kệ để xếp video */
+.video-list {
+    display: flex;             /* Xếp các thẻ video nằm ngang hàng nhau */
+    gap: 15px;                 /* Khoảng cách giữa các thẻ video */
     
-    /* Ẩn thanh cuộn cho đẹp */
+    /* CƠ CHẾ CUỘN NGANG */
+    overflow-x: auto;          /* Cho phép cuộn ngang khi nội dung tràn */
+    overflow-y: visible;       /* QUAN TRỌNG: Để khi hover, thẻ phóng to không bị cắt đầu cắt đuôi */
+    
+    padding: 40px 10px;        /* Đệm trên dưới 40px để thẻ phóng to thoải mái, đệm trái phải 10px */
+    margin: -40px -10px;       /* Margin âm để bù lại padding, giúp layout không bị lệch */
+    
+    scroll-behavior: smooth;   /* Hiệu ứng trượt mượt mà */
+    
+    /* Ẩn thanh cuộn xấu xí đi */
     scrollbar-width: none;     /* Firefox */
     -ms-overflow-style: none;  /* IE/Edge */
 }
+
+/* Ẩn thanh cuộn cho Chrome/Safari */
+.video-list::-webkit-scrollbar {
+    display: none;
+}
+
+
+
 .video-list::-webkit-scrollbar {
     display: none;             /* Chrome/Safari */
 }
