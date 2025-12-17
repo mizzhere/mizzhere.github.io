@@ -207,6 +207,18 @@
     flex-basis: calc((100% - 45px) / 4);
     /* Không dùng overflow: hidden để info có thể trồi ra ngoài hoặc mở rộng */
 }
+/* Thêm vào CSS */
+.video-card:hover {
+    transform: none !important; /* Cấm thẻ gốc phóng to */
+    z-index: 1 !important;      /* Không cho nổi lên */
+    opacity: 0.6;               /* (Tuỳ chọn) Làm mờ thẻ gốc để làm nổi bật thẻ bóng ma */
+}
+
+/* Ẩn thông tin của thẻ gốc khi hover, vì thẻ bóng ma đã hiện rồi */
+.video-card:hover .card-info {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
 /* Màn hình Tablet/Laptop nhỏ: Hiện 3 cái */
 @media (max-width: 1024px) {
     .video-card {
@@ -1293,7 +1305,9 @@
             <!-- END: Cấu trúc Player HOÀN CHỈNH v5 -->
         </div>
         <div id="notification-area"></div>
-        <div id="global-hover-card" class="video-card hidden">
+
+         </main>
+                 <div id="global-hover-card" class="video-card hidden">
     <div class="card-image-wrapper">
         <img src="" class="video-thumbnail" />
     </div>
@@ -1305,7 +1319,6 @@
         </div>
     </div>
 </div>
-         </main>
         <script src="https://www.youtube.com/iframe_api"></script>
         <script type="module">
     
@@ -2490,62 +2503,8 @@ el.innerHTML = `
                 if (card) card.onclick = null; // Gỡ listener để tránh memory leak
             }
             // END: Các hàm mới
-            /* --- LOGIC FLOATING UI --- */
-/* --- LOGIC FLOATING UI --- */
-let cleanupFloating = null;
 
-function setupFloatingForCard(card) {
-    const info = card.querySelector('.card-info');
-    if (!info) return;
-    
-    // Lấy các hàm từ window (đã import ở bước 1)
-    // Nếu chưa load xong thì return (an toàn)
-    if (!window.FloatingUIDOM) return; 
-    const { computePosition, autoUpdate, flip, shift, offset, size } = window.FloatingUIDOM;
 
-    // Khi chuột vào Card
-    card.addEventListener('mouseenter', () => {
-        info.classList.add('is-visible');
-
-        // autoUpdate: Tự động tính lại vị trí khi cuộn hoặc resize
-        cleanupFloating = autoUpdate(card, info, () => {
-            computePosition(card, info, {
-                placement: 'bottom', 
-                strategy: 'fixed',   // QUAN TRỌNG: Fixed giúp thoát khỏi overflow
-                middleware: [
-                    offset(0), 
-                    flip(), 
-                    shift({ padding: 5 }), 
-                    size({
-                        apply({rects, elements}) {
-                            Object.assign(elements.floating.style, {
-                                width: `${rects.reference.width}px`
-                            });
-                        },
-                    }),
-                ],
-            }).then(({x, y, placement}) => {
-                Object.assign(info.style, {
-                    left: `${x}px`,
-                    top: `${y}px`,
-                    position: 'fixed' // Đảm bảo luôn là fixed
-                });
-
-                const isTop = placement.startsWith('top');
-                info.style.borderRadius = isTop ? '6px 6px 0 0' : '0 0 6px 6px';
-            });
-        });
-    });
-
-    // Khi chuột rời Card
-    card.addEventListener('mouseleave', () => {
-        info.classList.remove('is-visible');
-        if (cleanupFloating) {
-            cleanupFloating();
-            cleanupFloating = null;
-        }
-    });
-}
 // --- LOGIC GLOBAL HOVER CARD (PORTAL) ---
 const globalCard = document.getElementById("global-hover-card");
 let hoverTimeout;
