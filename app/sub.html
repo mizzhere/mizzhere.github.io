@@ -102,33 +102,45 @@
             }
 
             #filter-tags {
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-                margin-bottom: 40px;
-                border-bottom: 1px solid #222;
-                padding-bottom: 20px;
-            }
-            .filter-tag {
-                background-color: var(--secondary-bg);
-                border: 1px solid #444;
-                color: var(--text-color);
-                padding: 8px 16px;
-                border-radius: 20px;
-                cursor: pointer;
-                transition:
-                    background-color 0.2s,
-                    border-color 0.2s;
-            }
-            .filter-tag:hover {
-                background-color: #333;
-            }
-            .filter-tag.active {
-                background-color: var(--text-light);
-                color: #000;
-                border-color: var(--text-light);
-                font-weight: 600;
-            }
+    display: flex;
+    gap: 12px;
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    white-space: nowrap;
+    padding-bottom: 15px; /* Khoảng thở cho thanh cuộn */
+    margin-bottom: 20px;
+    border-bottom: 1px solid #222;
+    /* Ẩn thanh cuộn mặc định cho đẹp */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#filter-tags::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.filter-tag {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    padding: 8px 20px;
+    border-radius: 50px; /* Bo tròn kiểu viên thuốc */
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex-shrink: 0; /* Không bị co lại */
+}
+.filter-tag:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+    color: #fff;
+}
+.filter-tag.active {
+    background-color: var(--text-light);
+    color: #000;
+    border-color: var(--text-light);
+    font-weight: 700;
+    transform: scale(1.05);
+}
             #library-container {
                 display: flex;
                 flex-direction: column;
@@ -147,28 +159,98 @@
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
                 gap: 15px;
             }
-            .video-card {
-                background-color: var(--secondary-bg);
-                border-radius: 5px;
-                overflow: hidden;
-                cursor: pointer;
-                transition:
-                    transform 0.3s ease,
-                    box-shadow 0.3s ease;
-                position: relative;
-                aspect-ratio: 16 / 9;
-            }
-            .video-card:hover {
-                transform: scale(1.05);
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
-                z-index: 10;
-            }
-            .video-thumbnail {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: block;
-            }
+            /* --- [MỚI] VIDEO CARD - Hover hiện info bên dưới --- */
+.video-card {
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    position: relative; /* Quan trọng để định vị */
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s 0.3s; /* Delay z-index khi thu nhỏ */
+    /* Không dùng overflow: hidden để info có thể trồi ra ngoài hoặc mở rộng */
+}
+
+/* Container chứa ảnh để bo góc */
+.card-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    overflow: hidden; /* Ảnh nằm gọn trong này */
+    z-index: 1;
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Phần thông tin (Mặc định ẩn hoặc thu gọn) */
+.card-info {
+    position: absolute;
+    top: 100%; /* Nằm ngay bên dưới ảnh */
+    left: 0;
+    width: 100%;
+    background-color: var(--secondary-bg);
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 0 0 6px 6px;
+    opacity: 0; /* Ẩn đi */
+    visibility: hidden;
+    transform: translateY(-10px); /* Dịch lên một chút */
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    z-index: 2;
+    pointer-events: none; /* Không bắt chuột khi ẩn */
+}
+
+/* Title trong card */
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    color: #fff;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Metadata (Tập, thể loại) */
+.card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+.card-genre {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+@media (hover: hover) {
+    .video-card:hover {
+        transform: scale(1.15); /* Phóng to 1.15 lần */
+        z-index: 100; /* Nổi lên trên cùng */
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), z-index 0s; /* Z-index đổi ngay lập tức */
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.1); /* Viền sáng nhẹ */
+    }
+
+    /* Khi hover vào card, phần info hiện ra */
+    .video-card:hover .card-info {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    
+    /* Bo lại góc dưới của ảnh khi info hiện ra để liền mạch */
+    .video-card:hover .card-image-wrapper {
+        border-radius: 6px 6px 0 0;
+    }
+}
             .skeleton-card {
                 background-color: #2a2a2a;
                 animation: pulse 1.5s infinite ease-in-out;
@@ -1192,55 +1274,88 @@
                 }
             }
 
-            // --- UI Rendering ---
-            function renderVideoRows(videoArray) {
-                libraryContainer.innerHTML = "";
-                if (videoArray.length === 0) {
-                    libraryContainer.innerHTML = `<p style="text-align: center;">Không tìm thấy video.</p>`;
-                    return;
-                }
-                const groupedByProgram = videoArray.reduce((acc, video) => {
-                    const program = video.program || "Chương trình khác";
-                    if (!acc[program]) acc[program] = [];
-                    acc[program].push(video);
-                    return acc;
-                }, {});
-                const programOrder = Object.keys(groupedByProgram).sort((a, b) =>
-                    a === "Chương trình khác" ? 1 : b === "Chương trình khác" ? -1 : a.localeCompare(b)
-                );
-                for (const programName of programOrder) {
-                    const section = doc.createElement("section");
-                    section.className = "program-row";
-                    section.innerHTML = `<h2 class="program-title">${programName}</h2><div class="video-list">${groupedByProgram[
-                        programName
-                    ]
-                        .map((video) => {
-                            // [MỚI] Logic hiển thị nhãn tập
-                            const episodeBadge = video.episode
-                                ? `<div class="episode-badge">EP ${video.episode}</div>`
-                                : "";
-
-                            return `
-        <div class="video-card" data-video-id="${video.videoId}">
-            ${episodeBadge} <img src="${video.thumbnailUrl || video.thumbnailUrl_auto}" alt="${video.userTitle || video.title}" class="video-thumbnail" loading="lazy">
-        </div>
-    `;
-                        })
-                        .join("")}</div>`;
-                    libraryContainer.appendChild(section);
-                }
-            }
-
+    
             function populateFilterTags() {
-                const allParticipants = [...new Set(libraryData.flatMap((v) => v.participants || []))].sort();
-                allParticipants.forEach((p) => {
-                    const tag = doc.createElement("span");
-                    tag.className = "filter-tag";
-                    tag.textContent = p;
-                    tag.dataset.filter = p;
-                    filterTagsContainer.appendChild(tag);
-                });
-            }
+    filterTagsContainer.innerHTML = '';
+    // Thêm nút "Tất cả" đầu tiên
+    const allTag = document.createElement("span");
+    allTag.className = "filter-tag active";
+    allTag.dataset.filter = "Tất cả";
+    allTag.textContent = "Tất cả";
+    filterTagsContainer.appendChild(allTag);
+
+    // Lấy danh sách thể loại duy nhất
+    const allGenres = [...new Set(libraryData.flatMap((v) => v.genres || []))].sort();
+    
+    allGenres.forEach((genre) => {
+        const tag = document.createElement("span");
+        tag.className = "filter-tag";
+        tag.textContent = genre;
+        tag.dataset.filter = genre; // Lưu tên thể loại vào data
+        filterTagsContainer.appendChild(tag);
+    });
+}
+
+/* --- [MỚI] Render Video Card với cấu trúc HTML mới --- */
+function renderVideoRows(videoArray) {
+    libraryContainer.innerHTML = "";
+    if (videoArray.length === 0) {
+        libraryContainer.innerHTML = `<p style="text-align: center;">Không tìm thấy video.</p>`;
+        return;
+    }
+
+    const groupedByProgram = videoArray.reduce((acc, video) => {
+        const program = video.program || "Chương trình khác";
+        if (!acc[program]) acc[program] = [];
+        acc[program].push(video);
+        return acc;
+    }, {});
+
+    const programOrder = Object.keys(groupedByProgram).sort((a, b) =>
+        a === "Chương trình khác" ? 1 : b === "Chương trình khác" ? -1 : a.localeCompare(b)
+    );
+
+    for (const programName of programOrder) {
+        const section = doc.createElement("section");
+        section.className = "program-row";
+        
+        // Tạo HTML cho danh sách video
+        const videosHtml = groupedByProgram[programName].map((video) => {
+            const episodeBadge = video.episode 
+                ? `<div class="episode-badge">EP ${video.episode}</div>` 
+                : "";
+            
+            // Lấy thể loại đầu tiên để hiển thị cho gọn
+            const displayGenre = (video.genres && video.genres.length > 0) ? video.genres[0] : "";
+            
+            // Thumbnail
+            const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
+            const title = video.userTitle || video.title;
+
+            return `
+            <div class="video-card" data-video-id="${video.videoId}">
+                <div class="card-image-wrapper">
+                    ${episodeBadge}
+                    <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
+                </div>
+                <div class="card-info">
+                    <div class="card-title">${title}</div>
+                    <div class="card-meta">
+                        <span class="card-ep">${video.episode ? 'Tập ' + video.episode : 'Video lẻ'}</span>
+                        <span class="card-genre">${displayGenre}</span>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join("");
+
+        section.innerHTML = `
+            <h2 class="program-title">${programName}</h2>
+            <div class="video-list">${videosHtml}</div>
+        `;
+        libraryContainer.appendChild(section);
+    }
+}
 
             // --- Event Handling ---
             function setupEventListeners() {
@@ -1408,21 +1523,32 @@
                     episodesContent.appendChild(item);
                 });
             }
-            function handleSearchAndFilter() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                const activeTag = doc.querySelector(".filter-tag.active");
-                const filterTerm = activeTag && activeTag.dataset.filter !== "Tất cả" ? activeTag.dataset.filter : null;
-                const filteredData = libraryData.filter(
-                    (video) =>
-                        (searchTerm === "" ||
-                            (video.userTitle || video.title).toLowerCase().includes(searchTerm) ||
-                            (video.program || "").toLowerCase().includes(searchTerm) ||
-                            (video.participants || []).some((p) => p.toLowerCase().includes(searchTerm))) &&
-                        (!filterTerm || (video.participants && video.participants.includes(filterTerm)))
-                );
-                renderVideoRows(filteredData);
-            }
+  /* --- [CẬP NHẬT] Logic lọc mới --- */
+function handleSearchAndFilter() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const activeTag = doc.querySelector(".filter-tag.active");
+    // Lấy giá trị filter hiện tại
+    const filterTerm = activeTag && activeTag.dataset.filter !== "Tất cả" ? activeTag.dataset.filter : null;
 
+    const filteredData = libraryData.filter(
+        (video) => {
+            // Logic tìm kiếm text (Search bar)
+            const matchesSearch = 
+                searchTerm === "" ||
+                (video.userTitle || video.title).toLowerCase().includes(searchTerm) ||
+                (video.program || "").toLowerCase().includes(searchTerm) ||
+                (video.participants || []).some((p) => p.toLowerCase().includes(searchTerm)); // Vẫn cho tìm theo tên người
+
+            // Logic lọc theo Thẻ (Genres) - ĐÃ SỬA
+            const matchesFilter = 
+                !filterTerm || 
+                (video.genres && video.genres.includes(filterTerm));
+
+            return matchesSearch && matchesFilter;
+        }
+    );
+    renderVideoRows(filteredData);
+}
             function handleTagClick(e) {
                 if (e.target.classList.contains("filter-tag")) {
                     doc.querySelectorAll(".filter-tag").forEach((tag) => tag.classList.remove("active"));
