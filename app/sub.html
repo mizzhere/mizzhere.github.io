@@ -911,12 +911,13 @@
             .progress-container {
                 position: relative;
                 width: 100%;
-                height: 6px; /* Thanh đậm hơn chút cho dễ bấm cảm ứng */
-                background: rgba(255, 255, 255, 0.2);
+                height: 6px;
+                background: rgba(255, 255, 255, 0.2); /* Màu xám của phần chưa chạy */
                 border-radius: 3px;
                 cursor: pointer;
                 pointer-events: auto;
                 transition: height 0.1s;
+                overflow: visible; /* Để tooltip bookmark không bị che */
             }
             .progress-container:hover {
                 height: 8px;
@@ -928,12 +929,21 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: transparent; /* Background xử lý bằng JS gradient */
                 border-radius: 3px;
                 cursor: pointer;
                 margin: 0;
+
+                /* [FIX QUAN TRỌNG] Dùng biến CSS từ JS để tô màu đỏ */
+                background: linear-gradient(
+                    to right,
+                    var(--accent-color) 0%,
+                    var(--accent-color) var(--progress-percent, 0%),
+                    transparent var(--progress-percent, 0%),
+                    transparent 100%
+                );
+                z-index: 1; /* Nằm thấp hơn marker một chút */
             }
-            /* Thumb (cục tròn kéo) - Chỉ hiện khi hover hoặc active */
+            /* Thumb (Cục tròn kéo) */
             #progress-bar::-webkit-slider-thumb {
                 appearance: none;
                 width: 16px;
@@ -941,11 +951,14 @@
                 background: #e50914; /* Đỏ Netflix */
                 border-radius: 50%;
                 cursor: pointer;
-                transform: scale(0); /* Mặc định ẩn */
+                transform: scale(0);
                 transition: transform 0.1s;
+                position: relative;
+                z-index: 10; /* Luôn nổi cao nhất */
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.5); /* Bóng đổ cho dễ nhìn */
             }
             #player-container.controls-active #progress-bar::-webkit-slider-thumb {
-                transform: scale(1); /* Hiện khi controls active */
+                transform: scale(1);
             }
 
             /* Hàng nút bấm (Buttons Row) */
@@ -1375,11 +1388,13 @@
             .timeline-marker {
                 position: absolute;
                 top: 0;
-                width: 2px;
-                height: 100%; /* Chiều cao bằng progress bar */
-                background-color: rgba(255, 255, 255, 0.5);
-                z-index: 2;
-                pointer-events: none;
+                width: 3px; /* Đậm hơn chút cho dễ thấy */
+                height: 100%;
+                background-color: #fff; /* Màu trắng sáng rực */
+                z-index: 5; /* [QUAN TRỌNG] Phải cao hơn #progress-bar (z-index 1) */
+                pointer-events: none; /* Click xuyên qua */
+                box-shadow: 0 0 2px rgba(0, 0, 0, 0.8); /* Bóng đen để nổi trên nền trắng/đỏ */
+                transition: height 0.1s;
             }
             .timeline-marker:hover::after {
                 content: attr(data-label);
@@ -1387,12 +1402,16 @@
                 bottom: 15px;
                 left: 50%;
                 transform: translateX(-50%);
-                background: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.9);
                 color: white;
-                padding: 4px 8px;
+                padding: 5px 10px;
                 border-radius: 4px;
                 font-size: 12px;
+                font-weight: 600;
                 white-space: nowrap;
+                pointer-events: none;
+                z-index: 20;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
             }
 
             /* --- [MỚI] Nút Bỏ qua (Skip Intro) --- */
@@ -1852,6 +1871,82 @@
                 right: 0;
                 background: linear-gradient(to left, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
             }
+            /* --- TEASER HEADER STYLES --- */
+            #teaser-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1; /* Đè lên ảnh thumbnail */
+                background: #000;
+                overflow: hidden;
+                display: none; /* Mặc định ẩn */
+            }
+            #teaser-container.visible {
+                display: block;
+            }
+            #teaser-player-iframe {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                pointer-events: none; /* Chặn click vào video để không pause */
+            }
+            /* Mask để video không bị đen viền */
+            .video-background {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(1.35); /* Zoom nhẹ để lấp đầy */
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            /* Nút Âm thanh (Mute/Unmute) */
+            #teaser-volume-btn {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                z-index: 10;
+                background: rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: #fff;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: all 0.2s;
+            }
+            #teaser-volume-btn:hover {
+                background: #fff;
+                color: #000;
+            }
+
+            /* Phụ đề Teaser (Nhỏ gọn ở header) */
+            #teaser-subtitle {
+                position: absolute;
+                bottom: 70px; /* Cao hơn nút volume */
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                width: 80%;
+                z-index: 5;
+                pointer-events: none;
+
+                font-size: 1rem;
+                color: #fff;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.4); /* Nền đen mờ nhẹ */
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+            #teaser-subtitle:empty {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -1908,10 +2003,38 @@
                     </button>
                     <header id="modal-header">
                         <img id="modal-thumbnail" src="" alt="Video thumbnail" />
+
+                        <div id="teaser-container">
+                            <div class="video-background">
+                                <div id="teaser-player-iframe"></div>
+                            </div>
+                            <div id="teaser-subtitle"></div>
+                            <button id="teaser-volume-btn" title="Bật tiếng">
+                                <svg id="icon-mute" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                    <path
+                                        d="M16.5,12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45,2.45C16.41,12.5,16.5,12.26,16.5,12z M19,12c0,0.94-0.2,1.82-0.54,2.64l1.51,1.51C20.63,14.91,21,13.5,21,12c0-4.28-2.99-7.86-7-8.77v2.06C16.54,6.14,19,8.83,19,12z M4.27,3L3,4.27l4.56,4.57C7.51,8.91,7.5,8.95,7.5,9v6h4l5,5v-6.73l4.25,4.25c-0.67,0.52-1.42,0.93-2.25,1.18v2.06c1.38-0.31,2.63-0.95,3.69-1.81L19.73,21L21,19.73l-9-9L4.27,3z M12,4L9.91,6.09L12,8.18V4z"
+                                    ></path>
+                                </svg>
+                                <svg
+                                    id="icon-unmute"
+                                    class="hidden"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                    height="24"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S17.01,4.14,14,3.23z"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </div>
+
                         <button id="modal-play-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg
-                            >Phát
+                                <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path>
+                            </svg>
+                            Phát
                         </button>
                     </header>
                     <div id="modal-body">
@@ -2134,6 +2257,12 @@
             const portalGenre = document.getElementById("portal-genre");
             const portalPlayBtn = document.getElementById("portal-play-btn");
             const portalInfoBtn = document.getElementById("portal-info-btn");
+            // --- DOM Elements Teaser ---
+            const teaserContainer = document.getElementById("teaser-container");
+            const teaserSubtitle = document.getElementById("teaser-subtitle");
+            const teaserVolumeBtn = document.getElementById("teaser-volume-btn");
+            const iconMute = document.getElementById("icon-mute");
+            const iconUnmute = document.getElementById("icon-unmute");
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -2149,8 +2278,135 @@
             let hideTimeout;
             let currentHoveredCard = null; // Card gốc đang được hover
             let isParallaxTicking = false; // Biến khóa (Flag) cho hiệu ứng parallax
+            let teaserPlayer = null;
+            let teaserSubtitles = [];
+            let teaserSyncInterval = null;
+            let isTeaserMuted = true;
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
+            /* --- LOGIC TEASER MỚI --- */
+            function checkAndLoadTeaser(programName) {
+                if (!programName) return;
 
+                // 1. Tìm tất cả video thuộc chương trình này có tag "TEASER"
+                // Lưu ý: data của bạn dùng "genres" để chứa tag
+                const teasers = libraryData.filter(
+                    (v) => v.program === programName && v.genres && v.genres.some((g) => g.toUpperCase() === "TEASER")
+                );
+
+                // Nếu không có teaser nào -> Ẩn container, hiện ảnh tĩnh
+                if (teasers.length === 0) {
+                    destroyTeaser();
+                    return;
+                }
+
+                // 2. Lấy cái mới nhất (Sort theo uploadDate hoặc episode)
+                teasers.sort((a, b) => {
+                    const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
+                    const dateB = b.uploadDate_auto ? new Date(b.uploadDate_auto).getTime() : 0;
+                    return dateB - dateA;
+                });
+
+                const teaserVideo = teasers[0]; // Cái mới nhất
+
+                // 3. Hiển thị Container Teaser
+                teaserContainer.classList.add("visible");
+
+                // 4. Khởi tạo Player Teaser
+                initTeaserPlayer(teaserVideo);
+            }
+
+            function initTeaserPlayer(video) {
+                // Reset phụ đề cũ
+                teaserSubtitles = [];
+                teaserSubtitle.innerHTML = "";
+                clearInterval(teaserSyncInterval);
+
+                // Load phụ đề nếu có
+                if (video.subtitleUrl) {
+                    fetch(video.subtitleUrl)
+                        .then((res) => res.text())
+                        .then((text) => {
+                            teaserSubtitles = parseSRT(text);
+                            startTeaserSubtitleSync();
+                        })
+                        .catch((err) => console.log("Lỗi sub teaser:", err));
+                }
+
+                // Nếu đã có player thì load video mới, chưa có thì tạo mới
+                if (teaserPlayer) {
+                    teaserPlayer.loadVideoById(video.videoId);
+                    teaserPlayer.mute(); // Luôn mute khi bắt đầu
+                } else {
+                    teaserPlayer = new YT.Player("teaser-player-iframe", {
+                        videoId: video.videoId,
+                        playerVars: {
+                            autoplay: 1,
+                            controls: 0, // Ẩn điều khiển
+                            disablekb: 1,
+                            fs: 0,
+                            iv_load_policy: 3,
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            mute: 1, // Mặc định tắt tiếng
+                            loop: 1, // Loop cần playlist, xử lý ở onStateChange
+                            playlist: video.videoId, // Hack để loop hoạt động chuẩn
+                        },
+                        events: {
+                            onReady: (event) => {
+                                event.target.playVideo();
+                                event.target.mute();
+                            },
+                            onStateChange: (event) => {
+                                // Loop thủ công nếu playlist fail
+                                if (event.data === YT.PlayerState.ENDED) {
+                                    event.target.playVideo();
+                                }
+                            },
+                        },
+                    });
+                }
+
+                // Reset UI volume về Mute
+                isTeaserMuted = true;
+                updateVolumeUI();
+            }
+
+            function destroyTeaser() {
+                // Ẩn container
+                teaserContainer.classList.remove("visible");
+
+                // Dừng video
+                if (teaserPlayer && typeof teaserPlayer.stopVideo === "function") {
+                    teaserPlayer.stopVideo();
+                }
+
+                // Xóa phụ đề
+                clearInterval(teaserSyncInterval);
+                teaserSubtitle.innerHTML = "";
+            }
+
+            function startTeaserSubtitleSync() {
+                clearInterval(teaserSyncInterval);
+                teaserSyncInterval = setInterval(() => {
+                    if (!teaserPlayer || !teaserPlayer.getCurrentTime) return;
+                    const c = teaserPlayer.getCurrentTime();
+                    const sub = teaserSubtitles.find((s) => c >= s.start && s.end >= c);
+                    teaserSubtitle.innerHTML = sub ? sub.text : "";
+                }, 100);
+            }
+
+            function updateVolumeUI() {
+                if (isTeaserMuted) {
+                    iconMute.classList.remove("hidden");
+                    iconUnmute.classList.add("hidden");
+                    if (teaserPlayer) teaserPlayer.mute();
+                } else {
+                    iconMute.classList.add("hidden");
+                    iconUnmute.classList.remove("hidden");
+                    if (teaserPlayer) teaserPlayer.unMute();
+                }
+            }
             // Hàm xóa dấu Tiếng Việt để tìm kiếm chính xác hơn
             // VD: "Đô thị" -> "do thi"
             function toNonAccentVietnamese(str) {
@@ -3363,7 +3619,9 @@
             function closeModal(modal) {
                 // 1. Gỡ class visible để kích hoạt animation ẩn đi (Fade out / Slide down)
                 modal.classList.remove("visible");
-
+                if (modal.id === "detail-modal-overlay") {
+                    destroyTeaser();
+                }
                 // 2. Đợi animation chạy xong (300ms) mới thêm display: none
                 setTimeout(() => {
                     modal.classList.add("hidden");
@@ -3375,6 +3633,11 @@
                     if (content) content.scrollTop = 0;
                 }, 300); // Thời gian này khớp với transition trong CSS
             }
+            teaserVolumeBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // Tránh click xuyên qua làm đóng modal hay play
+                isTeaserMuted = !isTeaserMuted;
+                updateVolumeUI();
+            });
             /**
              * Mở modal chi tiết, có thể hiển thị danh sách tập nếu là một PROGRAM (Series).
              * @param {Object} videoData Dữ liệu của video/tập mới nhất được chọn.
@@ -3490,7 +3753,10 @@
                     modalPlayBtn.dataset.videoId = videoData.videoId;
                 }
 
-                // 8. Mở Modal
+                const prog = videoData.program || null;
+                checkAndLoadTeaser(prog);
+
+                // 8. Mở Modal (Code cũ)
                 openModal(detailModalOverlay);
             }
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
