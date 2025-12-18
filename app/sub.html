@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <title>Trình xem Phim Chuyên nghiệp</title>
+        <title>mizzsub</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -60,7 +60,7 @@
 
             /* 2. Logo Thương hiệu (Thay vì chữ Khám Phá đơn điệu) */
             #main-title {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
                 font-weight: 800; /* Chữ dày cộp */
                 color: var(--accent-color); /* Màu đỏ Netflix */
                 text-transform: uppercase;
@@ -379,6 +379,74 @@
                 color: var(--accent-color);
                 font-weight: 600;
             }
+            /* --- MOBILE FIX: DANH SÁCH TẬP PHIM --- */
+            @media (max-width: 768px) {
+                .modal-episode-item {
+                    /* Chuyển sang Grid để dễ dàng xếp chồng nút Play lên ảnh */
+                    display: grid;
+                    grid-template-columns: 1fr; /* 1 cột duy nhất */
+                    grid-template-rows: auto auto; /* Hàng 1: Ảnh, Hàng 2: Text */
+                    gap: 10px;
+                    padding: 15px 0; /* Khoảng cách trên dưới rộng hơn chút */
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+
+                /* 1. Ảnh Thumbnail: Full chiều rộng */
+                .modal-ep-thumb {
+                    grid-row: 1;
+                    grid-column: 1;
+                    width: 100%;
+                    aspect-ratio: 16/9;
+                    border-radius: 6px;
+                    object-fit: cover;
+                }
+
+                /* 2. Nút Play: Luôn hiện và nằm giữa ảnh */
+                .modal-episode-item .play-icon {
+                    opacity: 1 !important; /* Bắt buộc hiện */
+                    grid-row: 1; /* Nằm cùng ô với ảnh */
+                    grid-column: 1;
+
+                    /* Căn giữa tuyệt đối trong ô grid */
+                    justify-self: center;
+                    align-self: center;
+
+                    /* Style cho nút đẹp hơn */
+                    width: 48px;
+                    height: 48px;
+                    background-color: rgba(0, 0, 0, 0.6); /* Nền đen bán trong suốt */
+                    backdrop-filter: blur(2px);
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                    border-radius: 50%;
+                    padding: 12px;
+                    box-sizing: border-box;
+                    pointer-events: none; /* Để bấm vào nút thì vẫn tính là bấm vào item */
+                    z-index: 2;
+                }
+
+                /* 3. Phần thông tin (Tên + Số tập): Nằm xuống dưới */
+                .modal-ep-info {
+                    grid-row: 2;
+                    grid-column: 1;
+                    width: 100%;
+                    padding: 0 5px;
+                }
+
+                .modal-ep-number {
+                    font-size: 0.85rem;
+                    color: var(--accent-color);
+                    margin-bottom: 4px;
+                    font-weight: 600;
+                }
+
+                .modal-ep-title {
+                    font-size: 1rem; /* Chữ to hơn chút cho dễ đọc */
+                    color: #fff;
+                    line-clamp: 3; /* Cho phép hiện tối đa 3 dòng thay vì 2 */
+                    -webkit-line-clamp: 3;
+                    white-space: normal; /* Đảm bảo xuống dòng bình thường */
+                }
+            }
             /* --- SỬA LOGIC HOVER: Xóa bỏ hiệu ứng làm tối gây khó chịu --- */
             @media (hover: hover) {
                 /* Chỉ áp dụng cho thiết bị có chuột (PC) */
@@ -452,7 +520,7 @@
 
                 display: block;
                 overflow-y: auto;
-                max-height: 90vh;
+                max-height: 90dvh;
                 width: 100%;
                 max-width: 850px;
                 scrollbar-width: none;
@@ -698,7 +766,7 @@
             }
 
             /* ================================================= */
-            /* START: CSS CHO PLAYER V5 - PHIÊN BẢN HOÀN CHỈNH    */
+            /* START: CSS CHO PLAYER V5 - CINEMA UX OPTIMIZED    */
             /* ================================================= */
 
             #player-container {
@@ -713,183 +781,350 @@
                 align-items: center;
                 z-index: 3000;
                 color: white;
-                cursor: default; /* Con trỏ mặc định */
+                font-family: "Inter", sans-serif; /* Font hiện đại */
+                overflow: hidden;
             }
             #player-container.no-cursor {
-                cursor: none; /* Ẩn con trỏ khi đang phát và control ẩn */
+                cursor: none;
             }
             #youtube-player {
                 position: absolute;
                 width: 100%;
                 height: 100%;
                 border: none;
+                opacity: 0; /* Mặc định ẩn để hiện Spinner trước */
+                transition: opacity 0.5s ease-in;
+            }
+            #youtube-player.ready {
+                opacity: 1; /* Khi video chạy mới hiện ra */
             }
 
-            /* --- Base styles cho các lớp phủ --- */
+            /* --- LOADING SPINNER (Vòng xoay vô cực) --- */
+            #loading-spinner {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid var(--accent-color); /* Màu đỏ */
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                z-index: 5; /* Nằm dưới controls nhưng trên video */
+                display: none; /* JS sẽ bật nó lên */
+            }
+            @keyframes spin {
+                0% {
+                    transform: translate(-50%, -50%) rotate(0deg);
+                }
+                100% {
+                    transform: translate(-50%, -50%) rotate(360deg);
+                }
+            }
+
+            /* --- CÁC LỚP PHỦ (OVERLAYS) --- */
             #video-header-overlay,
             #custom-controls,
             #center-play-pause-btn {
                 opacity: 0;
-                transition: opacity 0.25s ease-out;
+                transition: opacity 0.3s ease;
                 position: absolute;
                 left: 0;
                 width: 100%;
                 box-sizing: border-box;
-                pointer-events: none; /* Mặc định vô hiệu hóa */
+                pointer-events: none;
             }
 
-            /* --- Trạng thái hiển thị controls --- */
             #player-container.controls-active > #video-header-overlay,
             #player-container.controls-active > #custom-controls,
             #player-container.controls-active > #center-play-pause-btn {
                 opacity: 1;
-                /* ĐÃ XÓA pointer-events: auto ở đây để click xuyên qua vùng trống */
             }
 
-            /* Chỉ riêng nút Play khổng lồ ở giữa là cần nhận click toàn bộ */
             #player-container.controls-active > #center-play-pause-btn {
                 pointer-events: auto;
             }
 
-            /* --- Định vị và style cho các lớp phủ --- */
+            /* --- HEADER: CHỨA TIÊU ĐỀ & NÚT BACK (Top Gradient) --- */
             #video-header-overlay {
                 top: 0;
-                padding: clamp(15px, 3vw, 30px) clamp(20px, 5vw, 60px);
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+                height: 120px; /* Vùng gradient đủ lớn */
+                padding: 30px clamp(30px, 5vw, 60px);
+                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
                 z-index: 12;
                 display: flex;
-                align-items: center;
+                align-items: flex-start; /* Căn lên trên */
                 gap: 20px;
-                pointer-events: none !important;
             }
-            #video-title-container {
-                overflow: hidden;
-            }
-            #video-title-display {
-                font-size: clamp(0.7rem, 0.5vw, 1rem);
-                font-weight: 600;
-                margin: 0;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+
             #back-btn {
-                background: none;
+                background: transparent;
                 border: none;
-                fill: white;
+                fill: #fff;
                 cursor: pointer;
                 width: 44px;
                 height: 44px;
-                padding: 0;
-                flex-shrink: 0;
+                padding: 8px;
+                border-radius: 50%;
+                transition: background 0.2s;
+                pointer-events: auto;
+                margin-top: -5px; /* Tinh chỉnh cho thẳng hàng với text */
+            }
+            #back-btn:hover {
+                background: rgba(255, 255, 255, 0.15);
             }
 
+            /* Container chứa text tiêu đề ở Header */
+            #video-info-area {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            }
+            #video-program-display {
+                font-size: 1.1rem; /* Tên chương trình to rõ */
+                font-weight: 700;
+                color: #fff;
+                margin: 0 0 4px 0;
+                opacity: 1;
+            }
+            #video-title-display {
+                font-size: 0.95rem; /* Tên tập nhỏ hơn chút */
+                color: #ddd;
+                margin: 0;
+                font-weight: 400;
+            }
+
+            /* --- BOTTOM CONTROLS (Thanh điều khiển dưới) --- */
             #custom-controls {
                 bottom: 0;
-                padding: 10px clamp(20px, 5vw, 60px);
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+                padding: 0 clamp(30px, 5vw, 60px) 40px; /* Padding bottom lớn để thoáng */
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
                 z-index: 12;
-                pointer-events: none !important;
-            }
-            #video-header-overlay button,
-            #custom-controls button,
-            #custom-controls input[type="range"] {
-                pointer-events: auto;
-                position: relative;
-                z-index: 20; /* Đảm bảo nút luôn nằm trên cùng */
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
             }
 
-            /* Riêng cái khoảng trắng (spacer) phải cho click xuyên qua để bấm nút Skip Ad (thường nằm ở góc phải dưới) */
-            .spacer {
-                pointer-events: none;
-            }
-            #video-title-display,
-            #time-display,
-            #video-program-display,
-            .spacer {
-                pointer-events: none;
-            }
+            /* Thanh Progress */
             .progress-container {
                 position: relative;
                 width: 100%;
-                margin-bottom: 8px;
+                height: 6px; /* Thanh đậm hơn chút cho dễ bấm cảm ứng */
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 3px;
+                cursor: pointer;
+                pointer-events: auto;
+                transition: height 0.1s;
+            }
+            .progress-container:hover {
+                height: 8px;
             }
             #progress-bar {
                 appearance: none;
+                position: absolute;
+                top: 0;
+                left: 0;
                 width: 100%;
-                height: 4px;
+                height: 100%;
+                background: transparent; /* Background xử lý bằng JS gradient */
+                border-radius: 3px;
                 cursor: pointer;
-                border-radius: 5px;
-                transition: height 0.2s;
-                background: linear-gradient(
-                    to right,
-                    var(--accent-color) 0%,
-                    var(--accent-color) var(--progress-percent, 0%),
-                    rgba(255, 255, 255, 0.3) var(--progress-percent, 0%),
-                    rgba(255, 255, 255, 0.3) 100%
-                );
+                margin: 0;
             }
-            #progress-bar:hover {
-                height: 8px;
+            /* Thumb (cục tròn kéo) - Chỉ hiện khi hover hoặc active */
+            #progress-bar::-webkit-slider-thumb {
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                background: #e50914; /* Đỏ Netflix */
+                border-radius: 50%;
+                cursor: pointer;
+                transform: scale(0); /* Mặc định ẩn */
+                transition: transform 0.1s;
             }
+            #player-container.controls-active #progress-bar::-webkit-slider-thumb {
+                transform: scale(1); /* Hiện khi controls active */
+            }
+
+            /* Hàng nút bấm (Buttons Row) */
             .controls-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between; /* Dãn cách 2 bên */
+                margin-top: 5px;
+            }
+
+            .left-controls {
                 display: flex;
                 align-items: center;
                 gap: 20px;
             }
-            .controls-row button {
-                background: transparent;
-                border: none;
-                cursor: pointer;
-                padding: 5px;
-            }
-            .controls-row button svg {
-                fill: white;
-                width: 28px;
-                height: 28px;
-                display: block;
-            }
-            #time-display {
-                font-size: 1rem;
-                white-space: nowrap;
-            }
-            #video-program-display {
-                margin: 0 15px;
-                font-size: 0.9rem;
-                color: #ccc;
-                opacity: 0.8;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                flex-shrink: 1;
-            }
-            .spacer {
-                flex-grow: 1;
+
+            .right-controls {
+                display: flex;
+                align-items: center;
+                gap: 15px;
             }
 
+            /* Nút Play/Pause nhỏ ở dưới */
+            #play-pause-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                pointer-events: auto;
+                display: flex;
+                align-items: center;
+            }
+            #play-pause-btn svg {
+                width: 32px;
+                height: 32px;
+                fill: #fff;
+                filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+            }
+
+            #time-display {
+                font-family: "Inter", sans-serif; /* Dùng font đẹp */
+                font-variant-numeric: tabular-nums; /* [QUAN TRỌNG] Giúp số thẳng hàng, không bị giật */
+                font-size: 0.95rem; /* Tăng nhẹ cỡ chữ */
+                color: #e5e5e5;
+                font-weight: 500;
+                pointer-events: auto;
+                letter-spacing: 0.5px; /* Thoáng hơn chút */
+                min-width: 100px; /* Giữ chỗ để không bị nhảy layout */
+                text-align: center;
+            }
+            /* --- 2. MENU NỔI (SHARED STYLE CHO TẬP & SETTINGS) --- */
+            /* Class chung cho các menu nổi từ dưới lên */
+            .floating-menu {
+                position: absolute;
+                bottom: 90px;
+                right: clamp(30px, 5vw, 60px);
+
+                background-color: rgba(28, 28, 28, 0.9); /* Trong suốt hơn chút */
+                backdrop-filter: blur(20px); /* Blur mạnh hơn kiểu iOS */
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 16px; /* Bo góc to hơn */
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+
+                padding: 20px;
+                display: none;
+                flex-direction: column;
+                z-index: 9999; /* Đẩy lên cao nhất để chắc chắn bấm được */
+
+                /* Animation trồi lên đàn hồi (Bouncy) */
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+                transition:
+                    opacity 0.3s ease,
+                    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27); /* Hiệu ứng nảy */
+                transform-origin: bottom right;
+            }
+
+            .floating-menu.visible {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
+            }
+
+            /* --- ANIMATION CHO TỪNG MỤC CON (Stagger Effect) --- */
+            /* Khi menu hiện, các mục con sẽ trượt lên lần lượt */
+            .floating-menu .control-group,
+            .floating-menu .episode-item {
+                opacity: 0;
+                transform: translateX(-10px);
+                transition: all 0.3s ease;
+            }
+
+            .floating-menu.visible .control-group,
+            .floating-menu.visible .episode-item {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            /* Delay để tạo hiệu ứng domino */
+            .floating-menu.visible .control-group:nth-child(1) {
+                transition-delay: 0.05s;
+            }
+            .floating-menu.visible .control-group:nth-child(2) {
+                transition-delay: 0.1s;
+            }
+            .floating-menu.visible .control-group:nth-child(3) {
+                transition-delay: 0.15s;
+            }
+            .floating-menu.visible .control-group:nth-child(4) {
+                transition-delay: 0.2s;
+            }
+
+            /* --- ICON BÁNH RĂNG XOAY --- */
+            #settings-btn svg {
+                transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            /* Class này sẽ được JS thêm vào khi menu mở */
+            #settings-btn.active svg {
+                transform: rotate(90deg);
+                fill: var(--accent-color); /* Đổi màu đỏ cho ngầu */
+            }
+            /* Khi hiện lên */
+            .floating-menu.visible {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
+            }
+            /* Các nút phụ (Tập, Settings) */
+            .icon-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px;
+                pointer-events: auto;
+                opacity: 0.8;
+                transition:
+                    opacity 0.2s,
+                    transform 0.2s;
+            }
+            .icon-btn:hover {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            .icon-btn svg {
+                width: 26px;
+                height: 26px;
+                fill: #fff;
+            }
+
+            /* --- CENTER BIG PLAY BUTTON --- */
             #center-play-pause-btn {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 70px;
-                height: 70px;
-                background: rgba(0, 0, 0, 0.4);
-                border: 2px solid rgba(255, 255, 255, 0.5);
+                width: 80px;
+                height: 80px;
+                background: rgba(0, 0, 0, 0.5); /* Đen bán trong suốt */
+                backdrop-filter: blur(2px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 50%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 cursor: pointer;
-                padding: 0;
                 z-index: 15;
+                transition: transform 0.1s;
+            }
+            #center-play-pause-btn:active {
+                transform: translate(-50%, -50%) scale(0.95);
             }
             #center-play-pause-btn svg {
-                fill: white;
                 width: 40px;
                 height: 40px;
+                fill: #fff;
+                margin-left: 4px; /* Căn chỉnh nhẹ icon play */
             }
 
-            /* --- Lớp phủ tương tác (luôn trong suốt) --- */
+            /* Vùng tương tác & Subtitle: Giữ nguyên */
             #interaction-overlay {
                 position: absolute;
                 top: 0;
@@ -899,59 +1134,19 @@
                 z-index: 10;
                 display: flex;
             }
-            #seek-backward-zone,
-            #play-pause-zone,
-            #seek-forward-zone {
-                flex: 1;
-            }
-
-            /* --- Phụ đề, Settings, Up Next --- */
             #subtitle-display {
                 position: absolute;
-                bottom: 12%;
+                bottom: 120px; /* Cao hơn controls */
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 20;
-                max-width: 90%;
-                padding: 8px 20px;
                 text-align: center;
-                border-radius: 6px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-                line-height: 1.5;
-                font-weight: 500;
-                background-color: rgba(0, 0, 0, 0.5);
-                pointer-events: none;
-                opacity: 0;
+                /* Style mặc định sẽ bị JS ghi đè */
             }
             #subtitle-display:not(:empty) {
                 opacity: 1;
             }
 
-            #settings-menu {
-                position: absolute;
-                bottom: 80px;
-                right: clamp(20px, 5vw, 60px);
-                z-index: 30;
-                background-color: rgba(20, 20, 20, 0.9);
-                backdrop-filter: blur(5px);
-                padding: 15px;
-                border-radius: 8px;
-                width: 280px;
-                box-sizing: border-box;
-                display: none;
-                flex-direction: column;
-                gap: 15px;
-                opacity: 0;
-                transform: translateY(10px);
-                transition:
-                    opacity 0.2s,
-                    transform 0.2s;
-            }
-            #settings-menu.visible {
-                opacity: 1;
-                transform: translateY(0);
-                pointer-events: auto;
-            }
             .control-group label {
                 display: block;
                 margin-bottom: 8px;
@@ -1023,20 +1218,18 @@
             }
             /* [MỚI] CSS cho Sidebar Danh sách tập */
             #episodes-sidebar {
+                /* Ghi đè style cũ */
+                width: 380px;
+                max-width: 90vw;
+                height: auto; /* Tự co giãn theo nội dung */
+                max-height: 60vh; /* Không quá 60% màn hình */
+                border-left: none; /* Bỏ border cũ */
+
+                /* Áp dụng style floating */
                 position: absolute;
-                top: 0;
-                right: 0;
-                width: 350px; /* Độ rộng vừa phải */
-                max-width: 80vw;
-                height: 100%;
-                background-color: rgba(20, 20, 20, 0.95);
-                backdrop-filter: blur(10px);
-                z-index: 25; /* Cao hơn video, thấp hơn settings */
-                transform: translateX(100%); /* Mặc định ẩn sang phải */
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                display: flex;
-                flex-direction: column;
-                border-left: 1px solid #333;
+                bottom: 90px;
+                right: clamp(30px, 5vw, 60px);
+                /* Các thuộc tính khác sẽ dùng chung class .floating-menu trong JS hoặc HTML */
             }
 
             #episodes-sidebar.visible {
@@ -1067,31 +1260,49 @@
                 padding: 0 10px;
             }
 
+            #episodes-header {
+                padding: 0 0 15px 0; /* Giảm padding */
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 10px;
+            }
+            #episodes-header h3 {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #fff;
+            }
             #episodes-content {
-                flex: 1;
                 overflow-y: auto;
-                padding: 10px;
+                padding-right: 5px; /* Chừa chỗ cho scrollbar */
+            }
+            /* Scrollbar đẹp cho menu */
+            #episodes-content::-webkit-scrollbar {
+                width: 6px;
+            }
+            #episodes-content::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 3px;
+            }
+            #episodes-content::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.4);
             }
 
-            /* Style cho từng item tập phim */
+            /* Item tập phim */
             .episode-item {
-                display: flex;
-                gap: 10px;
                 padding: 10px;
-                border-radius: 4px;
-                cursor: pointer;
+                border-radius: 8px; /* Bo góc từng item */
                 transition: background 0.2s;
-                margin-bottom: 5px;
-                align-items: center;
+                border: 1px solid transparent; /* Tránh giật khi hover border */
             }
-
             .episode-item:hover {
-                background-color: #333;
+                background-color: rgba(255, 255, 255, 0.1);
             }
-
             .episode-item.playing {
-                background-color: #e50914; /* Màu đỏ Netflix */
-                color: white;
+                background-color: rgba(229, 9, 20, 0.15); /* Nền đỏ nhạt */
+                border: 1px solid rgba(229, 9, 20, 0.5); /* Viền đỏ */
+            }
+            .episode-item.playing .episode-number {
+                color: var(--accent-color);
+                font-weight: 700;
             }
 
             .episode-thumbnail {
@@ -1141,7 +1352,25 @@
                 z-index: 5;
                 border: 1px solid rgba(255, 255, 255, 0.2);
             }
-
+            #settings-menu {
+                width: 300px;
+                gap: 20px;
+                /* Vị trí đã được định nghĩa ở .floating-menu */
+            }
+            .control-group label {
+                font-weight: 600;
+                font-size: 0.85rem;
+                color: #ccc;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+            }
+            input[type="range"] {
+                height: 4px;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.2);
+                accent-color: var(--accent-color);
+            }
             /* --- [MỚI] Marker trên thanh tiến trình --- */
             .timeline-marker {
                 position: absolute;
@@ -1303,6 +1532,326 @@
             .video-card:hover .card-info {
                 display: none !important; /* Tắt info cũ */
             }
+
+            /* ========================================= */
+            /* START: HERO SLIDER (CINEMA BANNER)        */
+            /* ========================================= */
+
+            #hero-section {
+                position: relative;
+                width: 100%;
+                /* Chiều cao chuẩn Cinema: 70% màn hình PC, 60% Mobile */
+                height: 70vh;
+                overflow: hidden;
+                background-color: #000;
+                margin-bottom: 20px; /* Cách phần dưới một chút */
+            }
+
+            /* Khung chứa các slide (Track) */
+            .hero-track {
+                display: flex;
+                height: 100%;
+                width: 100%;
+                /* Transition sẽ được xử lý bằng JS để làm Infinite Loop */
+            }
+
+            /* Từng Slide lẻ */
+            .hero-slide {
+                min-width: 100%; /* Chiếm trọn màn hình */
+                height: 100%;
+                position: relative;
+                flex-shrink: 0;
+                overflow: hidden;
+            }
+
+            /* Ảnh nền (Layer sâu nhất) - Có Parallax */
+            .hero-bg-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 110%; /* Cao hơn 100% để scroll parallax */
+                z-index: 1;
+            }
+
+            .hero-bg {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.6;
+
+                /* [QUAN TRỌNG] Tắt transition để nó đi theo chuột ngay lập tức */
+                transition: none !important;
+
+                /* [QUAN TRỌNG] Báo trước cho trình duyệt để dùng GPU render cho mượt */
+                will-change: transform;
+            }
+            /* Tên chương trình (nằm trên tiêu đề chính) */
+            .hero-program {
+                font-size: 1.2rem;
+                color: var(--accent-color); /* Màu đỏ hoặc vàng tùy theme */
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin-bottom: 5px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.8s ease 0.1s; /* Delay nhẹ so với title */
+            }
+            .hero-slide.active .hero-program {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            /* Lớp phủ Gradient (Để chữ dễ đọc hơn) */
+            .hero-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 2;
+                /* Gradient: Đen bên trái và dưới, trong suốt ở giữa */
+                background: linear-gradient(to right, #141414 0%, rgba(20, 20, 20, 0.6) 50%, transparent 100%),
+                    linear-gradient(to top, #141414 0%, transparent 50%);
+            }
+
+            /* Nội dung chữ (Nổi lên trên cùng) */
+            .hero-content {
+                position: absolute;
+                bottom: 5%; /* Căn vị trí chuẩn mắt nhìn */
+                left: clamp(20px, 4vw, 60px); /* Căn lề trái đồng bộ với trang */
+                z-index: 10;
+                max-width: 70%; /* Giới hạn chiều rộng text */
+                opacity: 0;
+                transform: translateY(30px);
+                transition:
+                    opacity 0.8s ease,
+                    transform 0.8s ease;
+            }
+
+            /* Animation: Khi slide active thì nội dung mới trồi lên */
+            .hero-slide.active .hero-content {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Badge (Mới / Tập phim) */
+            .hero-badge {
+                display: inline-block;
+                background-color: var(--accent-color);
+                color: #fff;
+                padding: 5px 10px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                border-radius: 4px;
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                box-shadow: 0 4px 10px rgba(229, 9, 20, 0.4);
+            }
+
+            .hero-title {
+                font-size: clamp(2rem, 5vw, 3.5rem); /* Chữ to đại bác */
+                font-weight: 800;
+                line-height: 1.1;
+                margin: 0 0 15px 0;
+                color: #fff;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            }
+
+            .hero-desc {
+                font-size: 1.1rem;
+                color: #ccc;
+                line-height: 1.5;
+                margin-bottom: 25px;
+                display: -webkit-box;
+                line-clamp: 3; /* Cắt dòng nếu dài quá */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            }
+
+            /* Nút bấm (Buttons) */
+            .hero-actions {
+                display: flex;
+                gap: 15px;
+            }
+
+            .hero-btn {
+                padding: 12px 28px;
+                border: none;
+                border-radius: 6px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition:
+                    transform 0.2s,
+                    background 0.2s;
+            }
+
+            .hero-btn-primary {
+                background-color: #fff;
+                color: #000;
+            }
+            .hero-btn-primary:hover {
+                background-color: #ddd;
+                transform: scale(1.05);
+            }
+
+            .hero-btn-secondary {
+                background-color: rgba(109, 109, 110, 0.7);
+                color: #fff;
+                backdrop-filter: blur(4px);
+            }
+            .hero-btn-secondary:hover {
+                background-color: rgba(109, 109, 110, 0.4);
+                transform: scale(1.05);
+            }
+
+            /* Các chấm tròn điều hướng (Indicators) */
+            .hero-dots {
+                position: absolute;
+                bottom: 20px;
+                right: clamp(20px, 4vw, 60px);
+                display: flex;
+                gap: 10px;
+                z-index: 20;
+            }
+            .hero-dot {
+                width: 10px;
+                height: 10px;
+                background-color: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .hero-dot.active {
+                background-color: #fff;
+                transform: scale(1.3);
+            }
+
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                #hero-section {
+                    height: 55vh;
+                } /* Mobile thấp hơn chút */
+                .hero-content {
+                    bottom: 15%;
+                    width: 90%;
+                }
+                .hero-btn {
+                    padding: 10px 20px;
+                    font-size: 1rem;
+                }
+            }
+
+            /* --- 1. MŨI TÊN CHO HERO SLIDER --- */
+            .hero-nav-btn {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 80px; /* Rộng hơn chút để dễ bấm */
+                border: none;
+                cursor: pointer;
+                z-index: 30;
+                color: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 0; /* Ẩn mặc định, hover vào slider mới hiện */
+                transition: all 0.3s;
+                background: transparent; /* Reset nền cũ */
+                border-radius: 0; /* Reset bo tròn cũ */
+            }
+
+            /* Hover vào khu vực Hero mới hiện mũi tên */
+            #hero-section:hover .hero-nav-btn {
+                opacity: 1;
+            }
+
+            /* Hiệu ứng hover vào chính mũi tên */
+            .hero-nav-btn:hover {
+                background: rgba(0, 0, 0, 0.2); /* Tối nhẹ khi hover */
+            }
+            .hero-nav-btn:hover svg {
+                transform: scale(1.3); /* Phóng to icon */
+            }
+
+            .hero-nav-btn svg {
+                width: 40px;
+                height: 40px;
+                fill: #fff;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+                transition: transform 0.2s;
+            }
+
+            /* Gradient 2 bên */
+            .hero-nav-btn.prev {
+                left: 0;
+                background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+            }
+            .hero-nav-btn.next {
+                right: 0;
+                background: linear-gradient(to left, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+            }
+            .scroll-btn.hidden-arrow {
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+            /* --- 2. MŨI TÊN CHO DANH SÁCH VIDEO (CAROUSEL ARROWS) --- */
+            /* Wrapper để chứa nút và list */
+            .list-wrapper {
+                position: relative;
+                /* Để nút tuyệt đối bám theo cái khung này */
+            }
+
+            .scroll-btn {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 50px; /* Độ rộng vùng bấm */
+                background: rgba(20, 20, 20, 0.5);
+                border: none;
+                cursor: pointer;
+                z-index: 20;
+                color: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 0; /* Ẩn mặc định */
+                transition:
+                    opacity 0.3s,
+                    background 0.3s;
+            }
+            .scroll-btn svg {
+                width: 30px;
+                height: 30px;
+                fill: #fff;
+                transition: transform 0.2s;
+            }
+            .scroll-btn:hover svg {
+                transform: scale(1.2);
+            }
+
+            /* Hover vào hàng phim mới hiện nút */
+            .list-wrapper:hover .scroll-btn {
+                opacity: 1;
+            }
+
+            /* Nút trái */
+            .scroll-btn.left {
+                left: 0;
+                background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+            }
+            /* Nút phải */
+            .scroll-btn.right {
+                right: 0;
+                background: linear-gradient(to left, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+            }
         </style>
     </head>
     <body>
@@ -1335,6 +1884,9 @@
             </div>
         </header>
         <main>
+            <div id="hero-section"></div>
+
+            <div id="library-container"></div>
             <div id="library-container">
                 <section class="program-row">
                     <div class="video-list">
@@ -1413,95 +1965,92 @@
                 <div id="player-container">
                     <div id="youtube-player"></div>
 
-                    <!-- Header -->
+                    <div id="loading-spinner"></div>
+
                     <div id="video-header-overlay">
                         <button id="back-btn" title="Quay lại">
                             <svg viewBox="0 0 24 24">
                                 <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path>
                             </svg>
                         </button>
+                        <div id="video-info-area">
+                            <h3 id="video-program-display"></h3>
+                            <p id="video-title-display"></p>
+                        </div>
                     </div>
 
-                    <!-- Vùng tương tác chính (nằm ở giữa) -->
                     <div id="interaction-overlay">
-                        <div id="seek-backward-zone"></div>
-                        <div id="play-pause-zone"></div>
-                        <div id="seek-forward-zone"></div>
+                        <div id="seek-backward-zone" style="flex: 1"></div>
+                        <div id="play-pause-zone" style="flex: 1"></div>
+                        <div id="seek-forward-zone" style="flex: 1"></div>
                     </div>
 
-                    <!-- Nút Play/Pause lớn (nằm riêng biệt, ở giữa) -->
                     <button id="center-play-pause-btn">
                         <svg id="center-play-pause-icon" viewBox="0 0 24 24">
                             <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path>
                         </svg>
                     </button>
 
-                    <!-- Phụ đề -->
                     <div id="subtitle-display"></div>
 
-                    <!-- Thanh điều khiển dưới -->
                     <div id="custom-controls">
                         <div class="progress-container">
-                            <input type="range" id="progress-bar" value="0" min="0" />
+                            <input type="range" id="progress-bar" value="0" min="0" step="0.1" />
                         </div>
+
                         <div class="controls-row">
-                            <button id="play-pause-btn">
-                                <svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
-                            </button>
+                            <div class="left-controls">
+                                <button id="play-pause-btn">
+                                    <svg><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+                                </button>
+                                <div id="time-display">00:00 / 00:00</div>
+                            </div>
 
-                            <div id="time-display">00:00 / 00:00</div>
-                            <p id="video-program-display"></p>
-                            <p id="video-title-display" class="video-title-inline"></p>
+                            <div class="right-controls">
+                                <button id="episodes-btn" class="icon-btn hidden" title="Danh sách tập">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M4,10H20V12H4V10M4,6H20V8H4V6M4,14H14V16H4V14M16,13V21L22,17L16,13Z" />
+                                    </svg>
+                                </button>
 
-                            <div class="spacer"></div>
-
-                            <button id="episodes-btn" title="Danh sách tập" class="hidden">
-                                <svg viewBox="0 0 24 24" width="28" height="28" fill="white">
-                                    <path d="M4,10H20V12H4V10M4,6H20V8H4V6M4,14H14V16H4V14M16,13V21L22,17L16,13Z" />
-                                </svg>
-                            </button>
-
-                            <button id="settings-btn" title="Cài đặt Phụ đề">
-                                <svg viewBox="0 0 24 24" width="28" height="28" fill="white">
-                                    <path
-                                        d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
-                                    ></path>
-                                </svg>
-                            </button>
+                                <button id="settings-btn" class="icon-btn" title="Cài đặt">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M19.14,12.94C19.07,12.44 19,11.94 19,11.44C19,10.94 19.07,10.44 19.14,9.94L21.12,8.44C21.26,8.33 21.3,8.14 21.24,7.96L19.28,4.5C19.21,4.34 19.02,4.27 18.86,4.34L16.5,5.39C16,4.94 15.43,4.56 14.81,4.29L14.47,2.05C14.45,1.86 14.28,1.71 14.08,1.71H9.92C9.72,1.71 9.55,1.86 9.53,2.05L9.19,4.29C8.57,4.56 8,4.94 7.5,5.39L5.14,4.34C4.98,4.27 4.79,4.34 4.72,4.5L2.76,7.96C2.7,8.14 2.74,8.33 2.88,8.44L4.86,9.94C4.93,10.44 5,10.94 5,11.44C5,11.94 4.93,12.44 4.86,12.94L2.88,14.44C2.74,14.56 2.7,14.75 2.76,14.93L4.72,18.39C4.79,18.55 4.98,18.62 5.14,18.54L7.5,17.5C8,17.94 8.57,18.32 9.19,18.59L9.53,20.84C9.55,21.03 9.72,21.18 9.92,21.18H14.08C14.28,21.18 14.45,21.03 14.47,20.84L14.81,18.59C15.43,18.32 16,17.94 16.5,17.5L18.86,18.54C19.02,18.62 19.21,18.55 19.28,18.39L21.24,14.93C21.3,14.75 21.26,14.56 21.12,14.44L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
+                                        ></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="episodes-sidebar">
+                    <div id="episodes-sidebar" class="floating-menu">
                         <div id="episodes-header">
                             <h3>Danh sách tập</h3>
-                            <button id="close-episodes-btn">✕</button>
+                            <button id="close-episodes-btn" style="display: none">✕</button>
                         </div>
                         <div id="episodes-content"></div>
                     </div>
 
-                    <div id="settings-menu">
+                    <div id="settings-menu" class="floating-menu">
                         <div class="control-group">
-                            <label for="font-size-slider">Kích thước chữ</label
+                            <label>Kích thước chữ</label
                             ><input type="range" id="font-size-slider" min="12" max="48" step="1" />
                         </div>
                         <div class="control-group">
-                            <label for="font-color-picker">Màu chữ</label><input type="color" id="font-color-picker" />
+                            <label>Màu chữ</label><input type="color" id="font-color-picker" />
                         </div>
                         <div class="control-group">
-                            <label for="bg-color-picker">Màu nền</label><input type="color" id="bg-color-picker" />
+                            <label>Màu nền</label><input type="color" id="bg-color-picker" />
                         </div>
                         <div class="control-group">
-                            <label for="bg-opacity-slider">Độ mờ nền</label
+                            <label>Độ mờ nền</label
                             ><input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05" />
                         </div>
                     </div>
-                    <button id="skip-btn" class="hidden">
-                        Bỏ qua giới thiệu
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path>
-                        </svg>
-                    </button>
-                    <!-- "Up Next" Overlay -->
+
+                    <button id="skip-btn" class="hidden">Bỏ qua</button>
+
                     <div id="up-next-overlay">
                         <p>Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
                         <div id="up-next-card">
@@ -1599,6 +2148,7 @@
             let hoverTimeout;
             let hideTimeout;
             let currentHoveredCard = null; // Card gốc đang được hover
+            let isParallaxTicking = false; // Biến khóa (Flag) cho hiệu ứng parallax
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
 
             // Hàm xóa dấu Tiếng Việt để tìm kiếm chính xác hơn
@@ -1641,14 +2191,26 @@
                 });
             }
 
+            // --- LOGIC KHỞI TẠO MỚI ---
             async function initializeLibrary() {
                 try {
-                    // [FIX] Thêm tham số ?v= thời gian hiện tại để lừa trình duyệt đây là file mới
-                    // cache: "no-store" mạnh hơn "no-cache" (không lưu cache luôn)
                     const res = await fetch(`library.json?v=${new Date().getTime()}`, { cache: "no-store" });
-
                     if (!res.ok) throw new Error("Không thể tải thư viện.");
                     libraryData = await res.json();
+
+                    // 1. [MỚI] Tách 6 video mới nhất để làm Hero Slider
+                    // Sort theo ngày mới nhất
+                    const sortedByDate = [...libraryData].sort((a, b) => {
+                        const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
+                        const dateB = b.uploadDate_auto ? new Date(b.uploadDate_auto).getTime() : 0;
+                        return dateB - dateA;
+                    });
+                    const top6 = sortedByDate.slice(0, 6); // Lấy 6 cái đầu
+
+                    // 2. Render Hero Slider
+                    setupHeroSlider(top6);
+
+                    // 3. Render phần còn lại (Danh sách bên dưới)
                     renderVideoRows(libraryData);
 
                     setupEventListeners();
@@ -1657,12 +2219,62 @@
                     libraryContainer.innerHTML = `<p style="color: #ff8a8a; text-align: center;">Lỗi: ${e.message}</p>`;
                 }
             }
+
             document.addEventListener("DOMContentLoaded", () => {
                 initializeLibrary();
             });
-            function showPortal(card, videoData) {
-                // 1. [QUAN TRỌNG] Hủy mọi lệnh ẩn đang chờ
-                // Nếu portal đang định ẩn thì hủy ngay, giữ nó lại để dùng tiếp
+
+            function toggleFloatingMenu(menuId) {
+                const menu = document.getElementById(menuId);
+                const otherMenuId = menuId === "settings-menu" ? "episodes-sidebar" : "settings-menu";
+                const otherMenu = document.getElementById(otherMenuId);
+
+                // Nút bấm tương ứng
+                const settingsBtn = document.getElementById("settings-btn");
+                const episodesBtn = document.getElementById("episodes-btn");
+
+                // 1. Đóng menu kia trước (nếu đang mở)
+                if (otherMenu.classList.contains("visible")) {
+                    otherMenu.classList.remove("visible");
+                    setTimeout(() => {
+                        if (!otherMenu.classList.contains("visible")) otherMenu.style.display = "none";
+                    }, 300);
+                    // Reset icon nút kia
+                    if (menuId === "settings-menu") episodesBtn.classList.remove("active");
+                    else settingsBtn.classList.remove("active");
+                }
+
+                // 2. Xử lý menu hiện tại
+                const isVisible = menu.classList.contains("visible");
+
+                if (isVisible) {
+                    // --- ĐÓNG ---
+                    menu.classList.remove("visible");
+                    setTimeout(() => {
+                        if (!menu.classList.contains("visible")) menu.style.display = "none";
+                    }, 300);
+
+                    // Xóa class active để icon quay về cũ
+                    if (menuId === "settings-menu") settingsBtn.classList.remove("active");
+                    if (menuId === "episodes-sidebar") episodesBtn.classList.remove("active");
+                } else {
+                    // --- MỞ ---
+                    menu.style.display = "flex";
+                    if (menuId === "episodes-sidebar") renderEpisodeList();
+
+                    requestAnimationFrame(() => {
+                        menu.classList.add("visible");
+                    });
+
+                    // Thêm class active để icon xoay/đổi màu
+                    if (menuId === "settings-menu") settingsBtn.classList.add("active");
+                    if (menuId === "episodes-sidebar") episodesBtn.classList.add("active");
+                }
+            }
+
+            // --- [FIXED] LOGIC HIỂN THỊ PORTAL ---
+            // Thêm tham số isProgramCard để biết đây là thẻ Series hay thẻ Video lẻ
+            function showPortal(card, videoData, isProgramCard = false) {
                 clearTimeout(hideTimeout);
                 portal.classList.remove("hidden");
 
@@ -1670,43 +2282,66 @@
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-                // 2. Điền dữ liệu
-                portalImg.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-                portalTitle.textContent = videoData.userTitle || videoData.title;
-                portalEp.textContent = videoData.episode ? `Tập ${videoData.episode}` : "Phim lẻ";
-                portalGenre.textContent = (videoData.genres && videoData.genres[0]) || "";
+                // 1. [FIX] XỬ LÝ TIÊU ĐỀ & METADATA
+                if (isProgramCard) {
+                    // Nếu là Card Chương trình: Hiện tên Chương trình
+                    portalTitle.textContent = videoData.program;
 
+                    // Đếm số tập
+                    const count = libraryData.filter((v) => v.program === videoData.program).length;
+                    portalEp.textContent = `${count} Tập`;
+
+                    // Thể loại chính
+                    portalGenre.textContent = (videoData.genres && videoData.genres[0]) || "Series";
+                } else {
+                    // Nếu là Card Video lẻ: Hiện tên Video
+                    portalTitle.textContent = videoData.userTitle || videoData.title;
+                    portalEp.textContent = videoData.episode ? `Tập ${videoData.episode}` : "Phim lẻ";
+                    portalGenre.textContent = (videoData.genres && videoData.genres[0]) || "";
+                }
+
+                // 2. Điền ảnh (luôn lấy từ videoData truyền vào)
+                portalImg.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+
+                // 3. [FIX] NÚT PHÁT (PLAY)
                 portalPlayBtn.onclick = () => {
                     launchPlayer(videoData);
                     hidePortal(true);
                 };
+
+                // 4. [FIX QUAN TRỌNG] NÚT CHI TIẾT (INFO)
+                // Dù là Card Video lẻ hay Card Chương trình, nếu có 'program' thì đều mở Modal Series
                 portalInfoBtn.onclick = () => {
-                    if (card.dataset.programName) {
-                        const videos = libraryData.filter((v) => v.program === card.dataset.programName);
-                        openDetailModal(videos[0], videos);
+                    if (videoData.program) {
+                        // Tìm tất cả các tập của chương trình này
+                        const episodes = libraryData
+                            .filter((v) => v.program === videoData.program)
+                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+
+                        // Mở Modal Series (truyền list tập vào)
+                        openDetailModal(videoData, episodes);
                     } else {
+                        // Video lẻ thật sự (không thuộc program nào) -> Mở Modal lẻ
                         openDetailModal(videoData, null);
                     }
                     hidePortal(true);
                 };
 
-                // 3. Định vị & Animation
-                // Reset transition để nhảy vị trí tức thời (tránh hiệu ứng bay bay từ card này sang card kia)
+                // 5. Định vị & Animation (Giữ nguyên)
                 portal.style.transition = "none";
                 portal.classList.remove("visible");
 
-                // Đặt vị trí mới
                 portal.style.width = `${rect.width}px`;
                 portal.style.height = `${rect.height}px`;
                 portal.style.top = `${rect.top + scrollTop}px`;
                 portal.style.left = `${rect.left + scrollLeft}px`;
 
-                void portal.offsetWidth; // Force Reflow
+                void portal.offsetWidth;
 
-                // Bật lại animation và hiện lên
                 portal.style.transition = "opacity 0.2s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27)";
                 portal.classList.add("visible");
             }
+
             // Hàm ẩn Portal
             // force = true: Ẩn ngay lập tức (khi click hoặc scroll)
             function hidePortal(force = false) {
@@ -1727,40 +2362,72 @@
                     portal.classList.add("hidden");
                 }, 300);
             }
+            settingsBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleFloatingMenu("settings-menu");
+            });
 
-            // --- Gắn sự kiện (Thêm vào setupEventListeners) ---
-            // Dùng Event Delegation cho hiệu năng cao
+            episodesBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleFloatingMenu("episodes-sidebar");
+            });
+            // Cập nhật đoạn click ra ngoài để reset icon xoay
+            playerContainer.addEventListener("click", (e) => {
+                const clickedInsideMenu = e.target.closest(".floating-menu");
+                const clickedButton = e.target.closest(".icon-btn");
+
+                if (!clickedInsideMenu && !clickedButton) {
+                    const menus = document.querySelectorAll(".floating-menu.visible");
+                    menus.forEach((menu) => {
+                        menu.classList.remove("visible");
+                        setTimeout(() => {
+                            if (!menu.classList.contains("visible")) menu.style.display = "none";
+                        }, 300);
+                    });
+
+                    // Reset tất cả icon
+                    document.getElementById("settings-btn").classList.remove("active");
+                    document.getElementById("episodes-btn").classList.remove("active");
+                }
+            });
+            // --- SỰ KIỆN HOVER ĐỂ HIỆN PORTAL (CHỈ DÀNH CHO PC) ---
             libraryContainer.addEventListener("mouseover", (e) => {
+                // Check thiết bị
+                const isDesktop =
+                    window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 1024;
+                if (!isDesktop) return;
+
                 const card = e.target.closest(".video-card");
                 if (!card) return;
 
-                // [QUAN TRỌNG] Chuột đã vào vùng an toàn -> Hủy lệnh ẩn ngay lập tức!
                 clearTimeout(hideTimeout);
-
-                // Nếu vẫn là card cũ thì không làm gì cả
                 if (currentHoveredCard === card) return;
-
-                // Reset lệnh hiện cũ (nếu lướt quá nhanh qua card khác)
                 clearTimeout(hoverTimeout);
 
-                // Set lệnh hiện mới (Delay nhỏ 200ms để trải nghiệm mượt hơn)
                 hoverTimeout = setTimeout(() => {
                     currentHoveredCard = card;
-
                     let videoData;
-                    if (card.dataset.videoId) {
-                        videoData = libraryData.find((v) => v.videoId === card.dataset.videoId);
-                    } else if (card.dataset.programName) {
+                    let isProgramCard = false; // [QUAN TRỌNG] Biến đánh dấu đây là Card Chương trình
+
+                    // TRƯỜNG HỢP 1: Hover vào Card Chương trình (Series)
+                    if (card.dataset.programName) {
+                        isProgramCard = true; // Bật cờ lên
                         const videos = libraryData
                             .filter((v) => v.program === card.dataset.programName)
                             .sort((a, b) => (b.episode || 0) - (a.episode || 0));
-                        videoData = videos[0];
+                        videoData = videos[0]; // Lấy tập mới nhất làm đại diện ảnh bìa
+                    }
+                    // TRƯỜNG HỢP 2: Hover vào Card Video lẻ
+                    else if (card.dataset.videoId) {
+                        isProgramCard = false;
+                        videoData = libraryData.find((v) => v.videoId === card.dataset.videoId);
                     }
 
                     if (videoData) {
-                        showPortal(card, videoData);
+                        // [FIX] Truyền biến isProgramCard vào tham số thứ 3
+                        showPortal(card, videoData, isProgramCard);
                     }
-                }, 200); // 200ms là chuẩn Netflix (đủ để lướt qua mà không hiện, dừng lại xíu mới hiện)
+                }, 200);
             });
 
             // --- [FIXED] LOGIC ẨN/HIỆN PORTAL MỚI ---
@@ -1832,8 +2499,26 @@
                 if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
                 return 0;
             };
+            // --- HÀM MỚI: TẠO CARD ĐẠI DIỆN CHO SERIES ---
+            function createProgramCardHtml(programName, videos) {
+                // 1. Lấy tập mới nhất làm ảnh bìa
+                // Sort giảm dần theo số tập
+                videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                const latest = videos[0];
+                const thumbUrl = latest.thumbnailUrl || latest.thumbnailUrl_auto;
+                const count = videos.length;
 
-            /* --- LOGIC RENDER MỚI: ĐA DẠNG HÓA DANH MỤC (SMART GROUPING) --- */
+                // 2. Trả về HTML (Dùng data-program-name để JS bắt sự kiện)
+                return `
+    <div class="video-card program-card" data-program-name="${programName}">
+        <div class="card-image-wrapper">
+            <div class="episode-badge" style="background: var(--accent-color);">${count} Tập</div>
+            <img src="${thumbUrl}" alt="${programName}" class="video-thumbnail" loading="lazy">
+        </div>
+        </div>
+    `;
+            }
+            /* --- LOGIC RENDER MỚI: CHUẨN SERIES (GOM GỌN) --- */
             function renderVideoRows(videoArray) {
                 libraryContainer.innerHTML = ""; // Reset
 
@@ -1842,19 +2527,22 @@
                     return;
                 }
 
-                // --- BƯỚC 1: TẠO DATA POOLS (Bể dữ liệu) ---
-                const programsMap = {}; // Gom theo Chương trình (Series)
-                const participantsMap = {}; // Gom theo Diễn viên/Idol
-                const genresMap = {}; // Gom theo Thể loại
+                // --- BƯỚC 1: PHÂN LOẠI DỮ LIỆU ---
+                const programsMap = {}; // Chứa các Series (có tên program)
+                const participantsMap = {}; // Chứa Idol
+                const genresMap = {}; // Chứa Thể loại
+                const singles = []; // Video lẻ (không thuộc program nào)
 
                 videoArray.forEach((video) => {
                     // 1. Gom Program
                     if (video.program) {
                         if (!programsMap[video.program]) programsMap[video.program] = [];
                         programsMap[video.program].push(video);
+                    } else {
+                        singles.push(video);
                     }
 
-                    // 2. Gom Participants (Mỏ vàng dữ liệu là đây)
+                    // 2. Gom Participants
                     if (video.participants && Array.isArray(video.participants)) {
                         video.participants.forEach((person) => {
                             if (!participantsMap[person]) participantsMap[person] = [];
@@ -1862,19 +2550,18 @@
                         });
                     }
 
-                    // 3. Gom Genres
+                    // 3. Gom Genre
                     if (video.genres && Array.isArray(video.genres)) {
-                        video.genres.forEach((genre) => {
-                            if (!genresMap[genre]) genresMap[genre] = [];
-                            genresMap[genre].push(video);
+                        video.genres.forEach((g) => {
+                            if (!genresMap[g]) genresMap[g] = [];
+                            genresMap[g].push(video);
                         });
                     }
                 });
 
-                // --- BƯỚC 2: RENDER THEO THỨ TỰ ƯU TIÊN (HIERARCHY) ---
+                // --- BƯỚC 2: RENDER GIAO DIỆN ---
 
-                // ƯU TIÊN 1: "Mới phát hành" (Lấy 10 video mới nhất theo thời gian upload)
-                // Sắp xếp videoArray gốc theo ngày
+                // 1. HÀNG: MỚI PHÁT HÀNH (Video lẻ hoặc tập mới nhất)
                 const latestVideos = [...videoArray]
                     .sort((a, b) => {
                         const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
@@ -1882,64 +2569,126 @@
                         return dateB - dateA;
                     })
                     .slice(0, 10);
-
+                // Ở hàng này vẫn hiện video lẻ để người dùng biết có cái mới
                 createCarouselSection(
-                    "🔥 Mới & Nổi bật",
+                    "🔥 Mới phát hành",
                     latestVideos.map((v) => createVideoCardHtml(v))
                 );
 
-                // ƯU TIÊN 2: CÁC SERIES/CHƯƠNG TRÌNH LỚN (Có từ 2 tập trở lên)
+                // 2. [QUAN TRỌNG] HÀNG: SERIES & CHƯƠNG TRÌNH (GOM GỌN)
+                // Thay vì tạo mỗi program 1 hàng, ta tạo 1 hàng chứa TẤT CẢ program
+                const programCardsHtml = [];
                 Object.keys(programsMap).forEach((progName) => {
                     const videos = programsMap[progName];
-                    if (videos.length >= 2) {
-                        // Chỉ hiện nếu là Series (có >= 2 tập)
-                        // Sort tập mới nhất lên đầu
-                        videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
-                        // Với Series, ta dùng Card Program (đại diện) hoặc liệt kê các tập.
-                        // Ở đây liệt kê các tập để người dùng chọn xem luôn cho tiện
-                        const cards = videos.map((v) => createVideoCardHtml(v));
-                        createCarouselSection(`Tuyển tập: ${progName}`, cards);
+                    // Chỉ coi là Series nếu có >= 2 tập HOẶC có tên program rõ ràng
+                    if (videos.length >= 1) {
+                        // Gọi hàm tạo Card Series (đã thêm ở trên)
+                        programCardsHtml.push(createProgramCardHtml(progName, videos));
                     }
                 });
 
-                // ƯU TIÊN 3: GƯƠNG MẶT THÂN QUEN (Participants)
-                // Chỉ hiện row cho Idol/Diễn viên nào xuất hiện trong >= 2 video
+                if (programCardsHtml.length > 0) {
+                    createCarouselSection("📺 Series & Chương trình", programCardsHtml);
+                }
+
+                // 3. HÀNG: IDOL / DIỄN VIÊN (Vẫn hiện video lẻ để chọn xem ngay)
                 Object.keys(participantsMap).forEach((person) => {
                     const videos = participantsMap[person];
                     if (videos.length >= 2) {
-                        // Lọc trùng lặp (nếu cần) và sort mới nhất
                         const uniqueVideos = [...new Set(videos)];
+                        // Logic: Nếu muốn hiện Card Series trong hàng Idol thì dùng createProgramCardHtml
+                        // Nhưng thường user muốn xem Idol diễn tập nào, nên để Video Card là hợp lý
                         const cards = uniqueVideos.map((v) => createVideoCardHtml(v));
-                        createCarouselSection(`Có sự tham gia của ${person}`, cards);
+                        createCarouselSection(`Tuyển tập ${person}`, cards);
                     }
                 });
 
-                // ƯU TIÊN 4: CÁC THỂ LOẠI (Genres)
-                // Lọc bỏ những genre quá chung chung nếu muốn (VD: "Talk show" nếu đã hiện nhiều ở trên)
+                // 4. HÀNG: THỂ LOẠI
                 Object.keys(genresMap).forEach((genre) => {
-                    // Bỏ qua các genre trùng tên với Program hoặc Participant để tránh lặp lại
-                    if (programsMap[genre] || participantsMap[genre]) return;
-
+                    if (programsMap[genre] || participantsMap[genre]) return; // Tránh trùng
                     const videos = genresMap[genre];
-                    if (videos.length >= 1) {
-                        // Thể loại thì có 1 video cũng hiện
+                    if (videos.length >= 2) {
                         const cards = videos.map((v) => createVideoCardHtml(v));
                         createCarouselSection(`Thể loại: ${genre}`, cards);
                     }
                 });
             }
 
-            // Hàm tạo HTML cho 1 Row (Carousel)
+            /* --- HÀM TẠO CAROUSEL CÓ MŨI TÊN --- */
+            /* --- HÀM TẠO CAROUSEL VỚI MŨI TÊN THÔNG MINH --- */
             function createCarouselSection(title, cardsHtmlArray) {
                 if (cardsHtmlArray.length === 0) return;
-                const section = doc.createElement("section");
+                const section = document.createElement("section");
                 section.className = "program-row";
+
                 section.innerHTML = `
         <h2 class="program-title">${title}</h2>
-        <div class="video-list">
-            ${cardsHtmlArray.join("")}
+        <div class="list-wrapper">
+            <button class="scroll-btn left hidden-arrow"> <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+            </button>
+            
+            <div class="video-list">
+                ${cardsHtmlArray.join("")}
+            </div>
+
+            <button class="scroll-btn right">
+                <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+            </button>
         </div>
     `;
+
+                const list = section.querySelector(".video-list");
+                const btnLeft = section.querySelector(".scroll-btn.left");
+                const btnRight = section.querySelector(".scroll-btn.right");
+
+                // --- [MỚI] Hàm kiểm tra ẩn/hiện mũi tên ---
+                const checkArrows = () => {
+                    const scrollLeft = list.scrollLeft;
+                    const maxScroll = list.scrollWidth - list.clientWidth;
+
+                    // 1. Nút Trái: Ẩn nếu đang ở sát lề trái (scrollLeft <= 0)
+                    if (scrollLeft <= 10) {
+                        // Dư ra 10px cho chắc
+                        btnLeft.classList.add("hidden-arrow");
+                    } else {
+                        btnLeft.classList.remove("hidden-arrow");
+                    }
+
+                    // 2. Nút Phải: Ẩn nếu đã cuộn hết sang phải
+                    if (scrollLeft >= maxScroll - 10) {
+                        btnRight.classList.add("hidden-arrow");
+                    } else {
+                        btnRight.classList.remove("hidden-arrow");
+                    }
+                };
+
+                // Gọi kiểm tra ngay lập tức và mỗi khi cuộn
+                // Timeout nhỏ để đợi render layout xong mới tính chính xác
+                setTimeout(checkArrows, 100);
+                list.addEventListener("scroll", checkArrows);
+                window.addEventListener("resize", checkArrows); // Check lại khi co giãn màn hình
+
+                // --- Logic Click ---
+                btnLeft.onclick = () => {
+                    list.scrollBy({ left: -window.innerWidth * 0.8, behavior: "smooth" });
+                };
+
+                btnRight.onclick = () => {
+                    list.scrollBy({ left: window.innerWidth * 0.8, behavior: "smooth" });
+                };
+
+                // Logic lăn chuột
+                list.addEventListener(
+                    "wheel",
+                    (evt) => {
+                        if (list.scrollWidth > list.clientWidth) {
+                            evt.preventDefault();
+                            list.scrollLeft += evt.deltaY * 8;
+                        }
+                    },
+                    { passive: false }
+                );
+
                 libraryContainer.appendChild(section);
             }
 
@@ -1963,7 +2712,202 @@
     </div>
     `;
             }
+            /* ========================================= */
+            /* START: HERO SLIDER LOGIC (INFINITE LOOP)  */
+            /* ========================================= */
 
+            let heroTimer;
+            let currentHeroIndex = 1; // Bắt đầu từ 1 vì có Clone
+            let isHeroTransitioning = false;
+
+            /* --- LOGIC HERO SLIDER (CẬP NHẬT: MŨI TÊN ĐẸP + TÊN CHƯƠNG TRÌNH) --- */
+            function setupHeroSlider(videos) {
+                const heroSection = document.getElementById("hero-section");
+                if (!heroSection || videos.length === 0) return;
+
+                // 1. Clone Loop
+                const firstClone = videos[0];
+                const lastClone = videos[videos.length - 1];
+                const displayList = [lastClone, ...videos, firstClone];
+
+                // 2. Render HTML
+                let html = `<div class="hero-track" style="transform: translateX(-100%)">`;
+
+                displayList.forEach((video, index) => {
+                    const isActive = index === 1 ? "active" : "";
+                    const thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace(
+                        "hqdefault",
+                        "maxresdefault"
+                    );
+
+                    // [MỚI] Lấy tên chương trình
+                    const programName = video.program ? `<div class="hero-program">${video.program}</div>` : "";
+
+                    html += `
+            <div class="hero-slide ${isActive}" data-index="${index}">
+                <div class="hero-bg-wrapper">
+                    <img src="${thumbUrl}" class="hero-bg" alt="bg">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">Mới phát hành</span>
+                    
+                    ${programName}
+                    
+                    <h1 class="hero-title">${video.userTitle || video.title}</h1>
+                    
+                    <div class="hero-actions">
+                        <button class="hero-btn hero-btn-primary" onclick="launchPlayerByVideoId('${video.videoId}')">
+                            <svg viewBox="0 0 24 24" width="24" height="24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="currentColor"/></svg>
+                            Phát ngay
+                        </button>
+                        <button class="hero-btn hero-btn-secondary" onclick="openDetailModalByVideoId('${video.videoId}')">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M11,9H13V7H11M11,20H13V11H11M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
+                            Thông tin
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+                });
+                html += `</div>`; // Đóng track
+
+                // 3. [MỚI] Mũi tên SVG (Giống danh sách dưới)
+                html += `
+        <button class="hero-nav-btn prev" onclick="moveHeroSlide(-1)">
+            <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+        </button>
+        <button class="hero-nav-btn next" onclick="moveHeroSlide(1)">
+            <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+        </button>
+    `;
+
+                // 4. Dots
+                html += `<div class="hero-dots">`;
+                videos.forEach((_, i) => {
+                    html += `<div class="hero-dot ${i === 0 ? "active" : ""}" onclick="goToHeroSlide(${i + 1})"></div>`;
+                });
+                html += `</div>`;
+
+                heroSection.innerHTML = html;
+
+                // Logic giữ nguyên
+                startHeroTimer();
+                window.addEventListener("scroll", handleHeroParallax);
+                heroSection.addEventListener("mouseenter", () => clearInterval(heroTimer));
+                heroSection.addEventListener("mouseleave", startHeroTimer);
+            }
+
+            // Hàm khởi động timer
+            function startHeroTimer() {
+                clearInterval(heroTimer);
+                heroTimer = setInterval(() => {
+                    moveHeroSlide(1); // Next slide
+                }, 6000); // 6 giây đổi 1 lần
+            }
+
+            // Hàm di chuyển slide
+            function moveHeroSlide(direction) {
+                if (isHeroTransitioning) return;
+                const track = document.querySelector(".hero-track");
+                const slides = document.querySelectorAll(".hero-slide");
+                const dots = document.querySelectorAll(".hero-dot");
+                const totalSlides = slides.length; // Bao gồm 2 clone
+
+                isHeroTransitioning = true;
+                currentHeroIndex += direction;
+
+                track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)"; // Easing mượt
+                track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+
+                // Cập nhật Animation chữ (active class)
+                slides.forEach((s) => s.classList.remove("active"));
+                // Active tạm thời để hiện chữ, logic active thật sẽ ở transitionend
+                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
+
+                // Xử lý Infinite Loop khi animation kết thúc
+                track.ontransitionend = () => {
+                    isHeroTransitioning = false;
+
+                    // Nếu đi quá slide cuối (vào Clone đầu) -> Nhảy về Slide 1 thật
+                    if (currentHeroIndex >= totalSlides - 1) {
+                        track.style.transition = "none"; // Tắt animation để nhảy tức thì
+                        currentHeroIndex = 1;
+                        track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                    }
+                    // Nếu đi lùi quá slide đầu (vào Clone cuối) -> Nhảy về Slide cuối thật
+                    else if (currentHeroIndex <= 0) {
+                        track.style.transition = "none";
+                        currentHeroIndex = totalSlides - 2;
+                        track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                    }
+
+                    // Update lại active class chuẩn sau khi nhảy
+                    slides.forEach((s) => s.classList.remove("active"));
+                    slides[currentHeroIndex].classList.add("active");
+
+                    // Update Dots (Trừ 1 vì index bắt đầu từ 1 do clone)
+                    let realIndex = currentHeroIndex - 1;
+                    if (realIndex < 0) realIndex = dots.length - 1;
+                    if (realIndex >= dots.length) realIndex = 0;
+
+                    dots.forEach((d) => d.classList.remove("active"));
+                    if (dots[realIndex]) dots[realIndex].classList.add("active");
+                };
+            }
+
+            // Hàm nhảy đến slide cụ thể (khi bấm dot)
+            function goToHeroSlide(index) {
+                if (index === currentHeroIndex) return;
+                currentHeroIndex = index;
+                const track = document.querySelector(".hero-track");
+                track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)";
+                track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                // ... logic active class sẽ do transitionend ở trên lo
+            }
+
+            // [PARALLAX] Hàm xử lý hiệu ứng chiều sâu
+            function handleHeroParallax() {
+                // Nếu đang có 1 frame chờ xử lý thì bỏ qua, không spam lệnh
+                if (!isParallaxTicking) {
+                    window.requestAnimationFrame(() => {
+                        const scrollY = window.scrollY;
+
+                        // Chỉ tính toán nếu Hero còn trong tầm nhìn (để tiết kiệm pin)
+                        if (scrollY <= window.innerHeight) {
+                            const activeSlide = document.querySelector(".hero-slide.active .hero-bg");
+                            if (activeSlide) {
+                                // Tăng tốc độ lên 0.6 (cũ là 0.5) cho cảm giác rõ rệt hơn
+                                // Dùng translate3d để kích hoạt GPU Acceleration
+                                activeSlide.style.transform = `translate3d(0, ${scrollY * 0.6}px, 0)`;
+                            }
+                        }
+
+                        isParallaxTicking = false; // Mở khóa cho frame tiếp theo
+                    });
+
+                    isParallaxTicking = true; // Khóa lại
+                }
+            }
+
+            // Helper: Gọi player từ ID (do button trong HTML string không truyền obj được)
+            function launchPlayerByVideoId(vid) {
+                const video = libraryData.find((v) => v.videoId === vid);
+                if (video) launchPlayer(video);
+            }
+            function openDetailModalByVideoId(vid) {
+                const video = libraryData.find((v) => v.videoId === vid);
+                if (video) {
+                    if (video.program) {
+                        const eps = libraryData
+                            .filter((v) => v.program === video.program)
+                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                        openDetailModal(video, eps);
+                    } else {
+                        openDetailModal(video, null);
+                    }
+                }
+            }
             // --- Event Handling ---
 
             function setupEventListeners() {
@@ -2108,12 +3052,7 @@
                 });
                 settingsBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    const menu = doc.getElementById("settings-menu");
-                    const isVisible = menu.style.display === "flex";
-                    menu.style.display = isVisible ? "none" : "flex";
-                    setTimeout(() => {
-                        menu.classList.toggle("visible", !isVisible);
-                    }, 10);
+                    toggleFloatingMenu("settings-menu");
                 });
                 doc.addEventListener("click", (e) => {
                     const menu = doc.getElementById("settings-menu");
@@ -2323,40 +3262,41 @@
                 const card = e.target.closest(".video-card");
                 if (!card) return;
 
-                // --- [LOGIC MỚI] PHÂN LUỒNG PC / MOBILE ---
-
-                // Kiểm tra xem thiết bị có chuột không (Desktop)
-                // window.innerWidth > 1024 là mốc an toàn cho PC/Laptop
+                // Check PC (Giữ nguyên)
                 const isDesktop =
                     window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.innerWidth > 1024;
+                if (isDesktop) return;
 
-                if (isDesktop) {
-                    // [PC] DỪNG LẠI NGAY. Không làm gì cả.
-                    // Mọi thao tác click phải thực hiện trên cái PORTAL nổi lên.
-                    // Card bên dưới chỉ để ngắm thôi.
-                    return;
-                }
+                // [MOBILE] LOGIC CLICK
+                let videoData = null;
 
-                // [MOBILE/TABLET] Logic mở Modal ngay lập tức (Bỏ qua Portal)
-
-                // Trường hợp 1: Click vào Thẻ Chương Trình (Series)
                 if (card.dataset.programName) {
+                    // Click vào Card Chương trình
                     const progName = card.dataset.programName;
                     const videos = libraryData
                         .filter((v) => v.program === progName)
                         .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                    videoData = videos[0];
+                } else if (card.dataset.videoId) {
+                    // Click vào Card Video lẻ
+                    videoData = libraryData.find((v) => v.videoId === card.dataset.videoId);
+                }
 
-                    if (videos.length > 0) {
-                        openDetailModal(videos[0], videos);
+                if (videoData) {
+                    // [FIX] Kiểm tra xem video này có thuộc chương trình nào không
+                    if (videoData.program) {
+                        // Có -> Mở Modal Series
+                        const episodes = libraryData
+                            .filter((v) => v.program === videoData.program)
+                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                        openDetailModal(videoData, episodes);
+                    } else {
+                        // Không -> Mở Modal lẻ
+                        openDetailModal(videoData, null);
                     }
                 }
-                // Trường hợp 2: Click vào Video Lẻ
-                else if (card.dataset.videoId) {
-                    const videoId = card.dataset.videoId;
-                    const videoData = libraryData.find((v) => v.videoId === videoId);
-                    if (videoData) openDetailModal(videoData, null);
-                }
             }
+
             function handleModalPlay() {
                 const videoId = modalPlayBtn.dataset.videoId;
                 const videoData = libraryData.find((v) => v.videoId === videoId);
@@ -2610,11 +3550,35 @@
 
                     subtitles = preloadedSubtitles || [];
                     subtitleDisplay.innerHTML = "";
-                    playerWrapper.classList.remove("hidden");
-                    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
-                    renderBookmarksOverlay(videoData.bookmarks || []);
+                    const iframe = document.getElementById("youtube-player");
 
-                    videoProgramDisplay.textContent = videoData.program || "";
+                    const spinner = document.getElementById("loading-spinner");
+                    playerWrapper.classList.remove("hidden");
+
+                    // 1. Hiện Spinner ngay
+
+                    spinner.style.display = "block";
+
+                    // 2. Ẩn Video đi
+
+                    iframe.classList.remove("ready");
+
+                    // 3. [FIX] ẨN NÚT PLAY GIỮA NGAY LẬP TỨC
+                    const centerBtn = document.getElementById("center-play-pause-btn");
+                    centerBtn.style.opacity = "0";
+                    centerBtn.style.pointerEvents = "none";
+
+                    iframe.classList.remove("ready"); // class này có opacity: 1 -> xóa đi thì opacity về 0
+
+                    // 3. Reset các text hiển thị
+                    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
+                    videoProgramDisplay.textContent = videoData.program || ""; // Hiện tên chương trình ở Header
+
+                    // 4. Reset thanh thời gian về 0
+                    updateProgressBarUI(0, 0);
+                    document.getElementById("time-display").textContent = "00:00 / 00:00";
+
+                    renderBookmarksOverlay(videoData.bookmarks || []);
 
                     enterCinematicMode().then(() => {
                         if (videoData.subtitleUrl) {
@@ -2623,13 +3587,12 @@
                             startSubtitleSync();
                         }
 
-                        // chỉ cần load video mới vào player đã khởi tạo
+                        // Load video
                         player.loadVideoById(videoData.videoId);
                         resolve();
                     });
                 });
             }
-
             async function enterCinematicMode() {
                 try {
                     if (playerContainer.requestFullscreen) await playerContainer.requestFullscreen();
@@ -2654,26 +3617,57 @@
             }
 
             function onPlayerStateChange(event) {
+                const centerBtn = doc.getElementById("center-play-pause-btn");
                 const centerIcon = doc.getElementById("center-play-pause-icon");
-                const playPauseIconPath =
-                    event.data === YT.PlayerState.PLAYING
-                        ? "M14,19H18V5H14M6,19H10V5H6V19Z"
-                        : "M8,5.14V19.14L19,12.14L8,5.14Z";
+                const spinner = document.getElementById("loading-spinner");
+                const iframe = document.getElementById("youtube-player");
 
-                playPauseBtn.querySelector("svg path").setAttribute("d", playPauseIconPath);
-                if (centerIcon) centerIcon.setAttribute("d", playPauseIconPath);
+                // Icon SVG Paths
+                const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
+                const pausePath = "M14,19H18V5H14M6,19H10V5H6V19Z";
 
-                if (event.data === YT.PlayerState.PLAYING) {
+                // 1. XỬ LÝ TRẠNG THÁI LOADING (BUFFERING / UNSTARTED)
+                if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.UNSTARTED) {
+                    spinner.style.display = "block"; // Hiện xoay
+
+                    // [QUAN TRỌNG] Vẫn ẩn nút Play khi đang xoay
+                    centerBtn.style.opacity = "0";
+                    centerBtn.style.pointerEvents = "none";
+                }
+                // 2. XỬ LÝ KHI ĐANG PHÁT (PLAYING)
+                else if (event.data === YT.PlayerState.PLAYING) {
+                    spinner.style.display = "none"; // Tắt xoay
+                    iframe.classList.add("ready"); // Hiện video
+
+                    // Ẩn nút Play
+                    centerBtn.style.opacity = "0";
+                    centerBtn.style.pointerEvents = "none";
+
                     playerContainer.classList.add("playing");
-                    doc.getElementById("center-play-pause-btn").style.opacity = "0"; // <<< FIX NÀY
+
+                    // Đổi icon thành Pause (để chuẩn bị cho lần hiện sau)
+                    playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
+                    if (centerIcon) centerIcon.setAttribute("d", pausePath);
 
                     startSyncing();
                     hideUpNextOverlay();
                     showControlsAndSetHideTimeout();
-                } else {
+                }
+                // 3. XỬ LÝ KHI TẠM DỪNG HOẶC KẾT THÚC (PAUSED / ENDED)
+                else {
+                    spinner.style.display = "none"; // Tắt xoay
+
+                    // Hiện nút Play để bấm tiếp
+                    centerBtn.style.opacity = "1";
+                    centerBtn.style.pointerEvents = "auto";
+
                     playerContainer.classList.remove("playing");
+
+                    // Đổi icon thành Play
+                    playPauseBtn.querySelector("svg path").setAttribute("d", playPath);
+                    if (centerIcon) centerIcon.setAttribute("d", playPath);
+
                     stopSyncing();
-                    // Khi pause/end/buffer, hiện controls và nút play giữa vĩnh viễn
                     clearTimeout(controlsTimeout);
                     playerContainer.classList.add("controls-active");
                     playerContainer.classList.remove("no-cursor");
@@ -2682,14 +3676,8 @@
                 if (event.data === YT.PlayerState.ENDED && !isEnding) {
                     handleVideoEnd();
                 }
-                if (event.data === YT.PlayerState.BUFFERING) {
-                    // Hiện cái loading spinner đẹp đẹp của bạn lên
-                    document.getElementById("my-custom-loader").style.display = "block";
-                } else {
-                    // Ẩn đi khi đã load xong (Playing/Paused/Ended)
-                    document.getElementById("my-custom-loader").style.display = "none";
-                }
             }
+
             // Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
             function updateQualityBadge() {
                 // Các giá trị trả về: 'highres', 'hd1080', 'hd720', 'large', 'medium', 'small'
