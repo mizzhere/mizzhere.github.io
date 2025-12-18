@@ -2709,6 +2709,36 @@
                 }, 200);
             });
 
+            /* --- [FIX MỚI] SỰ KIỆN CHUỘT RỜI CARD (để chặn lướt nhanh bị dính) --- */
+            libraryContainer.addEventListener("mouseout", (e) => {
+                const card = e.target.closest(".video-card");
+                if (!card) return;
+
+                // e.relatedTarget là phần tử mà chuột di chuyển ĐẾN
+                const moveDestination = e.relatedTarget;
+
+                // 1. Nếu chuột chỉ di chuyển vào các thành phần con bên trong Card (ảnh, text...)
+                // -> Thì vẫn tính là đang ở trong Card -> Không làm gì cả.
+                if (card.contains(moveDestination)) return;
+
+                // 2. Nếu chuột di chuyển sang cái Portal -> Kệ nó, để sự kiện của Portal lo.
+                if (moveDestination && moveDestination.closest("#hover-portal")) return;
+
+                // 3. [QUAN TRỌNG NHẤT] Hủy ngay lệnh "chuẩn bị hiện"
+                // Đây là liều thuốc chữa bệnh "lướt nhanh vẫn hiện"
+                clearTimeout(hoverTimeout);
+
+                // 4. Nếu Portal ĐANG hiện cho card này rồi -> Đặt lệnh ẩn dần
+                if (currentHoveredCard === card) {
+                    hideTimeout = setTimeout(() => {
+                        hidePortal();
+                    }, 200);
+                } else {
+                    // Nếu Portal chưa hiện (đang đếm ngược) -> Reset biến luôn
+                    currentHoveredCard = null;
+                }
+            });
+
             // --- [FIXED] LOGIC ẨN/HIỆN PORTAL MỚI ---
 
             // 2. Khi chuột VÀO Portal: Giữ yên, không ẩn
@@ -3197,6 +3227,8 @@
                     } else {
                         header.classList.remove("scrolled");
                     }
+                    hidePortal(true); // true = ẩn ngay lập tức, không fade out
+                    clearTimeout(hoverTimeout); // Hủy mọi lệnh đang chờ
                 });
 
                 // 2. Logic Expand Search (Click icon -> Mở input)
