@@ -922,7 +922,7 @@
             /* --- BOTTOM CONTROLS (Thanh điều khiển dưới) --- */
             #custom-controls {
                 bottom: 0;
-                padding: 0 clamp(30px, 5vw, 60px) 40px; /* Padding bottom lớn để thoáng */
+                padding: 0 clamp(30px, 5vw, 60px) 1vh; /* Padding bottom lớn để thoáng */
                 background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
                 z-index: 12;
                 display: flex;
@@ -1173,13 +1173,13 @@
             #subtitle-display {
                 position: absolute;
                 /* TRẠNG THÁI 1: Khi ẩn thanh điều khiển -> Phụ đề nằm thấp xuống */
-                bottom: 40px;
+                bottom: 40px; 
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 20;
                 text-align: center;
                 pointer-events: none; /* Click xuyên qua phụ đề */
-
+                
                 /* Hiệu ứng trượt mượt mà */
                 transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
@@ -3825,7 +3825,7 @@
                 if (prog) {
                     setTimeout(() => {
                         // Chỉ tải nếu Modal vẫn đang mở (tránh trường hợp user đóng quá nhanh)
-                        if (!detailModalOverlay.classList.contains("hidden")) {
+                        if (!detailModalOverlay.classList.contains('hidden')) {
                             checkAndLoadTeaser(prog);
                         }
                     }, 100);
@@ -3833,6 +3833,7 @@
                     // Nếu không phải series thì dọn dẹp teaser cũ
                     destroyTeaser();
                 }
+            
             }
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
