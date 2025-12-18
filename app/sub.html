@@ -1172,12 +1172,21 @@
             }
             #subtitle-display {
                 position: absolute;
-                bottom: 120px; /* Cao hơn controls */
+                /* TRẠNG THÁI 1: Khi ẩn thanh điều khiển -> Phụ đề nằm thấp xuống */
+                bottom: 40px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 20;
                 text-align: center;
-                /* Style mặc định sẽ bị JS ghi đè */
+                pointer-events: none; /* Click xuyên qua phụ đề */
+
+                /* Hiệu ứng trượt mượt mà */
+                transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* TRẠNG THÁI 2: Khi hiện thanh điều khiển (.controls-active) -> Đẩy phụ đề lên */
+            #player-container.controls-active #subtitle-display {
+                bottom: 120px; /* Vị trí cũ của bạn */
             }
             #subtitle-display:not(:empty) {
                 opacity: 1;
@@ -3809,10 +3818,21 @@
                 }
 
                 const prog = videoData.program || null;
-                checkAndLoadTeaser(prog);
-
-                // 8. Mở Modal (Code cũ)
                 openModal(detailModalOverlay);
+
+                // 2. Đợi 1 chút (100ms) cho Modal mở xong rồi mới tải Teaser nặng nề
+                // Điều này giúp loại bỏ cảm giác "bấm xong phải đợi"
+                if (prog) {
+                    setTimeout(() => {
+                        // Chỉ tải nếu Modal vẫn đang mở (tránh trường hợp user đóng quá nhanh)
+                        if (!detailModalOverlay.classList.contains("hidden")) {
+                            checkAndLoadTeaser(prog);
+                        }
+                    }, 100);
+                } else {
+                    // Nếu không phải series thì dọn dẹp teaser cũ
+                    destroyTeaser();
+                }
             }
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
