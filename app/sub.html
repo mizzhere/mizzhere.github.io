@@ -1937,10 +1937,16 @@
                 position: absolute;
                 top: 50%;
                 left: 50%;
-                transform: translate(-50%, -50%) scale(1.35); /* Zoom nhẹ để lấp đầy */
+                /* Dùng translate để căn tâm, scale 1.4 để zoom cắt bỏ viền đen youtube */
+                transform: translate(-50%, -50%) scale(1.4); 
                 width: 100%;
                 height: 100%;
                 pointer-events: none;
+                
+                /* Đảm bảo flex để iframe bên trong canh chuẩn */
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Nút Âm thanh (Mute/Unmute) */
@@ -1965,7 +1971,13 @@
                 background: #fff;
                 color: #000;
             }
-
+            /* --- THÊM ĐOẠN NÀY --- */
+            #teaser-player-iframe {
+                width: 100%;
+                height: 100%;
+                display: block; /* Khắc phục lỗi inline tạo khoảng trắng dưới đáy */
+                border: none;
+            }
             /* Phụ đề Teaser (Nhỏ gọn ở header) */
             #teaser-subtitle {
                 position: absolute;
