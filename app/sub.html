@@ -19,11 +19,34 @@
                 --text-light: #fff;
             }
             body {
+                /* 1. Cấm bôi đen văn bản */
+                -webkit-user-select: none; /* Safari/Chrome */
+                -moz-user-select: none; /* Firefox */
+                -ms-user-select: none; /* IE/Edge */
+                user-select: none; /* Chuẩn chung */
+
+                /* 2. Cấm menu nhấn giữ (trên iOS/Android) */
+                -webkit-touch-callout: none;
                 font-family: "Inter", sans-serif;
                 margin: 0;
                 background-color: var(--primary-bg);
                 color: var(--text-color);
                 overflow-x: hidden;
+            }
+            /* 3. Cấm kéo ảnh/video ra ngoài (Drag & Drop) */
+            img,
+            video,
+            iframe {
+                pointer-events: none; /* Cấm chuột tương tác trực tiếp (chỉ click) */
+                -webkit-user-drag: none;
+            }
+
+            /* 4. [QUAN TRỌNG] Vẫn cho phép nhập liệu ở ô tìm kiếm */
+            input,
+            textarea {
+                -webkit-user-select: text !important;
+                user-select: text !important;
+                pointer-events: auto !important;
             }
             main {
                 padding: 0; /* Xóa dòng cũ clamp(...) đi */
@@ -4307,7 +4330,17 @@
                 const card = doc.getElementById("up-next-card");
                 if (card) card.onclick = null; // Gỡ listener để tránh memory leak
             }
-            // END: Các hàm mới
+            function enableSiteProtection() {
+                // 1. Chặn Menu Chuột Phải (Context Menu)
+                document.addEventListener("contextmenu", (e) => {
+                    e.preventDefault();
+                    // Có thể hiện thông báo nhỏ nếu muốn, hoặc im lặng luôn
+                    return false;
+                });
+            }
+
+            // Gọi hàm bảo vệ ngay khi chạy
+            enableSiteProtection();
         </script>
     </body>
 </html>
