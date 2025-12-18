@@ -1173,13 +1173,13 @@
             #subtitle-display {
                 position: absolute;
                 /* TRẠNG THÁI 1: Khi ẩn thanh điều khiển -> Phụ đề nằm thấp xuống */
-                bottom: 40px; 
+                bottom: 40px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 20;
                 text-align: center;
                 pointer-events: none; /* Click xuyên qua phụ đề */
-                
+
                 /* Hiệu ứng trượt mượt mà */
                 transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
@@ -1910,19 +1910,27 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                z-index: 1; /* Đè lên ảnh thumbnail */
+                z-index: 2; /* Đè lên ảnh thumbnail (z-index 1) */
                 background: #000;
                 overflow: hidden;
-                display: none; /* Mặc định ẩn */
+
+                /* [SỬA ĐỔI QUAN TRỌNG] */
+                display: block; /* Luôn hiển thị block để iframe load được */
+                opacity: 0; /* Nhưng tàng hình (trong suốt) */
+                pointer-events: none; /* Không chặn click khi chưa hiện */
+                transition: opacity 0.8s ease-in; /* Hiệu ứng hiện dần trong 0.8s */
             }
+
+            /* Khi có class visible thì hiện lên */
             #teaser-container.visible {
-                display: block;
+                opacity: 1;
+                pointer-events: auto;
             }
-            #teaser-player-iframe {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                pointer-events: none; /* Chặn click vào video để không pause */
+
+            /* Đảm bảo ảnh nền nằm dưới */
+            #modal-thumbnail {
+                z-index: 1;
+                position: relative;
             }
             /* Mask để video không bị đen viền */
             .video-background {
@@ -2317,43 +2325,47 @@
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
-                if (!programName) return;
+                if (!programName) {
+                    destroyTeaser();
+                    return;
+                }
 
-                // 1. Tìm tất cả video thuộc chương trình này có tag "TEASER"
-                // Lưu ý: data của bạn dùng "genres" để chứa tag
                 const teasers = libraryData.filter(
                     (v) => v.program === programName && v.genres && v.genres.some((g) => g.toUpperCase() === "TEASER")
                 );
 
-                // Nếu không có teaser nào -> Ẩn container, hiện ảnh tĩnh
                 if (teasers.length === 0) {
                     destroyTeaser();
                     return;
                 }
 
-                // 2. Lấy cái mới nhất (Sort theo uploadDate hoặc episode)
+                // Lấy teaser mới nhất
                 teasers.sort((a, b) => {
                     const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
                     const dateB = b.uploadDate_auto ? new Date(b.uploadDate_auto).getTime() : 0;
                     return dateB - dateA;
                 });
 
-                const teaserVideo = teasers[0]; // Cái mới nhất
+                const teaserVideo = teasers[0];
 
-                // 3. Hiển thị Container Teaser
-                teaserContainer.classList.add("visible");
+                // 1. [MỚI] Cập nhật ngay ảnh Thumbnail của Modal thành ảnh của Teaser
+                // Để khi video hiện lên, nó khớp hình, không bị giật
+                const thumb = teaserVideo.thumbnailUrl || teaserVideo.thumbnailUrl_auto;
+                if (thumb) document.getElementById("modal-thumbnail").src = thumb.replace("hqdefault", "maxresdefault");
 
-                // 4. Khởi tạo Player Teaser
+                // 2. Khởi tạo Player (nhưng chưa hiện container lên vội)
                 initTeaserPlayer(teaserVideo);
             }
-
             function initTeaserPlayer(video) {
-                // Reset phụ đề cũ
+                // Reset trạng thái cũ
                 teaserSubtitles = [];
                 teaserSubtitle.innerHTML = "";
                 clearInterval(teaserSyncInterval);
 
-                // Load phụ đề nếu có
+                // Đảm bảo ẩn player trước khi load cái mới
+                teaserContainer.classList.remove("visible");
+
+                // Load phụ đề (giữ nguyên)
                 if (video.subtitleUrl) {
                     fetch(video.subtitleUrl)
                         .then((res) => res.text())
@@ -2364,33 +2376,44 @@
                         .catch((err) => console.log("Lỗi sub teaser:", err));
                 }
 
-                // Nếu đã có player thì load video mới, chưa có thì tạo mới
+                // Cấu hình Player
+                const playerVars = {
+                    autoplay: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    iv_load_policy: 3,
+                    modestbranding: 1,
+                    rel: 0,
+                    showinfo: 0,
+                    mute: 1,
+                    loop: 1,
+                    playlist: video.videoId,
+                };
+
                 if (teaserPlayer) {
+                    // Nếu player đã có, load video mới
                     teaserPlayer.loadVideoById(video.videoId);
-                    teaserPlayer.mute(); // Luôn mute khi bắt đầu
+                    teaserPlayer.mute();
                 } else {
+                    // Tạo mới
                     teaserPlayer = new YT.Player("teaser-player-iframe", {
                         videoId: video.videoId,
-                        playerVars: {
-                            autoplay: 1,
-                            controls: 0, // Ẩn điều khiển
-                            disablekb: 1,
-                            fs: 0,
-                            iv_load_policy: 3,
-                            modestbranding: 1,
-                            rel: 0,
-                            showinfo: 0,
-                            mute: 1, // Mặc định tắt tiếng
-                            loop: 1, // Loop cần playlist, xử lý ở onStateChange
-                            playlist: video.videoId, // Hack để loop hoạt động chuẩn
-                        },
+                        playerVars: playerVars,
                         events: {
                             onReady: (event) => {
-                                event.target.playVideo();
                                 event.target.mute();
+                                event.target.playVideo();
                             },
                             onStateChange: (event) => {
-                                // Loop thủ công nếu playlist fail
+                                // [SỬA ĐỔI QUAN TRỌNG TẠI ĐÂY]
+
+                                // 1. Khi Video thực sự chạy -> Hiện Container (Fade in)
+                                if (event.data === YT.PlayerState.PLAYING) {
+                                    teaserContainer.classList.add("visible");
+                                }
+
+                                // 2. Loop thủ công nếu cần
                                 if (event.data === YT.PlayerState.ENDED) {
                                     event.target.playVideo();
                                 }
@@ -2399,7 +2422,6 @@
                     });
                 }
 
-                // Reset UI volume về Mute
                 isTeaserMuted = true;
                 updateVolumeUI();
             }
@@ -3825,7 +3847,7 @@
                 if (prog) {
                     setTimeout(() => {
                         // Chỉ tải nếu Modal vẫn đang mở (tránh trường hợp user đóng quá nhanh)
-                        if (!detailModalOverlay.classList.contains('hidden')) {
+                        if (!detailModalOverlay.classList.contains("hidden")) {
                             checkAndLoadTeaser(prog);
                         }
                     }, 100);
@@ -3833,7 +3855,6 @@
                     // Nếu không phải series thì dọn dẹp teaser cũ
                     destroyTeaser();
                 }
-            
             }
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
