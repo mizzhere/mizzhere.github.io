@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wager Game - Ultimate AI Edition</title>
+    <title>Đánh cược</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +37,7 @@
                         'fade-in': 'fadeIn 0.3s ease-out',
                         'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                         'pop': 'pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
                     },
                     keyframes: {
                         fadeIn: {
@@ -51,6 +52,11 @@
                             '0%': { transform: 'scale(0.95)' },
                             '50%': { transform: 'scale(1.02)' },
                             '100%': { transform: 'scale(1)' },
+                        },
+                        bounceIn: {
+                            '0%': { transform: 'scale(0)' },
+                            '60%': { transform: 'scale(1.1)' },
+                            '100%': { transform: 'scale(1)' }
                         }
                     }
                 }
@@ -87,6 +93,12 @@
         }
         body {
             overflow: hidden; /* Prevent body scroll */
+        }
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
     </style>
 </head>
@@ -427,48 +439,92 @@
             );
         };
 
-        // Màn hình Game Play (Host & Projector View)
+        // Màn hình Game Play (Projector View Interactive)
         const GamePlay = ({ data, setData, onBack }) => {
             const { addToast } = useToast();
             const [currentQIndex, setCurrentQIndex] = useState(0);
             const [isRevealed, setIsRevealed] = useState(false);
-            const [bets, setBets] = useState({}); // { teamId: { amount: number } }
-            const [viewMode, setViewMode] = useState('HOST'); // HOST | PROJECTOR
+            
+            // Bets state: { teamId: { choice: boolean | null, amount: number, isConfirmed: boolean } }
+            const [bets, setBets] = useState({});
+            
+            // View Mode is now effectively always PROJECTOR/INTERACTIVE based on user request, 
+            // but we keep the structure just in case needed.
+            const [viewMode, setViewMode] = useState('PROJECTOR'); 
             const [isFullscreen, setIsFullscreen] = useState(false);
 
             const currentQ = data.questions[currentQIndex];
 
-            // Init bets
+            // Init bets structure for current question
             useEffect(() => {
                 const initialBets = {};
-                data.teams.forEach(t => initialBets[t.id] = { amount: 0 });
+                data.teams.forEach(t => {
+                    initialBets[t.id] = { choice: null, amount: 0, isConfirmed: false };
+                });
                 setBets(initialBets);
             }, [currentQIndex, data.teams]);
 
-            const handleBetAmount = (teamId, amount) => {
+            // --- Handlers for Interactive Betting ---
+
+            const handleBetChoice = (teamId, choice) => {
                 setBets(prev => ({
                     ...prev,
-                    [teamId]: { ...prev[teamId], amount: parseInt(amount) || 0 }
+                    [teamId]: { ...prev[teamId], choice }
                 }));
             };
 
-            const applyScore = (teamId, isCorrect) => {
-                const amount = bets[teamId]?.amount || 0;
-                if (amount <= 0) {
-                    addToast('Chưa nhập cược cho đội này!', 'error');
+            const handleBetAmount = (teamId, val) => {
+                setBets(prev => ({
+                    ...prev,
+                    [teamId]: { ...prev[teamId], amount: parseInt(val) || 0 }
+                }));
+            };
+
+            const confirmBet = (teamId) => {
+                const bet = bets[teamId];
+                if (bet.choice === null) {
+                    addToast('Vui lòng chọn ĐÚNG hoặc SAI!', 'error');
                     return;
                 }
+                if (bet.amount <= 0 && bet.amount !== 0) { // Allow 0 bet? User said "Bấm số điểm muốn cược", implying > 0 usually
+                     addToast('Vui lòng nhập số điểm!', 'error');
+                     return;
+                }
 
-                const newScore = isCorrect 
-                    ? data.teams.find(t => t.id === teamId).score + amount 
-                    : data.teams.find(t => t.id === teamId).score - amount;
-
-                setData(prev => ({
+                setBets(prev => ({
                     ...prev,
-                    teams: prev.teams.map(t => t.id === teamId ? { ...t, score: newScore } : t)
+                    [teamId]: { ...prev[teamId], isConfirmed: true }
                 }));
+            };
 
-                addToast(`Đã ${isCorrect ? 'cộng' : 'trừ'} ${amount} điểm cho đội chơi`, isCorrect ? 'success' : 'info');
+            const unlockBet = (teamId) => {
+                if (isRevealed) return; // Cannot unlock after reveal
+                setBets(prev => ({
+                    ...prev,
+                    [teamId]: { ...prev[teamId], isConfirmed: false }
+                }));
+            };
+
+            const revealAnswer = () => {
+                // Check if all teams confirmed? Or just force reveal?
+                // User said "Sau khi cả 2 đội đều xong thao tác cược... thì màn hình hiện 1 nút (hiện đáp án)"
+                // We'll calculate scores here.
+                
+                const newTeams = data.teams.map(team => {
+                    const bet = bets[team.id];
+                    // Only apply score if confirmed and made a choice
+                    if (bet && bet.isConfirmed && bet.choice !== null) {
+                        const isCorrect = bet.choice === currentQ.answer;
+                        return {
+                            ...team,
+                            score: team.score + (isCorrect ? bet.amount : -bet.amount)
+                        };
+                    }
+                    return team;
+                });
+
+                setData(prev => ({ ...prev, teams: newTeams }));
+                setIsRevealed(true);
             };
 
             const nextQuestion = () => {
@@ -492,177 +548,159 @@
                 }
             };
 
-            // Projector View Component
-            if (viewMode === 'PROJECTOR') {
-                return (
-                    <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center justify-center p-8 select-none">
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
-                            <button onClick={toggleFullscreen} className="text-white p-2"><i data-lucide={isFullscreen ? "minimize" : "maximize"}></i></button>
-                            <button onClick={() => setViewMode('HOST')} className="text-white p-2"><i data-lucide="monitor"></i> Host View</button>
-                        </div>
-                        
-                        {/* Question Phase */}
-                        <div className={`w-full max-w-5xl text-center space-y-12 ${isRevealed ? 'scale-75 origin-top transition-all duration-700' : ''}`}>
-                            <div className="inline-block px-6 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-xl mb-4">
-                                CÂU HỎI #{currentQIndex + 1}
-                            </div>
-                            <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight drop-shadow-2xl">
-                                {currentQ.statement}
-                            </h1>
-                        </div>
+            // Main Interactive Projector Interface
+            return (
+                <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center p-6 select-none overflow-hidden">
+                    
+                    {/* Header Controls */}
+                    <div className="absolute top-4 right-4 flex gap-2 opacity-30 hover:opacity-100 transition-opacity z-50">
+                        <button onClick={toggleFullscreen} className="text-white p-2 bg-white/10 rounded-full hover:bg-white/20"><i data-lucide={isFullscreen ? "minimize" : "maximize"}></i></button>
+                        <button onClick={onBack} className="text-white p-2 bg-white/10 rounded-full hover:bg-white/20"><i data-lucide="x"></i></button>
+                    </div>
 
-                        {/* Reveal Phase */}
-                        {isRevealed && (
-                            <div className="mt-12 flex flex-col items-center animate-slide-up">
-                                <div className={`text-9xl font-black font-display mb-8 ${currentQ.answer ? 'text-emerald-500' : 'text-red-500'}`}>
-                                    {currentQ.answer ? 'ĐÚNG' : 'SAI'}
+                    {/* Question Display */}
+                    <div className={`w-full max-w-6xl text-center space-y-6 transition-all duration-700 ${isRevealed ? 'mt-4 scale-90' : 'mt-10'}`}>
+                        <div className="inline-block px-6 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-lg">
+                            CÂU HỎI #{currentQIndex + 1}
+                        </div>
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white leading-tight drop-shadow-2xl px-4">
+                            {currentQ.statement}
+                        </h1>
+                    </div>
+
+                    {/* Main Interaction Area - Team Cards */}
+                    <div className="flex-1 w-full max-w-7xl flex items-center justify-center gap-6 p-4">
+                        {data.teams.map(team => {
+                            const bet = bets[team.id] || { choice: null, amount: 0, isConfirmed: false };
+                            const isCorrect = bet.choice === currentQ.answer;
+                            
+                            return (
+                                <div key={team.id} className={`relative w-full max-w-md bg-dark-surface/50 backdrop-blur-sm border-2 rounded-2xl p-6 transition-all duration-500 flex flex-col gap-4
+                                    ${isRevealed 
+                                        ? (bet.isConfirmed 
+                                            ? (isCorrect ? 'border-emerald-500 bg-emerald-900/10' : 'border-red-500 bg-red-900/10')
+                                            : 'border-zinc-700 opacity-50')
+                                        : (bet.isConfirmed ? 'border-indigo-500/50 bg-indigo-900/10' : 'border-zinc-700')
+                                    }
+                                `}>
+                                    {/* Header: Name & Score */}
+                                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                                        <div className="font-display font-bold text-xl text-white tracking-wide">{team.name}</div>
+                                        <div className="font-mono font-bold text-3xl text-white">{team.score}</div>
+                                    </div>
+
+                                    {/* Interaction Body */}
+                                    <div className="flex-1 flex flex-col justify-center min-h-[200px]">
+                                        
+                                        {/* State: REVEALED */}
+                                        {isRevealed ? (
+                                            <div className="text-center space-y-2 animate-bounce-in">
+                                                {bet.isConfirmed ? (
+                                                    <>
+                                                        <div className={`text-6xl font-black ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                            {isCorrect ? '+' : '-'}{bet.amount}
+                                                        </div>
+                                                        <div className="text-zinc-400 font-bold uppercase tracking-widest">
+                                                            Đã chọn: {bet.choice ? 'ĐÚNG' : 'SAI'}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-zinc-500 italic">Không tham gia</div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            /* State: BETTING (Confirmed vs Not Confirmed) */
+                                            bet.isConfirmed ? (
+                                                <div className="text-center space-y-4 animate-pop cursor-pointer" onClick={() => unlockBet(team.id)}>
+                                                    <div className="text-zinc-400 text-sm uppercase tracking-widest">Đã chốt phương án</div>
+                                                    <div className={`text-4xl font-black ${bet.choice ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                        {bet.choice ? 'ĐÚNG' : 'SAI'}
+                                                    </div>
+                                                    <div className="text-3xl font-mono text-white font-bold">
+                                                        {bet.amount} <span className="text-sm text-zinc-500">điểm</span>
+                                                    </div>
+                                                    <div className="text-xs text-zinc-500 mt-4">(Bấm để sửa lại)</div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {/* Choice Buttons */}
+                                                    <div className="grid grid-cols-2 gap-3 h-16">
+                                                        <button 
+                                                            onClick={() => handleBetChoice(team.id, true)}
+                                                            className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === true ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}
+                                                        >
+                                                            ĐÚNG
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleBetChoice(team.id, false)}
+                                                            className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === false ? 'bg-red-600 border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}
+                                                        >
+                                                            SAI
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Amount Input */}
+                                                    <div className="flex gap-2">
+                                                        <input 
+                                                            type="number" 
+                                                            value={bet.amount || ''}
+                                                            onChange={(e) => handleBetAmount(team.id, e.target.value)}
+                                                            onKeyDown={(e) => e.key === 'Enter' && confirmBet(team.id)}
+                                                            placeholder="0"
+                                                            className="w-full bg-dark-bg border-2 border-zinc-700 rounded-xl px-4 py-3 text-center font-mono text-2xl font-bold text-white focus:border-indigo-500 outline-none transition-colors"
+                                                        />
+                                                    </div>
+                                                    
+                                                    {/* Quick Amounts */}
+                                                    <div className="flex justify-between gap-2">
+                                                        {[10, 50, 100].map(val => (
+                                                            <button key={val} onClick={() => handleBetAmount(team.id, val)} className="flex-1 py-1 bg-zinc-800 rounded text-xs font-mono text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors">{val}</button>
+                                                        ))}
+                                                        <button onClick={() => handleBetAmount(team.id, team.score)} className="flex-1 py-1 bg-red-900/30 rounded text-xs font-mono text-red-400 hover:bg-red-900/50 transition-colors">ALL</button>
+                                                    </div>
+
+                                                    {/* Confirm Button */}
+                                                    <button 
+                                                        onClick={() => confirmBet(team.id)}
+                                                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all mt-2"
+                                                    >
+                                                        XÁC NHẬN
+                                                    </button>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="text-2xl text-zinc-400 max-w-3xl text-center font-light animate-fade-in">
+                            );
+                        })}
+                    </div>
+
+                    {/* Footer / Main Game Controls */}
+                    <div className="w-full max-w-4xl p-6 flex justify-center items-center gap-6">
+                        {isRevealed ? (
+                            <div className="flex flex-col items-center gap-4 animate-slide-up w-full">
+                                <div className={`text-4xl font-black font-display px-8 py-2 rounded-2xl bg-black/50 backdrop-blur border-2 ${currentQ.answer ? 'border-emerald-500 text-emerald-400' : 'border-red-500 text-red-400'}`}>
+                                    ĐÁP ÁN: {currentQ.answer ? 'ĐÚNG' : 'SAI'}
+                                </div>
+                                <div className="text-zinc-400 text-center max-w-2xl text-lg font-light leading-relaxed">
                                     {currentQ.explanation}
                                 </div>
+                                <button 
+                                    onClick={nextQuestion}
+                                    className="mt-4 px-12 py-4 bg-white text-black font-display font-bold text-xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center gap-3"
+                                >
+                                    CÂU TIẾP THEO <i data-lucide="arrow-right"></i>
+                                </button>
                             </div>
+                        ) : (
+                            <button 
+                                onClick={revealAnswer}
+                                disabled={data.teams.every(t => !bets[t.id]?.isConfirmed)}
+                                className="px-12 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-display font-bold text-2xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] flex items-center gap-3"
+                            >
+                                <i data-lucide="eye"></i> HIỆN ĐÁP ÁN
+                            </button>
                         )}
-
-                        {/* Team Scores Fixed Bottom */}
-                        <div className="fixed bottom-0 left-0 w-full bg-dark-surface/90 backdrop-blur-md border-t border-dark-border p-6">
-                            <div className="max-w-7xl mx-auto flex justify-around gap-4">
-                                {data.teams.map(team => {
-                                    const currentBet = bets[team.id]?.amount || 0;
-                                    return (
-                                        <div key={team.id} className="text-center flex-1 relative transition-all duration-500">
-                                            <div className="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-1">{team.name}</div>
-                                            <div className="text-4xl font-display font-bold text-white tabular-nums">{team.score}</div>
-                                            {/* Show current typing bet lightly if not revealed yet to build suspense */}
-                                            {currentBet > 0 && !isRevealed && (
-                                                <div className="mt-2 text-indigo-500/50 text-sm font-mono font-medium animate-pulse">
-                                                    Cược: {currentBet}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            // HOST View
-            return (
-                <div className="h-full flex flex-col animate-fade-in">
-                    {/* Host Header */}
-                    <div className="bg-white dark:bg-dark-surface border-b border-zinc-200 dark:border-dark-border p-4 flex justify-between items-center shrink-0">
-                        <div className="flex items-center gap-4">
-                            <Button variant="ghost" onClick={onBack} size="sm"><i data-lucide="arrow-left" className="w-4 h-4"></i></Button>
-                            <div>
-                                <h2 className="font-display font-bold text-zinc-900 dark:text-white">Câu {currentQIndex + 1}/{data.questions.length}</h2>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                             <Button onClick={() => setViewMode('PROJECTOR')} variant="secondary">
-                                <i data-lucide="presentation" className="w-4 h-4"></i> Màn hình chiếu
-                            </Button>
-                            {!isRevealed ? (
-                                <Button onClick={() => setIsRevealed(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white">
-                                    <i data-lucide="eye" className="w-4 h-4"></i> Hiện Đáp Án
-                                </Button>
-                            ) : (
-                                <Button onClick={nextQuestion} disabled={currentQIndex >= data.questions.length - 1}>
-                                    Câu tiếp theo <i data-lucide="arrow-right" className="w-4 h-4"></i>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-                        
-                        {/* Left: Question Info */}
-                        <div className="md:w-1/3 p-6 border-r border-zinc-200 dark:border-dark-border bg-zinc-50 dark:bg-zinc-900 overflow-y-auto">
-                            <div className="sticky top-0">
-                                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Nội dung câu hỏi</h3>
-                                <p className="text-2xl font-display font-bold text-zinc-900 dark:text-white mb-6">
-                                    {currentQ.statement}
-                                </p>
-                                
-                                <div className={`p-4 rounded-lg border mb-4 transition-all duration-300 ${isRevealed ? (currentQ.answer ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-red-500/10 border-red-500/50') : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'}`}>
-                                    <div className="text-sm font-bold uppercase mb-1 opacity-70">Đáp án chính xác</div>
-                                    <div className={`text-xl font-bold ${isRevealed ? (currentQ.answer ? 'text-emerald-500' : 'text-red-500') : 'text-zinc-400 blur-sm select-none'}`}>
-                                        {currentQ.answer ? 'ĐÚNG' : 'SAI'}
-                                    </div>
-                                    {isRevealed && (
-                                        <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 animate-fade-in">
-                                            {currentQ.explanation}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right: Team Controls */}
-                        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-dark-bg">
-                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Điều khiển cược & Điểm số</h3>
-                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                {data.teams.map(team => (
-                                    <Card key={team.id} className="transition-all hover:border-indigo-500/30">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <div>
-                                                <div className="font-display font-bold text-lg dark:text-white">{team.name}</div>
-                                                <div className="text-sm text-zinc-500">Điểm hiện tại: <span className="font-mono font-bold text-2xl text-zinc-900 dark:text-white">{team.score}</span></div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            {/* Quick Bet Buttons */}
-                                            <div className="grid grid-cols-5 gap-1">
-                                                {[10, 20, 50, 100].map(val => (
-                                                    <button 
-                                                        key={val}
-                                                        onClick={() => handleBetAmount(team.id, val)}
-                                                        className="px-1 py-1 text-xs font-semibold rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
-                                                    >
-                                                        {val}
-                                                    </button>
-                                                ))}
-                                                <button 
-                                                    onClick={() => handleBetAmount(team.id, team.score)}
-                                                    className="px-1 py-1 text-xs font-semibold rounded bg-red-100 dark:bg-red-900/30 hover:bg-red-200 text-red-600 dark:text-red-400"
-                                                >
-                                                    ALL
-                                                </button>
-                                            </div>
-
-                                            {/* Amount Input */}
-                                            <div className="relative">
-                                                <input 
-                                                    type="number"
-                                                    value={bets[team.id]?.amount || ''}
-                                                    onChange={(e) => handleBetAmount(team.id, e.target.value)}
-                                                    placeholder="Nhập mức cược..."
-                                                    className="w-full pl-3 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-zinc-900 dark:text-white font-bold text-lg"
-                                                />
-                                            </div>
-
-                                            {/* Direct Action Buttons */}
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <button 
-                                                    onClick={() => applyScore(team.id, true)}
-                                                    className="py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <i data-lucide="check-circle" className="w-5 h-5"></i> ĐÚNG
-                                                </button>
-                                                <button 
-                                                    onClick={() => applyScore(team.id, false)}
-                                                    className="py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <i data-lucide="x-circle" className="w-5 h-5"></i> SAI
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                             </div>
-                        </div>
                     </div>
                 </div>
             );
