@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wager Game - Ultimate AI Edition</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Unbounded', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#09090b', // Zinc 950
+                            surface: '#18181b', // Zinc 900
+                            border: '#27272a', // Zinc 800
+                        },
+                        light: {
+                            bg: '#ffffff',
+                            surface: '#f4f4f5', // Zinc 100
+                            border: '#e4e4e7', // Zinc 200
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'pop': 'pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.95)' },
+                            '50%': { transform: 'scale(1.02)' },
+                            '100%': { transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #52525b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #71717a;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            overflow: hidden; /* Prevent body scroll */
+        }
+    </style>
+</head>
+<body class="antialiased transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback, createContext, useContext, useRef } = React;
+
+        // --- Utils & Hooks ---
+
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+
+        // Toast System
+        const ToastContext = createContext();
+        const useToast = () => useContext(ToastContext);
+
+        const ToastProvider = ({ children }) => {
+            const [toasts, setToasts] = useState([]);
+
+            const addToast = (message, type = 'info') => {
+                const id = generateId();
+                setToasts(prev => [...prev, { id, message, type }]);
+                setTimeout(() => removeToast(id), 3000);
+            };
+
+            const removeToast = (id) => {
+                setToasts(prev => prev.filter(t => t.id !== id));
+            };
+
+            return (
+                <ToastContext.Provider value={{ addToast }}>
+                    {children}
+                    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+                        {toasts.map(toast => (
+                            <div key={toast.id} className={`pointer-events-auto min-w-[250px] p-4 rounded-lg shadow-lg border animate-slide-up flex items-center gap-3
+                                ${toast.type === 'error' ? 'bg-red-500/10 border-red-500 text-red-500' : 
+                                  toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 
+                                  'bg-zinc-800 border-zinc-700 text-zinc-100'}`}>
+                                <span className="text-sm font-medium font-sans">{toast.message}</span>
+                            </div>
+                        ))}
+                    </div>
+                </ToastContext.Provider>
+            );
+        };
+
+        // LocalStorage Hook
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.error(error);
+                    return initialValue;
+                }
+            });
+
+            const setValue = (value) => {
+                try {
+                    const valueToStore = value instanceof Function ? value(storedValue) : value;
+                    setStoredValue(valueToStore);
+                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            return [storedValue, setValue];
+        };
+
+        // --- Components ---
+
+        const Button = ({ children, onClick, variant = 'primary', className = '', ...props }) => {
+            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-sans flex items-center justify-center gap-2";
+            const variants = {
+                primary: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20",
+                secondary: "bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100",
+                danger: "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20",
+                ghost: "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400",
+                success: "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20",
+                outline: "border-2 border-zinc-200 dark:border-zinc-700 hover:border-indigo-500 text-zinc-600 dark:text-zinc-300 hover:text-indigo-500"
+            };
+
+            return (
+                <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+                    {children}
+                </button>
+            );
+        };
+
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white dark:bg-dark-surface border border-zinc-200 dark:border-dark-border rounded-xl shadow-sm p-6 ${className}`}>
+                {children}
+            </div>
+        );
+
+        const Input = ({ label, ...props }) => (
+            <div className="flex flex-col gap-1.5">
+                {label && <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{label}</label>}
+                <input 
+                    className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-sans"
+                    {...props}
+                />
+            </div>
+        );
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+                    <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-zinc-200 dark:border-dark-border animate-pop overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                            <h3 className="font-display font-bold text-lg text-zinc-900 dark:text-white">{title}</h3>
+                            <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                                <i data-lucide="x" className="w-5 h-5 text-zinc-500"></i>
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Game Logic Components ---
+
+        const Dashboard = ({ data, setData, onStartGame }) => {
+            const { addToast } = useToast();
+            const [newTeamName, setNewTeamName] = useState('');
+            const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
+            const [editingQuestion, setEditingQuestion] = useState(null);
+            const [defaultScore, setDefaultScore] = useState(100);
+
+            // Question Form State
+            const [qForm, setQForm] = useState({ statement: '', explanation: '', answer: true });
+
+            const addTeam = (e) => {
+                e.preventDefault();
+                if (!newTeamName.trim()) return;
+                setData(prev => ({
+                    ...prev,
+                    teams: [...prev.teams, { id: generateId(), name: newTeamName, score: defaultScore }]
+                }));
+                setNewTeamName('');
+                addToast(`Đã thêm đội chơi (Điểm: ${defaultScore})`, 'success');
+            };
+
+            const removeTeam = (id) => {
+                setData(prev => ({ ...prev, teams: prev.teams.filter(t => t.id !== id) }));
+            };
+            
+            const updateTeamScore = (id, newScore) => {
+                 setData(prev => ({
+                    ...prev,
+                    teams: prev.teams.map(t => t.id === id ? { ...t, score: parseInt(newScore) || 0 } : t)
+                }));
+            }
+
+            const saveQuestion = () => {
+                if (!qForm.statement.trim()) {
+                    addToast('Vui lòng nhập luận điểm', 'error');
+                    return;
+                }
+                
+                const newQ = {
+                    id: editingQuestion ? editingQuestion.id : generateId(),
+                    ...qForm
+                };
+
+                if (editingQuestion) {
+                    setData(prev => ({
+                        ...prev,
+                        questions: prev.questions.map(q => q.id === editingQuestion.id ? newQ : q)
+                    }));
+                    addToast('Đã cập nhật câu hỏi', 'success');
+                } else {
+                    setData(prev => ({
+                        ...prev,
+                        questions: [...prev.questions, newQ]
+                    }));
+                    addToast('Đã thêm câu hỏi mới', 'success');
+                }
+                setIsAddQuestionOpen(false);
+                setEditingQuestion(null);
+                setQForm({ statement: '', explanation: '', answer: true });
+            };
+
+            const deleteQuestion = (id) => {
+                 setData(prev => ({ ...prev, questions: prev.questions.filter(q => q.id !== id) }));
+            };
+
+            const openEdit = (q) => {
+                setEditingQuestion(q);
+                setQForm({ statement: q.statement, explanation: q.explanation, answer: q.answer });
+                setIsAddQuestionOpen(true);
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto space-y-8 animate-slide-up pb-20">
+                    <header className="flex justify-between items-end border-b border-zinc-200 dark:border-zinc-800 pb-6">
+                        <div>
+                            <h1 className="text-3xl font-display font-bold text-zinc-900 dark:text-white">Thiết lập trò chơi</h1>
+                            <p className="text-zinc-500 mt-2">Quản lý đội chơi và ngân hàng câu hỏi</p>
+                        </div>
+                        <Button onClick={onStartGame} disabled={data.teams.length === 0 || data.questions.length === 0} className="px-8 py-3 text-lg">
+                            <i data-lucide="play-circle" className="w-5 h-5"></i> Bắt đầu Game
+                        </Button>
+                    </header>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Teams Section */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-display font-semibold dark:text-zinc-200">Đội chơi ({data.teams.length})</h2>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-zinc-500 uppercase">Điểm khởi tạo</span>
+                                    <input 
+                                        type="number" 
+                                        value={defaultScore}
+                                        onChange={(e) => setDefaultScore(parseInt(e.target.value) || 0)}
+                                        className="w-16 bg-zinc-100 dark:bg-zinc-800 border-none rounded p-1 text-center font-bold"
+                                    />
+                                </div>
+                            </div>
+                            <Card>
+                                <form onSubmit={addTeam} className="flex gap-2 mb-4">
+                                    <Input 
+                                        placeholder="Tên đội..." 
+                                        value={newTeamName} 
+                                        onChange={e => setNewTeamName(e.target.value)} 
+                                    />
+                                    <Button type="submit" variant="secondary"><i data-lucide="plus"></i></Button>
+                                </form>
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                                    {data.teams.length === 0 && <p className="text-sm text-zinc-400 text-center py-4">Chưa có đội nào</p>}
+                                    {data.teams.map(team => (
+                                        <div key={team.id} className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50">
+                                            <span className="font-semibold dark:text-zinc-200">{team.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="number"
+                                                    value={team.score}
+                                                    onChange={(e) => updateTeamScore(team.id, e.target.value)}
+                                                    className="w-16 bg-transparent border border-zinc-200 dark:border-zinc-700 rounded px-1 text-right font-mono"
+                                                />
+                                                <button onClick={() => removeTeam(team.id)} className="text-zinc-400 hover:text-red-500 transition-colors">
+                                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        </div>
+
+                        {/* Questions Section */}
+                        <div className="lg:col-span-2 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-display font-semibold dark:text-zinc-200">Ngân hàng câu hỏi ({data.questions.length})</h2>
+                                <Button onClick={() => { setEditingQuestion(null); setQForm({statement:'', explanation:'', answer:true}); setIsAddQuestionOpen(true); }} variant="secondary">
+                                    <i data-lucide="plus"></i> Thêm câu hỏi
+                                </Button>
+                            </div>
+                            
+                            <div className="grid gap-4">
+                                {data.questions.length === 0 && (
+                                    <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+                                        <p className="text-zinc-400">Chưa có câu hỏi nào. Hãy thêm mới!</p>
+                                    </div>
+                                )}
+                                {data.questions.map((q, idx) => (
+                                    <Card key={q.id} className="relative group hover:border-indigo-500/30 transition-colors">
+                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => openEdit(q)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md hover:text-indigo-500"><i data-lucide="edit-2" className="w-4 h-4"></i></button>
+                                            <button onClick={() => deleteQuestion(q.id)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md hover:text-red-500"><i data-lucide="trash" className="w-4 h-4"></i></button>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <span className="text-xs font-bold text-zinc-400 font-display">#{idx + 1}</span>
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">{q.statement}</h3>
+                                                <div className="flex gap-3 items-center text-sm">
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${q.answer ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                        {q.answer ? 'Đúng' : 'Sai'}
+                                                    </span>
+                                                    <span className="text-zinc-500 truncate max-w-md">{q.explanation}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <Modal isOpen={isAddQuestionOpen} onClose={() => setIsAddQuestionOpen(false)} title={editingQuestion ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}>
+                        <div className="space-y-4">
+                            <Input 
+                                label="Luận điểm / Câu hỏi" 
+                                placeholder="Ví dụ: Trái đất hình vuông?" 
+                                value={qForm.statement}
+                                onChange={e => setQForm({...qForm, statement: e.target.value})}
+                            />
+                            
+                            <div>
+                                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-2">Đáp án đúng</label>
+                                <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-lg p-1">
+                                    <button 
+                                        className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${qForm.answer ? 'bg-emerald-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
+                                        onClick={() => setQForm({...qForm, answer: true})}
+                                    >
+                                        ĐÚNG
+                                    </button>
+                                    <button 
+                                        className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${!qForm.answer ? 'bg-red-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
+                                        onClick={() => setQForm({...qForm, answer: false})}
+                                    >
+                                        SAI
+                                    </button>
+                                </div>
+                            </div>
+
+                            <Input 
+                                label="Giải thích (Hiện sau khi công bố)" 
+                                placeholder="Giải thích ngắn gọn..." 
+                                value={qForm.explanation}
+                                onChange={e => setQForm({...qForm, explanation: e.target.value})}
+                            />
+
+                            <div className="pt-4 flex justify-end gap-2">
+                                <Button variant="ghost" onClick={() => setIsAddQuestionOpen(false)}>Hủy</Button>
+                                <Button onClick={saveQuestion}>Lưu lại</Button>
+                            </div>
+                        </div>
+                    </Modal>
+                </div>
+            );
+        };
+
+        // Màn hình Game Play (Host & Projector View)
+        const GamePlay = ({ data, setData, onBack }) => {
+            const { addToast } = useToast();
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [isRevealed, setIsRevealed] = useState(false);
+            const [bets, setBets] = useState({}); // { teamId: { amount: number } }
+            const [viewMode, setViewMode] = useState('HOST'); // HOST | PROJECTOR
+            const [isFullscreen, setIsFullscreen] = useState(false);
+
+            const currentQ = data.questions[currentQIndex];
+
+            // Init bets
+            useEffect(() => {
+                const initialBets = {};
+                data.teams.forEach(t => initialBets[t.id] = { amount: 0 });
+                setBets(initialBets);
+            }, [currentQIndex, data.teams]);
+
+            const handleBetAmount = (teamId, amount) => {
+                setBets(prev => ({
+                    ...prev,
+                    [teamId]: { ...prev[teamId], amount: parseInt(amount) || 0 }
+                }));
+            };
+
+            const applyScore = (teamId, isCorrect) => {
+                const amount = bets[teamId]?.amount || 0;
+                if (amount <= 0) {
+                    addToast('Chưa nhập cược cho đội này!', 'error');
+                    return;
+                }
+
+                const newScore = isCorrect 
+                    ? data.teams.find(t => t.id === teamId).score + amount 
+                    : data.teams.find(t => t.id === teamId).score - amount;
+
+                setData(prev => ({
+                    ...prev,
+                    teams: prev.teams.map(t => t.id === teamId ? { ...t, score: newScore } : t)
+                }));
+
+                addToast(`Đã ${isCorrect ? 'cộng' : 'trừ'} ${amount} điểm cho đội chơi`, isCorrect ? 'success' : 'info');
+            };
+
+            const nextQuestion = () => {
+                if (currentQIndex < data.questions.length - 1) {
+                    setCurrentQIndex(prev => prev + 1);
+                    setIsRevealed(false);
+                } else {
+                    addToast('Đã hết câu hỏi!', 'info');
+                }
+            };
+
+            const toggleFullscreen = () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    setIsFullscreen(true);
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        setIsFullscreen(false);
+                    }
+                }
+            };
+
+            // Projector View Component
+            if (viewMode === 'PROJECTOR') {
+                return (
+                    <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center justify-center p-8 select-none">
+                        <div className="absolute top-4 right-4 flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
+                            <button onClick={toggleFullscreen} className="text-white p-2"><i data-lucide={isFullscreen ? "minimize" : "maximize"}></i></button>
+                            <button onClick={() => setViewMode('HOST')} className="text-white p-2"><i data-lucide="monitor"></i> Host View</button>
+                        </div>
+                        
+                        {/* Question Phase */}
+                        <div className={`w-full max-w-5xl text-center space-y-12 ${isRevealed ? 'scale-75 origin-top transition-all duration-700' : ''}`}>
+                            <div className="inline-block px-6 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-xl mb-4">
+                                CÂU HỎI #{currentQIndex + 1}
+                            </div>
+                            <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-tight drop-shadow-2xl">
+                                {currentQ.statement}
+                            </h1>
+                        </div>
+
+                        {/* Reveal Phase */}
+                        {isRevealed && (
+                            <div className="mt-12 flex flex-col items-center animate-slide-up">
+                                <div className={`text-9xl font-black font-display mb-8 ${currentQ.answer ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {currentQ.answer ? 'ĐÚNG' : 'SAI'}
+                                </div>
+                                <div className="text-2xl text-zinc-400 max-w-3xl text-center font-light animate-fade-in">
+                                    {currentQ.explanation}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Team Scores Fixed Bottom */}
+                        <div className="fixed bottom-0 left-0 w-full bg-dark-surface/90 backdrop-blur-md border-t border-dark-border p-6">
+                            <div className="max-w-7xl mx-auto flex justify-around gap-4">
+                                {data.teams.map(team => {
+                                    const currentBet = bets[team.id]?.amount || 0;
+                                    return (
+                                        <div key={team.id} className="text-center flex-1 relative transition-all duration-500">
+                                            <div className="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-1">{team.name}</div>
+                                            <div className="text-4xl font-display font-bold text-white tabular-nums">{team.score}</div>
+                                            {/* Show current typing bet lightly if not revealed yet to build suspense */}
+                                            {currentBet > 0 && !isRevealed && (
+                                                <div className="mt-2 text-indigo-500/50 text-sm font-mono font-medium animate-pulse">
+                                                    Cược: {currentBet}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // HOST View
+            return (
+                <div className="h-full flex flex-col animate-fade-in">
+                    {/* Host Header */}
+                    <div className="bg-white dark:bg-dark-surface border-b border-zinc-200 dark:border-dark-border p-4 flex justify-between items-center shrink-0">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" onClick={onBack} size="sm"><i data-lucide="arrow-left" className="w-4 h-4"></i></Button>
+                            <div>
+                                <h2 className="font-display font-bold text-zinc-900 dark:text-white">Câu {currentQIndex + 1}/{data.questions.length}</h2>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                             <Button onClick={() => setViewMode('PROJECTOR')} variant="secondary">
+                                <i data-lucide="presentation" className="w-4 h-4"></i> Màn hình chiếu
+                            </Button>
+                            {!isRevealed ? (
+                                <Button onClick={() => setIsRevealed(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                                    <i data-lucide="eye" className="w-4 h-4"></i> Hiện Đáp Án
+                                </Button>
+                            ) : (
+                                <Button onClick={nextQuestion} disabled={currentQIndex >= data.questions.length - 1}>
+                                    Câu tiếp theo <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+                        
+                        {/* Left: Question Info */}
+                        <div className="md:w-1/3 p-6 border-r border-zinc-200 dark:border-dark-border bg-zinc-50 dark:bg-zinc-900 overflow-y-auto">
+                            <div className="sticky top-0">
+                                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Nội dung câu hỏi</h3>
+                                <p className="text-2xl font-display font-bold text-zinc-900 dark:text-white mb-6">
+                                    {currentQ.statement}
+                                </p>
+                                
+                                <div className={`p-4 rounded-lg border mb-4 transition-all duration-300 ${isRevealed ? (currentQ.answer ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-red-500/10 border-red-500/50') : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'}`}>
+                                    <div className="text-sm font-bold uppercase mb-1 opacity-70">Đáp án chính xác</div>
+                                    <div className={`text-xl font-bold ${isRevealed ? (currentQ.answer ? 'text-emerald-500' : 'text-red-500') : 'text-zinc-400 blur-sm select-none'}`}>
+                                        {currentQ.answer ? 'ĐÚNG' : 'SAI'}
+                                    </div>
+                                    {isRevealed && (
+                                        <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 animate-fade-in">
+                                            {currentQ.explanation}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right: Team Controls */}
+                        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-dark-bg">
+                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Điều khiển cược & Điểm số</h3>
+                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                {data.teams.map(team => (
+                                    <Card key={team.id} className="transition-all hover:border-indigo-500/30">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div>
+                                                <div className="font-display font-bold text-lg dark:text-white">{team.name}</div>
+                                                <div className="text-sm text-zinc-500">Điểm hiện tại: <span className="font-mono font-bold text-2xl text-zinc-900 dark:text-white">{team.score}</span></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {/* Quick Bet Buttons */}
+                                            <div className="grid grid-cols-5 gap-1">
+                                                {[10, 20, 50, 100].map(val => (
+                                                    <button 
+                                                        key={val}
+                                                        onClick={() => handleBetAmount(team.id, val)}
+                                                        className="px-1 py-1 text-xs font-semibold rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
+                                                    >
+                                                        {val}
+                                                    </button>
+                                                ))}
+                                                <button 
+                                                    onClick={() => handleBetAmount(team.id, team.score)}
+                                                    className="px-1 py-1 text-xs font-semibold rounded bg-red-100 dark:bg-red-900/30 hover:bg-red-200 text-red-600 dark:text-red-400"
+                                                >
+                                                    ALL
+                                                </button>
+                                            </div>
+
+                                            {/* Amount Input */}
+                                            <div className="relative">
+                                                <input 
+                                                    type="number"
+                                                    value={bets[team.id]?.amount || ''}
+                                                    onChange={(e) => handleBetAmount(team.id, e.target.value)}
+                                                    placeholder="Nhập mức cược..."
+                                                    className="w-full pl-3 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-zinc-900 dark:text-white font-bold text-lg"
+                                                />
+                                            </div>
+
+                                            {/* Direct Action Buttons */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button 
+                                                    onClick={() => applyScore(team.id, true)}
+                                                    className="py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <i data-lucide="check-circle" className="w-5 h-5"></i> ĐÚNG
+                                                </button>
+                                                <button 
+                                                    onClick={() => applyScore(team.id, false)}
+                                                    className="py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <i data-lucide="x-circle" className="w-5 h-5"></i> SAI
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App ---
+
+        const App = () => {
+            const [theme, setTheme] = useLocalStorage('theme', 'dark');
+            const [data, setData] = useLocalStorage('gameData', {
+                teams: [],
+                questions: []
+            });
+            const [screen, setScreen] = useState('DASHBOARD'); // DASHBOARD | GAME
+
+            useEffect(() => {
+                if (theme === 'dark') document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+            }, [theme]);
+
+            const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+
+            // Listen for icons
+            useEffect(() => {
+                lucide.createIcons();
+            }, [screen, data, screen]);
+
+            return (
+                <div className="bg-light-bg dark:bg-dark-bg min-h-screen text-zinc-900 dark:text-zinc-100 font-sans selection:bg-indigo-500/30">
+                    <ToastProvider>
+                        {screen === 'DASHBOARD' && (
+                            <div className="h-screen overflow-y-auto custom-scrollbar p-6">
+                                <div className="absolute top-6 right-6 z-10">
+                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                                        <i data-lucide={theme === 'dark' ? 'sun' : 'moon'} className="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <Dashboard data={data} setData={setData} onStartGame={() => setScreen('GAME')} />
+                            </div>
+                        )}
+                        
+                        {screen === 'GAME' && (
+                            <GamePlay data={data} setData={setData} onBack={() => setScreen('DASHBOARD')} />
+                        )}
+                    </ToastProvider>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
