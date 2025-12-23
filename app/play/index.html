@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đánh cược</title>
+    <title>Wager Game - Ultimate AI Edition</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,27 +146,47 @@
             );
         };
 
-        // LocalStorage Hook
+        // Improved LocalStorage Hook with Cross-Tab Sync
         const useLocalStorage = (key, initialValue) => {
-            const [storedValue, setStoredValue] = useState(() => {
+            const readValue = () => {
+                if (typeof window === 'undefined') {
+                    return initialValue;
+                }
                 try {
                     const item = window.localStorage.getItem(key);
                     return item ? JSON.parse(item) : initialValue;
                 } catch (error) {
-                    console.error(error);
+                    console.warn(`Error reading localStorage key "${key}":`, error);
                     return initialValue;
                 }
-            });
+            };
+
+            const [storedValue, setStoredValue] = useState(readValue);
 
             const setValue = (value) => {
                 try {
                     const valueToStore = value instanceof Function ? value(storedValue) : value;
                     setStoredValue(valueToStore);
-                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                    if (typeof window !== 'undefined') {
+                        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                    }
                 } catch (error) {
-                    console.error(error);
+                    console.warn(`Error setting localStorage key "${key}":`, error);
                 }
             };
+
+            useEffect(() => {
+                const handleStorageChange = (e) => {
+                    if (e.key === key) {
+                        setStoredValue(readValue());
+                    }
+                };
+                window.addEventListener('storage', handleStorageChange);
+                return () => {
+                    window.removeEventListener('storage', handleStorageChange);
+                };
+            }, [key]);
+
             return [storedValue, setValue];
         };
 
@@ -298,6 +318,46 @@
                 setIsAddQuestionOpen(true);
             };
 
+            // AUTO PROJECTOR LOGIC
+            const openProjectorWindow = async () => {
+                // Construct URL that forces GAME mode
+                const url = new URL(window.location.href);
+                url.searchParams.set('mode', 'projector');
+                const targetUrl = url.toString();
+                const windowName = 'WagerGameProjector';
+                
+                // Fallback dimensions
+                const width = 1024;
+                const height = 768;
+                let left = 0;
+                let top = 0;
+
+                try {
+                    // Modern API to detect screens
+                    if ('getScreenDetails' in window) {
+                        const screenDetails = await window.getScreenDetails();
+                        // Find a screen that is NOT the current one
+                        const currentScreen = screenDetails.currentScreen;
+                        const externalScreen = screenDetails.screens.find(s => s !== currentScreen) || screenDetails.screens[0];
+                        
+                        if (externalScreen) {
+                            left = externalScreen.left;
+                            top = externalScreen.top;
+                            const features = `left=${left},top=${top},width=${externalScreen.width},height=${externalScreen.height},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
+                            window.open(targetUrl, windowName, features);
+                            addToast('Đã mở màn hình chiếu ở màn hình phụ!', 'success');
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.log("Window Management API not supported or denied:", err);
+                }
+
+                // Fallback: Open a clean popup that is easy to drag
+                window.open(targetUrl, windowName, `width=${width},height=${height},menubar=no,toolbar=no,location=no,status=no,resizable=yes`);
+                addToast('Đã mở cửa sổ rời. Hãy kéo nó sang màn hình máy chiếu!', 'info');
+            };
+
             return (
                 <div className="max-w-6xl mx-auto space-y-8 animate-slide-up pb-20">
                     <header className="flex justify-between items-end border-b border-zinc-200 dark:border-zinc-800 pb-6">
@@ -305,9 +365,14 @@
                             <h1 className="text-3xl font-display font-bold text-zinc-900 dark:text-white">Thiết lập trò chơi</h1>
                             <p className="text-zinc-500 mt-2">Quản lý đội chơi và ngân hàng câu hỏi</p>
                         </div>
-                        <Button onClick={onStartGame} disabled={data.teams.length === 0 || data.questions.length === 0} className="px-8 py-3 text-lg">
-                            <i data-lucide="play-circle" className="w-5 h-5"></i> Bắt đầu Game
-                        </Button>
+                        <div className="flex gap-3">
+                            <Button onClick={openProjectorWindow} variant="secondary" title="Mở cửa sổ riêng để kéo sang máy chiếu">
+                                <i data-lucide="monitor-up" className="w-5 h-5"></i> Cửa sổ chiếu
+                            </Button>
+                            <Button onClick={onStartGame} disabled={data.teams.length === 0 || data.questions.length === 0} className="px-8 py-3 text-lg">
+                                <i data-lucide="play-circle" className="w-5 h-5"></i> Bắt đầu Game
+                            </Button>
+                        </div>
                     </header>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -439,80 +504,57 @@
             );
         };
 
-        // Màn hình Game Play (Projector View Interactive)
-        const GamePlay = ({ data, setData, onBack }) => {
+        // Màn hình Game Play
+        const GamePlay = ({ data, setData, gameState, setGameState, onBack }) => {
             const { addToast } = useToast();
-            const [currentQIndex, setCurrentQIndex] = useState(0);
-            const [isRevealed, setIsRevealed] = useState(false);
-            
-            // Bets state: { teamId: { choice: boolean | null, amount: number, isConfirmed: boolean } }
-            const [bets, setBets] = useState({});
-            
-            // View Mode is now effectively always PROJECTOR/INTERACTIVE based on user request, 
-            // but we keep the structure just in case needed.
-            const [viewMode, setViewMode] = useState('PROJECTOR'); 
             const [isFullscreen, setIsFullscreen] = useState(false);
 
+            const { currentQIndex, isRevealed, bets } = gameState;
             const currentQ = data.questions[currentQIndex];
-
-            // Init bets structure for current question
-            useEffect(() => {
-                const initialBets = {};
-                data.teams.forEach(t => {
-                    initialBets[t.id] = { choice: null, amount: 0, isConfirmed: false };
-                });
-                setBets(initialBets);
-            }, [currentQIndex, data.teams]);
 
             // --- Handlers for Interactive Betting ---
 
             const handleBetChoice = (teamId, choice) => {
-                setBets(prev => ({
-                    ...prev,
-                    [teamId]: { ...prev[teamId], choice }
-                }));
+                const updatedBets = {
+                    ...bets,
+                    [teamId]: { ...(bets[teamId] || { amount: 0, isConfirmed: false }), choice }
+                };
+                setGameState(prev => ({ ...prev, bets: updatedBets }));
             };
 
             const handleBetAmount = (teamId, val) => {
-                setBets(prev => ({
-                    ...prev,
-                    [teamId]: { ...prev[teamId], amount: parseInt(val) || 0 }
-                }));
+                const updatedBets = {
+                    ...bets,
+                    [teamId]: { ...(bets[teamId] || { choice: null, isConfirmed: false }), amount: parseInt(val) || 0 }
+                };
+                setGameState(prev => ({ ...prev, bets: updatedBets }));
             };
 
             const confirmBet = (teamId) => {
                 const bet = bets[teamId];
-                if (bet.choice === null) {
+                if (!bet || bet.choice === null) {
                     addToast('Vui lòng chọn ĐÚNG hoặc SAI!', 'error');
                     return;
                 }
-                if (bet.amount <= 0 && bet.amount !== 0) { // Allow 0 bet? User said "Bấm số điểm muốn cược", implying > 0 usually
-                     addToast('Vui lòng nhập số điểm!', 'error');
-                     return;
-                }
-
-                setBets(prev => ({
-                    ...prev,
-                    [teamId]: { ...prev[teamId], isConfirmed: true }
-                }));
+                const updatedBets = {
+                    ...bets,
+                    [teamId]: { ...bet, isConfirmed: true }
+                };
+                setGameState(prev => ({ ...prev, bets: updatedBets }));
             };
 
             const unlockBet = (teamId) => {
-                if (isRevealed) return; // Cannot unlock after reveal
-                setBets(prev => ({
-                    ...prev,
-                    [teamId]: { ...prev[teamId], isConfirmed: false }
-                }));
+                if (isRevealed) return;
+                 const updatedBets = {
+                    ...bets,
+                    [teamId]: { ...(bets[teamId] || {}), isConfirmed: false }
+                };
+                setGameState(prev => ({ ...prev, bets: updatedBets }));
             };
 
             const revealAnswer = () => {
-                // Check if all teams confirmed? Or just force reveal?
-                // User said "Sau khi cả 2 đội đều xong thao tác cược... thì màn hình hiện 1 nút (hiện đáp án)"
-                // We'll calculate scores here.
-                
                 const newTeams = data.teams.map(team => {
                     const bet = bets[team.id];
-                    // Only apply score if confirmed and made a choice
                     if (bet && bet.isConfirmed && bet.choice !== null) {
                         const isCorrect = bet.choice === currentQ.answer;
                         return {
@@ -524,13 +566,23 @@
                 });
 
                 setData(prev => ({ ...prev, teams: newTeams }));
-                setIsRevealed(true);
+                setGameState(prev => ({ ...prev, isRevealed: true }));
             };
 
             const nextQuestion = () => {
                 if (currentQIndex < data.questions.length - 1) {
-                    setCurrentQIndex(prev => prev + 1);
-                    setIsRevealed(false);
+                    const nextIndex = currentQIndex + 1;
+                    const resetBets = {};
+                    data.teams.forEach(t => {
+                        resetBets[t.id] = { choice: null, amount: 0, isConfirmed: false };
+                    });
+
+                    setGameState(prev => ({ 
+                        ...prev, 
+                        currentQIndex: nextIndex,
+                        isRevealed: false,
+                        bets: resetBets
+                    }));
                 } else {
                     addToast('Đã hết câu hỏi!', 'info');
                 }
@@ -548,7 +600,6 @@
                 }
             };
 
-            // Main Interactive Projector Interface
             return (
                 <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center p-6 select-none overflow-hidden">
                     
@@ -583,16 +634,12 @@
                                         : (bet.isConfirmed ? 'border-indigo-500/50 bg-indigo-900/10' : 'border-zinc-700')
                                     }
                                 `}>
-                                    {/* Header: Name & Score */}
                                     <div className="flex justify-between items-center border-b border-white/10 pb-4">
                                         <div className="font-display font-bold text-xl text-white tracking-wide">{team.name}</div>
                                         <div className="font-mono font-bold text-3xl text-white">{team.score}</div>
                                     </div>
 
-                                    {/* Interaction Body */}
                                     <div className="flex-1 flex flex-col justify-center min-h-[200px]">
-                                        
-                                        {/* State: REVEALED */}
                                         {isRevealed ? (
                                             <div className="text-center space-y-2 animate-bounce-in">
                                                 {bet.isConfirmed ? (
@@ -609,7 +656,6 @@
                                                 )}
                                             </div>
                                         ) : (
-                                            /* State: BETTING (Confirmed vs Not Confirmed) */
                                             bet.isConfirmed ? (
                                                 <div className="text-center space-y-4 animate-pop cursor-pointer" onClick={() => unlockBet(team.id)}>
                                                     <div className="text-zinc-400 text-sm uppercase tracking-widest">Đã chốt phương án</div>
@@ -623,49 +669,20 @@
                                                 </div>
                                             ) : (
                                                 <div className="space-y-4">
-                                                    {/* Choice Buttons */}
                                                     <div className="grid grid-cols-2 gap-3 h-16">
-                                                        <button 
-                                                            onClick={() => handleBetChoice(team.id, true)}
-                                                            className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === true ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}
-                                                        >
-                                                            ĐÚNG
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleBetChoice(team.id, false)}
-                                                            className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === false ? 'bg-red-600 border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}
-                                                        >
-                                                            SAI
-                                                        </button>
+                                                        <button onClick={() => handleBetChoice(team.id, true)} className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === true ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>ĐÚNG</button>
+                                                        <button onClick={() => handleBetChoice(team.id, false)} className={`rounded-xl font-bold text-lg transition-all border-2 ${bet.choice === false ? 'bg-red-600 border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-dark-surface border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>SAI</button>
                                                     </div>
-
-                                                    {/* Amount Input */}
                                                     <div className="flex gap-2">
-                                                        <input 
-                                                            type="number" 
-                                                            value={bet.amount || ''}
-                                                            onChange={(e) => handleBetAmount(team.id, e.target.value)}
-                                                            onKeyDown={(e) => e.key === 'Enter' && confirmBet(team.id)}
-                                                            placeholder="0"
-                                                            className="w-full bg-dark-bg border-2 border-zinc-700 rounded-xl px-4 py-3 text-center font-mono text-2xl font-bold text-white focus:border-indigo-500 outline-none transition-colors"
-                                                        />
+                                                        <input type="number" value={bet.amount || ''} onChange={(e) => handleBetAmount(team.id, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && confirmBet(team.id)} placeholder="0" className="w-full bg-dark-bg border-2 border-zinc-700 rounded-xl px-4 py-3 text-center font-mono text-2xl font-bold text-white focus:border-indigo-500 outline-none transition-colors"/>
                                                     </div>
-                                                    
-                                                    {/* Quick Amounts */}
                                                     <div className="flex justify-between gap-2">
                                                         {[10, 50, 100].map(val => (
                                                             <button key={val} onClick={() => handleBetAmount(team.id, val)} className="flex-1 py-1 bg-zinc-800 rounded text-xs font-mono text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors">{val}</button>
                                                         ))}
                                                         <button onClick={() => handleBetAmount(team.id, team.score)} className="flex-1 py-1 bg-red-900/30 rounded text-xs font-mono text-red-400 hover:bg-red-900/50 transition-colors">ALL</button>
                                                     </div>
-
-                                                    {/* Confirm Button */}
-                                                    <button 
-                                                        onClick={() => confirmBet(team.id)}
-                                                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all mt-2"
-                                                    >
-                                                        XÁC NHẬN
-                                                    </button>
+                                                    <button onClick={() => confirmBet(team.id)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all mt-2">XÁC NHẬN</button>
                                                 </div>
                                             )
                                         )}
@@ -675,7 +692,6 @@
                         })}
                     </div>
 
-                    {/* Footer / Main Game Controls */}
                     <div className="w-full max-w-4xl p-6 flex justify-center items-center gap-6">
                         {isRevealed ? (
                             <div className="flex flex-col items-center gap-4 animate-slide-up w-full">
@@ -685,19 +701,12 @@
                                 <div className="text-zinc-400 text-center max-w-2xl text-lg font-light leading-relaxed">
                                     {currentQ.explanation}
                                 </div>
-                                <button 
-                                    onClick={nextQuestion}
-                                    className="mt-4 px-12 py-4 bg-white text-black font-display font-bold text-xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center gap-3"
-                                >
+                                <button onClick={nextQuestion} className="mt-4 px-12 py-4 bg-white text-black font-display font-bold text-xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center gap-3">
                                     CÂU TIẾP THEO <i data-lucide="arrow-right"></i>
                                 </button>
                             </div>
                         ) : (
-                            <button 
-                                onClick={revealAnswer}
-                                disabled={data.teams.every(t => !bets[t.id]?.isConfirmed)}
-                                className="px-12 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-display font-bold text-2xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] flex items-center gap-3"
-                            >
+                            <button onClick={revealAnswer} disabled={data.teams.length === 0 || !data.teams.every(t => bets[t.id]?.isConfirmed)} className="px-12 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-display font-bold text-2xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] flex items-center gap-3">
                                 <i data-lucide="eye"></i> HIỆN ĐÁP ÁN
                             </button>
                         )}
@@ -710,11 +719,17 @@
 
         const App = () => {
             const [theme, setTheme] = useLocalStorage('theme', 'dark');
-            const [data, setData] = useLocalStorage('gameData', {
-                teams: [],
-                questions: []
+            const [data, setData] = useLocalStorage('gameData', { teams: [], questions: [] });
+            const [gameState, setGameState] = useLocalStorage('gameState', { currentQIndex: 0, isRevealed: false, bets: {} });
+            
+            // Check URL for mode (for auto-opened projector windows)
+            const [screen, setScreen] = useState(() => {
+                if (typeof window !== 'undefined') {
+                    const params = new URLSearchParams(window.location.search);
+                    return params.get('mode') === 'projector' ? 'GAME' : 'DASHBOARD';
+                }
+                return 'DASHBOARD';
             });
-            const [screen, setScreen] = useState('DASHBOARD'); // DASHBOARD | GAME
 
             useEffect(() => {
                 if (theme === 'dark') document.documentElement.classList.add('dark');
@@ -723,7 +738,6 @@
 
             const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
-            // Listen for icons
             useEffect(() => {
                 lucide.createIcons();
             }, [screen, data, screen]);
@@ -743,7 +757,7 @@
                         )}
                         
                         {screen === 'GAME' && (
-                            <GamePlay data={data} setData={setData} onBack={() => setScreen('DASHBOARD')} />
+                            <GamePlay data={data} setData={setData} gameState={gameState} setGameState={setGameState} onBack={() => setScreen('DASHBOARD')} />
                         )}
                     </ToastProvider>
                 </div>
