@@ -33,7 +33,6 @@
                         'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                         'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                         'score-change': 'scoreChange 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         fadeIn: {
@@ -79,10 +78,9 @@
         /* Grid auto-fit for teams */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             width: 100%;
-            padding: 0 1rem;
         }
     </style>
 </head>
@@ -414,7 +412,7 @@
             );
         };
 
-        // --- PROJECTOR VIEW (Tab 2 - Optimized Display & Realtime) ---
+        // --- PROJECTOR VIEW (Tab 2 - Optimized Display) ---
         const ProjectorView = ({ data, gameState }) => {
             const { currentQIndex, isRevealed, bets } = gameState;
             const currentQ = data.questions[currentQIndex];
@@ -423,29 +421,53 @@
 
             const toggleFullscreen = async () => {
                 setHasInteracted(true);
+                
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                     setIsFullscreen(false);
                     return;
                 }
+
+                // LOGIC PHÓNG TO VÀ CHUYỂN MÀN HÌNH
                 try {
+                    // 1. Nếu trình duyệt hỗ trợ getScreenDetails, cố gắng tìm màn hình phụ
                     if ('getScreenDetails' in window) {
                         const screenDetails = await window.getScreenDetails();
                         const external = screenDetails.screens.find(s => s !== screenDetails.currentScreen);
+                        
                         if (external) {
-                            try { await document.documentElement.requestFullscreen({ screen: external }); setIsFullscreen(true); return; } 
-                            catch(e) {}
+                            // Cách 1: Thử dùng API mới để fullscreen thẳng sang màn hình đó
+                            try {
+                                await document.documentElement.requestFullscreen({ screen: external });
+                                setIsFullscreen(true);
+                                return; // Thành công thì thoát
+                            } catch(e) { console.log('Fullscreen target screen failed, trying move...'); }
+                            
+                            // Cách 2: Nếu không được, thử Move window sang đó trước
                             window.moveTo(external.left, external.top);
                         }
                     }
-                } catch (err) {}
-                try { await document.documentElement.requestFullscreen(); setIsFullscreen(true); } catch (e) {}
+                } catch (err) {
+                    console.log("Window management error:", err);
+                }
+
+                // 2. Fallback: Fullscreen bình thường
+                try {
+                    await document.documentElement.requestFullscreen();
+                    setIsFullscreen(true);
+                } catch (e) {
+                    console.error("Fullscreen error:", e);
+                }
             };
 
             return (
                 <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center justify-between p-4 md:p-8 select-none overflow-hidden cursor-none text-white">
+                    {/* Fullscreen Overlay Trigger */}
                     {!hasInteracted && !isFullscreen && (
-                        <div onClick={toggleFullscreen} className="absolute inset-0 z-[100] bg-black/80 flex items-center justify-center cursor-pointer backdrop-blur-sm">
+                        <div 
+                            onClick={toggleFullscreen}
+                            className="absolute inset-0 z-[100] bg-black/80 flex items-center justify-center cursor-pointer backdrop-blur-sm"
+                        >
                             <div className="bg-white text-black px-8 py-4 rounded-full font-bold text-xl animate-bounce shadow-2xl flex items-center gap-3">
                                 <i data-lucide="expand" className="w-6 h-6"></i> Bấm để Fullscreen & Chiếu
                             </div>
@@ -456,6 +478,7 @@
                         <button onClick={toggleFullscreen} className="text-white p-2 bg-white/10 rounded-full"><i data-lucide={isFullscreen?"minimize":"maximize"}></i></button>
                     </div>
 
+                    {/* Question Area */}
                     <div className={`w-full max-w-7xl text-center transition-all duration-700 flex flex-col items-center justify-center ${isRevealed ? 'flex-[0.3]' : 'flex-1'}`}>
                         <div className="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-sm mb-4">
                             CÂU HỎI #{currentQIndex + 1}
@@ -465,6 +488,7 @@
                         </h1>
                     </div>
 
+                    {/* Team Grid - Compact & Realtime */}
                     <div className={`team-grid w-full max-w-[1600px] transition-all duration-500 ${isRevealed ? 'flex-[0.7]' : 'flex-[0.5]'}`}>
                         {data.teams.map(team => {
                             const bet = bets[team.id];
@@ -472,47 +496,53 @@
                             const showResult = isRevealed && bet?.isConfirmed;
                             
                             return (
-                                <div key={team.id} className={`relative bg-zinc-900/50 backdrop-blur-md border rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-500
+                                <div key={team.id} className={`relative bg-zinc-900/50 backdrop-blur-md border rounded-xl p-2 flex flex-col items-center justify-center gap-1 transition-all duration-500
                                     ${showResult 
                                         ? (isCorrect ? 'border-emerald-500 bg-emerald-900/20' : 'border-red-500 bg-red-900/20') 
                                         : (bet?.isConfirmed ? 'border-indigo-500/50 bg-indigo-900/10' : 'border-zinc-800')
                                     }
                                 `}>
-                                    <div className="font-display font-bold text-2xl text-zinc-300 text-center break-words w-full px-2 leading-tight">
+                                    <div className="font-display font-bold text-lg md:text-xl text-zinc-300 text-center break-words w-full px-2 leading-tight">
                                         {team.name}
                                     </div>
                                     
-                                    <div className="relative font-mono font-bold text-5xl tracking-tighter my-2">
+                                    <div className="relative font-mono font-bold text-4xl md:text-6xl tracking-tighter my-1">
                                         {team.score}
+                                        
+                                        {/* Score Change Animation */}
                                         {showResult && (
-                                            <div className={`absolute -top-10 -right-12 text-4xl font-black animate-score-change ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            <div className={`absolute -top-12 -right-12 text-4xl md:text-5xl font-black animate-score-change ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
                                                 {isCorrect ? '+' : '-'}{bet.amount}
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="h-12 flex flex-col items-center justify-center w-full">
+                                    {/* Status Indicators - Realtime Mirroring */}
+                                    <div className="h-10 flex flex-col items-center justify-center">
                                         {isRevealed ? (
                                             bet?.isConfirmed ? (
-                                                <div className={`font-bold text-xl tracking-widest ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                <div className={`font-bold text-lg tracking-widest ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
                                                     {bet.choice ? 'ĐÚNG' : 'SAI'}
                                                 </div>
                                             ) : <span className="text-zinc-600 text-sm">--</span>
                                         ) : (
-                                            // Real-time Visuals (Synced with Host inputs)
-                                            bet?.choice !== null && bet?.choice !== undefined ? (
-                                                <div className={`flex flex-col items-center transition-all ${bet.isConfirmed ? '' : 'opacity-70 animate-pulse'}`}>
-                                                    <div className={`font-black text-2xl uppercase flex items-center gap-2 ${bet.choice ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            // Real-time Visuals
+                                            <div className="flex flex-col items-center">
+                                                {bet?.choice !== null && bet?.choice !== undefined ? (
+                                                    <div className={`font-bold text-2xl ${bet.choice ? 'text-emerald-500' : 'text-red-500'} flex items-center gap-2`}>
                                                         {bet.choice ? 'ĐÚNG' : 'SAI'}
-                                                        {bet.isConfirmed && <i data-lucide="lock" className="w-5 h-5 text-white"></i>}
+                                                        {bet.isConfirmed && <i data-lucide="lock" className="w-4 h-4 text-zinc-400"></i>}
                                                     </div>
-                                                    <div className="font-mono text-zinc-400 text-sm font-bold">
-                                                        {bet.amount > 0 ? bet.amount : '...'}
+                                                ) : (
+                                                     <span className="text-zinc-700 font-display text-xl animate-pulse">...</span>
+                                                )}
+                                                
+                                                {bet?.amount > 0 && (
+                                                    <div className="text-zinc-400 font-mono text-xs">
+                                                        {bet.amount}
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <span className="text-zinc-700 font-display text-xl animate-pulse">...</span>
-                                            )
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -520,6 +550,7 @@
                         })}
                     </div>
 
+                    {/* Answer Reveal (Overlay) */}
                     {isRevealed && (
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center animate-pop pointer-events-none">
                             <div className={`text-6xl md:text-9xl font-black font-display px-12 py-6 rounded-3xl bg-black/80 backdrop-blur-xl border-4 shadow-[0_0_100px_rgba(0,0,0,0.5)] ${currentQ.answer ? 'border-emerald-500 text-emerald-400' : 'border-red-500 text-red-400'}`}>
@@ -545,13 +576,14 @@
                 return new URLSearchParams(window.location.search).get('mode') === 'projector' ? 'PROJECTOR' : 'HOST';
             });
 
+            // Nếu là Projector thì vào thẳng GAME, nếu là Host thì ở DASHBOARD ban đầu (trừ khi được kích hoạt)
             const [screen, setScreen] = useState(viewMode === 'PROJECTOR' ? 'GAME' : 'DASHBOARD');
 
             useEffect(() => {
                 if (theme === 'dark') document.documentElement.classList.add('dark');
                 else document.documentElement.classList.remove('dark');
                 lucide.createIcons();
-            }, [theme, screen, viewMode, gameState]); // Added gameState dependency to re-trigger icons
+            }, [theme, screen, viewMode]);
 
             return (
                 <div className="bg-light-bg dark:bg-dark-bg min-h-screen text-zinc-900 dark:text-zinc-100 font-sans selection:bg-indigo-500/30">
