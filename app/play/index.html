@@ -8,7 +8,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,17 +27,12 @@
                             surface: '#18181b', // Zinc 900
                             border: '#27272a', // Zinc 800
                         },
-                        light: {
-                            bg: '#ffffff',
-                            surface: '#f4f4f5', // Zinc 100
-                            border: '#e4e4e7', // Zinc 200
-                        }
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'pop': 'pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                        'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        'score-change': 'scoreChange 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     },
                     keyframes: {
                         fadeIn: {
@@ -45,18 +40,17 @@
                             '100%': { opacity: '1' },
                         },
                         slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
                             '100%': { transform: 'translateY(0)', opacity: '1' },
                         },
                         pop: {
-                            '0%': { transform: 'scale(0.95)' },
-                            '50%': { transform: 'scale(1.02)' },
+                            '0%': { transform: 'scale(0.9)' },
                             '100%': { transform: 'scale(1)' },
                         },
-                        bounceIn: {
-                            '0%': { transform: 'scale(0)' },
-                            '60%': { transform: 'scale(1.1)' },
-                            '100%': { transform: 'scale(1)' }
+                        scoreChange: {
+                            '0%': { opacity: '0', transform: 'translateY(20px) scale(0.5)' },
+                            '50%': { opacity: '1', transform: 'translateY(-10px) scale(1.2)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
                         }
                     }
                 }
@@ -74,31 +68,19 @@
 
     <style>
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #52525b;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #71717a;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        body {
-            overflow: hidden; /* Prevent body scroll */
-        }
-        /* Hide number input spinners */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+        body { overflow: hidden; }
         input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* Grid auto-fit for teams */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
         }
     </style>
 </head>
@@ -108,8 +90,6 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, createContext, useContext, useRef } = React;
 
-        // --- Utils & Hooks ---
-
         const generateId = () => Math.random().toString(36).substr(2, 9);
 
         // Toast System
@@ -118,27 +98,23 @@
 
         const ToastProvider = ({ children }) => {
             const [toasts, setToasts] = useState([]);
-
             const addToast = (message, type = 'info') => {
                 const id = generateId();
                 setToasts(prev => [...prev, { id, message, type }]);
                 setTimeout(() => removeToast(id), 3000);
             };
-
-            const removeToast = (id) => {
-                setToasts(prev => prev.filter(t => t.id !== id));
-            };
+            const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
 
             return (
                 <ToastContext.Provider value={{ addToast }}>
                     {children}
                     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
                         {toasts.map(toast => (
-                            <div key={toast.id} className={`pointer-events-auto min-w-[250px] p-4 rounded-lg shadow-lg border animate-slide-up flex items-center gap-3
-                                ${toast.type === 'error' ? 'bg-red-500/10 border-red-500 text-red-500' : 
-                                  toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 
+                            <div key={toast.id} className={`pointer-events-auto px-4 py-3 rounded-lg shadow-lg border animate-slide-up flex items-center gap-2 text-sm font-medium
+                                ${toast.type === 'error' ? 'bg-red-900/90 border-red-700 text-red-100' : 
+                                  toast.type === 'success' ? 'bg-emerald-900/90 border-emerald-700 text-emerald-100' : 
                                   'bg-zinc-800 border-zinc-700 text-zinc-100'}`}>
-                                <span className="text-sm font-medium font-sans">{toast.message}</span>
+                                {toast.message}
                             </div>
                         ))}
                     </div>
@@ -146,115 +122,77 @@
             );
         };
 
-        // Improved LocalStorage Hook with Cross-Tab Sync
+        // LocalStorage Hook
         const useLocalStorage = (key, initialValue) => {
             const readValue = () => {
-                if (typeof window === 'undefined') {
-                    return initialValue;
-                }
+                if (typeof window === 'undefined') return initialValue;
                 try {
                     const item = window.localStorage.getItem(key);
                     return item ? JSON.parse(item) : initialValue;
-                } catch (error) {
-                    console.warn(`Error reading localStorage key "${key}":`, error);
-                    return initialValue;
-                }
+                } catch (error) { return initialValue; }
             };
-
             const [storedValue, setStoredValue] = useState(readValue);
-
             const setValue = (value) => {
                 try {
                     const valueToStore = value instanceof Function ? value(storedValue) : value;
                     setStoredValue(valueToStore);
-                    if (typeof window !== 'undefined') {
-                        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-                    }
-                } catch (error) {
-                    console.warn(`Error setting localStorage key "${key}":`, error);
-                }
+                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                } catch (error) {}
             };
-
             useEffect(() => {
                 const handleStorageChange = (e) => {
-                    if (e.key === key) {
-                        setStoredValue(readValue());
-                    }
+                    if (e.key === key) setStoredValue(readValue());
                 };
                 window.addEventListener('storage', handleStorageChange);
-                return () => {
-                    window.removeEventListener('storage', handleStorageChange);
-                };
+                return () => window.removeEventListener('storage', handleStorageChange);
             }, [key]);
-
             return [storedValue, setValue];
         };
 
-        // --- Components ---
-
+        // UI Components
         const Button = ({ children, onClick, variant = 'primary', className = '', ...props }) => {
-            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-sans flex items-center justify-center gap-2";
+            const base = "px-4 py-2 rounded-lg font-medium transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2";
             const variants = {
                 primary: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20",
                 secondary: "bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100",
-                danger: "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20",
                 ghost: "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400",
-                success: "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20",
-                outline: "border-2 border-zinc-200 dark:border-zinc-700 hover:border-indigo-500 text-zinc-600 dark:text-zinc-300 hover:text-indigo-500"
             };
-
-            return (
-                <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
-                    {children}
-                </button>
-            );
+            return <button onClick={onClick} className={`${base} ${variants[variant]} ${className}`} {...props}>{children}</button>;
         };
 
         const Card = ({ children, className = '' }) => (
-            <div className={`bg-white dark:bg-dark-surface border border-zinc-200 dark:border-dark-border rounded-xl shadow-sm p-6 ${className}`}>
-                {children}
-            </div>
+            <div className={`bg-white dark:bg-dark-surface border border-zinc-200 dark:border-dark-border rounded-xl shadow-sm p-4 ${className}`}>{children}</div>
         );
 
         const Input = ({ label, ...props }) => (
             <div className="flex flex-col gap-1.5">
-                {label && <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{label}</label>}
-                <input 
-                    className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-sans"
-                    {...props}
-                />
+                {label && <label className="text-xs font-bold uppercase text-zinc-500">{label}</label>}
+                <input className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" {...props} />
             </div>
         );
 
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
             return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
                     <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-zinc-200 dark:border-dark-border animate-pop overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                            <h3 className="font-display font-bold text-lg text-zinc-900 dark:text-white">{title}</h3>
-                            <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
-                                <i data-lucide="x" className="w-5 h-5 text-zinc-500"></i>
-                            </button>
+                            <h3 className="font-display font-bold text-lg dark:text-white">{title}</h3>
+                            <button onClick={onClose}><i data-lucide="x" className="w-5 h-5 text-zinc-500"></i></button>
                         </div>
-                        <div className="p-6 overflow-y-auto">
-                            {children}
-                        </div>
+                        <div className="p-6 overflow-y-auto">{children}</div>
                     </div>
                 </div>
             );
         };
 
-        // --- Game Logic Components ---
-
+        // --- Dashboard (Setup) ---
         const Dashboard = ({ data, setData, onStartGame }) => {
             const { addToast } = useToast();
             const [newTeamName, setNewTeamName] = useState('');
             const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
             const [editingQuestion, setEditingQuestion] = useState(null);
             const [defaultScore, setDefaultScore] = useState(100);
-
-            // Question Form State
             const [qForm, setQForm] = useState({ statement: '', explanation: '', answer: true });
 
             const addTeam = (e) => {
@@ -265,187 +203,98 @@
                     teams: [...prev.teams, { id: generateId(), name: newTeamName, score: defaultScore }]
                 }));
                 setNewTeamName('');
-                addToast(`Đã thêm đội chơi (Điểm: ${defaultScore})`, 'success');
+                addToast(`Đã thêm đội`, 'success');
             };
-
-            const removeTeam = (id) => {
-                setData(prev => ({ ...prev, teams: prev.teams.filter(t => t.id !== id) }));
-            };
-            
-            const updateTeamScore = (id, newScore) => {
-                 setData(prev => ({
-                    ...prev,
-                    teams: prev.teams.map(t => t.id === id ? { ...t, score: parseInt(newScore) || 0 } : t)
-                }));
-            }
 
             const saveQuestion = () => {
-                if (!qForm.statement.trim()) {
-                    addToast('Vui lòng nhập luận điểm', 'error');
-                    return;
-                }
-                
-                const newQ = {
-                    id: editingQuestion ? editingQuestion.id : generateId(),
-                    ...qForm
-                };
-
-                if (editingQuestion) {
-                    setData(prev => ({
-                        ...prev,
-                        questions: prev.questions.map(q => q.id === editingQuestion.id ? newQ : q)
-                    }));
-                    addToast('Đã cập nhật câu hỏi', 'success');
-                } else {
-                    setData(prev => ({
-                        ...prev,
-                        questions: [...prev.questions, newQ]
-                    }));
-                    addToast('Đã thêm câu hỏi mới', 'success');
-                }
+                if (!qForm.statement.trim()) { addToast('Thiếu nội dung', 'error'); return; }
+                const newQ = { id: editingQuestion ? editingQuestion.id : generateId(), ...qForm };
+                setData(prev => ({
+                    ...prev,
+                    questions: editingQuestion ? prev.questions.map(q => q.id === newQ.id ? newQ : q) : [...prev.questions, newQ]
+                }));
                 setIsAddQuestionOpen(false);
                 setEditingQuestion(null);
                 setQForm({ statement: '', explanation: '', answer: true });
+                addToast('Đã lưu câu hỏi', 'success');
             };
 
-            const deleteQuestion = (id) => {
-                 setData(prev => ({ ...prev, questions: prev.questions.filter(q => q.id !== id) }));
-            };
-
-            const openEdit = (q) => {
-                setEditingQuestion(q);
-                setQForm({ statement: q.statement, explanation: q.explanation, answer: q.answer });
-                setIsAddQuestionOpen(true);
-            };
-
-            // AUTO PROJECTOR LOGIC
-            const openProjectorWindow = async () => {
+            const openProjectorWindow = () => {
                 const url = new URL(window.location.href);
                 url.searchParams.set('mode', 'projector');
-                const targetUrl = url.toString();
-                const windowName = 'WagerGameProjector';
                 
-                // Fallback dimensions
+                // Mở popup ngay tại màn hình hiện tại (tránh bị chặn)
                 const width = 1024;
                 const height = 768;
-                let left = 0;
-                let top = 0;
+                // Mở giữa màn hình
+                const left = (window.screen.width - width) / 2;
+                const top = (window.screen.height - height) / 2;
 
-                try {
-                    // Modern API to detect screens (Works best on HTTPS/GitHub Pages)
-                    if ('getScreenDetails' in window) {
-                        const screenDetails = await window.getScreenDetails();
-                        const currentScreen = screenDetails.currentScreen;
-                        const externalScreen = screenDetails.screens.find(s => s !== currentScreen) || screenDetails.screens[0];
-                        
-                        if (externalScreen) {
-                            left = externalScreen.left;
-                            top = externalScreen.top;
-                            const features = `left=${left},top=${top},width=${externalScreen.width},height=${externalScreen.height},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
-                            window.open(targetUrl, windowName, features);
-                            addToast('Đã mở màn hình chiếu ở màn hình phụ!', 'success');
-                            return;
-                        }
-                    }
-                } catch (err) {
-                    console.log("Window Management API issue:", err);
-                }
-
-                window.open(targetUrl, windowName, `width=${width},height=${height},menubar=no,toolbar=no,location=no,status=no,resizable=yes`);
-                addToast('Đã mở cửa sổ rời. Hãy kéo nó sang màn hình máy chiếu!', 'info');
+                window.open(url.toString(), 'WagerProjector', `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`);
+                addToast('Đã mở cửa sổ chiếu. Hãy bấm Fullscreen trên cửa sổ đó!', 'success');
+                
+                // TỰ ĐỘNG CHUYỂN TAB HIỆN TẠI SANG HOST MODE
+                onStartGame(); 
             };
 
             return (
-                <div className="max-w-6xl mx-auto space-y-8 animate-slide-up pb-20">
-                    <header className="flex justify-between items-end border-b border-zinc-200 dark:border-zinc-800 pb-6">
+                <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-slide-up">
+                    <header className="flex justify-between items-end border-b pb-4 dark:border-zinc-800">
                         <div>
-                            <h1 className="text-3xl font-display font-bold text-zinc-900 dark:text-white">Thiết lập trò chơi</h1>
-                            <p className="text-zinc-500 mt-2">Quản lý đội chơi và ngân hàng câu hỏi</p>
+                            <h1 className="text-2xl font-display font-bold dark:text-white">Thiết lập Game</h1>
+                            <p className="text-sm text-zinc-500">Quản lý đội & câu hỏi</p>
                         </div>
-                        <div className="flex gap-3">
-                            <Button onClick={openProjectorWindow} variant="secondary" title="Mở cửa sổ riêng để kéo sang máy chiếu">
-                                <i data-lucide="monitor-up" className="w-5 h-5"></i> Cửa sổ chiếu
+                        <div className="flex gap-2">
+                            <Button onClick={openProjectorWindow} variant="secondary">
+                                <i data-lucide="monitor-up" className="w-4 h-4"></i> Cửa sổ chiếu
                             </Button>
-                            <Button onClick={onStartGame} disabled={data.teams.length === 0 || data.questions.length === 0} className="px-8 py-3 text-lg">
-                                <i data-lucide="play-circle" className="w-5 h-5"></i> Bắt đầu Game
+                            <Button onClick={onStartGame} disabled={!data.teams.length || !data.questions.length}>
+                                <i data-lucide="play-circle" className="w-4 h-4"></i> Bắt đầu
                             </Button>
                         </div>
                     </header>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-display font-semibold dark:text-zinc-200">Đội chơi ({data.teams.length})</h2>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-zinc-500 uppercase">Điểm khởi tạo</span>
-                                    <input 
-                                        type="number" 
-                                        value={defaultScore}
-                                        onChange={(e) => setDefaultScore(parseInt(e.target.value) || 0)}
-                                        className="w-16 bg-zinc-100 dark:bg-zinc-800 border-none rounded p-1 text-center font-bold"
-                                    />
-                                </div>
-                            </div>
                             <Card>
-                                <form onSubmit={addTeam} className="flex gap-2 mb-4">
-                                    <Input 
-                                        placeholder="Tên đội..." 
-                                        value={newTeamName} 
-                                        onChange={e => setNewTeamName(e.target.value)} 
-                                    />
-                                    <Button type="submit" variant="secondary"><i data-lucide="plus"></i></Button>
+                                <div className="flex justify-between mb-4">
+                                    <h2 className="font-bold dark:text-zinc-200">Đội chơi ({data.teams.length})</h2>
+                                    <input type="number" value={defaultScore} onChange={e=>setDefaultScore(+e.target.value)} className="w-16 bg-zinc-100 dark:bg-zinc-800 rounded text-center text-sm"/>
+                                </div>
+                                <form onSubmit={addTeam} className="flex gap-2 mb-2">
+                                    <Input placeholder="Tên đội..." value={newTeamName} onChange={e=>setNewTeamName(e.target.value)} />
+                                    <Button type="submit" variant="secondary">+</Button>
                                 </form>
-                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                                    {data.teams.length === 0 && <p className="text-sm text-zinc-400 text-center py-4">Chưa có đội nào</p>}
-                                    {data.teams.map(team => (
-                                        <div key={team.id} className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50">
-                                            <span className="font-semibold dark:text-zinc-200">{team.name}</span>
-                                            <div className="flex items-center gap-2">
-                                                <input 
-                                                    type="number"
-                                                    value={team.score}
-                                                    onChange={(e) => updateTeamScore(team.id, e.target.value)}
-                                                    className="w-16 bg-transparent border border-zinc-200 dark:border-zinc-700 rounded px-1 text-right font-mono"
-                                                />
-                                                <button onClick={() => removeTeam(team.id)} className="text-zinc-400 hover:text-red-500 transition-colors">
-                                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
-                                                </button>
-                                            </div>
+                                <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                                    {data.teams.map(t => (
+                                        <div key={t.id} className="flex justify-between p-2 bg-zinc-50 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-700 items-center">
+                                            <span className="font-medium dark:text-zinc-300">{t.name}</span>
+                                            <button onClick={()=>setData(p=>({...p,teams:p.teams.filter(x=>x.id!==t.id)}))} className="text-zinc-400 hover:text-red-500"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                                         </div>
                                     ))}
                                 </div>
                             </Card>
                         </div>
 
-                        <div className="lg:col-span-2 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-display font-semibold dark:text-zinc-200">Ngân hàng câu hỏi ({data.questions.length})</h2>
-                                <Button onClick={() => { setEditingQuestion(null); setQForm({statement:'', explanation:'', answer:true}); setIsAddQuestionOpen(true); }} variant="secondary">
-                                    <i data-lucide="plus"></i> Thêm câu hỏi
-                                </Button>
+                        <div className="lg:col-span-2">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="font-bold dark:text-zinc-200">Câu hỏi ({data.questions.length})</h2>
+                                <Button onClick={()=>{setEditingQuestion(null);setQForm({statement:'',explanation:'',answer:true});setIsAddQuestionOpen(true)}} variant="secondary" size="sm">+ Thêm</Button>
                             </div>
-                            
-                            <div className="grid gap-4">
-                                {data.questions.length === 0 && (
-                                    <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
-                                        <p className="text-zinc-400">Chưa có câu hỏi nào. Hãy thêm mới!</p>
-                                    </div>
-                                )}
-                                {data.questions.map((q, idx) => (
-                                    <Card key={q.id} className="relative group hover:border-indigo-500/30 transition-colors">
-                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEdit(q)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md hover:text-indigo-500"><i data-lucide="edit-2" className="w-4 h-4"></i></button>
-                                            <button onClick={() => deleteQuestion(q.id)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md hover:text-red-500"><i data-lucide="trash" className="w-4 h-4"></i></button>
+                            <div className="grid gap-3 max-h-[60vh] overflow-y-auto">
+                                {data.questions.map((q,i) => (
+                                    <Card key={q.id} className="relative group hover:border-indigo-500/50">
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-2">
+                                            <button onClick={()=>{setEditingQuestion(q);setQForm(q);setIsAddQuestionOpen(true)}} className="p-1.5 bg-zinc-100 hover:text-indigo-600 rounded"><i data-lucide="edit-2" className="w-4 h-4"></i></button>
+                                            <button onClick={()=>setData(p=>({...p,questions:p.questions.filter(x=>x.id!==q.id)}))} className="p-1.5 bg-zinc-100 hover:text-red-600 rounded"><i data-lucide="trash" className="w-4 h-4"></i></button>
                                         </div>
-                                        <div className="flex gap-4">
-                                            <span className="text-xs font-bold text-zinc-400 font-display">#{idx + 1}</span>
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">{q.statement}</h3>
-                                                <div className="flex gap-3 items-center text-sm">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${q.answer ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                        {q.answer ? 'Đúng' : 'Sai'}
-                                                    </span>
-                                                    <span className="text-zinc-500 truncate max-w-md">{q.explanation}</span>
+                                        <div className="flex gap-3">
+                                            <span className="text-zinc-400 font-display font-bold">#{i+1}</span>
+                                            <div>
+                                                <p className="font-medium dark:text-zinc-200">{q.statement}</p>
+                                                <div className="flex gap-2 text-xs mt-1">
+                                                    <span className={q.answer?'text-emerald-500':'text-red-500'}>{q.answer?'ĐÚNG':'SAI'}</span>
+                                                    <span className="text-zinc-500 truncate max-w-xs">{q.explanation}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -455,170 +304,106 @@
                         </div>
                     </div>
 
-                    <Modal isOpen={isAddQuestionOpen} onClose={() => setIsAddQuestionOpen(false)} title={editingQuestion ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}>
+                    <Modal isOpen={isAddQuestionOpen} onClose={()=>setIsAddQuestionOpen(false)} title="Câu hỏi">
                         <div className="space-y-4">
-                            <Input 
-                                label="Luận điểm / Câu hỏi" 
-                                placeholder="Ví dụ: Trái đất hình vuông?" 
-                                value={qForm.statement}
-                                onChange={e => setQForm({...qForm, statement: e.target.value})}
-                            />
-                            
-                            <div>
-                                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-2">Đáp án đúng</label>
-                                <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-lg p-1">
-                                    <button 
-                                        className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${qForm.answer ? 'bg-emerald-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
-                                        onClick={() => setQForm({...qForm, answer: true})}
-                                    >
-                                        ĐÚNG
-                                    </button>
-                                    <button 
-                                        className={`flex-1 py-2 rounded-md text-sm font-semibold transition-all ${!qForm.answer ? 'bg-red-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
-                                        onClick={() => setQForm({...qForm, answer: false})}
-                                    >
-                                        SAI
-                                    </button>
-                                </div>
+                            <Input label="Luận điểm" value={qForm.statement} onChange={e=>setQForm({...qForm,statement:e.target.value})} />
+                            <div className="flex gap-2">
+                                <button onClick={()=>setQForm({...qForm,answer:true})} className={`flex-1 py-2 rounded font-bold text-sm ${qForm.answer?'bg-emerald-600 text-white':'bg-zinc-100 text-zinc-500'}`}>ĐÚNG</button>
+                                <button onClick={()=>setQForm({...qForm,answer:false})} className={`flex-1 py-2 rounded font-bold text-sm ${!qForm.answer?'bg-red-600 text-white':'bg-zinc-100 text-zinc-500'}`}>SAI</button>
                             </div>
-
-                            <Input 
-                                label="Giải thích (Hiện sau khi công bố)" 
-                                placeholder="Giải thích ngắn gọn..." 
-                                value={qForm.explanation}
-                                onChange={e => setQForm({...qForm, explanation: e.target.value})}
-                            />
-
-                            <div className="pt-4 flex justify-end gap-2">
-                                <Button variant="ghost" onClick={() => setIsAddQuestionOpen(false)}>Hủy</Button>
-                                <Button onClick={saveQuestion}>Lưu lại</Button>
-                            </div>
+                            <Input label="Giải thích" value={qForm.explanation} onChange={e=>setQForm({...qForm,explanation:e.target.value})} />
+                            <Button onClick={saveQuestion} className="w-full">Lưu</Button>
                         </div>
                     </Modal>
                 </div>
             );
         };
 
-        // --- HOST CONTROL COMPONENT (Tab 1) ---
+        // --- HOST CONTROL (Tab 1) ---
         const HostControl = ({ data, setData, gameState, setGameState, onBack }) => {
             const { currentQIndex, isRevealed, bets } = gameState;
             const currentQ = data.questions[currentQIndex];
             const { addToast } = useToast();
 
-            const handleBetChoice = (teamId, choice) => {
-                const updatedBets = {
-                    ...bets,
-                    [teamId]: { ...(bets[teamId] || { amount: 0, isConfirmed: false }), choice }
-                };
-                setGameState(prev => ({ ...prev, bets: updatedBets }));
+            const updateBet = (tid, field, val) => {
+                setGameState(p => ({
+                    ...p,
+                    bets: { ...p.bets, [tid]: { ...(p.bets[tid]||{amount:0,isConfirmed:false}), [field]: val } }
+                }));
             };
 
-            const handleBetAmount = (teamId, val) => {
-                const updatedBets = {
-                    ...bets,
-                    [teamId]: { ...(bets[teamId] || { choice: null, isConfirmed: false }), amount: parseInt(val) || 0 }
-                };
-                setGameState(prev => ({ ...prev, bets: updatedBets }));
-            };
-
-            const confirmBet = (teamId) => {
-                const bet = bets[teamId];
-                if (!bet || bet.choice === null) {
-                    addToast('Chưa chọn ĐÚNG/SAI!', 'error');
-                    return;
-                }
-                setGameState(prev => ({ ...prev, bets: { ...prev.bets, [teamId]: { ...bet, isConfirmed: true } } }));
-            };
-
-            const unlockBet = (teamId) => {
-                if (isRevealed) return;
-                setGameState(prev => ({ ...prev, bets: { ...prev.bets, [teamId]: { ...bets[teamId], isConfirmed: false } } }));
+            const confirmBet = (tid) => {
+                if(bets[tid]?.choice == null) return addToast('Chưa chọn Đ/S', 'error');
+                updateBet(tid, 'isConfirmed', true);
             };
 
             const revealAnswer = () => {
-                const newTeams = data.teams.map(team => {
-                    const bet = bets[team.id];
-                    if (bet && bet.isConfirmed && bet.choice !== null) {
-                        const isCorrect = bet.choice === currentQ.answer;
-                        return {
-                            ...team,
-                            score: team.score + (isCorrect ? bet.amount : -bet.amount)
-                        };
+                const newTeams = data.teams.map(t => {
+                    const b = bets[t.id];
+                    if (b?.isConfirmed && b.choice != null) {
+                        return { ...t, score: t.score + (b.choice === currentQ.answer ? b.amount : -b.amount) };
                     }
-                    return team;
+                    return t;
                 });
-                setData(prev => ({ ...prev, teams: newTeams }));
-                setGameState(prev => ({ ...prev, isRevealed: true }));
+                setData(p => ({ ...p, teams: newTeams }));
+                setGameState(p => ({ ...p, isRevealed: true }));
             };
 
-            const nextQuestion = () => {
-                if (currentQIndex < data.questions.length - 1) {
-                    const nextIndex = currentQIndex + 1;
-                    const resetBets = {};
-                    data.teams.forEach(t => resetBets[t.id] = { choice: null, amount: 0, isConfirmed: false });
-                    setGameState(prev => ({ ...prev, currentQIndex: nextIndex, isRevealed: false, bets: resetBets }));
-                } else {
-                    addToast('Đã hết câu hỏi!', 'info');
-                }
+            const nextQ = () => {
+                if (currentQIndex >= data.questions.length - 1) return addToast('Hết câu hỏi', 'info');
+                setGameState(p => ({ ...p, currentQIndex: p.currentQIndex + 1, isRevealed: false, bets: {} }));
             };
 
             return (
                 <div className="h-full flex flex-col bg-light-bg dark:bg-dark-bg p-4 overflow-hidden">
-                    {/* Header */}
-                    <div className="flex justify-between items-center mb-4 border-b pb-4 dark:border-zinc-800">
+                    <div className="flex justify-between items-center mb-4 border-b pb-4 dark:border-zinc-800 shrink-0">
                         <div className="flex items-center gap-4">
                             <Button variant="ghost" onClick={onBack} size="sm"><i data-lucide="arrow-left" className="w-4 h-4"></i></Button>
                             <h2 className="font-display font-bold text-xl dark:text-white">HOST CONTROL</h2>
                         </div>
                         <div className="flex gap-2">
-                             <Button onClick={revealAnswer} disabled={isRevealed || data.teams.length === 0} className="bg-indigo-600 text-white">
-                                <i data-lucide="eye" className="w-4 h-4"></i> HIỆN ĐÁP ÁN
-                            </Button>
-                            <Button onClick={nextQuestion} disabled={!isRevealed} variant={isRevealed ? "primary" : "secondary"}>
-                                CÂU TIẾP <i data-lucide="arrow-right" className="w-4 h-4"></i>
-                            </Button>
+                             <Button onClick={revealAnswer} disabled={isRevealed} className="bg-indigo-600 text-white">HIỆN ĐÁP ÁN</Button>
+                            <Button onClick={nextQ} disabled={!isRevealed} variant={isRevealed ? "primary" : "secondary"}>TIẾP THEO</Button>
                         </div>
                     </div>
 
                     <div className="flex-1 flex gap-6 overflow-hidden">
-                        {/* Question Info */}
                         <div className="w-1/3 bg-white dark:bg-dark-surface p-6 rounded-xl border dark:border-zinc-800 overflow-y-auto">
                             <span className="text-xs font-bold text-zinc-500 uppercase">CÂU HỎI #{currentQIndex + 1}</span>
-                            <h3 className="text-2xl font-bold mt-2 mb-4 dark:text-white">{currentQ.statement}</h3>
-                            <div className={`p-4 rounded-lg border ${currentQ.answer ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-600' : 'bg-red-500/10 border-red-500/50 text-red-600'}`}>
-                                <div className="font-bold">ĐÁP ÁN: {currentQ.answer ? 'ĐÚNG' : 'SAI'}</div>
-                                <div className="text-sm mt-1 text-zinc-600 dark:text-zinc-400">{currentQ.explanation}</div>
+                            <h3 className="text-xl font-bold mt-2 mb-4 dark:text-white">{currentQ.statement}</h3>
+                            <div className={`p-4 rounded border ${currentQ.answer?'bg-emerald-500/10 text-emerald-600 border-emerald-500/30':'bg-red-500/10 text-red-600 border-red-500/30'}`}>
+                                <div className="font-bold">ĐÁP ÁN: {currentQ.answer?'ĐÚNG':'SAI'}</div>
+                                <div className="text-sm mt-1 opacity-80">{currentQ.explanation}</div>
                             </div>
                         </div>
 
-                        {/* Teams Control */}
-                        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {data.teams.map(team => {
-                                const bet = bets[team.id] || { choice: null, amount: 0, isConfirmed: false };
+                        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 pb-10">
+                            {data.teams.map(t => {
+                                const b = bets[t.id] || { choice: null, amount: 0, isConfirmed: false };
                                 return (
-                                    <Card key={team.id} className={`flex flex-col gap-3 ${bet.isConfirmed ? 'border-indigo-500 ring-1 ring-indigo-500' : ''}`}>
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-bold text-lg dark:text-white">{team.name}</span>
-                                            <span className="font-mono font-bold">{team.score} pts</span>
+                                    <Card key={t.id} className={`flex flex-col gap-3 ${b.isConfirmed ? 'ring-2 ring-indigo-500' : ''}`}>
+                                        <div className="flex justify-between">
+                                            <span className="font-bold text-lg dark:text-white truncate">{t.name}</span>
+                                            <span className="font-mono font-bold">{t.score}</span>
                                         </div>
-                                        
-                                        {!bet.isConfirmed ? (
-                                            <div className="space-y-3">
+                                        {!b.isConfirmed ? (
+                                            <>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => handleBetChoice(team.id, true)} className={`flex-1 py-2 rounded font-bold border ${bet.choice === true ? 'bg-emerald-600 text-white border-emerald-600' : 'border-zinc-300 dark:border-zinc-700 dark:text-zinc-400'}`}>ĐÚNG</button>
-                                                    <button onClick={() => handleBetChoice(team.id, false)} className={`flex-1 py-2 rounded font-bold border ${bet.choice === false ? 'bg-red-600 text-white border-red-600' : 'border-zinc-300 dark:border-zinc-700 dark:text-zinc-400'}`}>SAI</button>
+                                                    <button onClick={()=>updateBet(t.id,'choice',true)} className={`flex-1 py-2 rounded font-bold border ${b.choice===true?'bg-emerald-600 text-white border-emerald-600':'dark:text-zinc-400 dark:border-zinc-700'}`}>ĐÚNG</button>
+                                                    <button onClick={()=>updateBet(t.id,'choice',false)} className={`flex-1 py-2 rounded font-bold border ${b.choice===false?'bg-red-600 text-white border-red-600':'dark:text-zinc-400 dark:border-zinc-700'}`}>SAI</button>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <input type="number" value={bet.amount || ''} onChange={(e) => handleBetAmount(team.id, e.target.value)} placeholder="Cược..." className="flex-1 bg-zinc-50 dark:bg-zinc-900 border rounded px-3 py-2 font-mono"/>
-                                                    <button onClick={() => handleBetAmount(team.id, team.score)} className="px-3 bg-red-100 text-red-600 rounded font-bold text-xs">ALL</button>
+                                                    <input type="number" value={b.amount||''} onChange={e=>updateBet(t.id,'amount',+e.target.value)} placeholder="Điểm cược..." className="flex-1 bg-zinc-50 dark:bg-zinc-900 border rounded px-3 font-mono text-lg font-bold"/>
+                                                    <button onClick={()=>updateBet(t.id,'amount',t.score)} className="px-3 bg-red-100 text-red-600 rounded text-xs font-bold">ALL</button>
                                                 </div>
-                                                <Button onClick={() => confirmBet(team.id)} className="w-full">XÁC NHẬN</Button>
-                                            </div>
+                                                <Button onClick={()=>confirmBet(t.id)} className="w-full">XÁC NHẬN</Button>
+                                            </>
                                         ) : (
-                                            <div onClick={() => unlockBet(team.id)} className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded text-center cursor-pointer hover:opacity-80">
-                                                <div className="text-xs text-indigo-500 font-bold uppercase mb-1">ĐÃ CHỐT CƯỢC</div>
-                                                <div className={`text-xl font-black ${bet.choice ? 'text-emerald-500' : 'text-red-500'}`}>{bet.choice ? 'ĐÚNG' : 'SAI'}</div>
-                                                <div className="font-mono font-bold dark:text-white">{bet.amount} điểm</div>
+                                            <div onClick={()=>updateBet(t.id,'isConfirmed',false)} className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded text-center cursor-pointer hover:opacity-80">
+                                                <div className="text-xs text-indigo-500 font-bold mb-1">ĐÃ CHỐT</div>
+                                                <div className={`text-xl font-black ${b.choice?'text-emerald-500':'text-red-500'}`}>{b.choice?'ĐÚNG':'SAI'}</div>
+                                                <div className="font-mono font-bold dark:text-white">{b.amount} điểm</div>
+                                                <div className="text-[10px] text-zinc-400 mt-1">(Bấm để mở khóa)</div>
                                             </div>
                                         )}
                                     </Card>
@@ -630,80 +415,125 @@
             );
         };
 
-        // --- PROJECTOR VIEW COMPONENT (Tab 2) ---
+        // --- PROJECTOR VIEW (Tab 2 - Optimized Display) ---
         const ProjectorView = ({ data, gameState }) => {
             const { currentQIndex, isRevealed, bets } = gameState;
             const currentQ = data.questions[currentQIndex];
             const [isFullscreen, setIsFullscreen] = useState(false);
+            const [hasInteracted, setHasInteracted] = useState(false);
 
-            const toggleFullscreen = () => {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                    setIsFullscreen(true);
-                } else {
-                    if (document.exitFullscreen) document.exitFullscreen();
+            const toggleFullscreen = async () => {
+                setHasInteracted(true);
+                
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
                     setIsFullscreen(false);
+                    return;
+                }
+
+                // LOGIC PHÓNG TO VÀ CHUYỂN MÀN HÌNH
+                try {
+                    // 1. Nếu trình duyệt hỗ trợ getScreenDetails, cố gắng tìm màn hình phụ
+                    if ('getScreenDetails' in window) {
+                        const screenDetails = await window.getScreenDetails();
+                        const external = screenDetails.screens.find(s => s !== screenDetails.currentScreen);
+                        
+                        if (external) {
+                            // Cách 1: Thử dùng API mới để fullscreen thẳng sang màn hình đó
+                            try {
+                                await document.documentElement.requestFullscreen({ screen: external });
+                                setIsFullscreen(true);
+                                return; // Thành công thì thoát
+                            } catch(e) { console.log('Fullscreen target screen failed, trying move...'); }
+                            
+                            // Cách 2: Nếu không được, thử Move window sang đó trước
+                             // Lưu ý: window.moveTo thường chỉ hoạt động với cửa sổ popup do script tạo ra
+                            window.moveTo(external.left, external.top);
+                        }
+                    }
+                } catch (err) {
+                    console.log("Window management error:", err);
+                }
+
+                // 2. Fallback: Fullscreen bình thường (tại màn hình hiện tại hoặc sau khi đã move)
+                try {
+                    await document.documentElement.requestFullscreen();
+                    setIsFullscreen(true);
+                } catch (e) {
+                    console.error("Fullscreen error:", e);
                 }
             };
 
             return (
-                <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center p-6 select-none overflow-hidden cursor-none">
-                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 hover:opacity-100 transition-opacity z-50">
-                        <button onClick={toggleFullscreen} className="text-white p-2 bg-white/10 rounded-full hover:bg-white/20"><i data-lucide={isFullscreen ? "minimize" : "maximize"}></i></button>
+                <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col items-center justify-between p-4 md:p-8 select-none overflow-hidden cursor-none text-white">
+                    {/* Fullscreen Overlay Trigger */}
+                    {!hasInteracted && !isFullscreen && (
+                        <div 
+                            onClick={toggleFullscreen}
+                            className="absolute inset-0 z-[100] bg-black/80 flex items-center justify-center cursor-pointer backdrop-blur-sm"
+                        >
+                            <div className="bg-white text-black px-8 py-4 rounded-full font-bold text-xl animate-bounce shadow-2xl flex items-center gap-3">
+                                <i data-lucide="expand" className="w-6 h-6"></i> Bấm để Fullscreen & Chiếu
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="absolute top-4 right-4 opacity-0 hover:opacity-100 transition-opacity z-50">
+                        <button onClick={toggleFullscreen} className="text-white p-2 bg-white/10 rounded-full"><i data-lucide={isFullscreen?"minimize":"maximize"}></i></button>
                     </div>
 
-                    <div className={`w-full max-w-6xl text-center space-y-6 transition-all duration-700 ${isRevealed ? 'mt-4 scale-90' : 'mt-10'}`}>
-                        <div className="inline-block px-6 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-lg">
+                    {/* Question Area */}
+                    <div className={`w-full max-w-7xl text-center transition-all duration-700 flex flex-col items-center justify-center ${isRevealed ? 'flex-[0.3]' : 'flex-1'}`}>
+                        <div className="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-display font-bold tracking-widest text-sm mb-4">
                             CÂU HỎI #{currentQIndex + 1}
                         </div>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white leading-tight drop-shadow-2xl px-4">
+                        <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold leading-tight drop-shadow-2xl px-4 text-balance">
                             {currentQ.statement}
                         </h1>
                     </div>
 
-                    <div className="flex-1 w-full max-w-7xl flex items-center justify-center gap-6 p-4">
+                    {/* Team Grid - Auto Responsive */}
+                    <div className={`team-grid w-full max-w-[1600px] transition-all duration-500 ${isRevealed ? 'flex-[0.7]' : 'flex-[0.5]'}`}>
                         {data.teams.map(team => {
-                            const bet = bets[team.id] || { choice: null, amount: 0, isConfirmed: false };
-                            const isCorrect = bet.choice === currentQ.answer;
+                            const bet = bets[team.id];
+                            const isCorrect = bet?.choice === currentQ.answer;
+                            const showResult = isRevealed && bet?.isConfirmed;
                             
                             return (
-                                <div key={team.id} className={`relative w-full max-w-md bg-dark-surface/50 backdrop-blur-sm border-2 rounded-2xl p-6 transition-all duration-500 flex flex-col gap-4
-                                    ${isRevealed 
-                                        ? (bet.isConfirmed 
-                                            ? (isCorrect ? 'border-emerald-500 bg-emerald-900/10' : 'border-red-500 bg-red-900/10')
-                                            : 'border-zinc-700 opacity-50')
-                                        : (bet.isConfirmed ? 'border-indigo-500/50 bg-indigo-900/10' : 'border-zinc-700')
+                                <div key={team.id} className={`relative bg-zinc-900/50 backdrop-blur-md border rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-500
+                                    ${showResult 
+                                        ? (isCorrect ? 'border-emerald-500 bg-emerald-900/20' : 'border-red-500 bg-red-900/20') 
+                                        : (bet?.isConfirmed ? 'border-indigo-500/50 bg-indigo-900/10' : 'border-zinc-800')
                                     }
                                 `}>
-                                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                                        <div className="font-display font-bold text-xl text-white tracking-wide">{team.name}</div>
-                                        <div className="font-mono font-bold text-3xl text-white">{team.score}</div>
+                                    <div className="font-display font-bold text-xl md:text-2xl text-zinc-300 text-center break-words w-full px-2 leading-tight">
+                                        {team.name}
+                                    </div>
+                                    
+                                    <div className="relative font-mono font-bold text-5xl md:text-7xl lg:text-8xl tracking-tighter my-2">
+                                        {team.score}
+                                        
+                                        {/* Score Change Animation */}
+                                        {showResult && (
+                                            <div className={`absolute -top-12 -right-12 text-4xl md:text-5xl font-black animate-score-change ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                {isCorrect ? '+' : '-'}{bet.amount}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="flex-1 flex flex-col justify-center min-h-[200px]">
+                                    {/* Status Indicators */}
+                                    <div className="h-8 flex items-center justify-center">
                                         {isRevealed ? (
-                                            <div className="text-center space-y-2 animate-bounce-in">
-                                                {bet.isConfirmed ? (
-                                                    <>
-                                                        <div className={`text-6xl font-black ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
-                                                            {isCorrect ? '+' : '-'}{bet.amount}
-                                                        </div>
-                                                        <div className="text-zinc-400 font-bold uppercase tracking-widest">
-                                                            Đã chọn: {bet.choice ? 'ĐÚNG' : 'SAI'}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-zinc-500 italic">Không tham gia</div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            bet.isConfirmed ? (
-                                                <div className="text-center space-y-4 animate-pop">
-                                                    <div className="text-zinc-400 text-sm uppercase tracking-widest">Đã chốt phương án</div>
-                                                    <div className="text-5xl text-indigo-400 animate-pulse"><i data-lucide="lock" className="w-16 h-16 mx-auto"></i></div>
+                                            bet?.isConfirmed ? (
+                                                <div className={`font-bold text-lg tracking-widest ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                    {bet.choice ? 'ĐÚNG' : 'SAI'}
                                                 </div>
+                                            ) : <span className="text-zinc-600 text-sm">--</span>
+                                        ) : (
+                                            bet?.isConfirmed ? (
+                                                <div className="text-indigo-400 animate-pulse"><i data-lucide="lock" className="w-6 h-6"></i></div>
                                             ) : (
-                                                <div className="text-center text-zinc-600 italic">Đang suy nghĩ...</div>
+                                                <span className="text-zinc-700 font-display text-2xl animate-pulse">...</span>
                                             )
                                         )}
                                     </div>
@@ -712,12 +542,13 @@
                         })}
                     </div>
 
+                    {/* Answer Reveal (Overlay) */}
                     {isRevealed && (
-                        <div className="w-full max-w-4xl p-6 flex flex-col items-center gap-4 animate-slide-up">
-                            <div className={`text-4xl font-black font-display px-8 py-2 rounded-2xl bg-black/50 backdrop-blur border-2 ${currentQ.answer ? 'border-emerald-500 text-emerald-400' : 'border-red-500 text-red-400'}`}>
-                                ĐÁP ÁN: {currentQ.answer ? 'ĐÚNG' : 'SAI'}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center animate-pop pointer-events-none">
+                            <div className={`text-6xl md:text-9xl font-black font-display px-12 py-6 rounded-3xl bg-black/80 backdrop-blur-xl border-4 shadow-[0_0_100px_rgba(0,0,0,0.5)] ${currentQ.answer ? 'border-emerald-500 text-emerald-400' : 'border-red-500 text-red-400'}`}>
+                                {currentQ.answer ? 'ĐÚNG' : 'SAI'}
                             </div>
-                            <div className="text-zinc-400 text-center max-w-2xl text-lg font-light leading-relaxed">
+                            <div className="mt-8 bg-zinc-900/90 backdrop-blur px-8 py-4 rounded-xl border border-zinc-700 text-zinc-300 text-xl md:text-2xl max-w-3xl text-center shadow-2xl">
                                 {currentQ.explanation}
                             </div>
                         </div>
@@ -727,33 +558,24 @@
         };
 
         // --- Main App ---
-
         const App = () => {
             const [theme, setTheme] = useLocalStorage('theme', 'dark');
             const [data, setData] = useLocalStorage('gameData', { teams: [], questions: [] });
             const [gameState, setGameState] = useLocalStorage('gameState', { currentQIndex: 0, isRevealed: false, bets: {} });
             
-            const [viewMode, setViewMode] = useState(() => {
-                if (typeof window !== 'undefined') {
-                    const params = new URLSearchParams(window.location.search);
-                    return params.get('mode') === 'projector' ? 'PROJECTOR' : 'HOST';
-                }
-                return 'HOST';
+            const [viewMode] = useState(() => {
+                if (typeof window === 'undefined') return 'HOST';
+                return new URLSearchParams(window.location.search).get('mode') === 'projector' ? 'PROJECTOR' : 'HOST';
             });
 
-            // If viewMode is PROJECTOR, force screen to GAME
+            // Nếu là Projector thì vào thẳng GAME, nếu là Host thì ở DASHBOARD ban đầu (trừ khi được kích hoạt)
             const [screen, setScreen] = useState(viewMode === 'PROJECTOR' ? 'GAME' : 'DASHBOARD');
 
             useEffect(() => {
                 if (theme === 'dark') document.documentElement.classList.add('dark');
                 else document.documentElement.classList.remove('dark');
-            }, [theme]);
-
-            const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-
-            useEffect(() => {
                 lucide.createIcons();
-            }, [screen, data, screen]);
+            }, [theme, screen, viewMode]);
 
             return (
                 <div className="bg-light-bg dark:bg-dark-bg min-h-screen text-zinc-900 dark:text-zinc-100 font-sans selection:bg-indigo-500/30">
@@ -761,9 +583,7 @@
                         {screen === 'DASHBOARD' && viewMode === 'HOST' && (
                             <div className="h-screen overflow-y-auto custom-scrollbar p-6">
                                 <div className="absolute top-6 right-6 z-10">
-                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                                        <i data-lucide={theme === 'dark' ? 'sun' : 'moon'} className="w-5 h-5"></i>
-                                    </button>
+                                    <button onClick={()=>setTheme(p=>p==='dark'?'light':'dark')} className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800"><i data-lucide={theme==='dark'?'sun':'moon'} className="w-5 h-5"></i></button>
                                 </div>
                                 <Dashboard data={data} setData={setData} onStartGame={() => setScreen('GAME')} />
                             </div>
