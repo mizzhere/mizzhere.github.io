@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bảng điều khiển Thư viện</title>
+  <!-- Thư viện SortableJS để kéo thả (giữ nguyên) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- Google Fonts để có font chữ đẹp -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <svg width="0" height="0" style="position:absolute">
+    <symbol id="icon-plus" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-trash" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-edit" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm12 8a1 1 0 011 1v2.101a7.002 7.002 0 01-11.601 2.566 1 1 0 111.885-.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h4a1 1 0 011 1z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-save" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586L7.707 10.293zM3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" /></symbol>
+    <symbol id="icon-tag" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 012 10V5a1 1 0 011-1h5a1 1 0 01.707.293l7 7zM6 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-config" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-close" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></symbol>
+    <symbol id="icon-drag" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 5h10v10H5V5z" /><path d="M7 7h2v2H7V7zM7 11h2v2H7v-2zM11 7h2v2h-2V7zM11 11h2v2h-2v-2z" /></symbol>
+  </svg>
+<style>
+    :root {
+        --bg-main: #f8f9fa;
+        --bg-panel: #ffffff;
+        --bg-input: #f1f3f4;
+        --text-primary: #202124;
+        --text-secondary: #5f6368;
+        --border-color: #dee2e6;
+        --accent-blue: #1a73e8;
+        --accent-green: #1e8e3e;
+        --accent-red: #d93025;
+        --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.1);
+        --shadow-md: 0 1px 3px 0 rgba(60,64,67,0.2), 0 2px 6px 2px rgba(60,64,67,0.15);
+    }
+    
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    /* --- Bố cục toàn trang (No-Scroll) --- */
+    html, body { height: 100vh; margin: 0; overflow: hidden; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-primary); display: flex; flex-direction: column; }
+    main { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; min-height: 0; }
+    .panel { background-color: var(--bg-panel); padding: 25px 30px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+
+    /* --- Typography & Icons --- */
+    h1, h2, h3 { margin-top: 0; font-weight: 600; color: var(--text-primary); }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.4rem; padding-bottom: 0; border: none; }
+    h3 { font-size: 1.1rem; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+    .icon { width: 1.25em; height: 1.25em; vertical-align: middle; }
+
+    /* --- Form Elements --- */
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem; }
+    input, textarea, select { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-input); color: var(--text-primary); transition: box-shadow 0.2s; }
+    input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-blue); border-color: var(--accent-blue); }
+    
+    /* --- Buttons --- */
+    button { padding: 12px 24px; font-size: 1rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    button:disabled { background-color: #bdc1c6 !important; cursor: not-allowed; transform: none !important; color: #80868b; box-shadow: none !important; }
+    .btn-primary { background-color: var(--accent-blue); color: white; }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 1px 3px 1px rgba(66,133,244,.3); background-color: #297be6; }
+    .btn-secondary { background-color: var(--accent-green); color: white; }
+    .btn-secondary:hover:not(:disabled) { box-shadow: 0 1px 3px 1px rgba(30,142,62,.3); }
+    .btn-danger { background-color: var(--accent-red); color: white; }
+    .btn-danger:hover:not(:disabled) { box-shadow: 0 1px 3px 1px rgba(217,48,37,.3); }
+    .btn-neutral { background-color: #f1f3f4; color: var(--text-secondary); border: 1px solid var(--border-color); }
+    .btn-neutral:hover:not(:disabled) { background-color: #e8eaed; color: var(--text-primary); }
+
+    /* --- Utility --- */
+    .hidden { display: none !important; }
+    .spinner { animation: spin 1s linear infinite; width: 20px; height: 20px; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- Tag Input Component (Original + Refined) --- */
+    .tag-input-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; }
+    .tag-pill { display: flex; align-items: center; background-color: var(--accent-blue); color: white; padding: 4px 10px; border-radius: 16px; font-size: 0.9rem; white-space: nowrap; }
+    .tag-remove-btn { margin-left: 8px; background: none; border: none; color: white; opacity: 0.7; cursor: pointer; padding: 0; font-weight: bold; line-height: 1; }
+    .tag-remove-btn:hover { opacity: 1; }
+    .tag-editor-input { flex-grow: 1; border: none; background: none; padding: 4px; min-width: 120px; outline: none; font-size: 1rem; }
+    .autocomplete-suggestions { position: relative; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 10; box-shadow: 0 4px 6px rgba(32,33,36,.28); margin-top: -1px; }
+    .suggestion-item { padding: 10px; cursor: pointer; }
+    .suggestion-item:hover, .suggestion-item.active { background-color: #e8f0fe; color: var(--accent-blue); }
+
+    /* --- Cấu trúc Layout chính --- */
+    #config-panel { max-width: 600px; margin: auto; }
+   /* --- LAYOUT CHÍNH (SPA) --- */
+    #uploader-panel { 
+        flex-grow: 1; /* Chiếm hết khoảng trống còn lại */
+        display: flex; 
+        flex-direction: column; 
+        min-height: 0; /* Quan trọng để con scroll được */
+        gap: 10px; 
+        overflow: hidden; /* Ngăn scroll body */
+    }
+    
+    #dashboard-layout { flex-grow: 1; display: grid; grid-template-columns: minmax(400px, 2fr) 1fr; gap: 20px; min-height: 0; }
+    @media (max-width: 1200px) { #dashboard-layout { grid-template-columns: 1fr; } }
+    
+    /* --- Panel bên trong Dashboard --- */
+    #library-list-panel, #editor-panel { display: flex; flex-direction: column; min-height: 0; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+    .panel-header .actions { display: flex; gap: 10px; }
+
+    /* --- Library List --- */
+    #library-list-container { flex-grow: 1; overflow-y: auto; padding: 5px; margin: 0 -5px; }
+    .program-group { background-color: #f1f3f4; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
+    .program-group-header { padding: 15px; font-size: 1.1rem; font-weight: 600; cursor: grab; display: flex; align-items: center; gap: 10px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); }
+    .program-group-header .icon-drag { color: var(--text-secondary); }
+    .video-card-list { padding: 15px; }
+    .video-card-item { display: flex; align-items: center; gap: 15px; background-color: var(--bg-panel); padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: grab; border: 1px solid var(--border-color); transition: all 0.2s ease; }
+    .video-card-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: #cdd2d6; }
+    .video-card-item.active { box-shadow: 0 0 0 3px var(--accent-blue); border-color: var(--accent-blue); }
+    .video-card-thumbnail-wrapper { position: relative; width: 120px; height: 67px; flex-shrink: 0; }
+    .video-card-thumbnail { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .video-card-duration { position: absolute; bottom: 5px; right: 5px; background-color: rgba(0,0,0,0.75); color: white; font-size: 0.75rem; padding: 2px 5px; border-radius: 4px; }
+    .video-card-info { flex-grow: 1; overflow: hidden; min-width: 0; }
+    .video-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .video-card-meta { font-size: 0.85rem; color: var(--text-secondary); }
+    .video-card-actions { display: flex; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+    .video-card-item:hover .video-card-actions { opacity: 1; }
+    .video-card-actions button { width: 32px; height: 32px; padding: 0; background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; }
+    .video-card-actions button:hover { background: #e8eaed; color: var(--text-primary); border-color: var(--border-color); }
+
+    /* --- Editor Panel --- */
+    .editor-content-wrapper { flex-grow: 1; overflow-y: auto; margin: 0 -15px; padding: 0 15px; }
+    .editor-actions { margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+
+   /* --- Status Log (Ghim đáy) --- */
+    #status-log { 
+        flex-shrink: 0; 
+        height: 40px; /* Chiều cao cố định nhỏ gọn */
+        background-color: #3c4043; 
+        color: white; 
+        padding: 0 15px; 
+        border-radius: 8px; 
+        font-family: monospace; 
+        font-size: 0.85rem; 
+        display: flex; 
+        align-items: center; /* Căn giữa chữ theo chiều dọc */
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        margin-top: 10px; 
+    }
+
+
+    /* --- Modal Quản lý Tag --- */
+    .modal-overlay { position: fixed; inset: 0; background-color: rgba(32,33,36,0.5); z-index: 999; backdrop-filter: blur(4px); }
+    #tag-manager-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 90%; max-width: 900px; }
+    #tag-manager-close-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; padding: 0; background: none; border: none; color: var(--text-secondary); }
+    #tag-manager-close-btn:hover { color: var(--text-primary); background: var(--bg-input); }
+    .tag-manager-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .tag-list { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; background-color: var(--bg-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; }
+    .tag-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid var(--border-color); }
+    .tag-list li:last-child { border-bottom: none; }
+    .tag-list-actions button { width: auto; height: auto; padding: 5px; margin-left: 5px; }
+    .tag-add-group { display: flex; gap: 5px; }
+    .tag-add-group input { flex-grow: 1; }
+    .tag-add-group button { width: 44px; flex-shrink: 0; padding: 10px; }
+    #form-title {
+    max-height: 4.5rem;   /* Giới hạn chiều cao của tiêu đề, tương đương khoảng 2-3 dòng chữ */
+    overflow-y: auto;     /* Tự động hiển thị thanh cuộn dọc KHI nội dung dài hơn chiều cao trên */
+    padding-right: 10px;  /* Tạo một chút khoảng trống bên phải để thanh cuộn không dính vào chữ */
+    line-height: 1.4;     /* Giúp văn bản hiển thị đẹp hơn khi có nhiều dòng */
+    text-align: left;     /* Đảm bảo văn bản luôn căn trái */
+
+}
+/* --- SỬA: Header Navigation (Tabs + Repo Info) --- */
+    .nav-header-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--border-color); /* Chuyển gạch chân xuống đây */
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        flex-wrap: wrap; /* Xuống dòng nếu màn hình quá nhỏ */
+        gap: 15px;
+    }
+
+    .nav-tabs { 
+        display: flex; 
+        gap: 10px; 
+        /* Xóa border và margin cũ đi vì đã chuyển sang wrapper */
+        margin-bottom: 0; 
+        border-bottom: none; 
+        padding-bottom: 0;
+    }
+    
+    .nav-tab { 
+        padding: 8px 16px; /* Chỉnh lại chút cho gọn */
+        font-weight: 600; 
+        color: var(--text-secondary); 
+        cursor: pointer; 
+        border-radius: 6px; 
+        transition: background 0.2s;
+    }
+    .nav-tab:hover { background-color: #f1f3f4; }
+    .nav-tab.active { background-color: #e8f0fe; color: var(--accent-blue); }
+
+    /* Chỉnh lại Repo Info cho gọn để nhét vừa bên phải */
+    #repo-info { 
+        flex-shrink: 0; 
+        font-size: 0.85rem; 
+        color: var(--text-secondary); 
+        background: var(--bg-panel); 
+        padding: 6px 12px; 
+        border-radius: 20px; /* Bo tròn kiểu pill cho đẹp */
+        border: 1px solid var(--border-color); 
+        margin: 0; /* Xóa margin cũ */
+    }
+   /* --- Subtitle Editor Layout (Đã tối ưu: Bỏ Waveform) --- */
+    /* --- VIEW 2: SUBTITLE EDITOR (LAYOUT 40/60) --- */
+    #subtitle-editor-panel { 
+        display: flex; 
+        flex-direction: row; /* Chia ngang */
+        height: 100%; 
+        min-height: 0; 
+        gap: 15px; 
+        overflow: hidden;
+    }
+    
+    /* CỘT TRÁI (40%) */
+    .editor-left-panel {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-width: 320px;
+    }
+
+    /* Khung Video & Overlay */
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* Tỷ lệ 16:9 */
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    #editor-player {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+    }
+    /* Phụ đề đè lên video */
+    #video-overlay-text {
+        position: absolute;
+        bottom: 20px;
+        left: 10px; right: 10px;
+        text-align: center;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 1px 2px black;
+        pointer-events: none; /* Để click xuyên qua video */
+        z-index: 10;
+        background: rgba(0,0,0,0.4);
+        padding: 5px;
+        border-radius: 4px;
+        min-height: 1.5em;
+    }
+
+    /* Khu vực nút bấm bên dưới video */
+    .editor-controls-area {
+        flex-grow: 1;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .control-box {
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+    .control-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: var(--accent-blue); border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* CỘT PHẢI (60%) - Bảng Nhập Liệu */
+    .editor-right-panel {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: #fff;
+    }
+    .subtitle-grid-wrapper {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    
+    .editor-top-section { 
+        
+        flex-shrink: 0; 
+        display: flex; /* Dùng Flex thay vì Grid */
+        justify-content: center;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .video-preview-box { width: 100%; height: 100%; position: relative; max-width: 800px; /* Giới hạn chiều rộng video cho đỡ vỡ hình */ }
+    #editor-player { width: 100%; height: 100%; }
+
+    /* XÓA class .waveform-box, #waveform, #wave-timeline vì không dùng nữa */
+
+    .editor-controls { 
+        flex-shrink: 0;
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 8px 12px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color);
+    }
+    
+    .editor-controls .group { display: flex; gap: 5px; }
+
+    .subtitle-grid-wrapper { flex-grow: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; background: white; position: relative; }
+    .view-content { 
+        flex-grow: 1; 
+        min-height: 0; /* Quan trọng */
+        display: flex; 
+        flex-direction: column; 
+        overflow: hidden; /* Để scroll bên trong */
+    }
+    /* Table Styling */
+    .sub-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .sub-table th { position: sticky; top: 0; background: #f8f9fa; z-index: 2; padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary); }
+    .sub-table td { border-bottom: 1px solid #eee; padding: 5px; vertical-align: top; }
+    
+    .col-id { width: 50px; text-align: center; color: #aaa; }
+    .col-time { width: 200px; }
+    .col-text { width: auto; }
+    .col-action { width: 60px; text-align: center; }
+
+    .time-input { font-family: monospace; width: 100%; padding: 5px; border: 1px solid transparent; border-radius: 4px; background: #f8f9fa; font-size: 0.9rem; }
+    .time-input:focus { border-color: var(--accent-blue); background: white; }
+    .time-input.error { border-color: var(--accent-red); background: #fff0f0; }
+
+    .text-input { width: 100%; padding: 8px; border: 1px solid transparent; border-radius: 4px; resize: none; overflow: hidden; font-family: inherit; line-height: 1.4; min-height: 38px; }
+    .text-input:focus { border-color: var(--accent-blue); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .sub-row.active { background-color: #e8f0fe; }
+    .sub-row:hover { background-color: #f8f9fa; }
+    
+    .btn-icon { padding: 6px; width: 32px; height: 32px; border-radius: 4px; color: var(--text-secondary); background: none; }
+    .btn-icon:hover { background: #e0e0e0; color: var(--text-primary); }
+    .btn-icon.delete:hover { background: #fce8e6; color: var(--accent-red); }
+
+    /* Custom Scrollbar for editor */
+    .subtitle-grid-wrapper::-webkit-scrollbar { width: 8px; }
+    .subtitle-grid-wrapper::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+    /* --- CSS MỚI CHO EDITOR NÂNG CAO --- */
+
+/* 1. Style cho dòng được chọn nhiều (Multi-select) */
+.sub-row.multi-selected {
+    background-color: #ffe0b2 !important; /* Màu cam nhạt để khác với màu active xanh */
+    border-left: 4px solid #fb8c00;
+}
+
+/* 2. Style cho Modal Find/Replace và Offset (nhỏ gọn, nổi lên trên) */
+.editor-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); z-index: 2000;
+    display: none; justify-content: center; align-items: center;
+}
+.editor-modal {
+    background: #fff; padding: 20px; border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 400px;
+    display: flex; flex-direction: column; gap: 15px;
+}
+.editor-modal h3 { margin: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.editor-modal .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.editor-modal label { margin: 0; min-width: 80px; }
+
+/* 3. Button trên thanh công cụ editor */
+.editor-toolbar-btn {
+    padding: 6px 12px; font-size: 0.9rem; background: #fff; 
+    border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
+}
+.editor-toolbar-btn:hover { background: #f1f1f1; }
+</style>
+</head>
+<body>
+<main>
+  <!-- Panel Cấu Hình Ban Đầu -->
+    <div class="panel" id="config-panel">
+    <h1><svg class="icon" style="vertical-align: -3px; margin-right: 8px;"><use xlink:href="#icon-config"></use></svg>Cấu hình Kết nối</h1>
+    <p style="margin-top: -15px; margin-bottom: 25px; color: var(--text-secondary);">Nhập thông tin kho lưu trữ GitHub của bạn để bắt đầu.</p>
+    <div class="form-group"><label for="gh-username">Tên người dùng GitHub</label><input type="text" id="gh-username" placeholder="ví dụ: ten-cua-ban"></div>
+    <div class="form-group"><label for="gh-repo">Tên Kho lưu trữ</label><input type="text" id="gh-repo" placeholder="ví dụ: du-an-video"></div>
+    <div class="form-group">
+      <label for="gh-app-path">Đường dẫn Gốc App (để trống nếu ở thư mục gốc)</label>
+      <input type="text" id="gh-app-path" placeholder="ví dụ: my-app/">
+    </div>
+    <div class="form-group">
+      <label for="gh-srt-path">Đường dẫn Thư mục Phụ đề</label>
+      <input type="text" id="gh-srt-path" value="subtitles/">
+    </div>
+    <div class="form-group"><label for="gh-token">Personal Access Token (PAT)</label><input type="password" id="gh-token" placeholder="dán token của bạn vào đây"></div>
+    <button id="save-config-btn" class="btn-primary" style="width: 100%;">Lưu và Bắt đầu</button>
+  </div>
+
+  <div class="hidden" id="uploader-panel">
+    
+    <div class="nav-header-wrapper">
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-target="library-view">📂 Thư viện Video</button>
+            <button class="nav-tab" data-target="editor-view" id="nav-editor-btn">🎬 Chỉnh sửa Phụ đề</button>
+        </div>
+
+        <div id="repo-info"></div>
+    </div>
+    <div id="library-view" class="view-content">
+        <div id="dashboard-layout">
+            <div id="library-list-panel" class="panel">
+                <div class="panel-header">
+                    <h2>Thư viện Video</h2>
+                    <div class="actions">
+                        <button id="manage-tags-btn" class="btn-neutral"><svg class="icon"><use xlink:href="#icon-tag"></use></svg> Quản lý Tags</button>
+                        <button id="save-order-btn" class="btn-secondary hidden"><svg class="icon"><use xlink:href="#icon-save"></use></svg> Lưu Thứ tự</button>
+                        <button id="reset-config-btn" class="btn-danger"><svg class="icon"><use xlink:href="#icon-config"></use></svg> Đổi Cấu hình</button>
+                    </div>
+                </div>
+                <div id="library-list-container"></div>
+            </div>
+
+            <div id="editor-panel" class="panel">
+                <div class="panel-header"><h2 id="form-title">Thêm Video Mới</h2></div>
+                <div class="editor-content-wrapper">
+                    <div class="form-group"><label for="youtube-url">Link YouTube</label><input type="text" id="youtube-url"></div>
+                    <div class="form-group"><label for="user-title">Tên hiển thị</label><input type="text" id="user-title"></div>
+                    <div class="form-group"><label for="episode-number">Số tập</label><input type="number" id="episode-number"></div>
+                    <div class="form-group"><label for="program-select">Chương trình</label><select id="program-select"></select></div>
+                    <div class="form-group">
+                        <label>Người tham gia</label>
+                        <div class="tag-input-container"><div id="participants-tags-container"></div><input type="text" class="tag-editor-input" id="participants-input" placeholder="Thêm..."></div>
+                        <div class="autocomplete-suggestions"><div id="participants-autocomplete-list" class="autocomplete-list"></div></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Thể loại</label>
+                        <div class="tag-input-container"><div id="genres-tags-container"></div><input type="text" class="tag-editor-input" id="genres-input" placeholder="Thêm..."></div>
+                        <div class="autocomplete-suggestions"><div id="genres-autocomplete-list" class="autocomplete-list"></div></div>
+                    </div>
+                    <div class="form-group"><label for="description">Mô tả</label><textarea id="description" rows="4"></textarea></div>
+                    <div class="form-group"><label>Phân đoạn (Bookmark)</label><div id="bookmarks-list"></div><button type="button" class="btn-neutral" onclick="addBookmarkRow()">➕ Thêm phân đoạn</button></div>
+                    <div class="form-group"><label for="srt-file">File phụ đề (.srt)</label><input type="file" id="srt-file" accept=".srt"></div>
+                </div>
+                <div class="editor-actions">
+                    <button id="deploy-btn" class="btn-primary">Thêm Video</button>
+                    <button id="cancel-edit-btn" class="btn-neutral hidden">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editor-view" class="view-content hidden">
+        <div id="subtitle-editor-panel">
+            
+            <div class="editor-left-panel">
+                <div class="video-wrapper">
+                    <div id="editor-player"></div>
+                    <div id="video-overlay-text"></div> </div>
+
+                <div class="editor-controls-area">
+                    <div class="control-box">
+                        <h4 id="editor-video-title">Tên Video...</h4>
+                        <div id="video-current-time-display" style="font-family:monospace; font-size:1.5rem; font-weight:700; color:var(--accent-blue); text-align:center; margin-bottom:10px; background:#f1f3f4; padding:5px; border-radius:4px;">00:00:00</div>
+                        <div class="btn-grid">
+                            <button class="btn-primary" id="editor-play-btn">▶ Play / Pause</button>
+                            <button class="btn-neutral" onclick="SubEditor.insertRow()">➕ Thêm dòng mới</button>
+                        </div>
+                    </div>
+
+                    <div class="control-box">
+                        <h4>Căn chỉnh dòng đang chọn (<span id="current-row-idx">#</span>)</h4>
+                        <div class="btn-grid">
+                            <button class="btn-secondary" onclick="SubEditor.snapStart()" title="Start = End dòng trước">⏮ Start = End trước</button>
+                            <button class="btn-secondary" onclick="SubEditor.snapEnd()" title="End = Start dòng sau">⏭ End = Start sau</button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                            <i>Mẹo: Lăn chuột vào ô thời gian để chỉnh giây. Click vào số thứ tự để tua.</i>
+                        </div>
+                    </div>
+                    <div class="control-box">
+    <h4>Công cụ hàng loạt</h4>
+    <div class="btn-grid">
+        <button class="editor-toolbar-btn" onclick="SubEditor.openFindReplace()">🔍 Tìm / Thay thế</button>
+        <button class="editor-toolbar-btn" onclick="SubEditor.openOffset()">⏱️ Offset (Dịch sub)</button>
+        <button class="editor-toolbar-btn" onclick="SubEditor.deleteSelectedRows()" style="grid-column: span 2; color: #d93025; border-color: #d93025;">
+                                🗑 Xóa các dòng đang chọn
+                            </button>
+    </div>
+    <div style="margin-top:5px; font-size: 0.8rem; color:#555;">
+        <ul>
+            <li><b>Ctrl + Click số thứ tự:</b> Chọn nhiều dòng.</li>
+            <li><b>Ctrl + Alt + Click số:</b> Chọn đến hết.</li>
+            <li><b>Ctrl + Click ô Start:</b> Nối đuôi dòng trước.</li>
+            <li><b>Ctrl + Click ô End:</b> Nối đầu dòng sau.</li>
+        </ul>
+    </div>
+</div>
+
+                    <div class="control-box" style="margin-top: auto;">
+                        <div class="btn-grid">
+                            <button class="btn-primary" id="save-srt-gh-btn">💾 Lưu GitHub</button>
+                            <button class="btn-danger" onclick="SubEditor.close()">❌ Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-right-panel subtitle-grid-wrapper">
+                <table class="sub-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">#</th>
+                            <th class="col-time">Timing (Start ➜ End)</th>
+                            <th class="col-text">Nội dung</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="subtitle-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-log"></div>
+  </div>
+
+  <div id="tag-manager-modal-wrapper" class="hidden">
+    <div class="modal-overlay"></div>
+    <div id="tag-manager-modal" class="panel">
+      <button id="tag-manager-close-btn" class="btn-neutral">
+        <svg class="icon"><use xlink:href="#icon-close"></use></svg>
+      </button>
+      <h2 style="padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">Quản lý Tags</h2>
+      <div class="tag-manager-layout">
+          <div>
+              <h3>Chương trình</h3>
+              <div class="form-group tag-add-group">
+                <input id="new-program-input" placeholder="Thêm chương trình..."><button id="add-program-btn" class="btn-secondary"><svg class="icon"><use xlink:href="#icon-plus"></use></svg></button>
+              </div>
+              <ul id="programs-tag-list" class="tag-list"></ul>
+          </div>
+          <div>
+              <h3>Người tham gia</h3>
+              <div class="form-group tag-add-group">
+                <input id="new-participant-input" placeholder="Thêm người tham gia..."><button id="add-participant-btn" class="btn-secondary"><svg class="icon"><use xlink:href="#icon-plus"></use></svg></button>
+              </div>
+              <ul id="participants-tag-list" class="tag-list"></ul>
+          </div>
+          <div>
+              <h3>Thể loại</h3>
+              <div class="form-group tag-add-group">
+                <input id="new-genre-input" placeholder="Thêm thể loại..."><button id="add-genre-btn" class="btn-secondary"><svg class="icon"><use xlink:href="#icon-plus"></use></svg></button>
+              </div>
+              <ul id="genres-tag-list" class="tag-list"></ul>
+          </div>
+      </div>
+      <button id="save-tags-btn" class="btn-primary" style="margin-top: 20px; width: 100%;">Lưu và Đồng bộ Thay đổi</button>
+    </div>
+  </div>
+  <div id="find-replace-modal" class="editor-modal-overlay">
+    <div class="editor-modal">
+        <h3>Tìm kiếm & Thay thế (Ctrl+H)</h3>
+        <div class="row">
+            <label>Tìm:</label>
+            <input type="text" id="find-input" placeholder="Từ khóa...">
+        </div>
+        <div class="row">
+            <label>Thay thế:</label>
+            <input type="text" id="replace-input" placeholder="Thay thành...">
+        </div>
+        <div class="row">
+            <label>Phạm vi:</label>
+            <select id="fr-scope">
+                <option value="all">Tất cả các dòng</option>
+                <option value="selected">Chỉ dòng đang chọn</option>
+            </select>
+        </div>
+        <div class="row" style="justify-content: flex-end;">
+            <button class="btn-neutral" onclick="SubEditor.closeModal('find-replace-modal')">Đóng</button>
+            <button class="btn-primary" onclick="SubEditor.performFindReplace()">Thực thi</button>
+        </div>
+    </div>
+</div>
+
+<div id="time-offset-modal" class="editor-modal-overlay">
+    <div class="editor-modal">
+        <h3>Dịch chuyển thời gian (Offset)</h3>
+        <p style="font-size:0.85rem; color:#666;">Dùng cho các dòng đang được chọn (Multi-select).</p>
+        <div class="row">
+            <label>Thời gian (ms):</label>
+            <input type="number" id="offset-input" placeholder="VD: 500 hoặc -1000">
+        </div>
+        <p style="font-size:0.8rem; color:#888;">* Số dương: trễ đi (sub hiện muộn hơn)<br>* Số âm: sớm hơn (sub hiện sớm hơn)</p>
+        <div class="row" style="justify-content: flex-end;">
+            <button class="btn-neutral" onclick="SubEditor.closeModal('time-offset-modal')">Đóng</button>
+            <button class="btn-primary" onclick="SubEditor.performOffset()">Áp dụng</button>
+        </div>
+    </div>
+</div>
+</main>
+<script>
+    // JavaScript sẽ được thêm ở đây.
+	const doc = document;
+// --- DOM Element Cache ---
+const ui = {
+    configPanel: doc.getElementById("config-panel"),
+    uploaderPanel: doc.getElementById("uploader-panel"),
+    saveConfigBtn: doc.getElementById("save-config-btn"),
+    resetConfigBtn: doc.getElementById("reset-config-btn"),
+    deployBtn: doc.getElementById("deploy-btn"),
+    statusLog: doc.getElementById("status-log"),
+    libraryListContainer: doc.getElementById("library-list-container"),
+    formTitle: doc.getElementById("form-title"),
+    cancelEditBtn: doc.getElementById("cancel-edit-btn"),
+    saveOrderBtn: doc.getElementById("save-order-btn"),
+    participantsTagsContainer: doc.getElementById("participants-tags-container"),
+    autocompleteList: doc.getElementById("autocomplete-list"),
+    manageTagsBtn: doc.getElementById("manage-tags-btn"),
+    tagManagerModal: doc.getElementById("tag-manager-modal"),
+    tagManagerCloseBtn: doc.getElementById("tag-manager-close-btn"),
+    programsTagList: doc.getElementById("programs-tag-list"),
+    participantsTagList: doc.getElementById("participants-tag-list"),
+    genresTagList: doc.getElementById("genres-tag-list"),
+    newProgramInput: doc.getElementById("new-program-input"),
+    addProgramBtn: doc.getElementById("add-program-btn"),
+    newParticipantInput: doc.getElementById("new-participant-input"),
+    addParticipantBtn: doc.getElementById("add-participant-btn"),
+    newGenreInput: doc.getElementById("new-genre-input"),
+    addGenreBtn: doc.getElementById("add-genre-btn"),
+    saveTagsBtn: doc.getElementById("save-tags-btn"),
+    repoInfo: doc.getElementById("repo-info"), // FIX: Added back the missing reference
+    inputs: {
+        username: doc.getElementById("gh-username"),
+        repo: doc.getElementById("gh-repo"),
+        token: doc.getElementById("gh-token"),
+        appPath: doc.getElementById("gh-app-path"),
+        srtPath: doc.getElementById("gh-srt-path"),
+        youtubeUrl: doc.getElementById("youtube-url"),
+        userTitle: doc.getElementById("user-title"),
+        episodeNumber: doc.getElementById("episode-number"),
+        programSelect: doc.getElementById("program-select"),
+        participantsInput: doc.getElementById("participants-input"),
+        participantsTagsContainer: doc.getElementById("participants-tags-container"),
+        participantsAutocompleteList: doc.getElementById("participants-autocomplete-list"),
+        genresInput: doc.getElementById("genres-input"),
+        genresTagsContainer: doc.getElementById("genres-tags-container"),
+        genresAutocompleteList: doc.getElementById("genres-autocomplete-list"),
+        description: doc.getElementById("description"),
+        srtFile: doc.getElementById("srt-file"),
+    }
+};
+
+// --- State Management ---
+let config = {}, currentLibrary = [], tagsData = { programs: [], participants: [], genres: [] },
+    editingVideoId = null, isDirty = false, selectedParticipants = [], selectedGenres = [];
+let sortableGroups, sortableVideos = [];
+
+// --- Utility Functions ---
+const log = (msg, isError = false) => { ui.statusLog.style.display = "block"; const el = doc.createElement("div"); el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`; if (isError) el.style.color = "var(--accent-red)"; ui.statusLog.prepend(el); };
+const toBase64 = (file) => new Promise((resolve, reject) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => resolve(r.result.split(",")[1]); r.onerror = reject; });
+const toBase64Str = (str) => btoa(unescape(encodeURIComponent(str)));
+const fromBase64 = (str) => decodeURIComponent(escape(atob(str)));
+const extractVideoID = (url) => (url.match(/(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/|shorts\/)([a-zA-Z0-9_-]{11})/) || [])[1] || null;
+const getOEmbedData = async (videoId) => { try { const res = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`); if (!res.ok) throw new Error(); const data = await res.json(); const res2 = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`); const data2 = await res2.json(); return {...data, upload_date: data2.upload_date, duration: data2.duration }; } catch (e) { throw new Error(`oEmbed failed for ${videoId}.`); } };
+const showSpinner = (btn, text = "...") => { btn.disabled = true; btn.innerHTML = `<svg class="spinner" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="currentColor" stroke-linecap="round"></circle></svg> ${text}`; };
+const hideSpinner = (btn, text) => { btn.disabled = false; btn.innerHTML = text; };
+function parseBookmarksInput(rawText) {
+  return rawText.trim().split('\n').map(line => {
+    const match = line.match(/^(.+?):\s*(\d{1,2}:\d{2}:\d{2}(?:,\d{3})?)\s*(\[skip\])?$/i);
+    if (!match) return null;
+    return {
+      label: match[1].trim(),
+      time: match[2].trim(),
+      ...(match[3] ? { skip: true } : {})
+    };
+  }).filter(Boolean);
+}
+
+// --- GitHub API Communication ---
+// START: Dán đoạn mã này vào để thay thế hàm ghAPI cũ
+
+async function ghAPI(path, method = "GET", body = null, isSrtFile = false) {
+    // ✅ Tự động gộp appPath + srtPath nếu là SRT
+    let basePath = config.appPath || '';
+    if (isSrtFile) {
+        basePath += config.srtPath || '';
+    }
+
+    // 🔧 Ghép path và làm sạch dấu //
+    const fullPath = `${basePath}${path}`.replace(/\/\/+/g, '/').replace(/^\//, '');
+
+    const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${fullPath}`;
+    const options = {
+        method,
+        headers: {
+            Authorization: `token ${config.token}`,
+            Accept: "application/vnd.github.v3+json"
+        }
+    };
+
+    if (body) options.body = JSON.stringify(body);
+    const res = await fetch(url, options);
+
+    if (!res.ok && res.status !== 404) {
+        const err = await res.json();
+        throw new Error(`GitHub API (${res.status}): ${err.message}`);
+    }
+
+    return res.status === 404 ? { notFound: true } : { success: true, data: await res.json() };
+}
+
+
+// END: Dán đoạn mã này vào
+async function commitFile(path, message, content, sha) { log(`Committing ${path}...`); await ghAPI(path, "PUT", { message: `[DeployTool] ${message}`, content, sha }); }
+
+// --- UI Rendering ---
+function renderLibraryList() {
+    ui.libraryListContainer.innerHTML = '';
+    const grouped = currentLibrary.reduce((acc, video) => { const program = video.program || 'Khác'; if (!acc[program]) acc[program] = []; acc[program].push(video); return acc; }, {});
+    const groupKeys = Object.keys(grouped).sort((a,b) => { const aIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === a); const bIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === b); return aIndex - bIndex; });
+    
+    groupKeys.forEach(programName => {
+        const groupEl = doc.createElement('div'); groupEl.className = 'program-group'; groupEl.dataset.program = programName;
+        groupEl.innerHTML = `<div class="program-group-header">${programName}</div><div class="video-card-list"></div>`;
+        const videoListEl = groupEl.querySelector('.video-card-list');
+        const sortedVideos = grouped[programName].sort((a,b) => (a.episode || 0) - (b.episode || 0));
+        sortedVideos.forEach(video => {
+            const card = doc.createElement('div'); card.className = 'video-card-item';
+            if (video.videoId === editingVideoId) card.classList.add('active');
+            card.dataset.videoId = video.videoId;
+            const episodePrefix = video.episode ? `[Tập ${video.episode}] ` : '';
+            const duration = video.duration_auto ? new Date(video.duration_auto * 1000).toISOString().substr(14, 5) : '';
+            card.innerHTML = `<div class="video-card-thumbnail-wrapper"><img src="${video.thumbnailUrl_auto}" class="video-card-thumbnail" loading="lazy">${duration ? `<span class="video-card-duration">${duration}</span>` : ''}</div><div class="video-card-info"><div class="video-card-title">${episodePrefix}${video.userTitle}</div><div class="video-card-meta">${video.program || video.authorName_auto}</div></div><div class="video-card-actions"><button class="edit-btn" title="Sửa">✏️</button><button class="refresh-btn" title="Làm mới">🔄</button><button class="delete-btn" title="Xóa">🗑️</button></div>`;
+            videoListEl.appendChild(card);
+        });
+        ui.libraryListContainer.appendChild(groupEl);
+    });
+    initSortable();
+}
+
+function initSortable() { if(sortableGroups) sortableGroups.destroy(); sortableVideos.forEach(s => s.destroy()); sortableVideos = []; sortableGroups = new Sortable(ui.libraryListContainer, { animation: 150, handle: '.program-group-header', onEnd: () => setDirty(true) }); doc.querySelectorAll('.video-card-list').forEach(el => { sortableVideos.push(new Sortable(el, { group: 'videos', animation: 150, onEnd: () => setDirty(true) })); }); }
+function populateProgramSelect() { ui.inputs.programSelect.innerHTML = `<option value="">(Không có)</option>`; tagsData.programs.sort().forEach(p => ui.inputs.programSelect.innerHTML += `<option value="${p}">${p}</option>`); ui.inputs.programSelect.innerHTML += `<option value="--new--">-- Thêm chương trình mới --</option>`; }
+function renderTagEditor(type, selectedArray) { const container = ui.inputs[`${type}TagsContainer`]; container.innerHTML = selectedArray.map(p => `<span class="tag-pill">${p}<button class="tag-remove-btn" data-type="${type}" data-name="${p}">x</button></span>`).join(''); }
+function showAutocomplete(type, query, selectedArray) { const listEl = ui.inputs[`${type}AutocompleteList`]; if (!query) { listEl.innerHTML = ''; return; } const suggestions = tagsData[type].filter(p => p.toLowerCase().includes(query.toLowerCase()) && !selectedArray.includes(p)); listEl.innerHTML = suggestions.map(s => `<div class="suggestion-item" data-type="${type}" data-name="${s}">${s}</div>`).join(''); }
+
+// --- Form & State ---
+function clearFormAndState() {
+    Object.values(ui.inputs).forEach(input => { if(input && !input.id.startsWith('gh-')) input.value = ''; });
+    editingVideoId = null; selectedParticipants = []; selectedGenres = [];
+    renderTagEditor('participants', selectedParticipants); renderTagEditor('genres', selectedGenres);
+    ui.formTitle.textContent = "Thêm Video Mới"; hideSpinner(ui.deployBtn, "Thêm Video");
+    ui.inputs.youtubeUrl.readOnly = false;
+    doc.querySelector('.video-card-item.active')?.classList.remove('active');
+    ui.cancelEditBtn.classList.add('hidden');
+renderBookmarkEditor([]);
+
+
+
+}
+function populateFormForEdit(videoId) {
+    const video = currentLibrary.find(v => v.videoId === videoId); if (!video) return;
+    clearFormAndState(); editingVideoId = videoId;
+    ui.inputs.youtubeUrl.value = `https://www.youtube.com/watch?v=${video.videoId}`;
+    ui.inputs.userTitle.value = video.userTitle || "";
+    ui.inputs.episodeNumber.value = video.episode || "";
+    ui.inputs.programSelect.value = video.program || "";
+    ui.inputs.description.value = video.description || "";
+	renderBookmarkEditor(video.bookmarks || []);
+
+  (video.bookmarks || []).map(b => `${b.label}: ${b.time}${b.skip ? ' [skip]' : ''}`).join('\n');
+
+    selectedParticipants = [...(video.participants || [])]; selectedGenres = [...(video.genres || [])];
+    renderTagEditor('participants', selectedParticipants); renderTagEditor('genres', selectedGenres);
+    ui.formTitle.textContent = `Chỉnh sửa: ${video.userTitle}`; hideSpinner(ui.deployBtn, "Lưu Thay Đổi");
+    ui.inputs.youtubeUrl.readOnly = true;
+    doc.querySelector(`[data-video-id="${videoId}"]`)?.classList.add('active');
+    ui.cancelEditBtn.classList.remove('hidden');
+}
+function setDirty(state) { isDirty = state; ui.saveOrderBtn.classList.toggle('hidden', !state); }
+
+// --- Main Action Handlers ---
+async function handleDeploy() {
+    showSpinner(ui.deployBtn);
+    try {
+        const url = ui.inputs.youtubeUrl.value.trim();
+        const videoId = editingVideoId || extractVideoID(url);
+        if (!videoId) throw new Error("Link YouTube không hợp lệ.");
+        const srtFile = ui.inputs.srtFile.files[0];
+        const existingEntry = currentLibrary.find(item => item.videoId === videoId);
+        if (!existingEntry && !srtFile) throw new Error("Cần file .srt khi thêm video mới.");
+        let subtitleUrl = existingEntry?.subtitleUrl || "";
+        // START: Dán khối mã này vào để thay thế
+if (srtFile) {
+    log("Đang tải lên file phụ đề...");
+    const srtName = `${videoId}.srt`;
+    const srtContent = await toBase64(srtFile);
+    
+    // Sử dụng ghAPI đã được sửa lỗi
+    const { data: existingSrtData } = await ghAPI(srtName, "GET", null, true); // true = isSrtFile
+    
+    const srtPayload = {
+        message: `[DeployTool] Upload subtitle: ${srtName}`,
+        content: srtContent,
+        sha: existingSrtData?.sha
+    };
+
+    // Gọi ghAPI để tải lên
+    await ghAPI(srtName, "PUT", srtPayload, true); // true = isSrtFile
+
+    subtitleUrl = `${config.srtPath}${srtName}`.replace(/\/\/+/g, '/');
+
+}
+// END: Dán khối mã này vào
+        let program = ui.inputs.programSelect.value;
+        let tagsNeedUpdate = false;
+        if (program === '--new--') { program = prompt("Nhập tên chương trình mới:"); if (!program) throw new Error("Hủy bỏ thao tác."); if (!tagsData.programs.includes(program)) { tagsData.programs.push(program); tagsNeedUpdate = true; } }
+        const checkNewTags = (type, selected) => { let newTags = selected.filter(p => !tagsData[type].includes(p)); if (newTags.length > 0) { tagsData[type].push(...newTags); tagsData[type].sort(); tagsNeedUpdate = true; } };
+        checkNewTags('participants', selectedParticipants); checkNewTags('genres', selectedGenres);
+        
+        const oembed = existingEntry ? {} : await getOEmbedData(videoId);
+        const episodeValue = ui.inputs.episodeNumber.value;
+        const newEntryData = { videoId, userTitle: ui.inputs.userTitle.value.trim() || oembed.title, program, participants: selectedParticipants, genres: selectedGenres, description: ui.inputs.description.value.trim(), subtitleUrl, originalTitle_auto: existingEntry?.originalTitle_auto || oembed.title, authorName_auto: existingEntry?.authorName_auto || oembed.author_name, thumbnailUrl_auto: existingEntry?.thumbnailUrl_auto || oembed.thumbnail_url?.replace('hqdefault.jpg', 'maxresdefault.jpg'), duration_auto: existingEntry?.duration_auto || oembed.duration, uploadDate_auto: existingEntry?.uploadDate_auto || oembed.upload_date };
+        // Parse bookmark từ textarea
+const bookmarks = getBookmarkList();
+if (bookmarks.length > 0) newEntryData.bookmarks = bookmarks;
+
+
+
+		if (episodeValue && !isNaN(parseInt(episodeValue, 10))) { newEntryData.episode = parseInt(episodeValue, 10); } else { delete newEntryData.episode; }
+
+        const idx = currentLibrary.findIndex(item => item.videoId === videoId);
+        if (idx >= 0) { currentLibrary[idx] = newEntryData; } else { currentLibrary.unshift(newEntryData); }
+        
+       const { data: librarySha } = await ghAPI("library.json");
+await commitFile("library.json", (editingVideoId ? "Update" : "Add") + ` video`, toBase64Str(JSON.stringify(currentLibrary, null, 2)), librarySha?.sha);
+
+if (tagsNeedUpdate) {
+    const { data: tagsSha } = await ghAPI("tags.json");
+    await commitFile("tags.json", 'Update tags', toBase64Str(JSON.stringify(tagsData, null, 2)), tagsSha?.sha);
+}
+
+        alert("Thao tác thành công!"); clearFormAndState(); populateProgramSelect(); renderLibraryList();
+    } catch (err) { log(err.message, true); alert(`Lỗi: ${err.message}`); } 
+    finally { hideSpinner(ui.deployBtn, editingVideoId ? "Lưu Thay Đổi" : "Thêm Video"); }
+}
+
+async function handleDelete(videoId) {
+    const video = currentLibrary.find(v => v.videoId === videoId);
+    if (!confirm(`Bạn có chắc muốn xóa video "${video.userTitle}"?`)) return;
+    const btn = doc.querySelector(`[data-video-id="${videoId}"] .delete-btn`);
+    showSpinner(btn, '');
+    try {
+        currentLibrary = currentLibrary.filter(v => v.videoId !== videoId);
+        const { data } = await ghAPI("library.json");
+        await commitFile("library.json", `Delete video: ${video.userTitle}`, toBase64Str(JSON.stringify(currentLibrary, null, 2)), data.sha);
+        log(`Đã xóa video: ${video.userTitle}`);
+        if (editingVideoId === videoId) clearFormAndState();
+        renderLibraryList();
+    } catch (err) {
+        log(err.message, true);
+    } finally {
+        hideSpinner(btn, '🗑️');
+    }
+}
+
+async function handleRefreshSingle(videoId) {
+    const btn = doc.querySelector(`[data-video-id="${videoId}"] .refresh-btn`);
+    showSpinner(btn, '');
+    try {
+        const idx = currentLibrary.findIndex(v => v.videoId === videoId);
+        if (idx === -1) throw new Error("Không tìm thấy video.");
+        log(`Đang làm mới metadata cho: ${currentLibrary[idx].userTitle}`);
+        const meta = await getOEmbedData(videoId);
+        currentLibrary[idx].originalTitle_auto = meta.title;
+        currentLibrary[idx].authorName_auto = meta.author_name;
+        currentLibrary[idx].thumbnailUrl_auto = meta.thumbnail_url?.replace('hqdefault.jpg', 'maxresdefault.jpg');
+        currentLibrary[idx].duration_auto = meta.duration;
+        currentLibrary[idx].uploadDate_auto = meta.upload_date;
+
+        const { data } = await ghAPI("library.json");
+        await commitFile("library.json", `Refresh metadata for ${currentLibrary[idx].userTitle}`, toBase64Str(JSON.stringify(currentLibrary, null, 2)), data.sha);
+        renderLibraryList();
+        log("Làm mới thành công.");
+    } catch (err) {
+        log(err.message, true);
+    } finally {
+        hideSpinner(btn, '🔄');
+    }
+}
+
+async function handleSaveOrder() {
+    showSpinner(ui.saveOrderBtn, "Đang lưu...");
+    try {
+        const newLibrary = [];
+        doc.querySelectorAll('.program-group').forEach(g => {
+            g.querySelectorAll('.video-card-item').forEach(c => {
+                const v = currentLibrary.find(vid => vid.videoId === c.dataset.videoId);
+                if (v) {
+                    v.program = g.dataset.program === 'Khác' ? '' : g.dataset.program;
+                    newLibrary.push(v);
+                }
+            });
+        });
+        currentLibrary = newLibrary;
+        const { data } = await ghAPI("library.json");
+        await commitFile("library.json", "Reorder library", toBase64Str(JSON.stringify(currentLibrary, null, 2)), data.sha);
+        setDirty(false);
+        renderLibraryList();
+        log("Đã lưu thứ tự mới.");
+    } catch (err) {
+        log(err.message, true);
+    } finally {
+        hideSpinner(ui.saveOrderBtn, "Lưu Thứ tự");
+    }
+}
+
+function renderTagManagerLists() {
+    const renderList = (type, container) => {
+        container.innerHTML = '';
+        tagsData[type].sort().forEach(tag => {
+            const li = doc.createElement('li');
+            li.innerHTML = `<span>${tag}</span><div class="tag-list-actions"><button class="edit-tag-btn" data-type="${type}" data-name="${tag}">✏️</button><button class="delete-tag-btn" data-type="${type}" data-name="${tag}">🗑️</button></div>`;
+            container.appendChild(li);
+        });
+    };
+    renderList('programs', ui.programsTagList);
+    renderList('participants', ui.participantsTagList);
+    renderList('genres', ui.genresTagList);
+}
+
+function openTagManager() {
+    renderTagManagerLists();
+    ui.tagManagerModal.classList.remove('hidden');
+}
+
+function handleTagListActions(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const { type, name } = btn.dataset;
+    if (btn.classList.contains('edit-tag-btn')) {
+        const newName = prompt(`Đổi tên tag "${name}":`, name);
+        if (newName && newName.trim() && newName !== name) {
+            const index = tagsData[type].indexOf(name);
+            if (index > -1) {
+                tagsData[type][index] = newName;
+                currentLibrary.forEach(video => {
+                    if (type === 'programs' && video.program === name) video.program = newName;
+                    else if (video.hasOwnProperty(type) && video[type]?.includes(name)) {
+                        const pIndex = video[type].indexOf(name);
+                        video[type][pIndex] = newName;
+                    }
+                });
+                renderTagManagerLists();
+            }
+        }
+    } else if (btn.classList.contains('delete-tag-btn')) {
+        if (confirm(`Xóa vĩnh viễn tag "${name}"? Nó sẽ bị gỡ khỏi tất cả video.`)) {
+            tagsData[type] = tagsData[type].filter(t => t !== name);
+            currentLibrary.forEach(video => {
+                if (type === 'programs' && video.program === name) video.program = '';
+                else if (video.hasOwnProperty(type) && video[type]?.includes(name)) {
+                    video[type] = video[type].filter(p => p !== name);
+                }
+            });
+            renderTagManagerLists();
+        }
+    }
+}
+
+function addNewTagFromInput(type) {
+    const inputEl = ui[`new${type.charAt(0).toUpperCase() + type.slice(1, -1)}Input`];
+    const newTag = inputEl.value.trim();
+    if (newTag && !tagsData[type].includes(newTag)) {
+        tagsData[type].push(newTag);
+        inputEl.value = '';
+        renderTagManagerLists();
+    }
+}
+
+async function handleSaveTags() {
+    showSpinner(ui.saveTagsBtn, "Đang lưu...");
+    try {
+        const [libraryRes, tagsRes] = await Promise.all([
+            ghAPI("library.json"), 
+            ghAPI("tags.json")
+        ]);
+        await commitFile("tags.json", 'Update tags from manager', toBase64Str(JSON.stringify(tagsData, null, 2)), tagsRes.data?.sha);
+        await commitFile("library.json", 'Sync library with tag updates', toBase64Str(JSON.stringify(currentLibrary, null, 2)), libraryRes.data?.sha);
+        alert("Đã lưu và đồng bộ thành công!");
+        log("Tags và thư viện đã được cập nhật.");
+        ui.tagManagerModal.classList.add('hidden');
+        populateProgramSelect();
+        renderLibraryList();
+    } catch (err) {
+        log(err.message, true);
+        alert("Có lỗi xảy ra, vui lòng xem log.");
+    } finally {
+        hideSpinner(ui.saveTagsBtn, "Lưu và Đồng bộ Thay đổi");
+    }
+}
+
+
+
+
+function saveConfig() {
+let appPath = ui.inputs.appPath.value.trim();
+let srtPath = ui.inputs.srtPath.value.trim();
+
+// Đảm bảo có dấu `/` ở cuối nếu cần
+if (appPath && !appPath.endsWith("/")) appPath += "/";
+if (srtPath && !srtPath.endsWith("/")) srtPath += "/";
+
+
+
+
+    const cfg = {
+        username: ui.inputs.username.value,
+        repo: ui.inputs.repo.value,
+        token: ui.inputs.token.value,
+        appPath,
+        srtPath
+    };
+
+    if (!cfg.username || !cfg.repo || !cfg.token) {
+        return alert("Vui lòng điền đủ Tên người dùng, Repo và Token.");
+    }
+
+    config = cfg;
+    localStorage.setItem("ytDeployerConfig", JSON.stringify(config));
+    initializeDashboard();
+}
+
+function resetConfig() { if (confirm("Xóa cấu hình?")) { localStorage.removeItem("ytDeployerConfig"); config = {}; ui.configPanel.classList.remove("hidden"); ui.uploaderPanel.classList.add("hidden"); } }
+function loadConfig() { const stored = localStorage.getItem("ytDeployerConfig"); if (stored) { config = JSON.parse(stored); Object.keys(config).forEach(key => { if (ui.inputs[key]) { ui.inputs[key].value = config[key] || ''; } }); initializeDashboard(); } else { ui.configPanel.classList.remove("hidden"); } }
+
+async function initializeDashboard() {
+    ui.configPanel.classList.add("hidden");
+    ui.uploaderPanel.classList.remove("hidden");
+
+    ui.repoInfo.innerHTML = `Đang kết nối: <strong>${config.username}/${config.repo}</strong><br>Đường dẫn App: <strong>/${config.appPath || "(gốc)"}</strong> | Thư mục Sub: <strong>/${config.srtPath || "(gốc)"}</strong>`;
+    log("Đang tải dữ liệu từ GitHub...");
+
+    try {
+        const [libraryRes, tagsRes] = await Promise.all([
+            ghAPI("library.json"), 
+            ghAPI("tags.json")
+        ]);
+
+        currentLibrary = libraryRes.notFound ? [] : JSON.parse(fromBase64(libraryRes.data.content));
+
+        // Đảm bảo tagsData luôn đúng cấu trúc
+        tagsData = tagsRes.notFound 
+            ? { programs: [], participants: [], genres: [] } 
+            : JSON.parse(fromBase64(tagsRes.data.content));
+
+        if (!tagsData.programs) tagsData.programs = [];
+        if (!tagsData.participants) tagsData.participants = [];
+        if (!tagsData.genres) tagsData.genres = [];
+
+        log(`Tải thành công ${currentLibrary.length} video và ${tagsData.programs.length + tagsData.participants.length + tagsData.genres.length} tags.`);
+        populateProgramSelect(); 
+        renderLibraryList();
+    } catch (err) {
+        log(`Lỗi tải dữ liệu: ${err.message}`, true);
+    }
+}
+
+
+// --- Event Listeners Setup ---
+const setupTagEditor = (type) => {
+    const inputEl = ui.inputs[`${type}Input`];
+    const containerEl = ui.inputs[`${type}TagsContainer`];
+    const suggestionsEl = ui.inputs[`${type}AutocompleteList`];
+    const getSelectedArray = () => type === 'participants' ? selectedParticipants : selectedGenres;
+    const setSelectedArray = (arr) => { if (type === 'participants') selectedParticipants = arr; else selectedGenres = arr; };
+
+    containerEl.addEventListener('click', e => { if (e.target.classList.contains('tag-remove-btn')) { const name = e.target.dataset.name; setSelectedArray(getSelectedArray().filter(p => p !== name)); renderTagEditor(type, getSelectedArray()); } });
+    inputEl.addEventListener('input', e => showAutocomplete(type, e.target.value, getSelectedArray()));
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.value.trim()) { e.preventDefault(); const newTag = e.target.value.trim(); const selected = getSelectedArray(); if (!selected.includes(newTag)) { selected.push(newTag); setSelectedArray(selected); renderTagEditor(type, selected); } e.target.value = ''; showAutocomplete(type, '', selected); } else if (e.key === 'Backspace' && e.target.value === '') { const selected = getSelectedArray(); selected.pop(); setSelectedArray(selected); renderTagEditor(type, selected); } });
+    suggestionsEl.addEventListener('click', e => { if (e.target.classList.contains('suggestion-item')) { const name = e.target.dataset.name; const selected = getSelectedArray(); if (!selected.includes(name)) { selected.push(name); setSelectedArray(selected); renderTagEditor(type, selected); } inputEl.value = ''; showAutocomplete(type, '', selected); inputEl.focus(); } });
+};
+
+ui.saveConfigBtn.addEventListener("click", saveConfig);
+ui.resetConfigBtn.addEventListener("click", resetConfig);
+ui.cancelEditBtn.addEventListener("click", clearFormAndState);
+ui.deployBtn.addEventListener("click", handleDeploy);
+ui.saveOrderBtn.addEventListener("click", handleSaveOrder);
+ui.manageTagsBtn.addEventListener("click", openTagManager);
+ui.tagManagerCloseBtn.addEventListener('click', () => ui.tagManagerModal.classList.add('hidden'));
+ui.saveTagsBtn.addEventListener('click', handleSaveTags);
+ui.programsTagList.addEventListener('click', handleTagListActions);
+ui.participantsTagList.addEventListener('click', handleTagListActions);
+ui.genresTagList.addEventListener('click', handleTagListActions);
+ui.addProgramBtn.addEventListener('click', () => addNewTagFromInput('programs'));
+ui.addParticipantBtn.addEventListener('click', () => addNewTagFromInput('participants'));
+ui.addGenreBtn.addEventListener('click', () => addNewTagFromInput('genres'));
+ui.libraryListContainer.addEventListener('click', e => { const btn = e.target.closest('button'); if(!btn) return; const videoId = btn.closest('.video-card-item')?.dataset.videoId; if(!videoId) return; if(btn.classList.contains('edit-btn')) populateFormForEdit(videoId); if(btn.classList.contains('delete-btn')) handleDelete(videoId); if(btn.classList.contains('refresh-btn')) handleRefreshSingle(videoId); });
+setupTagEditor('participants');
+setupTagEditor('genres');
+
+    // --- Bổ sung nhỏ để điều khiển Modal mới ---
+    const originalOpenTagManager = openTagManager;
+    const tagManagerWrapper = document.getElementById('tag-manager-modal-wrapper');
+
+    // Ghi đè hàm cũ để hiển thị cả overlay
+    window.openTagManager = function() {
+      originalOpenTagManager(); // Gọi hàm gốc
+      tagManagerWrapper.classList.remove('hidden');
+      tagManagerWrapper.querySelector('#tag-manager-modal').classList.remove('hidden');
+    }
+
+    // Ghi đè nút đóng modal cũ
+    document.getElementById('tag-manager-close-btn').addEventListener('click', () => {
+        tagManagerWrapper.classList.add('hidden');
+    });
+    
+    // Ghi đè nút lưu tags để ẩn modal
+    const originalSaveTags = handleSaveTags;
+    window.handleSaveTags = async function() {
+        await originalSaveTags(); // Gọi hàm gốc
+        if (!document.querySelector('#save-tags-btn:disabled')) {
+            tagManagerWrapper.classList.add('hidden');
+        }
+    }
+
+    // Sửa lại hàm render video card để thêm icon kéo thả
+    const originalRenderLibraryList = renderLibraryList;
+    window.renderLibraryList = function() {
+        originalRenderLibraryList(); // Gọi hàm gốc
+        document.querySelectorAll('.program-group-header').forEach(header => {
+            const icon = document.createElement('div');
+            icon.innerHTML = '<svg class="icon icon-drag"><use xlink:href="#icon-drag"></use></svg>';
+            header.prepend(icon);
+        });
+        document.querySelectorAll('.video-card-actions').forEach(actions => {
+            actions.querySelector('.edit-btn').innerHTML = '<svg class="icon"><use xlink:href="#icon-edit"></use></svg>';
+            actions.querySelector('.refresh-btn').innerHTML = '<svg class="icon"><use xlink:href="#icon-refresh"></use></svg>';
+            actions.querySelector('.delete-btn').innerHTML = '<svg class="icon"><use xlink:href="#icon-trash"></use></svg>';
+        });
+    }
+
+    // Sửa lại nút deploy/cancel để phù hợp với layout mới
+    const originalClearFormAndState = clearFormAndState;
+    window.clearFormAndState = function() {
+        originalClearFormAndState();
+        document.getElementById('deploy-btn').innerHTML = 'Thêm Video';
+    }
+    const originalPopulateFormForEdit = populateFormForEdit;
+    window.populateFormForEdit = function(videoId) {
+        originalPopulateFormForEdit(videoId);
+        document.getElementById('deploy-btn').innerHTML = 'Lưu Thay Đổi';
+    }
+    
+    // Cần thay thế các hàm gốc bằng các hàm đã được "bọc" lại
+    document.getElementById('manage-tags-btn').removeEventListener('click', openTagManager);
+    document.getElementById('manage-tags-btn').addEventListener('click', window.openTagManager);
+    
+    document.getElementById('save-tags-btn').removeEventListener('click', handleSaveTags);
+    document.getElementById('save-tags-btn').addEventListener('click', window.handleSaveTags);
+function renderBookmarkEditor(bookmarks = []) {
+  const container = document.getElementById("bookmarks-list");
+  container.innerHTML = '';
+  bookmarks.forEach((b) => {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.marginBottom = "6px";
+
+    row.innerHTML = `
+      <input type="text" placeholder="Tên phần" value="${b.label || ''}" style="flex: 2" />
+      <input type="text" value="${b.time || '00:00:00'}" onkeydown="handleTimeInputKey(event, this)" maxlength="8" style="flex: 1" />
+      <label style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" ${b.skip ? "checked" : ""} /> Bỏ qua
+      </label>
+      <button onclick="this.parentElement.remove()" class="btn-danger" style="padding: 4px 8px;">✖</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+/* --- HÀM HỖ TRỢ LĂN CHUỘT CHỈNH GIỜ --- */
+function handleWheelTime(e, input) {
+    if (document.activeElement !== input) return; // Chỉ lăn khi đang focus
+    e.preventDefault();
+    
+    // Parse thời gian hiện tại
+    const val = input.value;
+    const p = val.split(':');
+    const sStr = p[2].split(',');
+    
+    // Chuyển sang mili-giây tổng
+    let totalMs = 
+        parseInt(p[0]) * 3600000 + 
+        parseInt(p[1]) * 60000 + 
+        parseInt(sStr[0]) * 1000 + 
+        parseInt(sStr[1] || 0);
+
+    // Lăn lên tăng 100ms, lăn xuống giảm 100ms
+    // Giữ Shift để tăng giảm 1000ms (1s)
+    const step = e.shiftKey ? 1000 : 100;
+    
+    if (e.deltaY < 0) totalMs += step;
+    else totalMs -= step;
+
+    if (totalMs < 0) totalMs = 0;
+
+    // Format lại thành chuỗi
+    const date = new Date(totalMs);
+    const ms = String(totalMs % 1000).padStart(3, '0');
+    const timeStr = date.toISOString().substr(11, 8) + ',' + ms; // HH:mm:ss,ms
+
+    input.value = timeStr;
+    
+    // Kích hoạt sự kiện change để lưu dữ liệu
+    input.dispatchEvent(new Event('change'));
+}
+function handleTimeInputKey(e, input) {
+  const val = input.value;
+  let pos = input.selectionStart;
+
+  const digitPositions = [0, 1, 3, 4, 6, 7];
+
+  // Gõ số
+  if (e.key >= '0' && e.key <= '9') {
+    if (!digitPositions.includes(pos)) {
+      e.preventDefault();
+      return;
+    }
+    const chars = val.split('');
+    chars[pos] = e.key;
+    input.value = chars.join('');
+    e.preventDefault();
+
+    // Tự chuyển con trỏ
+    const next = digitPositions.find(p => p > pos);
+    if (next !== undefined) {
+      setTimeout(() => input.setSelectionRange(next, next), 0);
+    }
+    return;
+  }
+
+  // Backspace
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    let newPos = pos;
+
+    // Nếu đang ở dấu `:` → lùi tới số trước đó
+    while (newPos > 0 && !digitPositions.includes(newPos - 1)) {
+      newPos--;
+    }
+    if (digitPositions.includes(newPos - 1)) {
+      const chars = val.split('');
+      chars[newPos - 1] = '0';
+      input.value = chars.join('');
+      setTimeout(() => input.setSelectionRange(newPos - 1, newPos - 1), 0);
+    }
+    return;
+  }
+
+  // Delete
+  if (e.key === 'Delete') {
+    e.preventDefault();
+    if (!digitPositions.includes(pos)) return;
+    const chars = val.split('');
+    chars[pos] = '0';
+    input.value = chars.join('');
+    setTimeout(() => input.setSelectionRange(pos, pos), 0);
+    return;
+  }
+
+  // Ngăn mọi ký tự khác
+  if (!['ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
+
+function addBookmarkRow() {
+  const container = document.getElementById("bookmarks-list");
+  const bookmarks = [];
+
+  // Duyệt từng hàng và thu thập dữ liệu trực tiếp
+  for (const row of container.children) {
+    const inputs = row.querySelectorAll("input");
+    const label = inputs[0]?.value?.trim();
+    const time = inputs[1]?.value?.trim();
+    const skip = inputs[2]?.checked;
+    bookmarks.push({ label, time, ...(skip ? { skip: true } : {}) });
+  }
+
+  // ✅ thêm hàng mới
+  bookmarks.push({ label: "", time: "00:00:00", skip: false });
+
+  renderBookmarkEditor(bookmarks);
+}
+
+
+function getBookmarkList() {
+  const container = document.getElementById("bookmarks-list");
+   document.activeElement?.blur?.();
+
+  return Array.from(container.children).map(row => {
+    const inputs = row.querySelectorAll("input");
+    const label = inputs[0].value.trim();
+    const time = inputs[1].value.trim();
+    const skip = inputs[2].checked;
+    if (!label || !time) return null;
+    return { label, time, ...(skip ? { skip: true } : {}) };
+  }).filter(Boolean);
+}
+// 1. Hàm xác định và bôi đen vùng (Giờ, Phút, Giây, hoặc Ms) dựa trên vị trí con trỏ
+function selectTimeSegment(input) {
+    const pos = input.selectionStart;
+    let start = 0, end = 0;
+
+    if (pos <= 2) { start = 0; end = 2; }       // Giờ (HH)
+    else if (pos <= 5) { start = 3; end = 5; }  // Phút (mm)
+    else if (pos <= 8) { start = 6; end = 8; }  // Giây (ss)
+    else { start = 9; end = 12; }               // Ms (mss)
+
+    // Đặt selection để người dùng biết mình đang sửa cái gì
+    input.setSelectionRange(start, end);
+}
+
+// 2. Hàm xử lý phím bấm (Mũi tên & Nhập số)
+
+// 2. Hàm xử lý phím bấm Input Thời Gian (Logic: Overwrite & Smart Nav)
+function handleSmartTimeInput(e, input) {
+    const val = input.value; 
+    const pos = input.selectionStart;
+
+    // --- Xử lý Space (Dấu cách) ngay tại input ---
+    // Để tránh việc bấm cách nó nhập khoảng trắng vào ô giờ
+    if (e.code === 'Space') {
+        e.preventDefault();
+        // Việc Play/Pause sẽ do sự kiện global xử lý, ở đây chỉ cần chặn nhập ký tự
+        return;
+    }
+
+    // --- 1. Mũi tên Trái / Phải (Nhảy vùng thông minh) ---
+    // Quy định vùng: Giờ(0-2), Phút(3-5), Giây(6-8), Ms(9-12)
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (pos > 9) input.setSelectionRange(6, 8);      // Ms -> Giây
+        else if (pos > 6) input.setSelectionRange(3, 5); // Giây -> Phút
+        else input.setSelectionRange(0, 2);              // Phút -> Giờ (hoặc đang ở Giờ thì giữ nguyên)
+        return;
+    }
+    if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (pos < 3) input.setSelectionRange(3, 5);      // Giờ -> Phút
+        else if (pos < 6) input.setSelectionRange(6, 8); // Phút -> Giây
+        else input.setSelectionRange(9, 12);             // Giây -> Ms
+        return;
+    }
+
+    // --- 2. Backspace (Xóa lùi = Thay bằng số 0) ---
+    if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (pos === 0) return; // Đầu dòng không xóa được
+
+        // Nếu gặp dấu : hoặc , thì chỉ nhảy qua, không xóa
+        if ([':', ','].includes(val[pos - 1])) {
+            input.setSelectionRange(pos - 1, pos - 1);
+            return;
+        }
+
+        // Thay số trước con trỏ bằng '0'
+        const chars = val.split('');
+        chars[pos - 1] = '0';
+        input.value = chars.join('');
+        
+        // Lùi con trỏ lại 1 đơn vị
+        input.setSelectionRange(pos - 1, pos - 1);
+        
+        // Trigger lưu và seek
+        input.dispatchEvent(new Event('change'));
+        return;
+    }
+
+    // --- 3. Mũi tên Lên / Xuống (Tăng giảm thời gian) ---
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const p = val.split(':');
+        const sStr = p[2].split(',');
+        let h = parseInt(p[0]), m = parseInt(p[1]), s = parseInt(sStr[0]), ms = parseInt(sStr[1] || 0);
+        let change = (e.key === 'ArrowUp') ? 1 : -1;
+
+        if (pos <= 2) h += change;
+        else if (pos <= 5) m += change;
+        else if (pos <= 8) s += change;
+        else ms += (change * 10); // Ms nhảy 10 đơn vị
+
+        let totalMs = h * 3600000 + m * 60000 + s * 1000 + ms;
+        if (totalMs < 0) totalMs = 0;
+
+        // Format lại
+        const hh = Math.floor(totalMs / 3600000).toString().padStart(2, '0');
+        const mm = Math.floor((totalMs % 3600000) / 60000).toString().padStart(2, '0');
+        const ss = Math.floor((totalMs % 60000) / 1000).toString().padStart(2, '0');
+        const mss = (totalMs % 1000).toString().padStart(3, '0');
+        input.value = `${hh}:${mm}:${ss},${mss}`;
+
+        // Khôi phục vùng chọn cũ
+        if (pos <= 2) input.setSelectionRange(0, 2);
+        else if (pos <= 5) input.setSelectionRange(3, 5);
+        else if (pos <= 8) input.setSelectionRange(6, 8);
+        else input.setSelectionRange(9, 12);
+        
+        input.dispatchEvent(new Event('change'));
+        return;
+    }
+
+    // --- 4. Nhập số (Gõ đè) ---
+    if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        const safePos = [0,1,3,4,6,7,9,10,11]; 
+        if (!safePos.includes(pos)) { selectTimeSegment(input); return; }
+
+        const chars = val.split('');
+        chars[pos] = e.key;
+        input.value = chars.join('');
+
+        let nextPos = pos + 1;
+        if (nextPos === 2 || nextPos === 5 || nextPos === 8) nextPos++; // Nhảy qua dấu phân cách
+        
+        input.setSelectionRange(nextPos, nextPos);
+        input.dispatchEvent(new Event('change'));
+        return;
+    }
+    
+    // Chặn tất cả phím khác trừ Tab
+    if (e.key !== 'Tab') e.preventDefault();
+}
+/* --- SUBTITLE EDITOR HOÀN CHỈNH (CŨ + MỚI) --- */
+const SubEditor = (() => {
+    // --- VARIABLES CŨ GIỮ NGUYÊN ---
+    let ytPlayer = null;
+    let currentData = [];
+    let currentVideoId = null;
+    let syncInterval = null;
+    let activeRowIndex = -1; 
+    let stopAtTime = null;
+
+    // --- VARIABLES MỚI ---
+    let selectedIndices = new Set(); // Để lưu danh sách chọn nhiều
+
+    const overlayText = document.getElementById('video-overlay-text');
+    const currentRowLabel = document.getElementById('current-row-idx');
+
+    // Helpers giữ nguyên
+    const srtToSec = (str) => {
+        if(!str) return 0;
+        str = str.replace(',', '.');
+        const p = str.split(':'); 
+        const s = parseFloat(p[2]);
+        return parseInt(p[0])*3600 + parseInt(p[1])*60 + s;
+    };
+
+    const secToSrt = (t) => {
+        if (t < 0) t = 0;
+        const date = new Date(0);
+        date.setMilliseconds(Math.round(t * 1000));
+        return date.toISOString().substr(11, 8) + ',' + String(date.getMilliseconds()).padStart(3,'0');
+    };
+
+    function init() {
+        // --- LOGIC CŨ ---
+        document.getElementById('editor-play-btn').onclick = () => {
+            if(!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+            if(ytPlayer.getPlayerState() === 1) ytPlayer.pauseVideo();
+            else ytPlayer.playVideo();
+        };
+
+        document.getElementById('save-srt-gh-btn').onclick = save;
+        
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('editor-view').classList.contains('hidden')) return;
+            
+            // --- LOGIC MỚI: CTRL + H ---
+            if (e.ctrlKey && e.code === 'KeyH') {
+                e.preventDefault();
+                openFindReplace();
+                return;
+            }
+
+            // --- LOGIC CŨ: SPACE (ĐÃ FIX) ---
+            if (e.code === 'Space') {
+                const el = document.activeElement;
+                const tag = el.tagName;
+                
+                // Chỉ chặn nếu đang gõ Textarea HOẶC Input thường (không phải ô thời gian)
+                // Nếu là .time-input thì VẪN CHO PHÉP bấm Space để Play/Pause
+                if (tag === 'TEXTAREA' || (tag === 'INPUT' && !el.classList.contains('time-input'))) {
+                    return; 
+                }
+
+                e.preventDefault();
+                if(ytPlayer && ytPlayer.getPlayerState) {
+                    if(ytPlayer.getPlayerState() === 1) ytPlayer.pauseVideo();
+                    else ytPlayer.playVideo();
+                }
+            }
+        if (e.code === 'Delete') {
+                const tag = document.activeElement.tagName;
+                // Chỉ xóa nếu KHÔNG đang gõ trong ô Input hoặc Textarea
+                if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+                    if (selectedIndices.size > 0) {
+                        e.preventDefault();
+                        deleteSelectedRows();
+                    }
+                }
+            }
+        });
+    const dropZone = document.getElementById('subtitle-editor-panel');
+        
+        // Khi kéo file vào: Đổi viền để báo hiệu
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.border = "2px dashed var(--accent-blue)";
+        });
+
+        // Khi kéo ra ngoài: Bỏ viền
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.border = "none";
+        });
+
+        // Khi thả file: Gọi hàm xử lý
+        dropZone.addEventListener('drop', handleEditorDrop);
+    }
+    // --- HÀM HELPER MỚI: Parse SRT text ---
+    const parseRawSRT = (text) => {
+        // Chuẩn hóa dòng mới về \n
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        
+        return text.trim().split('\n\n').map((b) => {
+            const lines = b.split('\n');
+            if (lines.length < 2) return null;
+
+            // Tìm dòng chứa thời gian (có dấu -->)
+            const timeLineIdx = lines.findIndex(l => l.includes('-->'));
+            if (timeLineIdx === -1) return null;
+
+            const t = lines[timeLineIdx].split(' --> ');
+            const content = lines.slice(timeLineIdx + 1).join('\n');
+
+            return { 
+                id: 0, // ID sẽ được đánh lại sau
+                start: srtToSec(t[0].trim()), 
+                end: srtToSec(t[1].trim()), 
+                text: content 
+            };
+        }).filter(Boolean);
+    };
+
+    // --- HÀM XỬ LÝ KÉO THẢ ---
+    function handleEditorDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Xóa hiệu ứng visual (nếu có)
+        document.getElementById('subtitle-editor-panel').style.border = "none";
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.toLowerCase().endsWith('.srt')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const newSubs = parseRawSRT(event.target.result);
+                if (newSubs.length > 0) {
+                    // 1. Gộp mảng cũ và mới
+                    currentData = currentData.concat(newSubs);
+                    
+                    // 2. Sắp xếp lại theo thời gian Start
+                    currentData.sort((a, b) => a.start - b.start);
+                    
+                    // 3. Render lại bảng
+                    renderTable();
+                    
+                    alert(`✅ Đã merge thêm ${newSubs.length} dòng sub mới!`);
+                } else {
+                    alert("⚠️ File không có nội dung sub hợp lệ.");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert("⚠️ Vui lòng chỉ kéo thả file .srt");
+        }
+    }
+    async function load(videoId) {
+        // --- LOGIC CŨ ---
+        currentVideoId = videoId;
+        const v = currentLibrary.find(x => x.videoId === videoId);
+        if (!v) { alert("Không tìm thấy thông tin video!"); return; }
+
+        document.getElementById('editor-video-title').textContent = v.userTitle;
+        switchTab('editor-view');
+
+        // Reset state mới
+        selectedIndices.clear();
+
+        if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy();
+        
+        const onApiReady = () => {
+            const vid = videoId; 
+            ytPlayer = new YT.Player('editor-player', {
+                height: '100%', width: '100%', 
+                videoId: vid, 
+                playerVars: { 'origin': window.location.origin, 'controls': 1 },
+                events: {
+                    'onReady': () => startSync(),
+                    'onStateChange': (e) => {
+                        const btn = document.getElementById('editor-play-btn');
+                        if(btn) btn.textContent = e.data === 1 ? '⏸ Pause' : '▶ Play';
+                    }
+                }
+            });
+        };
+
+        if(window.YT && window.YT.Player) onApiReady();
+        else window.onYouTubeIframeAPIReady = onApiReady;
+
+        if(v.subtitleUrl) {
+            try {
+                const fname = v.subtitleUrl.split('/').pop();
+                const {data} = await ghAPI(fname, 'GET', null, true);
+                const text = fromBase64(data.content);
+                currentData = text.trim().split('\n\n').map((b, i) => {
+                    const l = b.split('\n');
+                    if(l.length < 3) return null;
+                    const t = l[1].split(' --> ');
+                    return { id: i+1, start: srtToSec(t[0]), end: srtToSec(t[1]), text: l.slice(2).join('\n') };
+                }).filter(Boolean);
+                renderTable();
+            } catch(e) { log("Chưa có sub hoặc lỗi: " + e.message); currentData = []; renderTable(); }
+        } else { currentData = []; renderTable(); }
+    }
+
+    // --- RENDER TABLE (ĐÃ CẬP NHẬT ĐỂ HỖ TRỢ CLICK MỚI) ---
+    function renderTable() {
+        const tbody = document.getElementById('subtitle-tbody');
+        tbody.innerHTML = currentData.map((s, i) => {
+            // Check xem dòng này có đang được chọn nhiều không
+            const isMultiSelected = selectedIndices.has(i) ? 'multi-selected' : '';
+            const isActive = activeRowIndex === i ? 'active' : '';
+
+            return `
+            <tr class="sub-row ${isActive} ${isMultiSelected}" id="row-${i}">
+                <td class="col-id" 
+                    onclick="SubEditor.handleRowHeaderClick(event, ${i})" 
+                    style="cursor:pointer; vertical-align:middle; text-align:center;" 
+                    title="Click để tua. Ctrl+Click để chọn nhiều.">
+                    ${i+1}
+                </td>
+                
+                <td class="col-time" style="vertical-align:middle;">
+                    <div style="display:flex; align-items:center; gap:5px;flex-direction: column;">
+                        <input class="time-input start" 
+                               style="text-align:center; font-weight:600; color:var(--accent-blue); letter-spacing: 1px;"
+                               value="${secToSrt(s.start)}" 
+                               onchange="SubEditor.update(${i},'start',this.value)"
+                               onkeydown="handleSmartTimeInput(event, this)"
+                               onclick="SubEditor.handleInputClick(event, ${i}, 'start', this)"
+                               onfocus="SubEditor.seekByStr(this.value)" 
+                               > 
+                        <span style="color:#aaa; font-size:12px;">➜</span>
+                        
+                        <input class="time-input end" 
+                               style="text-align:center; letter-spacing: 1px;"
+                               value="${secToSrt(s.end)}" 
+                               onchange="SubEditor.update(${i},'end',this.value)"
+                               onkeydown="handleSmartTimeInput(event, this)"
+                               onclick="SubEditor.handleInputClick(event, ${i}, 'end', this)"
+                               
+                               >
+                    </div>
+                </td>
+
+                <td>
+                    <textarea class="text-input" 
+                              rows="1"
+                              style="min-height:38px; height:38px;"
+                              onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; SubEditor.selectRow(${i})"
+                              oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                              onchange="SubEditor.update(${i},'text',this.value)">${s.text}</textarea>
+                </td>
+
+                <td class="col-action" style="vertical-align:middle;">
+                    <button class="btn-icon" onclick="SubEditor.del(${i})">🗑</button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.text-input').forEach(el => {
+            if(el.value.includes('\n')) el.style.height = el.scrollHeight + 'px';
+        });
+    }
+   
+    // --- LOGIC SELECTION MỚI ---
+    // --- LOGIC SELECTION ĐÃ FIX (TOGGLE & RESET) ---
+    function handleRowHeaderClick(e, i) {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            if (e.altKey) {
+                // --- SỬA ĐOẠN NÀY ---
+                // Ctrl + Alt: Chọn/Hủy chọn từ đây đến hết
+                
+                // Kiểm tra xem dòng hiện tại đang được chọn hay chưa
+                const isCurrentlySelected = selectedIndices.has(i);
+
+                for (let k = i; k < currentData.length; k++) {
+                    if (isCurrentlySelected) {
+                        // Nếu đang chọn -> Bấm lần nữa để Hủy chọn (từ dòng này về sau)
+                        selectedIndices.delete(k);
+                    } else {
+                        // Nếu chưa chọn -> Chọn (từ dòng này về sau)
+                        selectedIndices.add(k);
+                    }
+                }
+            } else {
+                // Ctrl: Toggle từng dòng (Giữ nguyên)
+                if (selectedIndices.has(i)) selectedIndices.delete(i);
+                else selectedIndices.add(i);
+            }
+            refreshRowStyles(); // Cập nhật màu sắc
+        } else {
+            // --- SỬA THÊM ĐOẠN NÀY ---
+            // Click thường (không phím): Xóa hết chọn nhiều (Reset)
+            selectedIndices.clear(); 
+            refreshRowStyles(); // Xóa hết màu cam đi
+            
+            // Logic cũ: Tua và Active dòng xanh
+            seek(currentData[i].start);
+            selectRow(i);
+        }
+    }
+
+   // --- LOGIC SMART SNAP TRONG INPUT (ĐÃ CẬP NHẬT SHIFT + ALT + CLICK) ---
+    function handleInputClick(e, i, type, inputEl) {
+        
+        // 1. [MỚI] Shift + Alt + Click: Dịch chuyển thông minh (Snap Move & Clamp)
+        if (e.shiftKey && e.altKey) {
+            e.preventDefault(); e.stopPropagation();
+            
+            // Lấy độ dài hiện tại của dòng
+            const oldDuration = currentData[i].end - currentData[i].start;
+            const container = inputEl.parentElement; // Để tìm ô input còn lại
+
+            if (type === 'start' && i > 0) {
+                // --- LOGIC CHO Ô START ---
+                // 1. Start mới = End của dòng trước
+                const prevEnd = currentData[i-1].end;
+                let newStart = prevEnd;
+                
+                // 2. End mới = Start mới + độ dài cũ
+                let newEnd = newStart + oldDuration;
+
+                // 3. Giới hạn: End không được vượt quá Start của dòng sau (nếu có)
+                if (i < currentData.length - 1) {
+                    const nextStart = currentData[i+1].start;
+                    if (newEnd > nextStart) newEnd = nextStart; // Bị cắt ngắn nếu vướng
+                }
+
+                // Cập nhật dữ liệu & Giao diện
+                update(i, 'start', secToSrt(newStart)); // Sẽ seek tới đây
+                update(i, 'end', secToSrt(newEnd));
+                
+                inputEl.value = secToSrt(newStart);
+                const endInput = container.querySelector('.end');
+                if(endInput) endInput.value = secToSrt(newEnd);
+                
+                highlightInput(inputEl);
+            } 
+            else if (type === 'end' && i < currentData.length - 1) {
+                // --- LOGIC CHO Ô END ---
+                // 1. End mới = Start của dòng sau
+                const nextStart = currentData[i+1].start;
+                let newEnd = nextStart;
+
+                // 2. Start mới = End mới - độ dài cũ
+                let newStart = newEnd - oldDuration;
+
+                // 3. Giới hạn: Start không được lùi quá End của dòng trước (nếu có)
+                if (i > 0) {
+                    const prevEnd = currentData[i-1].end;
+                    if (newStart < prevEnd) newStart = prevEnd; // Bị cắt ngắn nếu vướng
+                }
+
+                // Cập nhật dữ liệu & Giao diện
+                update(i, 'end', secToSrt(newEnd)); // Sẽ seek/preview
+                update(i, 'start', secToSrt(newStart));
+
+                inputEl.value = secToSrt(newEnd);
+                const startInput = container.querySelector('.start');
+                if(startInput) startInput.value = secToSrt(newStart);
+
+                highlightInput(inputEl);
+            }
+        }
+        // 2. Nếu giữ Ctrl (Logic Nối dòng cũ - Snap Anchor)
+        else if (e.ctrlKey) {
+            e.preventDefault(); e.stopPropagation();
+
+            if (type === 'start' && i > 0) {
+                const newVal = currentData[i-1].end;
+                update(i, 'start', secToSrt(newVal)); 
+                inputEl.value = secToSrt(newVal);
+                highlightInput(inputEl);
+            } else if (type === 'end' && i < currentData.length - 1) {
+                const newVal = currentData[i+1].start;
+                update(i, 'end', secToSrt(newVal));
+                inputEl.value = secToSrt(newVal);
+                highlightInput(inputEl);
+            }
+        } 
+        // 3. Nếu giữ Alt + Click (Lấy giờ hiện tại - Stamp)
+        else if (e.altKey && type === 'start') {
+            e.preventDefault(); e.stopPropagation();
+            if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+                const timeStr = secToSrt(ytPlayer.getCurrentTime());
+                update(i, 'start', timeStr);
+                inputEl.value = timeStr;
+                highlightInput(inputEl);
+            }
+        }
+        // 4. Click thường (Tua & Preview)
+        else {
+            if(typeof selectTimeSegment === 'function') selectTimeSegment(inputEl);
+
+            if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
+                if (type === 'start') {
+                    ytPlayer.seekTo(currentData[i].start, true);
+                    
+                } else if (type === 'end') {
+                    const t = currentData[i].end;
+                    const previewStart = Math.max(currentData[i].start, t - 0.5);
+                    ytPlayer.seekTo(previewStart, true);
+                    ytPlayer.playVideo();
+                    stopAtTime = t;
+                }
+            }
+        }
+    }
+
+    function highlightInput(el) {
+        el.style.backgroundColor = "#ccffcc";
+        setTimeout(() => el.style.backgroundColor = "", 300);
+    }
+
+    function refreshRowStyles() {
+        document.querySelectorAll('.sub-row').forEach((row, idx) => {
+            row.classList.remove('multi-selected');
+            if (selectedIndices.has(idx)) row.classList.add('multi-selected');
+        });
+    }
+
+    // --- LOGIC CŨ GIỮ NGUYÊN ---
+    function selectRow(index) {
+        activeRowIndex = index;
+        currentRowLabel.textContent = `#${index + 1}`;
+        document.querySelectorAll('.sub-row.active').forEach(el => el.classList.remove('active'));
+        const row = document.getElementById(`row-${index}`);
+        if(row) row.classList.add('active');
+    }
+
+    function startSync() {
+        if(syncInterval) clearInterval(syncInterval);
+        syncInterval = setInterval(() => {
+            if(!ytPlayer || !ytPlayer.getCurrentTime) return;
+            const t = ytPlayer.getCurrentTime();
+
+            // --- MỚI: Cập nhật đồng hồ hiển thị ---
+            const timeDisplay = document.getElementById('video-current-time-display');
+            
+            // -------------------------------------
+
+            // Logic tự động dừng (CŨ)
+            if (stopAtTime !== null && t >= stopAtTime) {
+                ytPlayer.pauseVideo();
+                stopAtTime = null;
+            }
+
+            const idx = currentData.findIndex(s => t >= s.start && t <= s.end);
+            
+            if(idx !== -1) {
+                overlayText.innerHTML = currentData[idx].text.replace(/\n/g, '<br>');
+            } else {
+                overlayText.textContent = '';
+            }
+
+        }, 100);
+    }
+
+    // --- CÁC CÔNG CỤ TOOLING (MỚI) ---
+    function openFindReplace() {
+        document.getElementById('find-replace-modal').style.display = 'flex';
+        document.getElementById('find-input').focus();
+    }
+    function performFindReplace() {
+        const findStr = document.getElementById('find-input').value;
+        const replaceStr = document.getElementById('replace-input').value;
+        const scope = document.getElementById('fr-scope').value;
+        if (!findStr) return alert("Vui lòng nhập từ khóa.");
+        let count = 0;
+        currentData.forEach((item, idx) => {
+            if (scope === 'selected' && !selectedIndices.has(idx)) return;
+            if (item.text.includes(findStr)) {
+                item.text = item.text.split(findStr).join(replaceStr);
+                count++;
+            }
+        });
+        renderTable();
+        closeModal('find-replace-modal');
+        alert(`Đã thay thế ${count} dòng.`);
+    }
+    function openOffset() {
+        if (selectedIndices.size === 0) return alert("Vui lòng chọn các dòng cần dịch (Ctrl + Click số thứ tự).");
+        document.getElementById('time-offset-modal').style.display = 'flex';
+        document.getElementById('offset-input').focus();
+    }
+    function performOffset() {
+        const ms = parseInt(document.getElementById('offset-input').value);
+        if (isNaN(ms) || ms === 0) return;
+        const sec = ms / 1000;
+        currentData.forEach((item, idx) => {
+            if (selectedIndices.has(idx)) {
+                item.start = Math.max(0, item.start + sec);
+                item.end = Math.max(0, item.end + sec);
+            }
+        });
+        renderTable();
+        closeModal('time-offset-modal');
+    }
+    // --- HÀM XÓA HÀNG LOẠT ---
+    function deleteSelectedRows() {
+        // 1. Kiểm tra xem có chọn dòng nào không
+        if (selectedIndices.size === 0) {
+            return alert("Vui lòng chọn ít nhất một dòng (Ctrl + Click vào số thứ tự) để xóa.");
+        }
+
+        // 2. Hỏi xác nhận
+        if (!confirm(`⚠️ CẢNH BÁO: Bạn có chắc muốn xóa vĩnh viễn ${selectedIndices.size} dòng đang chọn?`)) return;
+
+        // 3. Chuyển Set thành Mảng và Sắp xếp GIẢM DẦN (Quan trọng!)
+        // Phải xóa từ dưới lên (index lớn xóa trước) để không làm lệch index của các dòng bên trên
+        const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+
+        // 4. Thực hiện xóa
+        indicesToDelete.forEach(idx => {
+            currentData.splice(idx, 1);
+        });
+
+        // 5. Dọn dẹp và vẽ lại
+        selectedIndices.clear(); // Xóa xong thì reset lựa chọn
+        activeRowIndex = -1;     // Reset dòng active
+        renderTable();
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // --- HÀM LƯU (GIỮ NGUYÊN) ---
+    async function save() {
+        if (!currentVideoId) return alert("Không xác định được Video ID.");
+        const btn = document.getElementById('save-srt-gh-btn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Đang lưu...";
+
+        try {
+            const srtContent = currentData.map((s, index) => {
+                return `${index + 1}\n${secToSrt(s.start)} --> ${secToSrt(s.end)}\n${s.text}`;
+            }).join('\n\n');
+            const contentBase64 = toBase64Str(srtContent);
+            const fileName = `${currentVideoId}.srt`;
+            const { data: existingData } = await ghAPI(fileName, 'GET', null, true);
+            await ghAPI(fileName, 'PUT', {
+                message: `[SubEditor] Update subtitle for ${currentVideoId}`,
+                content: contentBase64,
+                sha: existingData?.sha 
+            }, true);
+            alert("✅ Đã lưu phụ đề lên GitHub thành công!");
+        } catch (e) {
+            console.error(e);
+            alert("❌ Lỗi khi lưu: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    // --- HÀM UPDATE (GIỮ NGUYÊN LOGIC CŨ + STOP AT TIME) ---
+    // --- HÀM UPDATE (CẬP NHẬT LOGIC PREVIEW 0.5s) ---
+    function update(i, k, v) {
+        if (k === 'text') { currentData[i].text = v; return; }
+        
+        // Logic thời gian
+        const timeVal = srtToSec(v);
+        currentData[i][k] = timeVal;
+        
+        if (k === 'start') { 
+            // Thay đổi Start: Tua đến ngay lập tức
+            if(ytPlayer) {
+                ytPlayer.seekTo(timeVal, true);
+                
+            }
+        } 
+        else if (k === 'end') { 
+            // Thay đổi End: Xem thử đoạn kết (lùi lại 0.5s)
+            if(ytPlayer) {
+                // SỬA: Thay vì -2, đổi thành -0.5
+                const previewStart = Math.max(currentData[i].start, timeVal - 0.5);
+                
+                ytPlayer.seekTo(previewStart, true);
+                ytPlayer.playVideo();
+                stopAtTime = timeVal; // Gán biến này để startSync tự động pause
+            }
+        }
+    }
+
+    // --- HÀM SEEK CŨ ---
+    function seek(t) { if(ytPlayer && ytPlayer.seekTo) ytPlayer.seekTo(t, true); }
+
+    // --- PUBLIC INTERFACE (Kết hợp cả cũ và mới) ---
+    return {
+        init, load, selectRow, seek,
+        
+        // Hàm của bạn (giữ nguyên logic)
+        update, 
+        
+        // Các hàm nút bấm cũ (đã khôi phục)
+        snapStart: () => {
+            if (activeRowIndex <= 0 || activeRowIndex >= currentData.length) {
+                alert("Hãy chọn một dòng (trừ dòng đầu tiên)."); return;
+            }
+            const prevEnd = currentData[activeRowIndex - 1].end;
+            currentData[activeRowIndex].start = prevEnd;
+            renderTable(); selectRow(activeRowIndex);
+        },
+        snapEnd: () => {
+            if (activeRowIndex < 0 || activeRowIndex >= currentData.length - 1) {
+                alert("Hãy chọn một dòng (trừ dòng cuối cùng)."); return;
+            }
+            const nextStart = currentData[activeRowIndex + 1].start;
+            currentData[activeRowIndex].end = nextStart;
+            renderTable(); selectRow(activeRowIndex);
+        },
+        del: (i) => { 
+            if(confirm("Xóa dòng này?")) { currentData.splice(i, 1); renderTable(); } 
+        },
+        insertRow: () => {
+            const t = ytPlayer ? ytPlayer.getCurrentTime() : 0;
+            let startT = t;
+            if (currentData.length > 0) {
+                const prevIdx = currentData.findIndex(s => s.start > t) - 1;
+                if (prevIdx >= 0) startT = currentData[prevIdx].end;
+                else if (currentData.length > 0) startT = currentData[currentData.length-1].end;
+            }
+            currentData.push({ id: 0, start: startT, end: startT + 2, text: '' });
+            currentData.sort((a,b) => a.start - b.start);
+            renderTable();
+        },
+        close: () => { 
+            if(confirm("Đóng trình chỉnh sửa?")) { 
+                if(ytPlayer) ytPlayer.stopVideo(); 
+                switchTab('library-view'); 
+            } 
+        },
+        seekByStr: (str) => {
+            const t = srtToSec(str);
+            if(ytPlayer && ytPlayer.seekTo) ytPlayer.seekTo(t, true);
+        },
+
+        // --- CÁC HÀM MỚI (PHỤC VỤ CLICK & TOOLS) ---
+        handleRowHeaderClick,
+        handleInputClick,
+        openFindReplace, performFindReplace,
+        openOffset, performOffset, closeModal,deleteSelectedRows,
+    };
+})();
+// --- Tab Switching Logic ---
+document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.target));
+});
+
+function switchTab(targetId) {
+    document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(targetId).classList.remove('hidden');
+    document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
+}
+
+// Initialize Editor Module
+SubEditor.init();
+
+// --- Inject "Edit Subs" Button into Library Card ---
+// Ghi đè lại hàm renderLibraryList lần nữa để thêm nút "Sửa Sub"
+const prevRenderWithDrag = window.renderLibraryList;
+window.renderLibraryList = function() {
+    prevRenderWithDrag();
+    // Thêm nút Edit Sub vào action bar của mỗi thẻ video
+    document.querySelectorAll('.video-card-actions').forEach(actions => {
+        if (!actions.querySelector('.edit-sub-btn')) {
+            const btn = document.createElement('button');
+            btn.className = 'edit-sub-btn';
+            btn.title = "Chỉnh sửa Phụ đề";
+            btn.innerHTML = '🎬'; // Icon clapperboard
+            btn.style.marginLeft = '5px';
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const card = btn.closest('.video-card-item');
+                SubEditor.load(card.dataset.videoId);
+            };
+            actions.appendChild(btn);
+        }
+    });
+};
+loadConfig();
+</script>
+</body>
+</html>
