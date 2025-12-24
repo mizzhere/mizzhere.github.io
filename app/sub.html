@@ -250,6 +250,23 @@
                 width: 100% !important; /* Ghi đè width tính toán của carousel */
                 flex-basis: auto !important;
             }
+            /* --- CSS CHO THANH TIẾN TRÌNH TRÊN CARD --- */
+            .progress-bar-wrapper {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background-color: rgba(255, 255, 255, 0.3); /* Nền xám mờ */
+                z-index: 2;
+            }
+
+            .watched-bar {
+                height: 100%;
+                background-color: var(--accent-color); /* Màu đỏ */
+                width: 0%; /* JS sẽ set width */
+                max-width: 100%;
+            }
             .video-list {
                 display: flex;
                 gap: 15px;
@@ -1938,11 +1955,11 @@
                 top: 50%;
                 left: 50%;
                 /* Dùng translate để căn tâm, scale 1.4 để zoom cắt bỏ viền đen youtube */
-                transform: translate(-50%, -50%) scale(1.4); 
+                transform: translate(-50%, -50%) scale(1.4);
                 width: 100%;
                 height: 100%;
                 pointer-events: none;
-                
+
                 /* Đảm bảo flex để iframe bên trong canh chuẩn */
                 display: flex;
                 align-items: center;
@@ -1998,6 +2015,31 @@
             }
             #teaser-subtitle:empty {
                 display: none;
+            }
+            /* --- [FIX 2] CSS CHO TÌM KIẾM TRÊN MOBILE --- */
+            @media (max-width: 768px) {
+                /* Khi header có class 'search-active' (do JS thêm vào khi bấm tìm kiếm) */
+
+                /* 1. Ẩn Logo và Nút Add Video để nhường chỗ */
+                #page-header.search-active #main-title,
+                #page-header.search-active #actions-container > #add-video-btn {
+                    display: none;
+                }
+
+                /* 2. Search Wrapper chiếm toàn bộ chiều ngang */
+                #page-header.search-active #search-box-wrapper {
+                    width: 100%;
+                    position: absolute;
+                    left: 15px; /* Căn lề trái */
+                    right: 15px; /* Căn lề phải */
+                    z-index: 100;
+                    background-color: var(--primary-bg); /* Đặt nền để che các thứ dưới */
+                }
+
+                /* 3. Input bên trong giãn hết cỡ */
+                #page-header.search-active #search-box-wrapper.active #search-input {
+                    width: 100%;
+                }
             }
         </style>
     </head>
@@ -2315,6 +2357,11 @@
             const teaserVolumeBtn = document.getElementById("teaser-volume-btn");
             const iconMute = document.getElementById("icon-mute");
             const iconUnmute = document.getElementById("icon-unmute");
+            // --- [FIX 2] LOGIC TÌM KIẾM CẬP NHẬT ---
+            const searchWrapper = document.getElementById("search-box-wrapper");
+            const searchTrigger = document.getElementById("search-trigger-btn");
+            const searchClear = document.getElementById("search-clear-btn");
+            const pageHeader = document.getElementById("page-header"); // Lấy header cha
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -2473,6 +2520,33 @@
                     if (teaserPlayer) teaserPlayer.unMute();
                 }
             }
+            searchTrigger.addEventListener("click", () => {
+                const isActive = searchWrapper.classList.toggle("active");
+
+                if (isActive) {
+                    searchInput.focus();
+                    // [Mobile] Thêm class vào header để CSS biết mà ẩn logo
+                    pageHeader.classList.add("search-active");
+                } else {
+                    // [Mobile] Gỡ class nếu đóng bằng kính lúp
+                    // Chỉ gỡ nếu input rỗng, nếu có chữ thì giữ nguyên
+                    if (searchInput.value.trim() === "") {
+                        pageHeader.classList.remove("search-active");
+                    }
+                }
+            });
+
+            // 2. Click nút X -> Xóa sạch & Reset list & Focus lại
+            searchClear.addEventListener("click", () => {
+                searchInput.value = ""; // Xóa text trong ô
+                searchInput.focus(); // Giữ bàn phím/con trỏ
+
+                handleSearchAndFilter(); // [QUAN TRỌNG] Gọi hàm lọc ngay để list phim hiện lại đầy đủ
+
+                searchClear.classList.remove("visible"); // Ẩn nút X
+
+                // Lưu ý: Không đóng thanh tìm kiếm ngay để user còn nhập cái khác nếu muốn
+            });
             // Hàm xóa dấu Tiếng Việt để tìm kiếm chính xác hơn
             // VD: "Đô thị" -> "do thi"
             function toNonAccentVietnamese(str) {
@@ -2541,7 +2615,16 @@
                     libraryContainer.innerHTML = `<p style="color: #ff8a8a; text-align: center;">Lỗi: ${e.message}</p>`;
                 }
             }
-
+            document.addEventListener("click", (e) => {
+                if (!searchWrapper.contains(e.target) && searchWrapper.classList.contains("active")) {
+                    // Chỉ đóng nếu input rỗng
+                    if (searchInput.value.trim() === "") {
+                        searchWrapper.classList.remove("active");
+                        searchClear.classList.remove("visible");
+                        pageHeader.classList.remove("search-active"); // [Mobile] Hiện lại Logo
+                    }
+                }
+            });
             document.addEventListener("DOMContentLoaded", () => {
                 initializeLibrary();
             });
@@ -2619,7 +2702,7 @@
                     // Nếu là Card Video lẻ: Hiện tên Video
                     portalTitle.textContent = videoData.userTitle || videoData.title;
                     portalEp.textContent = videoData.episode ? `Tập ${videoData.episode}` : "Phim lẻ";
-                    portalGenre.textContent = (videoData.genres && videoData.genres[0]) || "";
+                    portalGenre.textContent = videoData.program;
                 }
 
                 // 2. Điền ảnh (luôn lấy từ videoData truyền vào)
@@ -2822,28 +2905,76 @@
                 }
             });
 
-            /* --- [HÀM PHỤ] Tạo HTML cho thẻ Video (để tái sử dụng) --- */
+            /* --- HÀM 1: TẠO CARD VIDEO LẺ (Đã tích hợp thanh tiến độ) --- */
             function createVideoCardHtml(video) {
+                // 1. Badge số tập
                 const episodeBadge = video.episode ? `<div class="episode-badge">EP ${video.episode}</div>` : "";
 
-                // Lấy thể loại đầu tiên
-                const displayGenre = video.genres && video.genres.length > 0 ? video.genres[0] : "";
-
-                // Thumbnail & Title
+                // 2. Thumbnail & Title
                 const thumbUrl = video.thumbnailUrl || video.thumbnailUrl_auto;
                 const title = video.userTitle || video.title;
 
+                // 3. [QUAN TRỌNG] Logic vẽ thanh đỏ tiến độ
+                const history = getWatchHistory(); // Gọi hàm lấy lịch sử
+                const saved = history[video.videoId];
+                let progressHtml = "";
+
+                // Chỉ hiện nếu đã xem > 1% và chưa xong (< 95%)
+                if (saved && saved.percent > 0.01 && !saved.isFinished) {
+                    const percentStyle = Math.min(saved.percent * 100, 100);
+                    progressHtml = `
+            <div class="progress-bar-wrapper">
+                <div class="watched-bar" style="width: ${percentStyle}%"></div>
+            </div>
+        `;
+                }
+
+                // 4. Trả về HTML (Chèn progressHtml vào trong card-image-wrapper)
                 return `
     <div class="video-card" data-video-id="${video.videoId}">
         <div class="card-image-wrapper">
             ${episodeBadge}
             <img src="${thumbUrl}" alt="${title}" class="video-thumbnail" loading="lazy">
+            ${progressHtml} 
         </div>
-     
     </div>
     `;
             }
 
+            /* --- HÀM 2: TẠO CARD CHƯƠNG TRÌNH/SERIES --- */
+            function createProgramCardHtml(programName, videos) {
+                // 1. Lấy tập mới nhất làm ảnh bìa
+                videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                const latest = videos[0];
+                const thumbUrl = latest.thumbnailUrl || latest.thumbnailUrl_auto;
+                const count = videos.length;
+
+                // 2. Logic thanh tiến độ (Lấy của tập mới nhất user đang xem dở trong series này)
+                // (Tuỳ chọn nâng cao: Bạn có thể tìm tập nào xem dở mới nhất để hiện)
+                const history = getWatchHistory();
+                const saved = history[latest.videoId]; // Tạm thời check tập mới nhất
+                let progressHtml = "";
+
+                if (saved && saved.percent > 0.01 && !saved.isFinished) {
+                    const percentStyle = Math.min(saved.percent * 100, 100);
+                    progressHtml = `
+            <div class="progress-bar-wrapper">
+                <div class="watched-bar" style="width: ${percentStyle}%"></div>
+            </div>
+        `;
+                }
+
+                // 3. Trả về HTML
+                return `
+    <div class="video-card program-card" data-program-name="${programName}">
+        <div class="card-image-wrapper">
+            <div class="episode-badge" style="background: var(--accent-color);">${count} Tập</div>
+            <img src="${thumbUrl}" alt="${programName}" class="video-thumbnail" loading="lazy">
+            ${progressHtml}
+        </div>
+    </div>
+    `;
+            }
             /* --- LOGIC RENDER MỚI: GROUP BY PROGRAM & CAROUSEL --- */
 
             // Helper: Lấy điểm thời gian (để sort)
@@ -2851,28 +2982,32 @@
                 if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
                 return 0;
             };
-            // --- HÀM MỚI: TẠO CARD ĐẠI DIỆN CHO SERIES ---
-            function createProgramCardHtml(programName, videos) {
-                // 1. Lấy tập mới nhất làm ảnh bìa
-                // Sort giảm dần theo số tập
-                videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
-                const latest = videos[0];
-                const thumbUrl = latest.thumbnailUrl || latest.thumbnailUrl_auto;
-                const count = videos.length;
 
-                // 2. Trả về HTML (Dùng data-program-name để JS bắt sự kiện)
-                return `
-    <div class="video-card program-card" data-program-name="${programName}">
-        <div class="card-image-wrapper">
-            <div class="episode-badge" style="background: var(--accent-color);">${count} Tập</div>
-            <img src="${thumbUrl}" alt="${programName}" class="video-thumbnail" loading="lazy">
-        </div>
-        </div>
-    `;
-            }
             /* --- LOGIC RENDER MỚI: CHUẨN SERIES (GOM GỌN) --- */
             function renderVideoRows(videoArray) {
                 libraryContainer.innerHTML = ""; // Reset
+
+                // [THÊM LOGIC RENDER HÀNG CONTINUE WATCHING]
+                const history = getWatchHistory();
+                // Lấy danh sách ID các video đang xem dở (chưa finish)
+                const continueList = Object.values(history)
+                    .filter((item) => !item.isFinished && item.percent > 0.01)
+                    .sort((a, b) => b.lastUpdated - a.lastUpdated); // Mới xem nhất xếp trước
+
+                if (continueList.length > 0) {
+                    // Map từ history item sang video object đầy đủ
+                    const continueVideos = [];
+                    continueList.forEach((h) => {
+                        const vid = videoArray.find((v) => v.videoId === h.videoId);
+                        if (vid) continueVideos.push(vid);
+                    });
+
+                    if (continueVideos.length > 0) {
+                        // Tạo hàng "Xem tiếp"
+                        const cards = continueVideos.map((v) => createVideoCardHtml(v));
+                        createCarouselSection("👀 Xem tiếp", cards);
+                    }
+                }
 
                 if (!videoArray || videoArray.length === 0) {
                     libraryContainer.innerHTML = `<p style="text-align: center; margin-top: 50px; color: #777;">Chưa có nội dung.</p>`;
@@ -3676,7 +3811,7 @@
                 if (srtFile) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        launchPlayer({ videoId }, parseSRT(event.target.result));
+                        launchPlayer({ videoId }, parseSubtitle(event.target.result));
                     };
                     reader.readAsText(srtFile);
                 } else {
@@ -3984,7 +4119,18 @@
 
                         // [FIX] Chỉ gọi loadVideoById nếu player ĐÃ TỒN TẠI (tránh lỗi undefined)
                         if (player && typeof player.loadVideoById === "function") {
-                            player.loadVideoById(videoData.videoId);
+                            // [SỬA ĐOẠN NÀY]
+                            // 1. Lấy thời gian đã lưu
+                            const savedTime = getSavedTime(videoData.videoId);
+
+                            // 2. Nếu có savedTime > 0, thông báo nhỏ (tùy chọn) hoặc cứ thế phát
+                            if (savedTime > 0) {
+                                console.log(`Tiếp tục phát từ: ${savedTime}`);
+                            }
+
+                            // 3. Load video tại giây thứ savedTime
+                            player.loadVideoById(videoData.videoId, savedTime);
+
                             resolve();
                         }
                     });
@@ -4000,10 +4146,22 @@
                 }
             }
             function goHome() {
-                if (player) player.stopVideo();
-
+                if (player && typeof player.stopVideo === "function") {
+                    player.stopVideo();
+                }
                 playerWrapper.classList.add("hidden");
                 if (document.fullscreenElement) document.exitFullscreen();
+
+                // --- LOGIC GIỮ VỊ TRÍ CUỘN MƯỢT MÀ ---
+                // 1. Lưu vị trí đang đứng ở trang chủ
+                const currentScroll = window.scrollY;
+
+                // 2. Vẽ lại giao diện (để hiện hàng Xem tiếp mới)
+                renderVideoRows(libraryData);
+
+                // 3. Nếu trước đó đang ở tít dưới sâu, trả lại vị trí cũ
+                // (Trừ khi bạn muốn user luôn thấy hàng Xem tiếp ở trên cùng thì bỏ dòng này)
+                window.scrollTo(0, currentScroll);
             }
 
             function onPlayerReady(event) {
@@ -4226,34 +4384,56 @@
             function stopSubtitleSync() {
                 clearInterval(subtitleCheckInterval);
             }
+            /* --- [FIX] LOGIC ĐỒNG BỘ THỜI GIAN --- */
             function startProgressSync() {
-                stopProgressSync();
-                const tDisplay = doc.getElementById("time-display");
+                stopProgressSync(); // Xóa interval cũ nếu có
+                const tDisplay = document.getElementById("time-display");
 
                 progressInterval = setInterval(() => {
-                    if (!player || typeof player.getDuration !== "function") return;
+                    // Kiểm tra an toàn: Nếu player chưa sẵn sàng
+                    if (!player || typeof player.getDuration !== "function") {
+                        if (tDisplay) tDisplay.textContent = "00:00 / 00:00";
+                        updateProgressBarUI(0, 0);
+                        return;
+                    }
+
                     const d = player.getDuration();
                     const c = player.getCurrentTime();
-                    if (isNaN(d) || d === 0) return;
 
+                    // [FIX QUAN TRỌNG] Nếu Duration chưa tải được (bằng 0 hoặc NaN)
+                    // -> Force hiển thị 00:00 và thanh progress về 0
+                    if (isNaN(d) || d <= 0) {
+                        if (tDisplay) tDisplay.textContent = "00:00 / 00:00";
+                        updateProgressBarUI(0, 0);
+                        return; // Dừng, không tính toán tiếp để tránh lỗi chia cho 0
+                    }
+
+                    // Nếu đã có Duration chuẩn thì cập nhật bình thường
                     updateProgressBarUI(c, d);
 
-                    // --- LOGIC SKIP INTRO MỚI ---
-                    checkSkipLogic(c, d);
-                    // -----------------------------
+                    // Lưu tiến độ xem
+                    if (currentVideoData) {
+                        saveWatchProgress(currentVideoData.videoId, c, d);
+                    }
 
+                    // Logic Skip Intro
+                    checkSkipLogic(c, d);
+
+                    // Format hiển thị số giây
                     const formatTime = (s) => {
                         const t = Math.round(s);
+                        if (isNaN(t)) return "00";
                         return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
                     };
+
                     if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
 
+                    // Tự động next bài khi hết
                     if (d - c < 1 && !isEnding) {
                         handleVideoEnd();
                     }
                 }, 250);
             }
-
             // [MỚI] Logic tính toán xem có hiện nút Skip không
             function checkSkipLogic(currentTime, duration) {
                 if (!currentVideoData || !currentVideoData.bookmarks) return;
@@ -4311,31 +4491,92 @@
                     const res = await fetch(url);
                     if (!res.ok) throw new Error(`Could not fetch SRT`);
                     const srt = await res.text();
-                    subtitles = parseSRT(srt);
+                    launchPlayer({ videoId }, parseSubtitle(srt));
                     if (subtitles.length > 0) startSubtitleSync();
                 } catch (e) {
                     console.error("Could not load subtitle:", e);
                 }
             }
-            function parseSRT(text) {
+            /* --- [CẬP NHẬT] BỘ ĐỌC SUBTITLE ĐA NĂNG (SRT & VTT) --- */
+            function parseSubtitle(text) {
+                if (!text) return [];
+
+                // 1. Chuẩn hóa dòng mới và xóa Header WEBVTT nếu có
+                text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+                // Xóa header WEBVTT và các metadata đầu file (NOTE, STYLE...)
+                // Logic: Tìm dòng đầu tiên chứa "-->", cắt bỏ mọi thứ trước nó (trừ ID nếu có)
+
+                const blocks = text.split("\n\n");
                 const subs = [];
-                const blocks = text.trim().replace(/\r/g, "").split("\n\n");
+
                 for (const block of blocks) {
+                    // Bỏ qua block rỗng hoặc block header VTT
+                    if (!block.trim() || block.trim() === "WEBVTT") continue;
+
                     const lines = block.split("\n");
+
+                    // Tìm dòng chứa mũi tên thời gian
+                    // Regex chấp nhận cả dấu phẩy (SRT) và dấu chấm (VTT)
                     const timeIdx = lines.findIndex((l) => l.includes("-->"));
+
                     if (timeIdx !== -1) {
-                        const txt = lines.slice(timeIdx + 1).join("<br>");
-                        const match = lines[timeIdx].match(/(.*) --> (.*)/);
-                        if (match && txt)
-                            subs.push({
-                                start: srtTimeToSeconds(match[1].trim()),
-                                end: srtTimeToSeconds(match[2].trim()),
-                                text: txt,
-                            });
+                        // Regex bắt thời gian: 00:00:00,000 hoặc 00:00:00.000
+                        const match = lines[timeIdx].match(
+                            /(\d{1,2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{1,2}:\d{2}:\d{2}[,.]\d{3})/
+                        );
+
+                        if (match) {
+                            // Nội dung là các dòng sau dòng thời gian
+                            const txt = lines.slice(timeIdx + 1).join("<br>");
+
+                            // Loại bỏ các tag định dạng VTT cơ bản (vd: <c.red>...</c>) nếu muốn sạch
+                            // const cleanTxt = txt.replace(/<[^>]*>/g, "");
+
+                            if (txt) {
+                                subs.push({
+                                    start: timeToSeconds(match[1]),
+                                    end: timeToSeconds(match[2]),
+                                    text: txt, // Giữ nguyên HTML tag nếu có
+                                });
+                            }
+                        }
                     }
                 }
                 return subs;
             }
+
+            function timeToSeconds(t) {
+                // Thay dấu phẩy (SRT) thành dấu chấm (chuẩn JS) để tính toán
+                t = t.replace(",", ".");
+                const p = t.split(":");
+
+                let s = 0;
+                if (p.length === 3) {
+                    // hh:mm:ss.ms
+                    s = parseFloat(p[0]) * 3600 + parseFloat(p[1]) * 60 + parseFloat(p[2]);
+                } else if (p.length === 2) {
+                    // mm:ss.ms (VTT có thể lược bỏ giờ)
+                    s = parseFloat(p[0]) * 60 + parseFloat(p[1]);
+                }
+                return s;
+            }
+            function timeToSeconds(t) {
+                // Thay dấu phẩy (SRT) thành dấu chấm (chuẩn JS) để tính toán
+                t = t.replace(",", ".");
+                const p = t.split(":");
+
+                let s = 0;
+                if (p.length === 3) {
+                    // hh:mm:ss.ms
+                    s = parseFloat(p[0]) * 3600 + parseFloat(p[1]) * 60 + parseFloat(p[2]);
+                } else if (p.length === 2) {
+                    // mm:ss.ms (VTT có thể lược bỏ giờ)
+                    s = parseFloat(p[0]) * 60 + parseFloat(p[1]);
+                }
+                return s;
+            }
+
             function srtTimeToSeconds(t) {
                 const p = t.split(/[:,]/).reverse();
                 return (
@@ -4380,9 +4621,18 @@
                     }
                 }
             }
+            /* --- [FIX] RESET THANH PROGRESS KHI CHƯA CÓ DATA --- */
             function updateProgressBarUI(currentTime, duration) {
-                if (isNaN(duration) || duration === 0) return;
-                progressBar.max = duration; // <<< THÊM DÒNG NÀY
+                // Nếu duration bị lỗi, chưa tải, hoặc bằng 0 -> Reset về 0 hết
+                if (!duration || isNaN(duration) || duration <= 0) {
+                    progressBar.max = 0;
+                    progressBar.value = 0;
+                    progressBar.style.setProperty("--progress-percent", "0%");
+                    return;
+                }
+
+                // Nếu có dữ liệu chuẩn
+                progressBar.max = duration;
                 progressBar.value = currentTime;
                 progressBar.style.setProperty("--progress-percent", `${(currentTime / duration) * 100}%`);
             }
@@ -4450,6 +4700,60 @@
 
             // Gọi hàm bảo vệ ngay khi chạy
             enableSiteProtection();
+
+            /* ========================================= */
+            /* START: QUẢN LÝ TRẠNG THÁI NGƯỜI XEM       */
+            /* ========================================= */
+
+            const WATCH_HISTORY_KEY = "mizzsub_watch_history";
+
+            // 1. Hàm lấy toàn bộ lịch sử
+            function getWatchHistory() {
+                try {
+                    return JSON.parse(localStorage.getItem(WATCH_HISTORY_KEY)) || {};
+                } catch {
+                    return {};
+                }
+            }
+
+            // 2. Hàm lưu tiến độ (Gọi liên tục khi xem)
+            function saveWatchProgress(videoId, currentTime, duration) {
+                if (!videoId) return;
+
+                // Chỉ lưu khi đã xem được trên 5 giây
+                if (currentTime < 5) return;
+
+                const history = getWatchHistory();
+
+                // Tính phần trăm đã xem
+                const percent = duration > 0 ? currentTime / duration : 0;
+
+                // Nếu xem > 95% thì coi như đã xong -> Xóa khỏi danh sách xem dở (hoặc reset về 0)
+                // Ở đây mình giữ lại nhưng đánh dấu finished để vẽ UI khác nếu muốn
+                const isFinished = percent > 0.95;
+
+                history[videoId] = {
+                    videoId: videoId,
+                    time: currentTime,
+                    duration: duration,
+                    percent: percent,
+                    lastUpdated: new Date().getTime(), // Để sắp xếp cái nào mới xem thì hiện đầu
+                    isFinished: isFinished,
+                };
+
+                localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+
+                // Update lại UI nếu đang mở menu tập phim (để hiện thanh đỏ realtime - nâng cao)
+            }
+
+            // 3. Hàm lấy thời gian đã lưu của 1 video
+            function getSavedTime(videoId) {
+                const history = getWatchHistory();
+                const data = history[videoId];
+                // Nếu đã xem xong (isFinished) hoặc chưa xem bao giờ -> Trả về 0
+                if (!data || data.isFinished) return 0;
+                return data.time;
+            }
         </script>
         <script src="https://www.youtube.com/iframe_api"></script>
     </body>
