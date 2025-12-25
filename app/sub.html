@@ -4235,7 +4235,9 @@
             async function launchPlayer(videoData, preloadedSubtitles = null) {
                 return new Promise((resolve) => {
                     if (!videoData || !videoData.videoId) return;
-
+                    isUpNextTriggered = false; 
+        isEnding = false;
+        lastSubtitleEnd = 0; // Reset tạm, sẽ được cập nhật khi load sub
                     // [FIX] KIỂM TRA AN TOÀN: Nếu player chưa sẵn sàng thì tạo lại
                     if (!player || typeof player.loadVideoById !== "function") {
                         console.log("Player chưa sẵn sàng, đang khởi tạo lại...");
@@ -4574,56 +4576,64 @@
             function stopSubtitleSync() {
                 clearInterval(subtitleCheckInterval);
             }
-            /* --- [FIX] LOGIC ĐỒNG BỘ THỜI GIAN --- */
             function startProgressSync() {
-                stopProgressSync(); // Xóa interval cũ nếu có
-                const tDisplay = document.getElementById("time-display");
+    stopProgressSync();
+    const tDisplay = document.getElementById("time-display");
 
-                progressInterval = setInterval(() => {
-                    // Kiểm tra an toàn: Nếu player chưa sẵn sàng
-                    if (!player || typeof player.getDuration !== "function") {
-                        if (tDisplay) tDisplay.textContent = "00:00 / 00:00";
-                        updateProgressBarUI(0, 0);
-                        return;
-                    }
+    progressInterval = setInterval(() => {
+        if (!player || typeof player.getDuration !== "function") return;
 
-                    const d = player.getDuration();
-                    const c = player.getCurrentTime();
+        const d = player.getDuration();
+        const c = player.getCurrentTime();
 
-                    // [FIX QUAN TRỌNG] Nếu Duration chưa tải được (bằng 0 hoặc NaN)
-                    // -> Force hiển thị 00:00 và thanh progress về 0
-                    if (isNaN(d) || d <= 0) {
-                        if (tDisplay) tDisplay.textContent = "00:00 / 00:00";
-                        updateProgressBarUI(0, 0);
-                        return; // Dừng, không tính toán tiếp để tránh lỗi chia cho 0
-                    }
+        if (isNaN(d) || d <= 0) {
+            updateProgressBarUI(0, 0);
+            return;
+        }
 
-                    // Nếu đã có Duration chuẩn thì cập nhật bình thường
-                    updateProgressBarUI(c, d);
+        updateProgressBarUI(c, d);
 
-                    // Lưu tiến độ xem
-                    if (currentVideoData) {
-                        saveWatchProgress(currentVideoData.videoId, c, d);
-                    }
+        if (currentVideoData) {
+            saveWatchProgress(currentVideoData.videoId, c, d);
+        }
 
-                    // Logic Skip Intro
-                    checkSkipLogic(c, d);
+        checkSkipLogic(c, d);
 
-                    // Format hiển thị số giây
-                    const formatTime = (s) => {
-                        const t = Math.round(s);
-                        if (isNaN(t)) return "00";
-                        return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-                    };
+        const formatTime = (s) => {
+            const t = Math.round(s);
+            if (isNaN(t)) return "00";
+            return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+        };
 
-                    if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
+        if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
 
-                    // Tự động next bài khi hết
-                    if (d - c < 1 && !isEnding) {
-                        handleVideoEnd();
-                    }
-                }, 250);
-            }
+        /* --- [LOGIC MỚI] AUTO NEXT DỰA TRÊN SUBTITLE --- */
+        
+        // 1. Xác định điểm kích hoạt (Trigger Point)
+        let triggerTime;
+        
+        if (lastSubtitleEnd > 0 && lastSubtitleEnd < d) {
+            // Nếu có sub: Kích hoạt ngay khi dòng sub cuối cùng biến mất + 0.5s đệm
+            triggerTime = lastSubtitleEnd + 0.5;
+        } else {
+            // Nếu không có sub (hoặc lỗi): Kích hoạt khi video còn 1 giây
+            triggerTime = d - 1;
+        }
+
+        // 2. Kiểm tra điều kiện
+        // - Thời gian hiện tại đã vượt qua điểm kích hoạt
+        // - Chưa kích hoạt lần nào (isUpNextTriggered == false)
+        // - Không được kích hoạt quá sớm (tránh lỗi khi vừa vào video, sub ảo ở giây 0) -> c > 1
+        if (c >= triggerTime && !isUpNextTriggered && c > 1) {
+            isUpNextTriggered = true; // Khóa lại ngay
+            handleVideoEnd();         // Gọi màn hình Next Episode
+        }
+        
+        // Fallback: Vẫn giữ sự kiện gốc của YouTube (onStateChange ENDED) để an toàn
+        // (Logic đó đã nằm trong onPlayerStateChange, không cần viết ở đây nữa)
+
+    }, 250);
+}
             // [MỚI] Logic tính toán xem có hiện nút Skip không
             function checkSkipLogic(currentTime, duration) {
                 if (!currentVideoData || !currentVideoData.bookmarks) return;
@@ -4740,17 +4750,20 @@
                             // const cleanTxt = txt.replace(/<[^>]*>/g, "");
 
                             if (txt) {
-                                subs.push({
-                                    start: timeToSeconds(match[1]),
-                                    end: timeToSeconds(match[2]),
-                                    text: txt, // Giữ nguyên HTML tag nếu có
-                                });
-                            }
-                        }
-                    }
-                }
-                return subs;
-            }
+                                subs.push({ start, end, text: txt });
+
+             // [MỚI] Cập nhật thời gian kết thúc lớn nhất
+             if (end > lastSubtitleEnd) {
+                 lastSubtitleEnd = end;
+             }
+        }
+    }}}
+    
+    // [MỚI] Sắp xếp lại sub theo thời gian để chắc chắn đúng thứ tự (Optional nhưng nên có)
+    subs.sort((a, b) => a.start - b.start);
+    
+    return subs;
+}
 
             function timeToSeconds(t) {
                 // Thay dấu phẩy (SRT) thành dấu chấm (chuẩn JS) để tính toán
