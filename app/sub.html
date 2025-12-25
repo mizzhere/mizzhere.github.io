@@ -2569,6 +2569,8 @@
             let teaserSubtitles = [];
             let teaserSyncInterval = null;
             let isTeaserMuted = true;
+            let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
+            let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
@@ -4708,9 +4710,12 @@
                 // Xóa header WEBVTT và các metadata đầu file (NOTE, STYLE...)
                 // Logic: Tìm dòng đầu tiên chứa "-->", cắt bỏ mọi thứ trước nó (trừ ID nếu có)
 
-                const blocks = text.split("\n\n");
+                const blocks = text.split("\n\n"); // Hoặc logic split cũ của bạn
                 const subs = [];
-
+    
+                // [MỚI] Reset thời gian kết thúc sub
+                lastSubtitleEnd = 0;
+                
                 for (const block of blocks) {
                     // Bỏ qua block rỗng hoặc block header VTT
                     if (!block.trim() || block.trim() === "WEBVTT") continue;
