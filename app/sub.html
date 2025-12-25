@@ -274,9 +274,11 @@
                 overflow-y: hidden;
                 scroll-behavior: smooth;
 
-                /* [QUAN TRỌNG] Padding trái phải để item đầu tiên thẳng hàng với tiêu đề */
-                /* Nhưng khi cuộn thì nội dung vẫn chạy ra sát mép màn hình */
-                padding: 10px clamp(20px, 4vw, 60px);
+                scroll-snap-type: x mandatory; 
+    
+    /* [MỚI] Quan trọng: Bảo nó chừa lại khoảng trống bên trái (bằng đúng padding) */
+    /* Nếu không có dòng này, item sẽ dính sát mép màn hình, che mất padding */
+    scroll-padding-left: clamp(20px, 4vw, 60px);
 
                 width: 100%;
                 box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
@@ -293,7 +295,7 @@
             .video-card {
                 background-color: var(--secondary-bg);
                 border-radius: 6px;
-
+                scroll-snap-align: start;
                 position: relative; /* Quan trọng để định vị */
                 cursor: pointer;
                 transition:
@@ -1194,7 +1196,7 @@
     transform: translateX(-50%);
     
     /* [THÊM DÒNG NÀY] */
-    width: 95%; /* 95% là rất sát mép. Nếu muốn sát hơn nữa thì để 98% */
+    max-width: 95%; /* 95% là rất sát mép. Nếu muốn sát hơn nữa thì để 98% */
     
     z-index: 20;
     text-align: center;
