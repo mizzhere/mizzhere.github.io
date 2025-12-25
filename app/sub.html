@@ -291,6 +291,15 @@
             .video-list::-webkit-scrollbar {
                 display: none; /* Chrome/Safari */
             }
+            .video-list::before,
+.video-list::after {
+    content: '';
+    display: block;
+    /* Kích thước này BẮT BUỘC phải bằng scroll-padding-left ở trên */
+    width: clamp(20px, 4vw, 60px); 
+    
+    flex-shrink: 0; /* Quan trọng: Cấm không cho nó bị co lại */
+}
             /* --- [MỚI] VIDEO CARD - Hover hiện info bên dưới --- */
             .video-card {
                 background-color: var(--secondary-bg);
