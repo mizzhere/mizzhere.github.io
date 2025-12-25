@@ -4489,15 +4489,19 @@
             }
 
             function showControlsAndSetHideTimeout() {
-                if (!player) return;
-                playerContainer.classList.add("controls-active");
-                playerContainer.classList.remove("no-cursor");
+    // [FIX] Kiểm tra kỹ: player phải tồn tại VÀ hàm getPlayerState phải khả dụng
+    if (!player || typeof player.getPlayerState !== "function") return;
 
-                clearTimeout(controlsTimeout);
-                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                    controlsTimeout = setTimeout(hideControls, 3500);
-                }
-            }
+    playerContainer.classList.add("controls-active");
+    playerContainer.classList.remove("no-cursor");
+
+    clearTimeout(controlsTimeout);
+    
+    // Bây giờ gọi hàm này mới an toàn
+    if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        controlsTimeout = setTimeout(hideControls, 3500);
+    }
+}
 
             function hideControls() {
                 clearTimeout(controlsTimeout);
