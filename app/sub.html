@@ -4486,17 +4486,24 @@
                 }, 100);
             }
             async function loadRemoteSubtitle(url) {
-                if (!url) return;
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error(`Could not fetch SRT`);
-                    const srt = await res.text();
-                    launchPlayer({ videoId }, parseSubtitle(srt));
-                    if (subtitles.length > 0) startSubtitleSync();
-                } catch (e) {
-                    console.error("Could not load subtitle:", e);
-                }
-            }
+    if (!url) return;
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Could not fetch SRT`);
+        const srt = await res.text();
+        
+        // [SỬA LỖI TẠI ĐÂY]
+        // Thay vì gọi lại launchPlayer({ videoId }...), ta chỉ cần cập nhật biến toàn cục subtitles
+        subtitles = parseSubtitle(srt);
+        
+        // Kích hoạt đồng bộ phụ đề ngay lập tức
+        if (subtitles.length > 0) startSubtitleSync();
+        
+    } catch (e) {
+        console.error("Could not load subtitle:", e);
+    }
+}
+            
             /* --- [CẬP NHẬT] BỘ ĐỌC SUBTITLE ĐA NĂNG (SRT & VTT) --- */
             function parseSubtitle(text) {
                 if (!text) return [];
