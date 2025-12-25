@@ -1236,47 +1236,207 @@
                 max-width: 40vw;
             }
 
+            /* --- [NEW] UI NEXT EPISODE (NETFLIX STYLE) --- */
             #up-next-overlay {
                 position: absolute;
-                top: 0;
+                top: auto; /* Bỏ top: 0 cũ */
+                bottom: 0;
                 left: 0;
                 width: 100%;
-                height: 100%;
-                z-index: 40;
-                background-color: rgba(0, 0, 0, 0.85);
-                display: none;
-                flex-direction: column;
+                height: auto; /* Tự động theo nội dung */
+                min-height: 180px;
+                z-index: 50;
+
+                /* Gradient đen mờ dần từ dưới lên */
+                background: linear-gradient(to top, #000 10%, rgba(20, 20, 20, 0.95) 70%, transparent 100%);
+
+                display: flex;
+                align-items: flex-end; /* Căn xuống đáy */
+                justify-content: space-between;
+                padding: 0 clamp(30px, 5vw, 60px) 40px; /* Padding chuẩn layout */
+                box-sizing: border-box;
+
+                /* Animation trượt lên */
+                transform: translateY(100%);
+                opacity: 0;
+                transition:
+                    transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                    opacity 0.5s;
+                pointer-events: none;
+            }
+
+            #up-next-overlay.visible {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* KHU VỰC TRÁI: TEXT & COUNTDOWN */
+            .up-next-left {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: 10px;
+                max-width: 60%;
+            }
+
+            .up-next-countdown-wrapper {
+                position: relative;
+                width: 50px;
+                height: 50px;
+                display: flex;
                 justify-content: center;
                 align-items: center;
-                text-align: center;
             }
-            #up-next-overlay p {
+            .countdown-circle {
+                transform: rotate(-90deg); /* Xoay để bắt đầu từ đỉnh */
+            }
+            #countdown-ring {
+                transition: stroke-dashoffset 1s linear;
+            }
+            #up-next-seconds {
+                position: absolute;
                 font-size: 1.2rem;
+                font-weight: 700;
+                color: #fff;
+            }
+
+            .up-next-info {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .up-next-label {
+                font-size: 0.85rem;
                 color: #aaa;
-                margin: 0;
+                font-weight: 600;
+                letter-spacing: 1px;
+                margin-bottom: 5px;
+                text-transform: uppercase;
             }
-            #up-next-card {
-                cursor: pointer;
-                margin-top: 20px;
-            }
-            #up-next-thumbnail {
-                width: 250px;
-                aspect-ratio: 16/9;
-                object-fit: cover;
-                border-radius: 5px;
-            }
+
             #up-next-title {
-                margin: 10px 0 0 0;
-                font-size: 1.4rem;
+                font-size: clamp(1.2rem, 2vw, 1.8rem);
+                font-weight: 700;
+                color: #fff;
+                margin: 0 0 5px 0;
+                /* Cắt dòng nếu dài quá */
+                display: -webkit-box;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
             }
-            #up-next-cancel-btn {
-                background: none;
-                border: 1px solid #888;
+            #up-next-series-name {
+                font-size: 1rem;
                 color: #ccc;
-                padding: 8px 16px;
-                border-radius: 4px;
-                margin-top: 30px;
+            }
+
+            /* KHU VỰC PHẢI: THUMBNAIL & BUTTONS */
+            .up-next-right {
+                display: flex;
+                align-items: flex-end; /* Căn đáy */
+                gap: 20px;
+            }
+
+            #up-next-card {
+                position: relative;
+                width: 280px; /* Thumbnail to rõ */
+                aspect-ratio: 16/9;
+                border-radius: 8px;
+                overflow: hidden;
                 cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                border: 2px solid transparent;
+                transition:
+                    transform 0.2s,
+                    border-color 0.2s;
+            }
+
+            #up-next-card:hover {
+                transform: scale(1.05);
+                border-color: var(--accent-color);
+            }
+
+            #up-next-thumbnail {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+            }
+            #up-next-card:hover #up-next-thumbnail {
+                opacity: 1;
+            }
+
+            /* Nút Play đè lên ảnh */
+            .play-overlay {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 48px;
+                height: 48px;
+                background: rgba(0, 0, 0, 0.6);
+                border-radius: 50%;
+                border: 1px solid #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                opacity: 0; /* Ẩn bình thường */
+                transition: opacity 0.2s;
+            }
+            #up-next-card:hover .play-overlay {
+                opacity: 1; /* Hiện khi hover */
+            }
+            .play-overlay svg {
+                width: 24px;
+                height: 24px;
+                fill: #fff;
+            }
+
+            #up-next-cancel-btn {
+                background: transparent;
+                border: none;
+                color: #bbb;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                padding: 10px 20px;
+                transition: color 0.2s;
+                height: fit-content;
+                margin-bottom: 10px;
+            }
+            #up-next-cancel-btn:hover {
+                color: #fff;
+                text-decoration: underline;
+            }
+
+            /* RESPONSIVE CHO MOBILE */
+            @media (max-width: 768px) {
+                #up-next-overlay {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    padding: 20px;
+                    background: rgba(0, 0, 0, 0.95); /* Đen đặc hơn trên mobile */
+                }
+                .up-next-left {
+                    width: 100%;
+                    max-width: 100%;
+                    margin-bottom: 20px;
+                }
+                .up-next-right {
+                    width: 100%;
+                    justify-content: space-between; /* Ảnh trái, nút Cancel phải */
+                    flex-direction: row-reverse; /* Đảo ngược để nút Cancel dễ bấm */
+                    align-items: center;
+                }
+                #up-next-card {
+                    width: 160px; /* Thu nhỏ ảnh */
+                }
+                #up-next-title {
+                    font-size: 1.2rem;
+                }
             }
             /* [MỚI] CSS cho Sidebar Danh sách tập */
             #episodes-sidebar {
@@ -2269,12 +2429,40 @@
                     <button id="skip-btn" class="hidden">Bỏ qua</button>
 
                     <div id="up-next-overlay">
-                        <p>Tập tiếp theo sau <span id="up-next-countdown">5</span></p>
-                        <div id="up-next-card">
-                            <img id="up-next-thumbnail" src="" />
-                            <h3 id="up-next-title"></h3>
+                        <div class="up-next-left">
+                            <div class="up-next-countdown-wrapper">
+                                <svg class="countdown-circle" width="50" height="50" viewBox="0 0 50 50">
+                                    <circle cx="25" cy="25" r="22" fill="none" stroke="#333" stroke-width="3"></circle>
+                                    <circle
+                                        id="countdown-ring"
+                                        cx="25"
+                                        cy="25"
+                                        r="22"
+                                        fill="none"
+                                        stroke="#e50914"
+                                        stroke-width="3"
+                                        stroke-dasharray="138"
+                                        stroke-dashoffset="0"
+                                    ></circle>
+                                </svg>
+                                <span id="up-next-seconds">5</span>
+                            </div>
+                            <div class="up-next-info">
+                                <span class="up-next-label">ĐANG PHÁT TIẾP THEO</span>
+                                <h3 id="up-next-title">Tên tập phim</h3>
+                                <span id="up-next-series-name">Tên Series</span>
+                            </div>
                         </div>
-                        <button id="up-next-cancel-btn">Hủy</button>
+
+                        <div class="up-next-right">
+                            <div id="up-next-card">
+                                <img id="up-next-thumbnail" src="" />
+                                <div class="play-overlay">
+                                    <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+                                </div>
+                            </div>
+                            <button id="up-next-cancel-btn">Hủy</button>
+                        </div>
                     </div>
                 </div>
                 <!-- END: Cấu trúc Player HOÀN CHỈNH v5 -->
@@ -4485,32 +4673,31 @@
                     subtitleDisplay.innerHTML = sub ? sub.text : "";
                 }, 100);
             }
-          /* --- [CẬP NHẬT] TẢI SUBTITLE KHÔNG CACHE --- */
-async function loadRemoteSubtitle(url) {
-    if (!url) return;
-    try {
-        // 1. Kiểm tra URL đã có tham số chưa để thêm dấu ? hoặc & cho đúng
-        const separator = url.includes('?') ? '&' : '?';
-        
-        // 2. Gắn thêm timestamp để đảm bảo URL luôn mới
-        const noCacheUrl = `${url}${separator}v=${new Date().getTime()}`;
+            /* --- [CẬP NHẬT] TẢI SUBTITLE KHÔNG CACHE --- */
+            async function loadRemoteSubtitle(url) {
+                if (!url) return;
+                try {
+                    // 1. Kiểm tra URL đã có tham số chưa để thêm dấu ? hoặc & cho đúng
+                    const separator = url.includes("?") ? "&" : "?";
 
-        // 3. Gọi fetch với tùy chọn cấm cache (cache: 'no-store')
-        const res = await fetch(noCacheUrl, { cache: "no-store" });
-        
-        if (!res.ok) throw new Error(`Could not fetch SRT`);
-        const srt = await res.text();
-        
-        // Cập nhật biến toàn cục subtitles
-        subtitles = parseSubtitle(srt);
-        
-        // Kích hoạt đồng bộ ngay lập tức
-        if (subtitles.length > 0) startSubtitleSync();
-        
-    } catch (e) {
-        console.error("Could not load subtitle:", e);
-    }
-}
+                    // 2. Gắn thêm timestamp để đảm bảo URL luôn mới
+                    const noCacheUrl = `${url}${separator}v=${new Date().getTime()}`;
+
+                    // 3. Gọi fetch với tùy chọn cấm cache (cache: 'no-store')
+                    const res = await fetch(noCacheUrl, { cache: "no-store" });
+
+                    if (!res.ok) throw new Error(`Could not fetch SRT`);
+                    const srt = await res.text();
+
+                    // Cập nhật biến toàn cục subtitles
+                    subtitles = parseSubtitle(srt);
+
+                    // Kích hoạt đồng bộ ngay lập tức
+                    if (subtitles.length > 0) startSubtitleSync();
+                } catch (e) {
+                    console.error("Could not load subtitle:", e);
+                }
+            }
             /* --- [CẬP NHẬT] BỘ ĐỌC SUBTITLE ĐA NĂNG (SRT & VTT) --- */
             function parseSubtitle(text) {
                 if (!text) return [];
@@ -4650,58 +4837,110 @@ async function loadRemoteSubtitle(url) {
                 progressBar.value = currentTime;
                 progressBar.style.setProperty("--progress-percent", `${(currentTime / duration) * 100}%`);
             }
-
+            /* --- [UPDATED] LOGIC NEXT EPISODE (NETFLIX STYLE) --- */
             function showUpNextOverlay(videoData, isSuggestion = false) {
-                const overlay = doc.getElementById("up-next-overlay");
-                const thumbnail = doc.getElementById("up-next-thumbnail");
-                const title = doc.getElementById("up-next-title");
-                const countdownSpan = doc.getElementById("up-next-countdown");
-                const card = doc.getElementById("up-next-card");
-                const cancelBtn = doc.getElementById("up-next-cancel-btn");
+                const overlay = document.getElementById("up-next-overlay");
+                const thumbnail = document.getElementById("up-next-thumbnail");
+                const title = document.getElementById("up-next-title");
+                const seriesName = document.getElementById("up-next-series-name");
+                const label = document.querySelector(".up-next-label");
+                const secondsSpan = document.getElementById("up-next-seconds");
+                const countdownRing = document.getElementById("countdown-ring");
+                const card = document.getElementById("up-next-card");
+                const cancelBtn = document.getElementById("up-next-cancel-btn");
+                const countdownWrapper = document.querySelector(".up-next-countdown-wrapper");
 
-                const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-                thumbnail.src = thumbnailUrl;
+                // 1. Điền thông tin
+                const thumbUrl = (videoData.thumbnailUrl || videoData.thumbnailUrl_auto).replace(
+                    "hqdefault",
+                    "maxresdefault"
+                );
+                thumbnail.src = thumbUrl;
+                // Fallback nếu lỗi ảnh
+                thumbnail.onerror = () => {
+                    thumbnail.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+                };
+
                 title.textContent = videoData.userTitle || videoData.title;
+                seriesName.textContent = videoData.program || ""; // Hiện tên Series bên dưới
 
-                overlay.style.display = "flex";
-
+                // 2. Xử lý logic Gợi ý vs Đếm ngược
                 if (isSuggestion) {
-                    // Gợi ý chương trình khác: không có đếm ngược, chỉ click để xem
-                    countdownSpan.parentElement.innerHTML = "Bạn có thể thích chương trình này:";
-                    cancelBtn.textContent = "Bỏ qua";
+                    label.textContent = "GỢI Ý CHO BẠN";
+                    countdownWrapper.style.display = "none"; // Ẩn vòng tròn đếm ngược
+                    cancelBtn.textContent = "Đóng";
+
                     card.onclick = () => {
                         hideUpNextOverlay();
                         launchPlayer(videoData);
                     };
                     cancelBtn.onclick = hideUpNextOverlay;
                 } else {
-                    // Tập tiếp theo bình thường
+                    label.textContent = "ĐANG PHÁT TIẾP THEO";
+                    countdownWrapper.style.display = "flex"; // Hiện vòng tròn
+                    cancelBtn.textContent = "Hủy";
+
                     let countdown = 5;
-                    countdownSpan.textContent = countdown;
+                    const totalDash = 138; // Chu vi hình tròn r=22 (2 * PI * 22 ≈ 138)
+
+                    secondsSpan.textContent = countdown;
+                    countdownRing.style.strokeDashoffset = "0"; // Reset vòng tròn đầy
+
                     const playNext = () => {
                         hideUpNextOverlay();
                         launchPlayer(videoData);
                     };
+
                     card.onclick = playNext;
                     cancelBtn.onclick = hideUpNextOverlay;
 
+                    // Reset interval cũ
+                    clearInterval(upNextInterval);
+                    clearTimeout(upNextTimeout);
+
+                    // Logic đếm ngược & chạy vòng tròn
                     upNextInterval = setInterval(() => {
                         countdown--;
-                        countdownSpan.textContent = countdown;
+                        secondsSpan.textContent = countdown;
+
+                        // Tính toán để vòng tròn tụt dần
+                        const offset = totalDash - (countdown / 5) * totalDash;
+                        countdownRing.style.strokeDashoffset = offset;
+
+                        if (countdown <= 0) clearInterval(upNextInterval);
                     }, 1000);
+
                     upNextTimeout = setTimeout(() => {
                         playNext();
                     }, 5000);
                 }
+
+                // 3. Hiện Overlay (Thêm class visible để kích hoạt CSS Transition)
+                overlay.style.display = "flex"; // Đảm bảo flex trước
+                // RequestAnimationFrame để browser nhận diện style display trước khi add class
+                requestAnimationFrame(() => {
+                    overlay.classList.add("visible");
+                });
             }
 
             function hideUpNextOverlay() {
                 clearTimeout(upNextTimeout);
                 clearInterval(upNextInterval);
-                const overlay = doc.getElementById("up-next-overlay");
-                if (overlay) overlay.style.display = "none";
-                const card = doc.getElementById("up-next-card");
-                if (card) card.onclick = null; // Gỡ listener để tránh memory leak
+
+                const overlay = document.getElementById("up-next-overlay");
+                if (overlay) {
+                    overlay.classList.remove("visible"); // Slide xuống
+
+                    // Đợi animation CSS (0.5s) chạy xong mới ẩn display
+                    setTimeout(() => {
+                        if (!overlay.classList.contains("visible")) {
+                            overlay.style.display = "none";
+                        }
+                    }, 500);
+                }
+
+                const card = document.getElementById("up-next-card");
+                if (card) card.onclick = null;
             }
             function enableSiteProtection() {
                 // 1. Chặn Menu Chuột Phải (Context Menu)
