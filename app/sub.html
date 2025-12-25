@@ -2429,7 +2429,7 @@
                     fetch(video.subtitleUrl)
                         .then((res) => res.text())
                         .then((text) => {
-                            teaserSubtitles = parseSRT(text);
+                            teaserSubtitles = parseSubtitle(text);
                             startTeaserSubtitleSync();
                         })
                         .catch((err) => console.log("Lỗi sub teaser:", err));
@@ -3828,7 +3828,7 @@
                 if (file && file.name.endsWith(".srt")) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        subtitles = parseSRT(event.target.result);
+                        subtitles = parseSubtitle(event.target.result);
                         if (player && player.getPlayerState() === YT.PlayerState.PLAYING) startSubtitleSync();
                     };
                     reader.readAsText(file);
