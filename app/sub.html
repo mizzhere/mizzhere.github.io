@@ -1188,18 +1188,19 @@
                 display: flex;
             }
             #subtitle-display {
-                position: absolute;
-                /* TRẠNG THÁI 1: Khi ẩn thanh điều khiển -> Phụ đề nằm thấp xuống */
-                bottom: 40px;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 20;
-                text-align: center;
-                pointer-events: none; /* Click xuyên qua phụ đề */
-
-                /* Hiệu ứng trượt mượt mà */
-                transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* [THÊM DÒNG NÀY] */
+    width: 95%; /* 95% là rất sát mép. Nếu muốn sát hơn nữa thì để 98% */
+    
+    z-index: 20;
+    text-align: center;
+    pointer-events: none;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
             /* TRẠNG THÁI 2: Khi hiện thanh điều khiển (.controls-active) -> Đẩy phụ đề lên */
             #player-container.controls-active #subtitle-display {
@@ -4822,7 +4823,7 @@ function parseSubtitle(text) {
                 } else {
                     playerContainer.classList.remove("no-cursor");
                     playerContainer.classList.add("controls-active");
-                    doc.getElementById("center-play-pause-btn").style.opacity = "1";
+                    
 
                     // GỢI Ý CHƯƠNG TRÌNH KHÁC
                     const otherVideo = libraryData.find(
