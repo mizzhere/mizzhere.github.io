@@ -4715,57 +4715,61 @@
                 }
             }
             /* --- [CẬP NHẬT] BỘ ĐỌC SUBTITLE ĐA NĂNG (SRT & VTT) --- */
-            function parseSubtitle(text) {
-                if (!text) return [];
+            /* --- [CẬP NHẬT] BỘ ĐỌC SUBTITLE ĐA NĂNG (SRT & VTT) --- */
+function parseSubtitle(text) {
+    if (!text) return [];
 
-                // 1. Chuẩn hóa dòng mới và xóa Header WEBVTT nếu có
-                text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    // 1. Chuẩn hóa dòng mới
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-                // Xóa header WEBVTT và các metadata đầu file (NOTE, STYLE...)
-                // Logic: Tìm dòng đầu tiên chứa "-->", cắt bỏ mọi thứ trước nó (trừ ID nếu có)
+    const blocks = text.split("\n\n");
+    const subs = [];
 
-                const blocks = text.split("\n\n"); // Hoặc logic split cũ của bạn
-                const subs = [];
-    
-                // [MỚI] Reset thời gian kết thúc sub
-                lastSubtitleEnd = 0;
-                
-                for (const block of blocks) {
-                    // Bỏ qua block rỗng hoặc block header VTT
-                    if (!block.trim() || block.trim() === "WEBVTT") continue;
+    // [MỚI] Reset thời gian kết thúc sub
+    lastSubtitleEnd = 0;
 
-                    const lines = block.split("\n");
+    for (const block of blocks) {
+        // Bỏ qua block rỗng hoặc block header VTT
+        if (!block.trim() || block.trim() === "WEBVTT") continue;
 
-                    // Tìm dòng chứa mũi tên thời gian
-                    // Regex chấp nhận cả dấu phẩy (SRT) và dấu chấm (VTT)
-                    const timeIdx = lines.findIndex((l) => l.includes("-->"));
+        const lines = block.split("\n");
 
-                    if (timeIdx !== -1) {
-                        // Regex bắt thời gian: 00:00:00,000 hoặc 00:00:00.000
-                        const match = lines[timeIdx].match(
-                            /(\d{1,2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{1,2}:\d{2}:\d{2}[,.]\d{3})/
-                        );
+        // Tìm dòng chứa mũi tên thời gian
+        const timeIdx = lines.findIndex((l) => l.includes("-->"));
 
-                        if (match) {
-                            // Nội dung là các dòng sau dòng thời gian
-                            const txt = lines.slice(timeIdx + 1).join("<br>");
+        if (timeIdx !== -1) {
+            // Regex bắt thời gian
+            const match = lines[timeIdx].match(
+                /(\d{1,2}:\d{2}:\d{2}[,.]\d{1,3})\s*-->\s*(\d{1,2}:\d{2}:\d{2}[,.]\d{1,3})/
+            );
 
-                            // Loại bỏ các tag định dạng VTT cơ bản (vd: <c.red>...</c>) nếu muốn sạch
-                            // const cleanTxt = txt.replace(/<[^>]*>/g, "");
+            if (match) {
+                // [FIX LỖI TẠI ĐÂY] Phải tính toán start/end trước khi dùng
+                const start = timeToSeconds(match[1]);
+                const end = timeToSeconds(match[2]);
 
-                            if (txt) {
-                                subs.push({ start, end, text: txt });
+                // Nội dung là các dòng sau dòng thời gian
+                const txt = lines.slice(timeIdx + 1).join("<br>");
 
-             // [MỚI] Cập nhật thời gian kết thúc lớn nhất
-             if (end > lastSubtitleEnd) {
-                 lastSubtitleEnd = end;
-             }
+                if (txt) {
+                    subs.push({
+                        start,
+                        end,
+                        text: txt
+                    });
+
+                    // [MỚI] Cập nhật thời gian kết thúc lớn nhất
+                    if (end > lastSubtitleEnd) {
+                        lastSubtitleEnd = end;
+                    }
+                }
+            }
         }
-    }}}
+    }
     
-    // [MỚI] Sắp xếp lại sub theo thời gian để chắc chắn đúng thứ tự (Optional nhưng nên có)
+    // [MỚI] Sắp xếp lại sub theo thời gian
     subs.sort((a, b) => a.start - b.start);
-    
+
     return subs;
 }
 
@@ -4784,21 +4788,7 @@
                 }
                 return s;
             }
-            function timeToSeconds(t) {
-                // Thay dấu phẩy (SRT) thành dấu chấm (chuẩn JS) để tính toán
-                t = t.replace(",", ".");
-                const p = t.split(":");
-
-                let s = 0;
-                if (p.length === 3) {
-                    // hh:mm:ss.ms
-                    s = parseFloat(p[0]) * 3600 + parseFloat(p[1]) * 60 + parseFloat(p[2]);
-                } else if (p.length === 2) {
-                    // mm:ss.ms (VTT có thể lược bỏ giờ)
-                    s = parseFloat(p[0]) * 60 + parseFloat(p[1]);
-                }
-                return s;
-            }
+            
 
             function srtTimeToSeconds(t) {
                 const p = t.split(/[:,]/).reverse();
