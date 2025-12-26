@@ -2220,6 +2220,79 @@
                     width: 100%;
                 }
             }
+            /* --- SỬA LẠI: DANH SÁCH TẬP TRONG MODAL (Cuộn ngang) --- */
+#modal-episodes-list {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 15px; /* Chừa chỗ cho thanh cuộn */
+    scroll-behavior: smooth;
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Scrollbar mảnh cho đẹp */
+#modal-episodes-list::-webkit-scrollbar {
+    height: 6px;
+}
+#modal-episodes-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.modal-episode-item {
+    /* Chuyển thành dạng thẻ đứng */
+    display: flex;
+    flex-direction: column;
+    min-width: 180px; /* Độ rộng cố định cho mỗi tập */
+    max-width: 180px;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: transform 0.2s, background-color 0.2s;
+    cursor: pointer;
+}
+
+/* Reset lại các style cũ của dạng danh sách dọc */
+.modal-episode-item:hover {
+    background-color: #333;
+    transform: scale(1.05);
+}
+
+.modal-ep-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.modal-ep-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-ep-number {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.modal-ep-title {
+    font-size: 0.85rem;
+    color: #ddd;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.4em; /* Giới hạn chiều cao text */
+}
+
+/* Ẩn icon play cũ đi vì click vào cả thẻ là chạy */
+.modal-episode-item .play-icon {
+    display: none; 
+}
         </style>
     </head>
     <body>
@@ -4153,43 +4226,50 @@
                 }
 
                 // 7. Xử lý DANH SÁCH TẬP
-                modalEpisodesList.innerHTML = "";
-                if (programEpisodes && programEpisodes.length > 0) {
-                    modalEpisodeSection.classList.remove("hidden");
+                // 7. Xử lý DANH SÁCH TẬP
+modalEpisodesList.innerHTML = "";
+if (programEpisodes && programEpisodes.length > 0) {
+    modalEpisodeSection.classList.remove("hidden");
 
-                    programEpisodes.forEach((ep) => {
-                        const el = doc.createElement("div");
-                        el.className = "modal-episode-item";
-                        const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
-                        const isLatest =
-                            ep.videoId === videoData.videoId
-                                ? ' style="color: var(--accent-color); font-weight: 700;"'
-                                : "";
+    // [SỬA 1] Sắp xếp TĂNG DẦN (a - b) thay vì giảm dần
+    programEpisodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
 
-                        // Tìm đoạn render html trong openDetailModal và thay bằng đoạn này:
-                        el.innerHTML = `
-    <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
-    <div class="modal-ep-info">
-        <div class="modal-ep-number"${isLatest}>Tập ${ep.episode || "N/A"}</div>
-        <div class="modal-ep-title">${ep.userTitle || ep.title}</div>
-    </div>
-    <svg class="play-icon" viewBox="0 0 24 24" width="24" height="24">
-        <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path>
-    </svg>
-`;
+    programEpisodes.forEach((ep) => {
+        const el = doc.createElement("div");
+        el.className = "modal-episode-item"; // Class giữ nguyên nhưng CSS đã đổi
+        const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
+        
+        // Highlight tập đang chọn
+        const isLatestClass = ep.videoId === videoData.videoId ? ' style="color: var(--accent-color);"' : '';
+        const isPlayingBorder = ep.videoId === videoData.videoId ? ' border: 1px solid var(--accent-color);' : '';
+        
+        if (ep.videoId === videoData.videoId) {
+             el.style.cssText = isPlayingBorder;
+        }
 
-                        el.onclick = () => {
-                            closeModal(detailModalOverlay);
-                            launchPlayer(ep);
-                        };
-                        modalEpisodesList.appendChild(el);
-                    });
+        // [SỬA 2] HTML Structure mới cho Card đứng (Bỏ nút Play icon, đặt ảnh lên trên)
+        el.innerHTML = `
+            <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
+            <div class="modal-ep-info">
+                <span class="modal-ep-number"${isLatestClass}>Tập ${ep.episode || "Lẻ"}</span>
+                <span class="modal-ep-title">${ep.userTitle || ep.title}</span>
+            </div>
+        `;
 
-                    modalPlayBtn.onclick = () => {
-                        closeModal(detailModalOverlay);
-                        launchPlayer(programEpisodes[0]);
-                    };
-                } else {
+        el.onclick = () => {
+            closeModal(detailModalOverlay);
+            launchPlayer(ep);
+        };
+        modalEpisodesList.appendChild(el);
+    });
+    
+    // Logic nút "Phát" to đùng ở Header modal: Phát tập ĐẦU TIÊN (Tập 1) thay vì tập mới nhất
+    // Hoặc phát tập đang chọn (videoData)
+    modalPlayBtn.onclick = () => {
+        closeModal(detailModalOverlay);
+        launchPlayer(videoData); // Phát tập đang xem thông tin
+    };
+} else {
                     modalEpisodeSection.classList.add("hidden");
                     modalPlayBtn.onclick = handleModalPlay;
                     modalPlayBtn.dataset.videoId = videoData.videoId;
@@ -4599,7 +4679,7 @@
             function stopSubtitleSync() {
                 clearInterval(subtitleCheckInterval);
             }
-            function startProgressSync() {
+           function startProgressSync() {
     stopProgressSync();
     const tDisplay = document.getElementById("time-display");
 
@@ -4620,7 +4700,32 @@
             saveWatchProgress(currentVideoData.videoId, c, d);
         }
 
+        // 1. Kiểm tra Skip Intro (Giữ nguyên)
         checkSkipLogic(c, d);
+
+        // 2. [MỚI] Tự động phát hiện Credit/End để chuyển tập
+        // Logic: Nếu gặp bookmark có chữ "Credit", "End", "Kết thúc" -> Kích hoạt Overlay ngay
+        if (currentVideoData.bookmarks && !isUpNextTriggered) {
+            const creditMark = currentVideoData.bookmarks.find(b => {
+                const bTime = srtTimeToSeconds(b.time);
+                const label = (b.label || "").toLowerCase();
+                // Nếu thời gian hiện tại đã chạm mốc bookmark VÀ label có từ khóa
+                return c >= bTime && (label.includes("credit") || label.includes("end") || label.includes("kết") || label.includes("hết"));
+            });
+
+            if (creditMark) {
+                isUpNextTriggered = true;
+                handleVideoEnd(true); // true = Kích hoạt bởi Credit (Video chưa hết hẳn)
+            }
+        }
+
+        // 3. Fallback: Nếu không có bookmark, kích hoạt khi còn 1s (Logic cũ)
+        // Hoặc dựa trên Subtitle cuối cùng (Logic cũ của bạn)
+        let triggerTime = (lastSubtitleEnd > 0 && lastSubtitleEnd < d) ? lastSubtitleEnd + 0.5 : d - 1;
+        if (c >= triggerTime && !isUpNextTriggered && c > 1) {
+            isUpNextTriggered = true; 
+            handleVideoEnd(false); // false = Kích hoạt do hết video
+        }
 
         const formatTime = (s) => {
             const t = Math.round(s);
@@ -4630,33 +4735,9 @@
 
         if (tDisplay) tDisplay.textContent = `${formatTime(c)} / ${formatTime(d)}`;
 
-        /* --- [LOGIC MỚI] AUTO NEXT DỰA TRÊN SUBTITLE --- */
-        
-        // 1. Xác định điểm kích hoạt (Trigger Point)
-        let triggerTime;
-        
-        if (lastSubtitleEnd > 0 && lastSubtitleEnd < d) {
-            // Nếu có sub: Kích hoạt ngay khi dòng sub cuối cùng biến mất + 0.5s đệm
-            triggerTime = lastSubtitleEnd + 0.5;
-        } else {
-            // Nếu không có sub (hoặc lỗi): Kích hoạt khi video còn 1 giây
-            triggerTime = d - 1;
-        }
-
-        // 2. Kiểm tra điều kiện
-        // - Thời gian hiện tại đã vượt qua điểm kích hoạt
-        // - Chưa kích hoạt lần nào (isUpNextTriggered == false)
-        // - Không được kích hoạt quá sớm (tránh lỗi khi vừa vào video, sub ảo ở giây 0) -> c > 1
-        if (c >= triggerTime && !isUpNextTriggered && c > 1) {
-            isUpNextTriggered = true; // Khóa lại ngay
-            handleVideoEnd();         // Gọi màn hình Next Episode
-        }
-        
-        // Fallback: Vẫn giữ sự kiện gốc của YouTube (onStateChange ENDED) để an toàn
-        // (Logic đó đã nằm trong onPlayerStateChange, không cần viết ở đây nữa)
-
     }, 250);
 }
+            
             // [MỚI] Logic tính toán xem có hiện nút Skip không
             function checkSkipLogic(currentTime, duration) {
                 if (!currentVideoData || !currentVideoData.bookmarks) return;
@@ -4823,36 +4904,36 @@ function parseSubtitle(text) {
                 const match = url.match(regex);
                 return match ? match[1] : null;
             }
-            function handleVideoEnd() {
-                isEnding = true; // Đặt cờ để tránh gọi lại
-                stopSyncing();
+            // Thêm tham số isCreditTrigger
+function handleVideoEnd(isCreditTrigger = false) {
+    isEnding = true; 
+    // Không stopSyncing ngay nếu là Credit Trigger để timeline vẫn chạy nền (tùy chọn)
+    // Nhưng để an toàn ta cứ để nó chạy, chỉ chặn trigger lại bằng biến isUpNextTriggered
 
-                if (!currentVideoData) return;
-                let nextVideo = null;
-                if (currentVideoData.program && typeof currentVideoData.episode !== "undefined") {
-                    const currentEpisode = Number(currentVideoData.episode);
-                    nextVideo = libraryData.find(
-                        (v) => v.program === currentVideoData.program && Number(v.episode) === currentEpisode + 1
-                    );
-                }
+    if (!currentVideoData) return;
+    let nextVideo = null;
+    if (currentVideoData.program && typeof currentVideoData.episode !== "undefined") {
+        const currentEpisode = Number(currentVideoData.episode);
+        nextVideo = libraryData.find(
+            (v) => v.program === currentVideoData.program && Number(v.episode) === currentEpisode + 1
+        );
+    }
 
-                if (nextVideo) {
-                    showUpNextOverlay(nextVideo);
-                } else {
-                    playerContainer.classList.remove("no-cursor");
-                    playerContainer.classList.add("controls-active");
-                    
-
-                    // GỢI Ý CHƯƠNG TRÌNH KHÁC
-                    const otherVideo = libraryData.find(
-                        (v) => v.program !== currentVideoData.program && v.videoId !== currentVideoData.videoId
-                    );
-
-                    if (otherVideo) {
-                        showUpNextOverlay(otherVideo, true); // dùng giao diện cũ luôn
-                    }
-                }
-            }
+    if (nextVideo) {
+        showUpNextOverlay(nextVideo, false, isCreditTrigger); // Truyền cờ vào
+    } else {
+        // Hết phim hoặc video lẻ
+        playerContainer.classList.remove("no-cursor");
+        playerContainer.classList.add("controls-active");
+        const otherVideo = libraryData.find(
+            (v) => v.program !== currentVideoData.program && v.videoId !== currentVideoData.videoId
+        );
+        if (otherVideo) {
+            showUpNextOverlay(otherVideo, true); 
+        }
+    }
+}
+            
             /* --- [FIX] RESET THANH PROGRESS KHI CHƯA CÓ DATA --- */
             function updateProgressBarUI(currentTime, duration) {
                 // Nếu duration bị lỗi, chưa tải, hoặc bằng 0 -> Reset về 0 hết
@@ -4869,91 +4950,98 @@ function parseSubtitle(text) {
                 progressBar.style.setProperty("--progress-percent", `${(currentTime / duration) * 100}%`);
             }
             /* --- [UPDATED] LOGIC NEXT EPISODE (NETFLIX STYLE) --- */
-            function showUpNextOverlay(videoData, isSuggestion = false) {
-                const overlay = document.getElementById("up-next-overlay");
-                const thumbnail = document.getElementById("up-next-thumbnail");
-                const title = document.getElementById("up-next-title");
-                const seriesName = document.getElementById("up-next-series-name");
-                const label = document.querySelector(".up-next-label");
-                const secondsSpan = document.getElementById("up-next-seconds");
-                const countdownRing = document.getElementById("countdown-ring");
-                const card = document.getElementById("up-next-card");
-                const cancelBtn = document.getElementById("up-next-cancel-btn");
-                const countdownWrapper = document.querySelector(".up-next-countdown-wrapper");
+            // Cập nhật tham số: isCreditTrigger
+function showUpNextOverlay(videoData, isSuggestion = false, isCreditTrigger = false) {
+    const overlay = document.getElementById("up-next-overlay");
+    const thumbnail = document.getElementById("up-next-thumbnail");
+    const title = document.getElementById("up-next-title");
+    const seriesName = document.getElementById("up-next-series-name");
+    const label = document.querySelector(".up-next-label");
+    const secondsSpan = document.getElementById("up-next-seconds");
+    const countdownRing = document.getElementById("countdown-ring");
+    const card = document.getElementById("up-next-card");
+    const cancelBtn = document.getElementById("up-next-cancel-btn");
+    const countdownWrapper = document.querySelector(".up-next-countdown-wrapper");
 
-                // 1. Điền thông tin
-                const thumbUrl = (videoData.thumbnailUrl || videoData.thumbnailUrl_auto).replace(
-                    "hqdefault",
-                    "maxresdefault"
-                );
-                thumbnail.src = thumbUrl;
-                // Fallback nếu lỗi ảnh
-                thumbnail.onerror = () => {
-                    thumbnail.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-                };
+    // Điền thông tin (Giữ nguyên)
+    const thumbUrl = (videoData.thumbnailUrl || videoData.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
+    thumbnail.src = thumbUrl;
+    thumbnail.onerror = () => { thumbnail.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto; };
+    title.textContent = videoData.userTitle || videoData.title;
+    seriesName.textContent = videoData.program || "";
 
-                title.textContent = videoData.userTitle || videoData.title;
-                seriesName.textContent = videoData.program || ""; // Hiện tên Series bên dưới
+    // Reset interval cũ
+    clearInterval(upNextInterval);
+    clearTimeout(upNextTimeout);
 
-                // 2. Xử lý logic Gợi ý vs Đếm ngược
-                if (isSuggestion) {
-                    label.textContent = "GỢI Ý CHO BẠN";
-                    countdownWrapper.style.display = "none"; // Ẩn vòng tròn đếm ngược
-                    cancelBtn.textContent = "Đóng";
+    if (isSuggestion) {
+        // ... (Giữ nguyên logic gợi ý)
+        label.textContent = "GỢI Ý CHO BẠN";
+        countdownWrapper.style.display = "none";
+        cancelBtn.textContent = "Đóng";
+        card.onclick = () => { hideUpNextOverlay(); launchPlayer(videoData); };
+        cancelBtn.onclick = hideUpNextOverlay;
+    } else {
+        label.textContent = "ĐANG PHÁT TIẾP THEO";
+        countdownWrapper.style.display = "flex";
+        cancelBtn.textContent = "Hủy";
 
-                    card.onclick = () => {
-                        hideUpNextOverlay();
-                        launchPlayer(videoData);
-                    };
-                    cancelBtn.onclick = hideUpNextOverlay;
-                } else {
-                    label.textContent = "ĐANG PHÁT TIẾP THEO";
-                    countdownWrapper.style.display = "flex"; // Hiện vòng tròn
-                    cancelBtn.textContent = "Hủy";
+        // --- [LOGIC ĐẾM NGƯỢC MỚI] ---
+        let countdownTime = 5; // Mặc định 5s
 
-                    let countdown = 5;
-                    const totalDash = 138; // Chu vi hình tròn r=22 (2 * PI * 22 ≈ 138)
+        if (isCreditTrigger && player && player.getDuration) {
+            const remaining = player.getDuration() - player.getCurrentTime();
+            // Nếu thời gian còn lại > 5s -> Đếm theo thời gian còn lại
+            // Nếu < 5s -> Đếm 5s
+            countdownTime = Math.ceil(remaining > 5 ? remaining : 5);
+        }
+        
+        // Setup biến đếm
+        let currentCount = countdownTime;
+        const totalDash = 138; 
 
-                    secondsSpan.textContent = countdown;
-                    countdownRing.style.strokeDashoffset = "0"; // Reset vòng tròn đầy
+        // Hàm update UI
+        const updateTimerUI = () => {
+            secondsSpan.textContent = currentCount;
+            // Tính toán vòng tròn
+            const offset = totalDash - ((currentCount / countdownTime) * totalDash); // Tính theo tổng thời gian ban đầu
+            countdownRing.style.strokeDashoffset = -offset; // Chạy ngược hoặc xuôi tùy ý
+        };
+        
+        updateTimerUI(); // Chạy ngay lần đầu
 
-                    const playNext = () => {
-                        hideUpNextOverlay();
-                        launchPlayer(videoData);
-                    };
+        const playNext = () => {
+            hideUpNextOverlay();
+            launchPlayer(videoData);
+        };
 
-                    card.onclick = playNext;
-                    cancelBtn.onclick = hideUpNextOverlay;
+        card.onclick = playNext;
+        cancelBtn.onclick = hideUpNextOverlay;
 
-                    // Reset interval cũ
-                    clearInterval(upNextInterval);
-                    clearTimeout(upNextTimeout);
-
-                    // Logic đếm ngược & chạy vòng tròn
-                    upNextInterval = setInterval(() => {
-                        countdown--;
-                        secondsSpan.textContent = countdown;
-
-                        // Tính toán để vòng tròn tụt dần
-                        const offset = totalDash - (countdown / 5) * totalDash;
-                        countdownRing.style.strokeDashoffset = offset;
-
-                        if (countdown <= 0) clearInterval(upNextInterval);
-                    }, 1000);
-
-                    upNextTimeout = setTimeout(() => {
-                        playNext();
-                    }, 5000);
-                }
-
-                // 3. Hiện Overlay (Thêm class visible để kích hoạt CSS Transition)
-                overlay.style.display = "flex"; // Đảm bảo flex trước
-                // RequestAnimationFrame để browser nhận diện style display trước khi add class
-                requestAnimationFrame(() => {
-                    overlay.classList.add("visible");
-                });
+        // Interval đếm ngược
+        upNextInterval = setInterval(() => {
+            currentCount--;
+            
+            // Nếu đếm từ thời gian thực của video, ta có thể đồng bộ lại cho chính xác
+            if (isCreditTrigger && player && player.getDuration) {
+                const realRemaining = Math.ceil(player.getDuration() - player.getCurrentTime());
+                // Nếu realRemaining lớn hơn 5, ưu tiên dùng nó. Nếu nó < 5 nhưng countdown gốc > 5, cứ trừ dần currentCount
+                 if (realRemaining > 5) currentCount = realRemaining;
             }
 
+            if (currentCount < 0) currentCount = 0;
+            updateTimerUI();
+
+            if (currentCount <= 0) {
+                clearInterval(upNextInterval);
+                playNext(); // TỰ ĐỘNG CHUYỂN
+            }
+        }, 1000);
+    }
+
+    overlay.style.display = "flex";
+    requestAnimationFrame(() => { overlay.classList.add("visible"); });
+}
             function hideUpNextOverlay() {
                 clearTimeout(upNextTimeout);
                 clearInterval(upNextInterval);
