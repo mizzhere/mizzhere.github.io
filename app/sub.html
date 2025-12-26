@@ -4511,68 +4511,68 @@ if (window.updateModalArrows) {
                 event.target.unloadModule("captions");
             }
 
-            function onPlayerStateChange(event) {
-                const centerBtn = doc.getElementById("center-play-pause-btn");
-                const centerIcon = doc.getElementById("center-play-pause-icon");
-                const spinner = document.getElementById("loading-spinner");
-                const iframe = document.getElementById("youtube-player");
+           function onPlayerStateChange(event) {
+    const centerBtn = doc.getElementById("center-play-pause-btn");
+    const centerIcon = doc.getElementById("center-play-pause-icon");
+    const spinner = document.getElementById("loading-spinner");
+    const iframe = document.getElementById("youtube-player");
 
-                // Icon SVG Paths
-                const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
-                const pausePath = "M14,19H18V5H14M6,19H10V5H6V19Z";
+    // Icon SVG Paths
+    const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
+    const pausePath = "M14,19H18V5H14M6,19H10V5H6V19Z";
 
-                // 1. XỬ LÝ TRẠNG THÁI LOADING (BUFFERING / UNSTARTED)
-                if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.UNSTARTED) {
-                    spinner.style.display = "block"; // Hiện xoay
+    // 1. XỬ LÝ TRẠNG THÁI LOADING
+    if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.UNSTARTED) {
+        spinner.style.display = "block"; 
+        centerBtn.style.opacity = "0";
+        centerBtn.style.pointerEvents = "none";
+    }
+    // 2. XỬ LÝ KHI ĐANG PHÁT (PLAYING)
+    else if (event.data === YT.PlayerState.PLAYING) {
+        spinner.style.display = "none"; 
+        iframe.classList.add("ready"); 
 
-                    // [QUAN TRỌNG] Vẫn ẩn nút Play khi đang xoay
-                    centerBtn.style.opacity = "0";
-                    centerBtn.style.pointerEvents = "none";
-                }
-                // 2. XỬ LÝ KHI ĐANG PHÁT (PLAYING)
-                else if (event.data === YT.PlayerState.PLAYING) {
-                    spinner.style.display = "none"; // Tắt xoay
-                    iframe.classList.add("ready"); // Hiện video
+        centerBtn.style.opacity = "0";
+        centerBtn.style.pointerEvents = "none";
 
-                    // Ẩn nút Play
-                    centerBtn.style.opacity = "0";
-                    centerBtn.style.pointerEvents = "none";
+        playerContainer.classList.add("playing");
 
-                    playerContainer.classList.add("playing");
+        playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
+        if (centerIcon) centerIcon.setAttribute("d", pausePath);
 
-                    // Đổi icon thành Pause (để chuẩn bị cho lần hiện sau)
-                    playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
-                    if (centerIcon) centerIcon.setAttribute("d", pausePath);
+        startSyncing();
+        
+        // [FIX QUAN TRỌNG TẠI ĐÂY]
+        // Chỉ ẩn bảng "Tiếp theo" nếu chưa đến giờ kích hoạt.
+        // Nếu biến cờ đang True (tức là bạn vừa tua đến đoạn cuối), thì ĐỪNG ẩn nó.
+        if (!isUpNextTriggered) {
+            hideUpNextOverlay();
+        }
 
-                    startSyncing();
-                    hideUpNextOverlay();
-                    showControlsAndSetHideTimeout();
-                }
-                // 3. XỬ LÝ KHI TẠM DỪNG HOẶC KẾT THÚC (PAUSED / ENDED)
-                else {
-                    spinner.style.display = "none"; // Tắt xoay
+        showControlsAndSetHideTimeout();
+    }
+    // 3. XỬ LÝ KHI TẠM DỪNG HOẶC KẾT THÚC
+    else {
+        spinner.style.display = "none"; 
 
-                    // Hiện nút Play để bấm tiếp
-                    centerBtn.style.opacity = "1";
-                    centerBtn.style.pointerEvents = "auto";
+        centerBtn.style.opacity = "1";
+        centerBtn.style.pointerEvents = "auto";
 
-                    playerContainer.classList.remove("playing");
+        playerContainer.classList.remove("playing");
 
-                    // Đổi icon thành Play
-                    playPauseBtn.querySelector("svg path").setAttribute("d", playPath);
-                    if (centerIcon) centerIcon.setAttribute("d", playPath);
+        playPauseBtn.querySelector("svg path").setAttribute("d", playPath);
+        if (centerIcon) centerIcon.setAttribute("d", playPath);
 
-                    stopSyncing();
-                    clearTimeout(controlsTimeout);
-                    playerContainer.classList.add("controls-active");
-                    playerContainer.classList.remove("no-cursor");
-                }
+        stopSyncing();
+        clearTimeout(controlsTimeout);
+        playerContainer.classList.add("controls-active");
+        playerContainer.classList.remove("no-cursor");
+    }
 
-                if (event.data === YT.PlayerState.ENDED && !isEnding) {
-                    handleVideoEnd();
-                }
-            }
-
+    if (event.data === YT.PlayerState.ENDED && !isEnding) {
+        handleVideoEnd(false); // Video hết hẳn -> Force đếm ngược 5s
+    }
+}
             // Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
             function updateQualityBadge() {
                 // Các giá trị trả về: 'highres', 'hd1080', 'hd720', 'large', 'medium', 'small'
@@ -4751,7 +4751,7 @@ function startProgressSync() {
         // 1. Kiểm tra Skip Intro
         checkSkipLogic(c, d);
 
-        // 2. Tự động phát hiện Credit bằng Bookmark (Ưu tiên cao nhất)
+        // 2. [MỚI] Tự động phát hiện Credit/End để chuyển tập
         if (currentVideoData.bookmarks && !isUpNextTriggered) {
             const creditMark = currentVideoData.bookmarks.find(b => {
                 const bTime = srtTimeToSeconds(b.time);
@@ -4761,30 +4761,25 @@ function startProgressSync() {
 
             if (creditMark) {
                 isUpNextTriggered = true;
-                handleVideoEnd(true); // true = Tính giờ theo thời gian thực
+                handleVideoEnd(true); 
             }
         }
 
-        // 3. Fallback: Dựa trên Subtitle cuối cùng [PHẦN SỬA LỖI]
-        // Logic: Nếu có sub cuối, trigger tại đó. Nếu không, trigger trước khi hết 1s.
+        // 3. Fallback: Dựa trên Subtitle cuối cùng
         let triggerTime = (lastSubtitleEnd > 0 && lastSubtitleEnd < d) ? lastSubtitleEnd + 0.5 : d - 1;
 
-        // [QUAN TRỌNG] Reset trạng thái nếu người dùng tua ngược về trước điểm trigger
-        // Giúp overlay hiện lại nếu tua đi tua lại qua điểm này
+        // [SỬA QUAN TRỌNG] Reset trạng thái nếu người dùng tua ngược về trước
         if (c < triggerTime && isUpNextTriggered) {
-            isUpNextTriggered = false;
+            isUpNextTriggered = false; 
+            hideUpNextOverlay(); // <--- THÊM DÒNG NÀY: Ẩn ngay cái bảng đi nếu tua lại
         }
 
-        // Kiểm tra trigger
+        // Kích hoạt
         if (c >= triggerTime && !isUpNextTriggered && c > 1) {
             isUpNextTriggered = true; 
-            
-            // [SỬA LẠI] Truyền TRUE để báo là Credit Trigger
-            // Hệ thống sẽ đếm ngược theo thời gian còn lại (remaining) thay vì mặc định 5s
-            handleVideoEnd(true); 
+            handleVideoEnd(true); // true = Kích hoạt bởi Credit
         }
 
-        // Cập nhật hiển thị giờ
         const formatTime = (s) => {
             const t = Math.round(s);
             if (isNaN(t)) return "00";
