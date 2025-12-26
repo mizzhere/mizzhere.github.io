@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to Subtitle Converter (Drag & Drop)</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --accent-hover: #9955e8;
+            --border-color: #333;
+            --success-color: #03dac6;
+            --error-color: #cf6679;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-weight: 300;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        /* Drop Zone Styles */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+
+        .drop-zone.drag-active {
+            border-color: var(--accent-color);
+            background-color: rgba(187, 134, 252, 0.1);
+            transform: scale(1.01);
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 1.1em;
+            color: #888;
+            pointer-events: none; /* Tránh text cản trở sự kiện drop */
+        }
+
+        .drop-zone .icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            pointer-events: none;
+        }
+
+        /* Text Area & Inputs */
+        textarea {
+            width: 100%;
+            height: 150px;
+            background-color: #121212;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        input[type="radio"] {
+            accent-color: var(--accent-color);
+            width: 18px;
+            height: 18px;
+        }
+
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-action {
+            background-color: #333;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-action:hover {
+            background-color: #444;
+        }
+
+        #outputSection {
+            display: none;
+            margin-top: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-msg {
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            display: none;
+        }
+        .status-msg.success { background: rgba(3, 218, 198, 0.1); color: var(--success-color); display: block; }
+        .status-msg.error { background: rgba(207, 102, 121, 0.1); color: var(--error-color); display: block; }
+
+        .hidden-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Công cụ JSON sang SRT/VTT</h1>
+
+    <!-- Drop Zone -->
+    <div class="drop-zone" id="dropZone">
+        <span class="icon">📂</span>
+        <p>Kéo thả file .txt/.json vào đây</p>
+        <p style="font-size: 0.8em; margin-top: 5px; color: #555;">hoặc bấm để chọn file</p>
+        <input type="file" id="fileInput" class="hidden-input" accept=".txt,.json">
+    </div>
+
+    <!-- Manual Input -->
+    <div>
+        <label style="font-size: 0.9em; color: #888; margin-bottom: 5px; display:block;">Hoặc dán nội dung thủ công:</label>
+        <textarea id="inputData" placeholder='{"events": [ ... ]}'></textarea>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="radio-group">
+            <label class="radio-item">
+                <input type="radio" name="format" value="srt" checked> SRT
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="format" value="vtt"> VTT
+            </label>
+        </div>
+        <button class="btn-primary" onclick="convertSubtitle()">Chuyển đổi</button>
+    </div>
+
+    <!-- Status Message -->
+    <div id="statusMsg" class="status-msg"></div>
+
+    <!-- Output Section -->
+    <div id="outputSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-weight: bold;">Kết quả:</label>
+            <div>
+                <button class="btn-action" onclick="copyToClipboard()">Sao chép</button>
+                <button class="btn-action" onclick="downloadFile()">Tải về</button>
+            </div>
+        </div>
+        <textarea id="resultData" readonly style="height: 300px; color: #03dac6;"></textarea>
+    </div>
+</div>
+
+<script>
+    // --- Cấu hình ---
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const inputTextArea = document.getElementById('inputData');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // --- Xử lý Drag & Drop ---
+    
+    // Ngăn chặn hành vi mặc định của trình duyệt
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Hiệu ứng hover khi kéo file vào
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+    });
+
+    // Xử lý khi thả file
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    // Xử lý khi click vào vùng drop zone
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFile(files[0]);
+    }
+
+    function handleFile(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            inputTextArea.value = e.target.result;
+            showStatus(`Đã tải file: ${file.name}`, 'success');
+            // Tự động cuộn xuống nút convert
+            document.querySelector('.controls').scrollIntoView({behavior: 'smooth'});
+        };
+        reader.onerror = function() {
+            showStatus("Lỗi khi đọc file.", 'error');
+        };
+        reader.readAsText(file);
+    }
+
+    // --- Xử lý Logic Convert ---
+
+    function cleanJsonString(raw) {
+        // FIX: Regex đã được sửa lỗi
+        // Loại bỏ tag [source: number]
+        let cleaned = raw.replace(/\[source:\s*\d+\]/g, ''); 
+        
+        // Sửa lỗi JSON thiếu dấu phẩy giữa các object (lỗi copy thường gặp)
+        cleaned = cleaned.replace(/}\s*{/g, '}, {');
+
+        // Cắt bỏ phần thừa trước dấu { đầu tiên và sau dấu } cuối cùng
+        const firstBrace = cleaned.indexOf('{');
+        const lastBrace = cleaned.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+        }
+
+        return cleaned;
+    }
+
+    function formatTime(ms, separator) {
+        if (typeof ms !== 'number') ms = 0;
+        
+        let totalSeconds = Math.floor(ms / 1000);
+        let milliseconds = ms % 1000;
+        
+        let hours = Math.floor(totalSeconds / 3600);
+        let minutes = Math.floor((totalSeconds % 3600) / 60);
+        let seconds = totalSeconds % 60;
+
+        let h = hours.toString().padStart(2, '0');
+        let m = minutes.toString().padStart(2, '0');
+        let s = seconds.toString().padStart(2, '0');
+        let mil = milliseconds.toString().padStart(3, '0');
+
+        return `${h}:${m}:${s}${separator}${mil}`;
+    }
+
+    function convertSubtitle() {
+        const inputRaw = inputTextArea.value;
+        const format = document.querySelector('input[name="format"]:checked').value;
+        
+        if (!inputRaw.trim()) {
+            showStatus("Vui lòng nhập nội dung JSON hoặc kéo thả file vào.", 'error');
+            return;
+        }
+
+        try {
+            const cleanStr = cleanJsonString(inputRaw);
+            const data = JSON.parse(cleanStr);
+            
+            if (!data.events || !Array.isArray(data.events)) {
+                throw new Error("Cấu trúc JSON không hợp lệ (thiếu mảng 'events').");
+            }
+
+            let output = "";
+            if (format === 'vtt') output += "WEBVTT\n\n";
+
+            const timeSeparator = format === 'srt' ? ',' : '.';
+            let count = 1;
+
+            data.events.forEach((event) => {
+                // Bỏ qua nếu không có segs (đoạn text)
+                if (!event.segs) return;
+
+                const startMs = event.tStartMs || 0;
+                const durationMs = event.dDurationMs || 0;
+                const endMs = startMs + durationMs;
+
+                // Lấy text và xử lý xuống dòng
+                let text = event.segs
+                    .map(seg => seg.utf8)
+                    .join('')
+                    .replace(/\\n/g, '\n') // Chuyển \n string thành xuống dòng thật
+                    .trim();
+
+                // Bỏ qua dòng trống
+                if (!text) return;
+
+                const startTime = formatTime(startMs, timeSeparator);
+                const endTime = formatTime(endMs, timeSeparator);
+
+                if (format === 'srt') {
+                    output += `${count}\n`;
+                    output += `${startTime} --> ${endTime}\n`;
+                    output += `${text}\n\n`;
+                    count++;
+                } else {
+                    output += `${startTime} --> ${endTime}\n`;
+                    output += `${text}\n\n`;
+                }
+            });
+
+            document.getElementById('resultData').value = output;
+            document.getElementById('outputSection').style.display = 'block';
+            showStatus("Chuyển đổi thành công!", 'success');
+            
+            // Scroll xuống kết quả
+            document.getElementById('outputSection').scrollIntoView({behavior: 'smooth'});
+
+        } catch (e) {
+            console.error(e);
+            showStatus(`Lỗi: ${e.message}`, 'error');
+        }
+    }
+
+    // --- Tiện ích ---
+
+    function showStatus(msg, type) {
+        statusMsg.textContent = msg;
+        statusMsg.className = `status-msg ${type}`;
+        statusMsg.style.display = 'block';
+    }
+
+    function downloadFile() {
+        const content = document.getElementById('resultData').value;
+        const format = document.querySelector('input[name="format"]:checked').value;
+        if (!content) return;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `subtitle.${format}`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function copyToClipboard() {
+        const copyText = document.getElementById("resultData");
+        copyText.select();
+        document.execCommand('copy');
+        showStatus("Đã sao chép vào bộ nhớ đệm!", 'success');
+        window.getSelection().removeAllRanges();
+    }
+</script>
+
+</body>
+</html>
