@@ -2293,6 +2293,37 @@
 .modal-episode-item .play-icon {
     display: none; 
 }
+/* --- CSS CHO CUỘN NGANG TRONG MODAL --- */
+
+/* 1. Ẩn thanh cuộn mặc định của trình duyệt để dùng nút mũi tên */
+#modal-episodes-list::-webkit-scrollbar {
+    display: none;
+}
+#modal-episodes-list {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    scroll-behavior: smooth; /* Cuộn mượt */
+}
+
+/* 2. Chỉnh lại vị trí nút mũi tên trong Modal cho cân đối */
+#modal-list-wrapper .scroll-btn {
+    width: 40px; /* Nhỏ hơn nút ở trang chủ một chút cho tinh tế */
+    background: rgba(0, 0, 0, 0.6); /* Nền tối hơn chút */
+}
+
+/* 3. Hover vào vùng danh sách mới hiện nút (Giống trang chủ) */
+#modal-list-wrapper .scroll-btn {
+    opacity: 0; 
+}
+#modal-list-wrapper:hover .scroll-btn {
+    opacity: 1;
+}
+
+/* 4. Class ẩn nút khi đi đến giới hạn (đã có CSS hidden-arrow ở bài trước, nhưng nhắc lại cho chắc) */
+.hidden-arrow {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
         </style>
     </head>
     <body>
@@ -2397,9 +2428,19 @@
                         <!-- Chỗ chứa mới cho mô tả -->
                         <p id="modal-description"></p>
                         <div id="modal-episodes-section" class="hidden">
-                            <h4>Danh sách tập</h4>
-                            <div id="modal-episodes-list"></div>
-                        </div>
+    <h4>Danh sách tập</h4>
+    <div class="list-wrapper" id="modal-list-wrapper">
+        <button id="modal-arrow-left" class="scroll-btn left hidden-arrow">
+            <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+        </button>
+
+        <div id="modal-episodes-list"></div>
+
+        <button id="modal-arrow-right" class="scroll-btn right">
+            <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+        </button>
+    </div>
+</div>
                         <div id="modal-participants-container" class="hidden">
                             <h4 id="modal-participants-title">Với sự tham gia của:</h4>
                             <ul id="modal-participants-list"></ul>
@@ -4226,7 +4267,7 @@
                 }
 
                 // 7. Xử lý DANH SÁCH TẬP
-                // 7. Xử lý DANH SÁCH TẬP
+
 modalEpisodesList.innerHTML = "";
 if (programEpisodes && programEpisodes.length > 0) {
     modalEpisodeSection.classList.remove("hidden");
@@ -4291,6 +4332,13 @@ if (programEpisodes && programEpisodes.length > 0) {
                     // Nếu không phải series thì dọn dẹp teaser cũ
                     destroyTeaser();
                 }
+                modalEpisodesList.scrollLeft = 0;
+
+// Cập nhật mũi tên ngay lập tức (nếu danh sách ngắn quá thì ẩn hết nút)
+if (window.updateModalArrows) {
+    // Timeout nhỏ để chờ trình duyệt render độ rộng thực tế
+    setTimeout(window.updateModalArrows, 50); 
+}
             }
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
@@ -5172,6 +5220,59 @@ function hideUpNextOverlay() {
                 if (!data || data.isFinished) return 0;
                 return data.time;
             }
+            // --- LOGIC CUỘN NGANG CHO MODAL (COPY TỪ TRANG CHỦ) ---
+function setupModalScrolling() {
+    const list = document.getElementById("modal-episodes-list");
+    const btnLeft = document.getElementById("modal-arrow-left");
+    const btnRight = document.getElementById("modal-arrow-right");
+
+    if (!list || !btnLeft || !btnRight) return;
+
+    // 1. Hàm kiểm tra ẩn hiện mũi tên
+    const checkModalArrows = () => {
+        const scrollLeft = list.scrollLeft;
+        // Sai số 2px để xử lý việc làm tròn số trên một số màn hình
+        const maxScroll = list.scrollWidth - list.clientWidth - 2; 
+
+        // Nút Trái
+        if (scrollLeft <= 0) btnLeft.classList.add("hidden-arrow");
+        else btnLeft.classList.remove("hidden-arrow");
+
+        // Nút Phải
+        if (scrollLeft >= maxScroll) btnRight.classList.add("hidden-arrow");
+        else btnRight.classList.remove("hidden-arrow");
+    };
+
+    // 2. Sự kiện Click nút
+    btnLeft.onclick = (e) => {
+        e.stopPropagation(); // Tránh click xuyên qua đóng modal
+        list.scrollBy({ left: -300, behavior: "smooth" }); // Cuộn 300px
+    };
+
+    btnRight.onclick = (e) => {
+        e.stopPropagation();
+        list.scrollBy({ left: 300, behavior: "smooth" });
+    };
+
+    // 3. Sự kiện Lăn chuột (Mouse Wheel) -> Chuyển thành Cuộn ngang
+    list.addEventListener("wheel", (evt) => {
+        // Chỉ chặn cuộn dọc nếu danh sách thực sự dài hơn khung chứa
+        if (list.scrollWidth > list.clientWidth) {
+            evt.preventDefault();
+            list.scrollLeft += evt.deltaY * 3; // *3 để cuộn nhanh hơn chút
+        }
+    }, { passive: false });
+
+    // 4. Lắng nghe sự kiện cuộn để ẩn/hiện nút
+    list.addEventListener("scroll", checkModalArrows);
+    
+    // Gọi check lần đầu khi mở modal
+    // (Ta sẽ gọi lại hàm này trong openDetailModal để reset trạng thái)
+    window.updateModalArrows = checkModalArrows; 
+}
+
+// GỌI HÀM NÀY NGAY KHI KHỞI TẠO (Trong setupEventListeners hoặc cuối file)
+setupModalScrolling();
         </script>
         <script src="https://www.youtube.com/iframe_api"></script>
     </body>
