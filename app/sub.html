@@ -4679,7 +4679,7 @@ if (programEpisodes && programEpisodes.length > 0) {
             function stopSubtitleSync() {
                 clearInterval(subtitleCheckInterval);
             }
-           function startProgressSync() {
+function startProgressSync() {
     stopProgressSync();
     const tDisplay = document.getElementById("time-display");
 
@@ -4700,33 +4700,43 @@ if (programEpisodes && programEpisodes.length > 0) {
             saveWatchProgress(currentVideoData.videoId, c, d);
         }
 
-        // 1. Kiểm tra Skip Intro (Giữ nguyên)
+        // 1. Kiểm tra Skip Intro
         checkSkipLogic(c, d);
 
-        // 2. [MỚI] Tự động phát hiện Credit/End để chuyển tập
-        // Logic: Nếu gặp bookmark có chữ "Credit", "End", "Kết thúc" -> Kích hoạt Overlay ngay
+        // 2. Tự động phát hiện Credit bằng Bookmark (Ưu tiên cao nhất)
         if (currentVideoData.bookmarks && !isUpNextTriggered) {
             const creditMark = currentVideoData.bookmarks.find(b => {
                 const bTime = srtTimeToSeconds(b.time);
                 const label = (b.label || "").toLowerCase();
-                // Nếu thời gian hiện tại đã chạm mốc bookmark VÀ label có từ khóa
                 return c >= bTime && (label.includes("credit") || label.includes("end") || label.includes("kết") || label.includes("hết"));
             });
 
             if (creditMark) {
                 isUpNextTriggered = true;
-                handleVideoEnd(true); // true = Kích hoạt bởi Credit (Video chưa hết hẳn)
+                handleVideoEnd(true); // true = Tính giờ theo thời gian thực
             }
         }
 
-        // 3. Fallback: Nếu không có bookmark, kích hoạt khi còn 1s (Logic cũ)
-        // Hoặc dựa trên Subtitle cuối cùng (Logic cũ của bạn)
+        // 3. Fallback: Dựa trên Subtitle cuối cùng [PHẦN SỬA LỖI]
+        // Logic: Nếu có sub cuối, trigger tại đó. Nếu không, trigger trước khi hết 1s.
         let triggerTime = (lastSubtitleEnd > 0 && lastSubtitleEnd < d) ? lastSubtitleEnd + 0.5 : d - 1;
-        if (c >= triggerTime && !isUpNextTriggered && c > 1) {
-            isUpNextTriggered = true; 
-            handleVideoEnd(false); // false = Kích hoạt do hết video
+
+        // [QUAN TRỌNG] Reset trạng thái nếu người dùng tua ngược về trước điểm trigger
+        // Giúp overlay hiện lại nếu tua đi tua lại qua điểm này
+        if (c < triggerTime && isUpNextTriggered) {
+            isUpNextTriggered = false;
         }
 
+        // Kiểm tra trigger
+        if (c >= triggerTime && !isUpNextTriggered && c > 1) {
+            isUpNextTriggered = true; 
+            
+            // [SỬA LẠI] Truyền TRUE để báo là Credit Trigger
+            // Hệ thống sẽ đếm ngược theo thời gian còn lại (remaining) thay vì mặc định 5s
+            handleVideoEnd(true); 
+        }
+
+        // Cập nhật hiển thị giờ
         const formatTime = (s) => {
             const t = Math.round(s);
             if (isNaN(t)) return "00";
@@ -4737,7 +4747,6 @@ if (programEpisodes && programEpisodes.length > 0) {
 
     }, 250);
 }
-            
             // [MỚI] Logic tính toán xem có hiện nút Skip không
             function checkSkipLogic(currentTime, duration) {
                 if (!currentVideoData || !currentVideoData.bookmarks) return;
