@@ -4904,36 +4904,56 @@ function parseSubtitle(text) {
                 const match = url.match(regex);
                 return match ? match[1] : null;
             }
-            // Thêm tham số isCreditTrigger
+// Thay thế toàn bộ hàm cũ
 function handleVideoEnd(isCreditTrigger = false) {
-    isEnding = true; 
-    // Không stopSyncing ngay nếu là Credit Trigger để timeline vẫn chạy nền (tùy chọn)
-    // Nhưng để an toàn ta cứ để nó chạy, chỉ chặn trigger lại bằng biến isUpNextTriggered
+    // 1. Chống spam lệnh gọi
+    if (isEnding && !isCreditTrigger) return; 
+    // Nếu là Credit Trigger thì cho phép chạy để hiện overlay đè lên, 
+    // nhưng đánh dấu isEnding để khi video thực sự hết nó không gọi lại lần nữa.
+    isEnding = true;
 
     if (!currentVideoData) return;
+
     let nextVideo = null;
+    let isSuggestion = false;
+
+    // 2. [QUAN TRỌNG] Ưu tiên tìm tập tiếp theo trong Series
+    // Logic: Nếu video có tên chương trình (program) và số tập (episode)
     if (currentVideoData.program && typeof currentVideoData.episode !== "undefined") {
         const currentEpisode = Number(currentVideoData.episode);
+        
+        // Quét toàn bộ thư viện để tìm tập tiếp theo (episode + 1) cùng program
         nextVideo = libraryData.find(
             (v) => v.program === currentVideoData.program && Number(v.episode) === currentEpisode + 1
         );
     }
 
-    if (nextVideo) {
-        showUpNextOverlay(nextVideo, false, isCreditTrigger); // Truyền cờ vào
-    } else {
-        // Hết phim hoặc video lẻ
-        playerContainer.classList.remove("no-cursor");
-        playerContainer.classList.add("controls-active");
-        const otherVideo = libraryData.find(
-            (v) => v.program !== currentVideoData.program && v.videoId !== currentVideoData.videoId
+    // 3. Nếu KHÔNG tìm thấy tập tiếp theo (Hết series hoặc Video lẻ)
+    if (!nextVideo) {
+        isSuggestion = true; // Đánh dấu là gợi ý ngẫu nhiên
+        
+        // Tìm video khác cùng thể loại hoặc ngẫu nhiên (trừ video đang xem)
+        const candidates = libraryData.filter(
+            (v) => v.videoId !== currentVideoData.videoId && v.program !== currentVideoData.program
         );
-        if (otherVideo) {
-            showUpNextOverlay(otherVideo, true); 
+        
+        if (candidates.length > 0) {
+            // Lấy ngẫu nhiên 1 cái
+            nextVideo = candidates[Math.floor(Math.random() * candidates.length)];
         }
     }
-}
-            
+
+    // 4. Gọi Overlay nếu tìm được video tiếp theo (Dù là tập sau hay gợi ý)
+    if (nextVideo) {
+        // Nếu là Suggestion (hết phim) thì hiện con trỏ chuột lại
+        if (isSuggestion) {
+            playerContainer.classList.remove("no-cursor");
+            playerContainer.classList.add("controls-active");
+        }
+        
+        showUpNextOverlay(nextVideo, isSuggestion, isCreditTrigger);
+    }
+}  
             /* --- [FIX] RESET THANH PROGRESS KHI CHƯA CÓ DATA --- */
             function updateProgressBarUI(currentTime, duration) {
                 // Nếu duration bị lỗi, chưa tải, hoặc bằng 0 -> Reset về 0 hết
@@ -4950,99 +4970,116 @@ function handleVideoEnd(isCreditTrigger = false) {
                 progressBar.style.setProperty("--progress-percent", `${(currentTime / duration) * 100}%`);
             }
             /* --- [UPDATED] LOGIC NEXT EPISODE (NETFLIX STYLE) --- */
-            // Cập nhật tham số: isCreditTrigger
-function showUpNextOverlay(videoData, isSuggestion = false, isCreditTrigger = false) {
-    const overlay = document.getElementById("up-next-overlay");
-    const thumbnail = document.getElementById("up-next-thumbnail");
-    const title = document.getElementById("up-next-title");
-    const seriesName = document.getElementById("up-next-series-name");
-    const label = document.querySelector(".up-next-label");
-    const secondsSpan = document.getElementById("up-next-seconds");
-    const countdownRing = document.getElementById("countdown-ring");
-    const card = document.getElementById("up-next-card");
+            // Thay thế toàn bộ hàm cũ
+            function showUpNextOverlay(videoData, isSuggestion = false, isCreditTrigger = false) {
+                const overlay = document.getElementById("up-next-overlay");
+                const thumbnail = document.getElementById("up-next-thumbnail");
+                const title = document.getElementById("up-next-title");
+                const seriesName = document.getElementById("up-next-series-name");
+                const label = document.querySelector(".up-next-label");
+                const secondsSpan = document.getElementById("up-next-seconds");
+                const countdownRing = document.getElementById("countdown-ring");
+                const card = document.getElementById("up-next-card");
     const cancelBtn = document.getElementById("up-next-cancel-btn");
     const countdownWrapper = document.querySelector(".up-next-countdown-wrapper");
 
-    // Điền thông tin (Giữ nguyên)
+    // 1. Điền thông tin video
     const thumbUrl = (videoData.thumbnailUrl || videoData.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
     thumbnail.src = thumbUrl;
+    // Fallback ảnh lỗi
     thumbnail.onerror = () => { thumbnail.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto; };
+    
     title.textContent = videoData.userTitle || videoData.title;
     seriesName.textContent = videoData.program || "";
 
-    // Reset interval cũ
+    // 2. Reset timer cũ
     clearInterval(upNextInterval);
     clearTimeout(upNextTimeout);
 
+    // 3. Xử lý UI dựa trên loại (Suggestion hay Next Ep)
+    // [SỬA] Cả 2 trường hợp ĐỀU HIỆN ĐẾM NGƯỢC
+    countdownWrapper.style.display = "flex"; 
+    
     if (isSuggestion) {
-        // ... (Giữ nguyên logic gợi ý)
         label.textContent = "GỢI Ý CHO BẠN";
-        countdownWrapper.style.display = "none";
-        cancelBtn.textContent = "Đóng";
-        card.onclick = () => { hideUpNextOverlay(); launchPlayer(videoData); };
-        cancelBtn.onclick = hideUpNextOverlay;
+        cancelBtn.textContent = "Đóng"; // Gợi ý thì nút là Đóng
     } else {
         label.textContent = "ĐANG PHÁT TIẾP THEO";
-        countdownWrapper.style.display = "flex";
-        cancelBtn.textContent = "Hủy";
-
-        // --- [LOGIC ĐẾM NGƯỢC MỚI] ---
-        let countdownTime = 5; // Mặc định 5s
-
-        if (isCreditTrigger && player && player.getDuration) {
-            const remaining = player.getDuration() - player.getCurrentTime();
-            // Nếu thời gian còn lại > 5s -> Đếm theo thời gian còn lại
-            // Nếu < 5s -> Đếm 5s
-            countdownTime = Math.ceil(remaining > 5 ? remaining : 5);
-        }
-        
-        // Setup biến đếm
-        let currentCount = countdownTime;
-        const totalDash = 138; 
-
-        // Hàm update UI
-        const updateTimerUI = () => {
-            secondsSpan.textContent = currentCount;
-            // Tính toán vòng tròn
-            const offset = totalDash - ((currentCount / countdownTime) * totalDash); // Tính theo tổng thời gian ban đầu
-            countdownRing.style.strokeDashoffset = -offset; // Chạy ngược hoặc xuôi tùy ý
-        };
-        
-        updateTimerUI(); // Chạy ngay lần đầu
-
-        const playNext = () => {
-            hideUpNextOverlay();
-            launchPlayer(videoData);
-        };
-
-        card.onclick = playNext;
-        cancelBtn.onclick = hideUpNextOverlay;
-
-        // Interval đếm ngược
-        upNextInterval = setInterval(() => {
-            currentCount--;
-            
-            // Nếu đếm từ thời gian thực của video, ta có thể đồng bộ lại cho chính xác
-            if (isCreditTrigger && player && player.getDuration) {
-                const realRemaining = Math.ceil(player.getDuration() - player.getCurrentTime());
-                // Nếu realRemaining lớn hơn 5, ưu tiên dùng nó. Nếu nó < 5 nhưng countdown gốc > 5, cứ trừ dần currentCount
-                 if (realRemaining > 5) currentCount = realRemaining;
-            }
-
-            if (currentCount < 0) currentCount = 0;
-            updateTimerUI();
-
-            if (currentCount <= 0) {
-                clearInterval(upNextInterval);
-                playNext(); // TỰ ĐỘNG CHUYỂN
-            }
-        }, 1000);
+        cancelBtn.textContent = "Hủy"; // Tập tiếp theo thì là Hủy
     }
 
+    // 4. [LOGIC ĐẾM NGƯỢC CHUẨN]
+    let countdownTime = 5; // Mặc định 5s
+
+    // Nếu kích hoạt bởi Credit/Sub và Player đang chạy
+    if (isCreditTrigger && player && typeof player.getDuration === "function") {
+        const remaining = player.getDuration() - player.getCurrentTime();
+        
+        // Logic: Nếu thời gian còn lại > 5s thì dùng thời gian thực.
+        // Nếu còn <= 5s (gần hết hẳn) thì ép về 5s để người dùng kịp nhìn.
+        if (remaining > 5) {
+            countdownTime = Math.ceil(remaining);
+        } else {
+            countdownTime = 5;
+        }
+    } else {
+        // Trường hợp Video đã hết hẳn (Suggestion) -> Luôn đếm 5s
+        countdownTime = 5;
+    }
+
+    // 5. Setup vòng tròn & Số giây
+    let currentCount = countdownTime;
+    const totalDash = 138; // Chu vi vòng tròn SVG (2 * PI * r) với r=22
+    
+    const updateTimerUI = () => {
+        secondsSpan.textContent = currentCount;
+        // Tính offset: chạy từ 0 (full vòng) đến 138 (biến mất) hoặc ngược lại
+        // Ở đây làm kiểu đồng hồ cát: vơi dần
+        const offset = totalDash - ((currentCount / countdownTime) * totalDash);
+        countdownRing.style.strokeDashoffset = -offset;
+    };
+
+    updateTimerUI(); // Render số ban đầu
+
+    // 6. Hàm chạy video tiếp theo
+    const playNext = () => {
+        hideUpNextOverlay();
+        launchPlayer(videoData);
+    };
+
+    // Gán sự kiện click
+    card.onclick = playNext;
+    cancelBtn.onclick = hideUpNextOverlay;
+
+    // 7. Chạy Interval đếm ngược
+    upNextInterval = setInterval(() => {
+        currentCount--;
+
+        // Đồng bộ lại với thời gian thực của video nếu đang chạy credit
+        // Để tránh việc đồng hồ đếm lệch so với video
+        if (isCreditTrigger && player && !player.paused) {
+             const realRemaining = Math.ceil(player.getDuration() - player.getCurrentTime());
+             // Nếu realRemaining > 5, ưu tiên dùng nó để khớp timeline
+             if (realRemaining > 5) {
+                 currentCount = realRemaining;
+             }
+        }
+
+        if (currentCount < 0) currentCount = 0;
+        updateTimerUI();
+
+        if (currentCount <= 0) {
+            clearInterval(upNextInterval);
+            playNext(); // [QUAN TRỌNG] Tự động chuyển
+        }
+    }, 1000);
+
+    // 8. Hiện Overlay
     overlay.style.display = "flex";
     requestAnimationFrame(() => { overlay.classList.add("visible"); });
 }
-            function hideUpNextOverlay() {
+
+function hideUpNextOverlay() {
                 clearTimeout(upNextTimeout);
                 clearInterval(upNextInterval);
 
