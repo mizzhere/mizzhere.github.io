@@ -99,6 +99,12 @@
             to { transform: translateX(0); opacity: 1; }
         }
         .toast-enter { animation: slideIn 0.3s forwards; }
+        
+        /* Drag Drop Zone */
+        .drag-active {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -170,6 +176,7 @@
             // State for Host/Projector Sync
             const [gameState, setGameState] = useState({
                 currentQuestionId: null, // ID of question being shown
+                isOverlayVisible: false, // Control overlay visibility independently
                 revealedRows: [], // IDs of completed rows
                 typingRowId: null, // ID of row currently being typed by player
                 inputValues: {}, // Current text in rows { rowId: "TEXT" }
@@ -328,6 +335,8 @@
         // --- SUB-VIEWS ---
 
         const Dashboard = ({ games, saveGames, onEdit, onPlay, addToast }) => {
+            const [dragActive, setDragActive] = useState(false);
+
             const createNew = () => {
                 onEdit({
                     id: generateId(),
@@ -346,9 +355,80 @@
                 }
             }
 
+            // Export Game
+            const exportGame = (e, game) => {
+                e.stopPropagation();
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(game));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `${removeVietnameseTones(game.title)}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                addToast("Thành công", "Đã xuất file câu hỏi", "success");
+            };
+
+            // Import Handling
+            const handleDrag = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.type === "dragenter" || e.type === "dragover") {
+                    setDragActive(true);
+                } else if (e.type === "dragleave") {
+                    setDragActive(false);
+                }
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragActive(false);
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            };
+
+            const handleFile = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (!json.id || !json.questions) throw new Error("Invalid Format");
+                        
+                        // Regenerate ID to avoid conflict
+                        json.id = generateId();
+                        json.title = json.title + " (Imported)";
+                        
+                        saveGames([...games, json]);
+                        addToast("Thành công", "Đã nhập bộ câu hỏi mới", "success");
+                    } catch (err) {
+                        addToast("Lỗi", "File không hợp lệ hoặc bị lỗi", "error");
+                    }
+                };
+                reader.readAsText(file);
+            };
+
             return (
                 <div className="flex-1 overflow-y-auto custom-scroll p-8">
                     <div className="max-w-5xl mx-auto pb-10">
+                        {/* Import Zone */}
+                        <div 
+                            className={`mb-8 p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-blue-400'}`}
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            onClick={() => document.getElementById('file-upload').click()}
+                        >
+                            <input type="file" id="file-upload" className="hidden" accept=".json" onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])} />
+                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 text-slate-400">
+                                <i className="fas fa-cloud-upload-alt text-xl"></i>
+                            </div>
+                            <h3 className="font-bold text-slate-700 dark:text-slate-300">Kéo thả file câu hỏi (.json) vào đây</h3>
+                            <p className="text-sm text-slate-500">hoặc bấm để chọn file từ máy tính</p>
+                        </div>
+
                         <div className="flex justify-between items-end mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Thư viện câu hỏi</h2>
@@ -363,6 +443,9 @@
                             {games.map(game => (
                                 <div key={game.id} onClick={() => onPlay(game)} className="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl transition-all relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                        <button onClick={(e) => exportGame(e, game)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-green-100 hover:text-green-600 flex items-center justify-center transition-colors" title="Xuất file">
+                                            <i className="fas fa-download text-xs"></i>
+                                        </button>
                                         <button onClick={(e) => { e.stopPropagation(); onEdit(game); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-colors">
                                             <i className="fas fa-pen text-xs"></i>
                                         </button>
@@ -385,9 +468,9 @@
                                 </div>
                             ))}
                             {games.length === 0 && (
-                                <div className="col-span-full py-20 text-center text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
+                                <div className="col-span-full py-10 text-center text-slate-400">
                                     <i className="fas fa-ghost text-4xl mb-3 opacity-50"></i>
-                                    <p>Chưa có trò chơi nào. Hãy tạo mới ngay!</p>
+                                    <p>Chưa có trò chơi nào. Hãy tạo mới hoặc nhập file!</p>
                                 </div>
                             )}
                         </div>
@@ -665,9 +748,10 @@
                 syncState({
                     ...gameState,
                     currentQuestionId: qId,
+                    isOverlayVisible: true, // AUTO OPEN OVERLAY
                     showAnswer: false,
                     typingRowId: null,
-                    inputValues: { ...gameState.inputValues, [qId]: '' } // Reset input for this q
+                    inputValues: { ...gameState.inputValues, [qId]: '' } 
                 });
             };
 
@@ -686,11 +770,9 @@
                 // Add to revealed list
                 const newRevealed = [...new Set([...gameState.revealedRows, gameState.currentQuestionId])];
                 
-                // Check if this row has special chars
+                // Collect special chars
                 const q = game.questions.find(q => q.id === gameState.currentQuestionId);
                 let newSpecialRevealed = [...gameState.specialRevealedChars];
-                
-                // Add ALL marked chars from this question
                 if (q.specialCharIndices && q.specialCharIndices.length > 0) {
                     q.specialCharIndices.forEach(idx => {
                         const char = q.answer[idx];
@@ -700,6 +782,7 @@
                     });
                 }
 
+                // 1. Reveal on state (Overlay will animate)
                 syncState({
                     ...gameState,
                     revealedRows: newRevealed,
@@ -707,13 +790,25 @@
                     typingRowId: null,
                     specialRevealedChars: newSpecialRevealed
                 });
+
+                // 2. AUTO CLOSE OVERLAY AFTER DELAY (Domino Effect triggers)
+                setTimeout(() => {
+                    syncState({
+                        ...gameState,
+                        revealedRows: newRevealed,
+                        showAnswer: true,
+                        typingRowId: null,
+                        specialRevealedChars: newSpecialRevealed,
+                        isOverlayVisible: false // CLOSE
+                    });
+                }, 2500); // 2.5s delay
             };
 
             const toggleSpecialRound = () => {
                 syncState({
                     ...gameState,
                     isSpecialRound: !gameState.isSpecialRound,
-                    showSpecialQuestion: false // Reset question visibility when toggling round
+                    showSpecialQuestion: false 
                 });
             };
 
@@ -728,6 +823,7 @@
                 if(confirm("Reset toàn bộ trạng thái chơi?")) {
                     syncState({
                         currentQuestionId: null,
+                        isOverlayVisible: false,
                         revealedRows: [],
                         typingRowId: null,
                         inputValues: {},
@@ -744,9 +840,8 @@
                 if(!win) {
                     addToast("Lỗi", "Trình duyệt đã chặn cửa sổ bật lên (Pop-up). Hãy cho phép để mở màn hình chiếu.", "error");
                 } else {
-                    // Send current game to the new window after a slight delay to ensure it loads
                     setTimeout(() => loadGameToProjector(game), 1000);
-                    setTimeout(() => syncState(gameState), 1500); // Sync current state as well
+                    setTimeout(() => syncState(gameState), 1500);
                 }
             }
             
@@ -754,7 +849,7 @@
             useEffect(() => {
                 const handleHostTyping = (e) => {
                     if (!gameState.typingRowId) return;
-                    if (gameState.showAnswer) return; // Locked
+                    if (gameState.showAnswer) return; 
 
                     const qId = gameState.typingRowId;
                     const currentVal = gameState.inputValues[qId] || '';
@@ -769,7 +864,7 @@
                         });
                     } else if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9]/)) {
                         if (currentVal.length < maxLen) {
-                            const char = e.key.toUpperCase(); // Auto uppercase
+                            const char = e.key.toUpperCase();
                             const newVal = currentVal + char;
                             syncState({
                                 ...gameState,
@@ -1023,7 +1118,7 @@
                                         inputValue={gameState.inputValues[q.id] || ''}
                                         isTyping={gameState.typingRowId === q.id}
                                         // STOP animation on Main Board IF this question is currently active (Overlay Open)
-                                        stopRevealAnimation={gameState.currentQuestionId === q.id}
+                                        stopRevealAnimation={gameState.isOverlayVisible && gameState.currentQuestionId === q.id}
                                     />
                                 ))}
 
@@ -1035,14 +1130,6 @@
                                                 <p className="text-2xl md:text-3xl font-bold leading-relaxed">{game.specialQuestion}</p>
                                             </div>
                                         )}
-                                        {/* REMOVED SpecialRow from here if you only want it at top, 
-                                            BUT usually having it larger at the bottom for the reveal is nice.
-                                            However, user said "show at top INSTEAD of title". 
-                                            It didn't explicitly say remove from bottom, but usually duplicated is redundant.
-                                            Let's keep bottom ONLY if Special Round is active?
-                                            Actually, let's keep the bottom one as the "Main Reveal" location for the Special Round moment.
-                                            The top one is the "Status Bar".
-                                        */}
                                         <SpecialRow 
                                             keyword={game.specialKeyword} 
                                             revealedChars={gameState.specialRevealedChars}
@@ -1053,17 +1140,8 @@
                         </div>
                     </div>
 
-                    {gameState.currentQuestionId && 
-                     !gameState.revealedRows.includes(gameState.currentQuestionId) && 
-                     !gameState.typingRowId && 
-                     (
-                        <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
-                    )}
-                    
-                    {/* Also show Overlay if revealed but still active (to show reveal animation) */}
-                    {gameState.currentQuestionId && 
-                     gameState.revealedRows.includes(gameState.currentQuestionId) &&
-                     (
+                    {/* Show Overlay ONLY if visible */}
+                    {gameState.currentQuestionId && gameState.isOverlayVisible && (
                         <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
                     )}
                 </div>
