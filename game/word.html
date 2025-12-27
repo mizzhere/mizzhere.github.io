@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crossword Master Pro 2025</title>
+    <title>Crossword Master Pro 2026</title>
     
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Excel Parser (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -47,7 +44,7 @@
                             '50%': { transform: 'translateY(-10px)' },
                         },
                         fall: {
-                            '0%': { transform: 'translateY(-10%) rotate(0deg)', opacity: '1' },
+                            '0%': { transform: 'translateY(-10vh) rotate(0deg)', opacity: '1' },
                             '100%': { transform: 'translateY(110vh) rotate(360deg)', opacity: '0' }
                         },
                         zoomOut: {
@@ -60,11 +57,9 @@
         }
     </script>
 
-    <!-- Icons & Animation -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -138,10 +133,11 @@
             background-image: radial-gradient(circle at 50% 50%, #900000 0%, #600000 100%);
         }
         
-        /* Falling Elements */
+        /* Falling Elements Fixed */
         .falling-petal {
-            position: absolute;
-            top: -10%;
+            position: fixed; /* Changed from absolute to fixed */
+            top: -10vh;
+            z-index: 1; /* Low z-index to stay behind text but visible */
             user-select: none;
             pointer-events: none;
             animation: fall linear infinite;
@@ -176,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v1';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v2';
 
         // --- COMPONENTS ---
 
@@ -187,7 +183,7 @@
 
             useEffect(() => {
                 if (!isVisible) {
-                    const timer = setTimeout(() => setShouldRender(false), 500); // Wait for zoom-out anim
+                    const timer = setTimeout(() => setShouldRender(false), 500); 
                     return () => clearTimeout(timer);
                 }
             }, [isVisible]);
@@ -221,7 +217,7 @@
                             {isTet ? 'CHÚC MỪNG NĂM MỚI' : 'CROSSWORD MASTER'}
                         </h1>
                         <p className={`text-sm tracking-widest uppercase ${isTet ? 'text-yellow-200/80' : 'text-slate-400'}`}>
-                            {isTet ? 'Xuân Ất Tỵ 2025' : 'Loading Resources...'}
+                            {isTet ? 'Xuân Bính Ngọ 2026' : 'Loading Resources...'}
                         </p>
 
                         <div className="mt-8 w-48 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -236,21 +232,20 @@
             );
         };
 
-        // 2. Decor Logic (Cleaned up)
+        // 2. Decor Logic (Fixed Petals)
         const TetDecorations = () => {
-            // Only falling petals, no messy images
             const petals = useMemo(() => {
-                return new Array(20).fill(0).map((_, i) => ({
+                return new Array(25).fill(0).map((_, i) => ({
                     left: Math.random() * 100 + '%',
                     delay: Math.random() * 5 + 's',
                     duration: (Math.random() * 5 + 8) + 's',
-                    size: Math.random() * 15 + 10 + 'px',
-                    opacity: Math.random() * 0.5 + 0.3
+                    size: Math.random() * 20 + 15 + 'px', // Increased size for visibility
+                    opacity: Math.random() * 0.5 + 0.4
                 }));
             }, []);
 
             return (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
                     {petals.map((p, i) => (
                         <div key={i} className="falling-petal" style={{
                             left: p.left,
@@ -260,7 +255,7 @@
                             height: p.size,
                             opacity: p.opacity
                         }}>
-                             <svg viewBox="0 0 50 50" className="fill-yellow-400 drop-shadow-sm"><path d="M25 0 C30 20 50 25 50 25 C30 30 25 50 25 50 C20 30 0 25 0 25 C20 20 25 0 25 0 Z" /></svg>
+                             <svg viewBox="0 0 50 50" className="fill-yellow-400/80 drop-shadow-sm"><path d="M25 0 C30 20 50 25 50 25 C30 30 25 50 25 50 C20 30 0 25 0 25 C20 20 25 0 25 0 Z" /></svg>
                         </div>
                     ))}
                 </div>
@@ -292,7 +287,6 @@
             const chars = q.answer.split('');
             const isTet = theme === 'tet';
             
-            // Fix: Blur logic
             const isDimmed = isAnyActive && !isActive;
 
             return (
@@ -387,6 +381,7 @@
         };
 
         const QuestionBar = ({ q, isSpecial, timer, game, isPreview, theme, fontSize }) => {
+            // Updated logic: if isSpecial is true, we display the special question text
             if (!q && !isSpecial) return null;
             
             const index = isSpecial ? '★' : (game.questions.findIndex(x => x.id === q.id) + 1);
@@ -399,7 +394,6 @@
             const progress = (timer / 30) * circumference;
             const dashoffset = circumference - progress;
 
-            // Typography Size Class
             const sizeClass = fontSize === 'small' ? 'text-base' : fontSize === 'large' ? 'text-3xl' : 'text-xl md:text-2xl';
 
             return (
@@ -434,7 +428,7 @@
                             </div>
                         </div>
                         
-                        {q && q.image && (
+                        {q && q.image && !isSpecial && (
                             <img src={q.image} className="w-24 h-24 object-contain rounded-lg border border-slate-200 dark:border-slate-700 bg-white" onError={(e) => e.target.style.display='none'} />
                         )}
                     </div>
@@ -472,7 +466,6 @@
             const [view, setView] = useState('dashboard');
             const [darkMode, setDarkMode] = useState(false);
             
-            // Init settings from localStorage immediately to support Loading Screen
             const [settings, setSettings] = useState(() => {
                 const saved = localStorage.getItem('cw_settings');
                 return saved ? JSON.parse(saved) : { theme: 'default', sound: true, fontSize: 'normal' };
@@ -485,19 +478,18 @@
             const [showSettingsModal, setShowSettingsModal] = useState(false);
 
             const [gameState, setGameState] = useState({
-                currentQuestionId: null,
+                currentQuestionId: null, // Can be ID or 'SPECIAL'
                 revealedRows: [],
                 typingRowId: null,
                 inputValues: {},
                 showAnswer: false,
                 specialRevealedChars: [],
                 isSpecialRound: false,
-                showSpecialQuestion: false,
                 showSpecialAnswer: false,
                 timer: 30,
                 isTimerRunning: false,
-                appTheme: settings.theme, // Sync initial
-                appFontSize: settings.fontSize // Sync initial
+                appTheme: settings.theme,
+                appFontSize: settings.fontSize
             });
 
             const broadcastRef = useRef(null);
@@ -525,7 +517,7 @@
 
                 if (window.location.hash === '#projector') {
                     setView('projector');
-                    setLoading(false); // Projector loads instantly or shows waiting screen
+                    setLoading(false);
                 }
 
                 return () => broadcastRef.current?.close();
@@ -576,7 +568,6 @@
                         </div>
                         
                         <div className="space-y-6">
-                            {/* Tet Theme Toggle */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
@@ -593,7 +584,6 @@
                                 </label>
                             </div>
 
-                            {/* Typography Settings */}
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -618,7 +608,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2025.1.3 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.0 Pro
                             </div>
                         </div>
                     </div>
@@ -1133,8 +1123,7 @@
                         currentQuestionId: null,
                         showAnswer: false,
                         typingRowId: null,
-                        isTimerRunning: false,
-                        showSpecialQuestion: false 
+                        isTimerRunning: false
                     });
                 } else {
                     syncState({
@@ -1144,14 +1133,13 @@
                         typingRowId: null,
                         inputValues: { ...gameState.inputValues, [qId]: '' },
                         timer: 30,
-                        isTimerRunning: true, 
-                        showSpecialQuestion: false
+                        isTimerRunning: true
                     });
                 }
             };
 
             const toggleTypingMode = () => {
-                if (!gameState.currentQuestionId) return;
+                if (!gameState.currentQuestionId || gameState.currentQuestionId === 'SPECIAL') return;
                 const isTyping = gameState.typingRowId === gameState.currentQuestionId;
                 syncState({
                     ...gameState,
@@ -1166,7 +1154,7 @@
                 const q = game.questions.find(q => q.id === gameState.currentQuestionId);
                 let newSpecialRevealed = [...gameState.specialRevealedChars];
                 
-                if (q.specialCharIndices && q.specialCharIndices.length > 0) {
+                if (q && q.specialCharIndices && q.specialCharIndices.length > 0) {
                     q.specialCharIndices.forEach(idx => {
                         const char = q.answer[idx];
                         if(!newSpecialRevealed.some(s => s.sourceId === q.id && s.sourceIndex === idx)) {
@@ -1202,23 +1190,21 @@
                 syncState({
                     ...gameState,
                     isSpecialRound: !gameState.isSpecialRound,
-                    showSpecialQuestion: false,
                     currentQuestionId: null 
                 });
             };
 
-            const toggleSpecialQuestion = () => {
-                if (gameState.showSpecialQuestion) {
+            // NEW: Show Special Question exactly like a normal question
+            const showSpecialQuestion = () => {
+                if (gameState.currentQuestionId === 'SPECIAL') {
                     syncState({
                         ...gameState,
-                        showSpecialQuestion: false,
                         currentQuestionId: null,
                         isTimerRunning: false
                     });
                 } else {
                     syncState({
                         ...gameState,
-                        showSpecialQuestion: true,
                         currentQuestionId: 'SPECIAL', 
                         timer: 30,
                         isTimerRunning: true
@@ -1246,7 +1232,6 @@
                         showAnswer: false,
                         specialRevealedChars: [],
                         isSpecialRound: false,
-                        showSpecialQuestion: false,
                         showSpecialAnswer: false,
                         timer: 30,
                         isTimerRunning: false
@@ -1273,6 +1258,8 @@
                     const qId = gameState.typingRowId;
                     const currentVal = gameState.inputValues[qId] || '';
                     const q = game.questions.find(x => x.id === qId);
+                    if(!q) return;
+                    
                     const maxLen = q.answer.length;
 
                     if (e.key === 'Backspace') {
@@ -1344,8 +1331,8 @@
                                 </button>
                                 {gameState.isSpecialRound && (
                                     <div className="grid grid-cols-2 gap-2">
-                                        <button onClick={toggleSpecialQuestion} className={`py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? (isTet ? 'bg-yellow-100 text-[#800000]' : 'bg-purple-100 text-purple-700') : 'bg-white text-slate-600 border-slate-300'}`}>
-                                            {gameState.showSpecialQuestion ? 'ĐANG HIỆN CH' : 'HIỆN CÂU HỎI'}
+                                        <button onClick={showSpecialQuestion} className={`py-1.5 rounded text-xs font-bold border ${gameState.currentQuestionId === 'SPECIAL' ? (isTet ? 'bg-yellow-100 text-[#800000]' : 'bg-purple-100 text-purple-700') : 'bg-white text-slate-600 border-slate-300'}`}>
+                                            {gameState.currentQuestionId === 'SPECIAL' ? 'ĐANG HIỆN' : 'HIỆN CÂU HỎI'}
                                         </button>
                                         <button onClick={revealSpecialAnswer} className="py-1.5 rounded text-xs font-bold bg-yellow-500 hover:bg-yellow-600 text-white border border-yellow-600 shadow-sm animate-pulse">
                                             MỞ TỪ KHÓA
@@ -1431,7 +1418,7 @@
 
             return (
                 <div className={`h-full w-full flex flex-col relative overflow-hidden ${isTet ? 'tet-bg' : 'bg-slate-100 dark:bg-slate-950'} ${isPreview ? 'text-[0.8em]' : ''}`}>
-                    {/* Tet Decorations - Clean Petals Only */}
+                    {/* Tet Decorations - Fixed Petals */}
                     {isTet && <TetDecorations />}
 
                     <div className={`min-h-[120px] flex flex-col items-center justify-center shadow-sm z-10 shrink-0 relative py-4 ${isTet ? 'bg-[#600000]/90 border-b border-yellow-600/30' : 'bg-white dark:bg-black'}`}>
@@ -1477,7 +1464,7 @@
                         </div>
                     </div>
 
-                    {/* Question Bar */}
+                    {/* Question Bar - Handles both Normal and Special questions now */}
                     {(currentActiveQ || isSpecialActive) && (
                         <QuestionBar 
                             q={currentActiveQ} 
