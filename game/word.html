@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crossword Master Pro 2025</title>
     
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Excel Parser (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,19 +22,20 @@
                 extend: {
                     colors: {
                         primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' },
-                        tet: { red: '#D90429', gold: '#FFD700', darkRed: '#8D0801' },
+                        tet: { red: '#990000', gold: '#FFD700', bg: '#800000' },
                         dark: { 800: '#1e293b', 900: '#0f172a' }
                     },
                     fontFamily: {
                         sans: ['"Be Vietnam Pro"', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'float': 'float 3s ease-in-out infinite',
                         'spin-slow': 'spin 8s linear infinite',
-                        'sway': 'sway 3s ease-in-out infinite alternate',
                         'fall': 'fall 10s linear infinite',
+                        'zoom-out': 'zoomOut 0.5s ease-in-out forwards',
                     },
                     keyframes: {
                         slideUp: {
@@ -42,13 +46,13 @@
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-10px)' },
                         },
-                        sway: {
-                            '0%': { transform: 'rotate(-5deg)' },
-                            '100%': { transform: 'rotate(5deg)' }
-                        },
                         fall: {
                             '0%': { transform: 'translateY(-10%) rotate(0deg)', opacity: '1' },
                             '100%': { transform: 'translateY(110vh) rotate(360deg)', opacity: '0' }
+                        },
+                        zoomOut: {
+                            '0%': { transform: 'scale(1)', opacity: '1' },
+                            '100%': { transform: 'scale(1.2)', opacity: '0' }
                         }
                     }
                 }
@@ -56,12 +60,14 @@
         }
     </script>
 
+    <!-- Icons & Animation -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
     <style>
         /* Global Reset & Scroll Control */
@@ -128,15 +134,11 @@
         
         /* Tet Theme Specifics */
         .tet-bg {
-            background-color: #8D0801;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d90429' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .tet-pattern {
-             background-image: radial-gradient(#FFD700 1px, transparent 1px);
-             background-size: 20px 20px;
+            background-color: #800000; /* Deep Red Material */
+            background-image: radial-gradient(circle at 50% 50%, #900000 0%, #600000 100%);
         }
         
-        /* Tet Falling Elements */
+        /* Falling Elements */
         .falling-petal {
             position: absolute;
             top: -10%;
@@ -150,7 +152,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo, useContext, createContext } = React;
+        const { useState, useEffect, useRef, useMemo, useContext } = React;
 
         // --- UTILS ---
         const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -176,82 +178,94 @@
 
         const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v1';
 
-        // --- DECORATIONS ---
+        // --- COMPONENTS ---
+
+        // 1. Loading Screen
+        const LoadingScreen = ({ isVisible, onComplete, theme }) => {
+            const [shouldRender, setShouldRender] = useState(true);
+            const isTet = theme === 'tet';
+
+            useEffect(() => {
+                if (!isVisible) {
+                    const timer = setTimeout(() => setShouldRender(false), 500); // Wait for zoom-out anim
+                    return () => clearTimeout(timer);
+                }
+            }, [isVisible]);
+
+            useEffect(() => {
+                if(isVisible) {
+                    const timer = setTimeout(() => {
+                        onComplete();
+                    }, 2500);
+                    return () => clearTimeout(timer);
+                }
+            }, [isVisible, onComplete]);
+
+            if (!shouldRender) return null;
+
+            return (
+                <div className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-500 ${isVisible ? 'opacity-100' : 'animate-zoom-out pointer-events-none'} ${isTet ? 'bg-[#800000]' : 'bg-white dark:bg-slate-900'}`}>
+                    
+                    {isTet && <TetDecorations />}
+
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className={`w-24 h-24 mb-6 rounded-2xl flex items-center justify-center shadow-2xl ${isTet ? 'bg-yellow-500 text-[#800000]' : 'bg-blue-600 text-white'}`}>
+                            {isTet ? (
+                                <i className="fas fa-dragon text-5xl animate-pulse"></i>
+                            ) : (
+                                <i className="fas fa-cube text-5xl animate-float"></i>
+                            )}
+                        </div>
+                        
+                        <h1 className={`text-4xl font-bold tracking-tight mb-2 ${isTet ? 'text-yellow-400 font-serif' : 'text-slate-800 dark:text-white'}`}>
+                            {isTet ? 'CHÚC MỪNG NĂM MỚI' : 'CROSSWORD MASTER'}
+                        </h1>
+                        <p className={`text-sm tracking-widest uppercase ${isTet ? 'text-yellow-200/80' : 'text-slate-400'}`}>
+                            {isTet ? 'Xuân Ất Tỵ 2025' : 'Loading Resources...'}
+                        </p>
+
+                        <div className="mt-8 w-48 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className={`h-full w-full origin-left animate-[grow_2s_ease-in-out_forwards] ${isTet ? 'bg-yellow-500' : 'bg-blue-500'}`} style={{animation: 'grow 2.5s ease-in-out forwards', width: '0%'}}></div>
+                        </div>
+                    </div>
+                    
+                    <style>{`
+                        @keyframes grow { to { width: 100%; } }
+                    `}</style>
+                </div>
+            );
+        };
+
+        // 2. Decor Logic (Cleaned up)
         const TetDecorations = () => {
-            // Generate random petals
+            // Only falling petals, no messy images
             const petals = useMemo(() => {
-                return new Array(15).fill(0).map((_, i) => ({
+                return new Array(20).fill(0).map((_, i) => ({
                     left: Math.random() * 100 + '%',
                     delay: Math.random() * 5 + 's',
-                    duration: (Math.random() * 5 + 5) + 's',
-                    size: Math.random() * 20 + 10 + 'px',
-                    type: Math.random() > 0.5 ? 'mai' : 'dao'
+                    duration: (Math.random() * 5 + 8) + 's',
+                    size: Math.random() * 15 + 10 + 'px',
+                    opacity: Math.random() * 0.5 + 0.3
                 }));
             }, []);
 
             return (
                 <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                    {/* Lanterns Left */}
-                    <div className="absolute top-0 left-10 animate-sway origin-top z-10">
-                        <div className="w-1 h-20 bg-yellow-600 mx-auto"></div>
-                        <div className="w-24 h-32 bg-red-600 rounded-lg shadow-lg flex items-center justify-center border-4 border-yellow-500 relative">
-                             <span className="text-yellow-300 font-bold text-4xl font-serif">TẾT</span>
-                             <div className="absolute -bottom-4 w-4 h-4 bg-yellow-500 rounded-full"></div>
-                             <div className="absolute -bottom-16 w-1 h-12 bg-red-500 mx-auto left-0 right-0"></div>
-                        </div>
-                    </div>
-
-                    {/* Lanterns Right */}
-                    <div className="absolute top-10 right-20 animate-sway origin-top z-10" style={{animationDelay: '-1.5s'}}>
-                         <div className="w-1 h-12 bg-yellow-600 mx-auto"></div>
-                         <div className="w-20 h-28 bg-red-700 rounded-full shadow-lg flex items-center justify-center border-2 border-yellow-400">
-                             <span className="text-yellow-300 font-bold text-3xl font-serif">XUÂN</span>
-                         </div>
-                    </div>
-
-                    {/* Couplets (Cau doi) */}
-                    <div className="absolute top-1/4 left-4 w-16 bg-red-700 border-2 border-yellow-500 shadow-xl hidden lg:flex flex-col items-center py-4 gap-4 z-0">
-                         {['CHÚC','MỪNG','NĂM','MỚI'].map((char, i) => (
-                             <div key={i} className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center text-yellow-300 font-bold text-xl border border-yellow-600 shadow-inner">
-                                {char}
-                             </div>
-                         ))}
-                    </div>
-
-                    <div className="absolute top-1/4 right-4 w-16 bg-red-700 border-2 border-yellow-500 shadow-xl hidden lg:flex flex-col items-center py-4 gap-4 z-0">
-                         {['VẠN','SỰ','NHƯ','Ý'].map((char, i) => (
-                             <div key={i} className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center text-yellow-300 font-bold text-xl border border-yellow-600 shadow-inner">
-                                {char}
-                             </div>
-                         ))}
-                    </div>
-
-                    {/* Falling Petals */}
                     {petals.map((p, i) => (
                         <div key={i} className="falling-petal" style={{
                             left: p.left,
                             animationDelay: p.delay,
                             animationDuration: p.duration,
                             width: p.size,
-                            height: p.size
+                            height: p.size,
+                            opacity: p.opacity
                         }}>
-                            {p.type === 'mai' ? (
-                                <svg viewBox="0 0 50 50" className="fill-yellow-400 drop-shadow-sm"><path d="M25 0 C30 20 50 25 50 25 C30 30 25 50 25 50 C20 30 0 25 0 25 C20 20 25 0 25 0 Z" /></svg>
-                            ) : (
-                                <svg viewBox="0 0 50 50" className="fill-pink-300 drop-shadow-sm"><path d="M25 0 C35 15 50 20 50 25 C35 30 25 50 25 50 C15 35 0 30 0 25 C15 20 25 0 25 0 Z" /></svg>
-                            )}
+                             <svg viewBox="0 0 50 50" className="fill-yellow-400 drop-shadow-sm"><path d="M25 0 C30 20 50 25 50 25 C30 30 25 50 25 50 C20 30 0 25 0 25 C20 20 25 0 25 0 Z" /></svg>
                         </div>
                     ))}
-                    
-                    {/* Bottom Branch */}
-                    <div className="absolute bottom-0 left-0 w-64 h-64 opacity-60 pointer-events-none z-10">
-                         <img src="https://media.istockphoto.com/vectors/cherry-blossom-branch-with-falling-petals-vector-id1130636356?k=20&m=1130636356&s=612x612&w=0&h=hW4e4WvWz-M3w-7w-7w-7w-7w-7w-7w-7w-7w-7w=" className="w-full h-full object-contain rotate-12" style={{filter: 'hue-rotate(320deg)'}} />
-                    </div>
                 </div>
             );
         };
-
-        // --- SHARED COMPONENTS ---
 
         const CrosswordRow = ({ q, index, isActive, isAnyActive, isRevealed, inputValue, isTyping, stopRevealAnimation, theme }) => {
             const rowRef = useRef(null);
@@ -278,16 +292,15 @@
             const chars = q.answer.split('');
             const isTet = theme === 'tet';
             
-            // Logic for Blur: Only blur if ANY question is active AND this one is NOT active.
-            // If NO question is active (isAnyActive = false), show fully opaque.
+            // Fix: Blur logic
             const isDimmed = isAnyActive && !isActive;
 
             return (
-                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110 z-10 my-2 drop-shadow-2xl opacity-100' : (isDimmed ? 'opacity-50 blur-[1px]' : 'opacity-100')}`}>
+                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110 z-10 my-2 drop-shadow-2xl opacity-100' : (isDimmed ? 'opacity-40 blur-[1px] scale-95' : 'opacity-100 scale-100')}`}>
                     <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 shrink-0 ${
                         isActive 
                             ? (isTet ? 'bg-tet-red text-yellow-300 border-yellow-500 scale-110' : 'bg-blue-600 text-white border-blue-400 scale-110')
-                            : (isTet ? 'bg-red-900 text-white border-red-800' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700')
+                            : (isTet ? 'bg-[#500000] text-gray-300 border-[#600000]' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700')
                     }`}>
                         {index + 1}
                     </div>
@@ -302,8 +315,8 @@
                                     <div className={`letter-inner relative w-full h-full shadow-md rounded-lg duration-500 transform transition-transform`}>
                                         <div className={`letter-front rounded-lg border-2 ${
                                             isActive 
-                                                ? (isTet ? 'border-yellow-500 bg-red-50 shadow-inner' : 'border-blue-400 bg-blue-50 dark:bg-slate-800 shadow-inner')
-                                                : (isTet ? 'border-red-300 bg-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900')
+                                                ? (isTet ? 'border-yellow-500 bg-[#300000] shadow-inner' : 'border-blue-400 bg-blue-50 dark:bg-slate-800 shadow-inner')
+                                                : (isTet ? 'border-[#600000] bg-[#400000]' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900')
                                         }`}>
                                             {isTyping && (
                                                 <span className="text-2xl font-bold text-slate-800 dark:text-slate-200 animate-[popIn_0.2s]">{userChar}</span>
@@ -324,7 +337,7 @@
                         <div className={`ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-lg md:text-xl border-2 shrink-0 ${
                             isActive 
                             ? (isTet ? 'bg-red-100 border-tet-red text-tet-red scale-110' : 'bg-slate-200 border-blue-400 text-blue-500 scale-110')
-                            : (isTet ? 'bg-red-50 border-red-200 text-red-800' : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400')
+                            : (isTet ? 'bg-[#500000] border-[#600000] text-gray-400' : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400')
                         }`}>
                             {chars.length}
                         </div>
@@ -351,8 +364,8 @@
             return (
                 <div className={`flex flex-col items-center transition-all duration-500 ${isActive ? 'scale-110 z-20 drop-shadow-2xl' : ''}`}>
                     <div className={`flex gap-2 md:gap-3 p-4 rounded-2xl border-2 border-dashed relative flex-wrap justify-center 
-                        ${isHeader ? 'scale-75 md:scale-100 bg-transparent border-none p-0' : (isTet ? 'bg-red-900/50 border-yellow-500/50' : 'bg-slate-200 dark:bg-slate-800/50 border-slate-400')} 
-                        ${isActive ? (isTet ? 'bg-red-800 border-yellow-400' : 'bg-purple-100 border-purple-400') : ''}`}>
+                        ${isHeader ? 'scale-75 md:scale-100 bg-transparent border-none p-0' : (isTet ? 'bg-black/20 border-yellow-500/30' : 'bg-slate-200 dark:bg-slate-800/50 border-slate-400')} 
+                        ${isActive ? (isTet ? 'bg-red-900 border-yellow-400' : 'bg-purple-100 border-purple-400') : ''}`}>
                         
                         {keyword.split('').map((kChar, i) => {
                             const charToShow = displayLetters[i]; 
@@ -360,7 +373,7 @@
                             return (
                                 <div key={i} className={`rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 hover:scale-110 ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'} ${isTet ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-200' : 'bg-gradient-to-br from-yellow-400 to-orange-500'}`}>
                                     {charToShow ? (
-                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black ${isTet ? 'text-red-700' : 'text-white'} drop-shadow-md animate-[bounceIn_0.6s]`}>{charToShow}</span>
+                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black ${isTet ? 'text-[#800000]' : 'text-white'} drop-shadow-md animate-[bounceIn_0.6s]`}>{charToShow}</span>
                                     ) : (
                                         <div className="w-2 h-2 md:w-4 md:h-4 bg-black/10 rounded-full"></div>
                                     )}
@@ -368,7 +381,7 @@
                             )
                         })}
                     </div>
-                    {!isHeader && <div className={`mt-4 font-mono text-sm tracking-widest uppercase ${isTet ? 'text-yellow-200' : 'text-slate-500'}`}>Các ký tự gợi ý</div>}
+                    {!isHeader && <div className={`mt-4 font-mono text-sm tracking-widest uppercase ${isTet ? 'text-yellow-200/60' : 'text-slate-500'}`}>Các ký tự gợi ý</div>}
                 </div>
             );
         };
@@ -391,14 +404,12 @@
 
             return (
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 animate-slide-up z-50 flex justify-center">
-                    <div className={`${isTet ? 'bg-red-900 border-yellow-600' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'} rounded-2xl shadow-2xl border p-4 md:p-6 flex items-center gap-6 max-w-7xl w-full relative overflow-hidden ${isPreview ? 'scale-75 origin-bottom' : ''}`}>
+                    <div className={`${isTet ? 'bg-[#600000] border-yellow-600/50' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'} rounded-2xl shadow-2xl border p-4 md:p-6 flex items-center gap-6 max-w-7xl w-full relative overflow-hidden ${isPreview ? 'scale-75 origin-bottom' : ''}`}>
                         
-                        {isTet && <div className="absolute top-0 right-0 opacity-20"><i className="fas fa-certificate text-6xl text-yellow-500 -mt-2 -mr-2"></i></div>}
-
                         {timer > 0 && (
                             <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
                                 <svg className="absolute w-full h-full -rotate-90 transform">
-                                    <circle cx="32" cy="32" r={radius} className={`fill-none ${isTet ? 'stroke-red-800' : 'stroke-slate-200 dark:stroke-slate-700'}`} strokeWidth="4" />
+                                    <circle cx="32" cy="32" r={radius} className={`fill-none ${isTet ? 'stroke-red-900' : 'stroke-slate-200 dark:stroke-slate-700'}`} strokeWidth="4" />
                                     <circle cx="32" cy="32" r={radius} className={`fill-none ${isTet ? 'stroke-yellow-400' : 'stroke-blue-500'} transition-all duration-1000 ease-linear`} strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={dashoffset} />
                                 </svg>
                                 <span className={`text-xl font-bold font-mono ${isTet ? 'text-yellow-400' : 'text-slate-700 dark:text-white'}`}>{timer}</span>
@@ -406,7 +417,7 @@
                         )}
                         
                         {!timer && (
-                            <div className={`flex flex-col items-center justify-center text-white w-16 h-16 rounded-xl shrink-0 font-bold text-xl shadow-lg ${isSpecial ? 'bg-purple-600' : (isTet ? 'bg-yellow-500 text-red-800' : 'bg-blue-600')}`}>
+                            <div className={`flex flex-col items-center justify-center text-white w-16 h-16 rounded-xl shrink-0 font-bold text-xl shadow-lg ${isSpecial ? 'bg-purple-600' : (isTet ? 'bg-yellow-500 text-[#800000]' : 'bg-blue-600')}`}>
                                 <span>{index}</span>
                             </div>
                         )}
@@ -417,7 +428,7 @@
                                 {questionText}
                             </h3>
                             <div className="mt-1 flex items-center gap-4 text-sm text-slate-500">
-                                <span className={`${isTet ? 'bg-red-800 border-red-700 text-yellow-200' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'} px-3 py-1 rounded-full border`}>
+                                <span className={`${isTet ? 'bg-[#400000] border-[#500000] text-yellow-200' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'} px-3 py-1 rounded-full border`}>
                                     <i className="fas fa-font mr-2"></i> {charCount} Ký tự
                                 </span>
                             </div>
@@ -456,11 +467,18 @@
             </div>
         );
 
-        // 2. Main App Logic
+        // 3. Main App Logic
         const App = () => {
             const [view, setView] = useState('dashboard');
             const [darkMode, setDarkMode] = useState(false);
-            const [settings, setSettings] = useState({ theme: 'default', sound: true, fontSize: 'normal' });
+            
+            // Init settings from localStorage immediately to support Loading Screen
+            const [settings, setSettings] = useState(() => {
+                const saved = localStorage.getItem('cw_settings');
+                return saved ? JSON.parse(saved) : { theme: 'default', sound: true, fontSize: 'normal' };
+            });
+
+            const [loading, setLoading] = useState(true);
             const [games, setGames] = useState([]);
             const [currentGame, setCurrentGame] = useState(null);
             const [toasts, setToasts] = useState([]);
@@ -478,8 +496,8 @@
                 showSpecialAnswer: false,
                 timer: 30,
                 isTimerRunning: false,
-                appTheme: 'default',
-                appFontSize: 'normal'
+                appTheme: settings.theme, // Sync initial
+                appFontSize: settings.fontSize // Sync initial
             });
 
             const broadcastRef = useRef(null);
@@ -487,13 +505,6 @@
             useEffect(() => {
                 const savedGames = localStorage.getItem('cw_games');
                 if (savedGames) setGames(JSON.parse(savedGames));
-
-                const savedSettings = localStorage.getItem('cw_settings');
-                if (savedSettings) {
-                    const parsed = JSON.parse(savedSettings);
-                    setSettings(parsed);
-                    setGameState(prev => ({ ...prev, appTheme: parsed.theme, appFontSize: parsed.fontSize || 'normal' }));
-                }
 
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     setDarkMode(true);
@@ -514,6 +525,7 @@
 
                 if (window.location.hash === '#projector') {
                     setView('projector');
+                    setLoading(false); // Projector loads instantly or shows waiting screen
                 }
 
                 return () => broadcastRef.current?.close();
@@ -572,7 +584,7 @@
                                     </div>
                                     <div>
                                         <p className="font-bold">Giao diện Tết</p>
-                                        <p className="text-xs text-slate-500">Hoa mai, bao lì xì, câu đối</p>
+                                        <p className="text-xs text-slate-500">Màu sắc lễ hội & hoa mai</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -606,7 +618,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2025.1.2 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2025.1.3 Pro
                             </div>
                         </div>
                     </div>
@@ -614,23 +626,25 @@
             );
 
             return (
-                <div className={`h-full w-full flex flex-col transition-colors duration-300 overflow-hidden ${settings.theme === 'tet' ? 'tet-bg' : 'bg-slate-50 dark:bg-slate-950'}`}>
+                <div className={`h-full w-full flex flex-col transition-colors duration-500 overflow-hidden ${settings.theme === 'tet' ? 'tet-bg' : 'bg-slate-50 dark:bg-slate-950'}`}>
+                    <LoadingScreen isVisible={loading} onComplete={() => setLoading(false)} theme={settings.theme} />
+                    
                     <ToastContainer toasts={toasts} removeToast={removeToast} />
                     {showSettingsModal && <SettingsModal />}
                     
-                    {view !== 'projector' && (
-                        <header className={`h-16 border-b flex items-center justify-between px-6 shrink-0 z-10 ${settings.theme === 'tet' ? 'bg-red-900 border-red-800 text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
+                    {view !== 'projector' && !loading && (
+                        <header className={`h-16 border-b flex items-center justify-between px-6 shrink-0 z-10 ${settings.theme === 'tet' ? 'bg-[#600000] border-[#500000] text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('dashboard')}>
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold shadow-lg ${settings.theme === 'tet' ? 'bg-yellow-500 text-red-900' : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'}`}>
+                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold shadow-lg ${settings.theme === 'tet' ? 'bg-yellow-500 text-[#800000]' : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'}`}>
                                     <i className="fas fa-cube"></i>
                                 </div>
                                 <h1 className="font-bold text-lg tracking-tight">Crossword<span className={settings.theme === 'tet' ? 'text-yellow-400' : 'text-blue-500'}>Master</span></h1>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button onClick={() => setShowSettingsModal(true)} className={`p-2 rounded-full transition-colors ${settings.theme === 'tet' ? 'hover:bg-red-800 text-yellow-200' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
+                                <button onClick={() => setShowSettingsModal(true)} className={`p-2 rounded-full transition-colors ${settings.theme === 'tet' ? 'hover:bg-[#500000] text-yellow-200' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
                                     <i className="fas fa-cog text-xl"></i>
                                 </button>
-                                <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-full transition-colors ${settings.theme === 'tet' ? 'hover:bg-red-800 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                                <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-full transition-colors ${settings.theme === 'tet' ? 'hover:bg-[#500000] text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                     <i className={`fas ${darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-slate-500'}`}></i>
                                 </button>
                             </div>
@@ -638,7 +652,7 @@
                     )}
 
                     <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
-                        {view === 'dashboard' && (
+                        {view === 'dashboard' && !loading && (
                             <Dashboard 
                                 games={games} 
                                 saveGames={saveGames} 
@@ -648,7 +662,7 @@
                                 theme={settings.theme}
                             />
                         )}
-                        {view === 'editor' && (
+                        {view === 'editor' && !loading && (
                             <Editor 
                                 game={currentGame} 
                                 onSave={(g) => { 
@@ -662,7 +676,7 @@
                                 onCancel={() => setView('dashboard')}
                             />
                         )}
-                        {view === 'host' && (
+                        {view === 'host' && !loading && (
                             <HostController 
                                 game={currentGame} 
                                 gameState={gameState} 
@@ -808,7 +822,7 @@
                                     <input type="file" className="hidden" accept=".json" onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])} />
                                     <i className="fas fa-file-upload"></i> Nhập JSON
                                 </label>
-                                <button onClick={createNew} className={`${isTet ? 'bg-yellow-500 hover:bg-yellow-400 text-red-900' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-5 py-2.5 rounded-lg shadow-lg font-bold transition-all flex items-center gap-2 transform hover:-translate-y-0.5`}>
+                                <button onClick={createNew} className={`${isTet ? 'bg-yellow-500 hover:bg-yellow-400 text-[#800000]' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-5 py-2.5 rounded-lg shadow-lg font-bold transition-all flex items-center gap-2 transform hover:-translate-y-0.5`}>
                                     <i className="fas fa-plus"></i> Tạo mới
                                 </button>
                             </div>
@@ -816,7 +830,7 @@
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {games.map(game => (
-                                <div key={game.id} onClick={() => onPlay(game)} className={`group rounded-xl border p-6 cursor-pointer hover:shadow-xl transition-all relative overflow-hidden ${isTet ? 'bg-red-800 border-red-700 hover:border-yellow-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500'}`}>
+                                <div key={game.id} onClick={() => onPlay(game)} className={`group rounded-xl border p-6 cursor-pointer hover:shadow-xl transition-all relative overflow-hidden ${isTet ? 'bg-[#600000] border-[#500000] hover:border-yellow-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500'}`}>
                                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                         <button onClick={(e) => exportGame(e, game)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-green-100 hover:text-green-600 flex items-center justify-center transition-colors" title="Xuất file">
                                             <i className="fas fa-download text-xs"></i>
@@ -837,7 +851,7 @@
                                             <span className={`text-xs ${isTet ? 'text-red-200' : 'text-slate-400'}`}>{game.questions.length} câu hỏi</span>
                                         </div>
                                     </div>
-                                    <div className={`flex gap-2 text-xs font-mono p-2 rounded ${isTet ? 'bg-red-900/50 text-yellow-200' : 'bg-slate-100 dark:bg-slate-900 text-slate-500'}`}>
+                                    <div className={`flex gap-2 text-xs font-mono p-2 rounded ${isTet ? 'bg-black/20 text-yellow-200' : 'bg-slate-100 dark:bg-slate-900 text-slate-500'}`}>
                                         <span className="font-bold">KEY:</span> {game.specialKeyword || "(Chưa có)"}
                                     </div>
                                 </div>
@@ -1286,7 +1300,7 @@
             return (
                 <div className="flex h-full overflow-hidden">
                     <div className="w-1/4 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col min-h-0 z-20 shadow-xl">
-                        <div className={`p-4 border-b flex justify-between items-center shrink-0 ${isTet ? 'bg-red-900 border-red-800 text-white' : 'border-slate-200 dark:border-slate-800'}`}>
+                        <div className={`p-4 border-b flex justify-between items-center shrink-0 ${isTet ? 'bg-[#600000] border-[#500000] text-white' : 'border-slate-200 dark:border-slate-800'}`}>
                             <h3 className="font-bold">Bảng điều khiển</h3>
                             <button onClick={onExit} className="text-xs text-red-500 hover:underline bg-white px-2 py-1 rounded">Thoát</button>
                         </div>
@@ -1324,13 +1338,13 @@
                                 <span className={`text-xl font-bold font-mono ${gameState.timer <= 5 ? 'text-red-500 animate-pulse' : ''}`}>{gameState.timer}s</span>
                             </div>
 
-                            <div className={`p-2 rounded border ${isTet ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-100'}`}>
-                                <button onClick={toggleSpecialRound} className={`w-full py-2 mb-2 rounded font-bold text-sm text-white ${gameState.isSpecialRound ? (isTet ? 'bg-red-600' : 'bg-purple-600') : 'bg-slate-500'}`}>
+                            <div className={`p-2 rounded border ${isTet ? 'bg-[#500000] border-[#600000]' : 'bg-purple-50 border-purple-100'}`}>
+                                <button onClick={toggleSpecialRound} className={`w-full py-2 mb-2 rounded font-bold text-sm text-white ${gameState.isSpecialRound ? (isTet ? 'bg-[#800000]' : 'bg-purple-600') : 'bg-slate-500'}`}>
                                     {gameState.isSpecialRound ? 'ẨN CÂU ĐẶC BIỆT' : 'BẬT VÒNG ĐẶC BIỆT'}
                                 </button>
                                 {gameState.isSpecialRound && (
                                     <div className="grid grid-cols-2 gap-2">
-                                        <button onClick={toggleSpecialQuestion} className={`py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? (isTet ? 'bg-yellow-100 text-red-800' : 'bg-purple-100 text-purple-700') : 'bg-white text-slate-600 border-slate-300'}`}>
+                                        <button onClick={toggleSpecialQuestion} className={`py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? (isTet ? 'bg-yellow-100 text-[#800000]' : 'bg-purple-100 text-purple-700') : 'bg-white text-slate-600 border-slate-300'}`}>
                                             {gameState.showSpecialQuestion ? 'ĐANG HIỆN CH' : 'HIỆN CÂU HỎI'}
                                         </button>
                                         <button onClick={revealSpecialAnswer} className="py-1.5 rounded text-xs font-bold bg-yellow-500 hover:bg-yellow-600 text-white border border-yellow-600 shadow-sm animate-pulse">
@@ -1416,11 +1430,11 @@
             const isAnyActive = !!gameState.currentQuestionId;
 
             return (
-                <div className={`h-full w-full flex flex-col relative overflow-hidden ${isTet ? 'tet-bg tet-pattern' : 'bg-slate-100 dark:bg-slate-950'} ${isPreview ? 'text-[0.8em]' : ''}`}>
-                    {/* Enhanced Tet Decorations */}
+                <div className={`h-full w-full flex flex-col relative overflow-hidden ${isTet ? 'tet-bg' : 'bg-slate-100 dark:bg-slate-950'} ${isPreview ? 'text-[0.8em]' : ''}`}>
+                    {/* Tet Decorations - Clean Petals Only */}
                     {isTet && <TetDecorations />}
 
-                    <div className={`min-h-[120px] flex flex-col items-center justify-center shadow-sm z-10 shrink-0 relative py-4 ${isTet ? 'bg-red-900/90 border-b border-yellow-600' : 'bg-white dark:bg-black'}`}>
+                    <div className={`min-h-[120px] flex flex-col items-center justify-center shadow-sm z-10 shrink-0 relative py-4 ${isTet ? 'bg-[#600000]/90 border-b border-yellow-600/30' : 'bg-white dark:bg-black'}`}>
                         <SpecialRow 
                             keyword={game.specialKeyword} 
                             revealedChars={gameState.specialRevealedChars}
@@ -1463,7 +1477,7 @@
                         </div>
                     </div>
 
-                    {/* Question Bar now has fontSize Prop */}
+                    {/* Question Bar */}
                     {(currentActiveQ || isSpecialActive) && (
                         <QuestionBar 
                             q={currentActiveQ} 
