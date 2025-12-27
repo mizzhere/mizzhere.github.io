@@ -183,7 +183,8 @@
                 showAnswer: false, // Force show answer mode
                 specialRevealedChars: [], // List of {char, sourceId}
                 isSpecialRound: false, // Is showing special round
-                showSpecialQuestion: false // New: Show the question text for the special round
+                showSpecialQuestion: false, // New: Show the question text for the special round
+                showSpecialAnswer: false // New: Reveal the FULL special keyword
             });
 
             const broadcastRef = useRef(null);
@@ -819,6 +820,15 @@
                 });
             };
 
+            const revealSpecialAnswer = () => {
+                if(confirm("Bạn có chắc chắn muốn mở TỪ KHÓA ĐẶC BIỆT?")) {
+                    syncState({
+                        ...gameState,
+                        showSpecialAnswer: true
+                    });
+                }
+            };
+
             const resetGame = () => {
                 if(confirm("Reset toàn bộ trạng thái chơi?")) {
                     syncState({
@@ -830,7 +840,8 @@
                         showAnswer: false,
                         specialRevealedChars: [],
                         isSpecialRound: false,
-                        showSpecialQuestion: false
+                        showSpecialQuestion: false,
+                        showSpecialAnswer: false
                     });
                 }
             }
@@ -923,9 +934,14 @@
                                     {gameState.isSpecialRound ? 'ẨN CÂU ĐẶC BIỆT' : 'BẬT VÒNG ĐẶC BIỆT'}
                                 </button>
                                 {gameState.isSpecialRound && (
-                                    <button onClick={toggleSpecialQuestion} className={`w-full py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-slate-600 border-slate-300'}`}>
-                                        {gameState.showSpecialQuestion ? 'ĐANG HIỆN CÂU HỎI' : 'HIỆN CÂU HỎI ĐẶC BIỆT'}
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button onClick={toggleSpecialQuestion} className={`py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-slate-600 border-slate-300'}`}>
+                                            {gameState.showSpecialQuestion ? 'ĐANG HIỆN CH' : 'HIỆN CÂU HỎI'}
+                                        </button>
+                                        <button onClick={revealSpecialAnswer} className="py-1.5 rounded text-xs font-bold bg-yellow-500 hover:bg-yellow-600 text-white border border-yellow-600 shadow-sm animate-pulse">
+                                            MỞ TỪ KHÓA
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -1102,6 +1118,7 @@
                             keyword={game.specialKeyword} 
                             revealedChars={gameState.specialRevealedChars}
                             isHeader={true}
+                            isFullReveal={gameState.showSpecialAnswer}
                         />
                     </div>
 
@@ -1133,6 +1150,7 @@
                                         <SpecialRow 
                                             keyword={game.specialKeyword} 
                                             revealedChars={gameState.specialRevealedChars}
+                                            isFullReveal={gameState.showSpecialAnswer}
                                         />
                                     </div>
                                 )}
@@ -1220,15 +1238,19 @@
             );
         };
 
-        const SpecialRow = ({ keyword, revealedChars, isHeader }) => {
+        const SpecialRow = ({ keyword, revealedChars, isHeader, isFullReveal }) => {
             const [displayLetters, setDisplayLetters] = useState([]);
 
             useEffect(() => {
-                const chars = revealedChars.map(r => r.char);
-                const total = keyword.length;
-                const current = new Array(total).fill(null).map((_, i) => chars[i] || '');
-                setDisplayLetters(current);
-            }, [revealedChars, keyword]);
+                if (isFullReveal) {
+                    setDisplayLetters(keyword.split(''));
+                } else {
+                    const chars = revealedChars.map(r => r.char);
+                    const total = keyword.length;
+                    const current = new Array(total).fill(null).map((_, i) => chars[i] || '');
+                    setDisplayLetters(current);
+                }
+            }, [revealedChars, keyword, isFullReveal]);
 
             return (
                 <div className="flex flex-col items-center">
