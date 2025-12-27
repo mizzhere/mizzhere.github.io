@@ -1390,12 +1390,42 @@
                 if (isPreview) setIsProjectorReady(true);
             }, [isPreview]);
 
-            const handleSetup = async () => {
+            // Trong component ProjectorView
+const handleSetup = async () => {
+    try {
+        // 1. Thử dùng API quản lý màn hình (Chỉ chạy trên HTTPS & Chrome/Edge mới)
+        if ('getScreenDetails' in window) {
+            // Hỏi quyền truy cập thông tin màn hình
+            const screenDetails = await window.getScreenDetails();
+            
+            // Tìm màn hình nào KHÔNG PHẢI là màn hình hiện tại (tức là màn hình phụ)
+            const external = screenDetails.screens.find(s => s !== screenDetails.currentScreen);
+
+            if (external) {
+                // DI CHUYỂN cửa sổ sang tọa độ của màn hình phụ
+                window.moveTo(external.left, external.top);
+                
+                // Fullscreen thẳng lên màn hình đó
                 try {
+                    await document.documentElement.requestFullscreen({ screen: external });
+                } catch(e) {
+                    // Nếu tham số {screen} không hỗ trợ thì fullscreen thường (lúc này cửa sổ đã ở bên kia rồi)
                     await document.documentElement.requestFullscreen();
-                } catch (err) {}
+                }
                 setIsProjectorReady(true);
-            };
+                return;
+            }
+        }
+    } catch (err) {
+        console.log("Không tìm thấy màn hình phụ hoặc từ chối quyền:", err);
+    }
+
+    // 2. Fallback: Nếu không tìm thấy màn hình phụ hoặc lỗi, cứ Fullscreen tại chỗ
+    try {
+        await document.documentElement.requestFullscreen();
+    } catch (err) {}
+    setIsProjectorReady(true);
+};
 
             if (!game) return (
                 <div className="h-full w-full flex items-center justify-center bg-black text-white">
