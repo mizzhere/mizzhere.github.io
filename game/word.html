@@ -26,6 +26,13 @@
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
                     }
                 }
             }
@@ -100,10 +107,10 @@
         }
         .toast-enter { animation: slideIn 0.3s forwards; }
         
-        /* Drag Drop Zone */
-        .drag-active {
-            border-color: #3b82f6;
-            background-color: rgba(59, 130, 246, 0.1);
+        /* Drag Drop Overlay */
+        .drag-overlay {
+            background-color: rgba(59, 130, 246, 0.9);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
@@ -176,7 +183,6 @@
             // State for Host/Projector Sync
             const [gameState, setGameState] = useState({
                 currentQuestionId: null, // ID of question being shown
-                isOverlayVisible: false, // Control overlay visibility independently
                 revealedRows: [], // IDs of completed rows
                 typingRowId: null, // ID of row currently being typed by player
                 inputValues: {}, // Current text in rows { rowId: "TEXT" }
@@ -369,7 +375,7 @@
                 addToast("Thành công", "Đã xuất file câu hỏi", "success");
             };
 
-            // Import Handling
+            // Import Handling - Global Drop
             const handleDrag = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -411,33 +417,36 @@
             };
 
             return (
-                <div className="flex-1 overflow-y-auto custom-scroll p-8">
-                    <div className="max-w-5xl mx-auto pb-10">
-                        {/* Import Zone */}
-                        <div 
-                            className={`mb-8 p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-blue-400'}`}
-                            onDragEnter={handleDrag}
-                            onDragLeave={handleDrag}
-                            onDragOver={handleDrag}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('file-upload').click()}
-                        >
-                            <input type="file" id="file-upload" className="hidden" accept=".json" onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])} />
-                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 text-slate-400">
-                                <i className="fas fa-cloud-upload-alt text-xl"></i>
-                            </div>
-                            <h3 className="font-bold text-slate-700 dark:text-slate-300">Kéo thả file câu hỏi (.json) vào đây</h3>
-                            <p className="text-sm text-slate-500">hoặc bấm để chọn file từ máy tính</p>
+                <div 
+                    className="flex-1 overflow-y-auto custom-scroll p-8 relative"
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                >
+                    {/* Drag Overlay */}
+                    {dragActive && (
+                        <div className="absolute inset-0 z-50 drag-overlay flex flex-col items-center justify-center text-white pointer-events-none">
+                            <i className="fas fa-cloud-upload-alt text-6xl mb-4 animate-bounce"></i>
+                            <h2 className="text-3xl font-bold">Thả file vào đây để nhập</h2>
                         </div>
+                    )}
 
+                    <div className="max-w-5xl mx-auto pb-10">
                         <div className="flex justify-between items-end mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Thư viện câu hỏi</h2>
                                 <p className="text-slate-500 mt-1">Quản lý các bộ ô chữ của bạn</p>
                             </div>
-                            <button onClick={createNew} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/30 font-medium transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
-                                <i className="fas fa-plus"></i> Tạo mới
-                            </button>
+                            <div className="flex gap-3">
+                                <label className="cursor-pointer bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2">
+                                    <input type="file" className="hidden" accept=".json" onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])} />
+                                    <i className="fas fa-upload"></i> Nhập file
+                                </label>
+                                <button onClick={createNew} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/30 font-medium transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                    <i className="fas fa-plus"></i> Tạo mới
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -749,7 +758,6 @@
                 syncState({
                     ...gameState,
                     currentQuestionId: qId,
-                    isOverlayVisible: true, // AUTO OPEN OVERLAY
                     showAnswer: false,
                     typingRowId: null,
                     inputValues: { ...gameState.inputValues, [qId]: '' } 
@@ -783,7 +791,7 @@
                     });
                 }
 
-                // 1. Reveal on state (Overlay will animate)
+                // 1. Reveal on state (Overlay removed, so just main board reveals)
                 syncState({
                     ...gameState,
                     revealedRows: newRevealed,
@@ -791,18 +799,6 @@
                     typingRowId: null,
                     specialRevealedChars: newSpecialRevealed
                 });
-
-                // 2. AUTO CLOSE OVERLAY AFTER DELAY (Domino Effect triggers)
-                setTimeout(() => {
-                    syncState({
-                        ...gameState,
-                        revealedRows: newRevealed,
-                        showAnswer: true,
-                        typingRowId: null,
-                        specialRevealedChars: newSpecialRevealed,
-                        isOverlayVisible: false // CLOSE
-                    });
-                }, 2500); // 2.5s delay
             };
 
             const toggleSpecialRound = () => {
@@ -833,7 +829,6 @@
                 if(confirm("Reset toàn bộ trạng thái chơi?")) {
                     syncState({
                         currentQuestionId: null,
-                        isOverlayVisible: false,
                         revealedRows: [],
                         typingRowId: null,
                         inputValues: {},
@@ -1066,49 +1061,36 @@
                 );
             }
 
-            // Question Modal - Updated to include CrosswordRow
-            const ActiveQuestionOverlay = ({ qId }) => {
-                const q = game.questions.find(x => x.id === qId);
-                const index = game.questions.findIndex(x => x.id === qId);
+            // --- Floating Question Bar ---
+            const QuestionBar = ({ q }) => {
                 if (!q) return null;
+                const index = game.questions.findIndex(x => x.id === q.id);
                 
                 return (
-                    <div className="absolute inset-0 z-40 bg-slate-900/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-[fadeIn_0.5s_ease-out]">
-                        {/* REMOVED max-w-5xl, changed to w-auto max-w-[95vw] to fit content */}
-                        <div className={`w-auto max-w-[95vw] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50 flex flex-col ${isPreview ? 'scale-75 origin-center' : ''}`}>
-                            <div className="bg-blue-600 p-6 flex justify-between items-center shrink-0">
-                                <h2 className="text-3xl font-bold text-white">Câu hỏi số {index + 1}</h2>
-                                <div className="text-blue-200 font-mono text-xl">
-                                    {q.answer.length} Ký tự
-                                </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 animate-slide-up z-50 flex justify-center">
+                        <div className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-6 max-w-5xl w-full ${isPreview ? 'scale-75 origin-bottom' : ''}`}>
+                            <div className="flex flex-col items-center justify-center bg-blue-600 text-white w-16 h-16 rounded-xl shrink-0 font-bold text-xl shadow-lg">
+                                <span>#{index + 1}</span>
                             </div>
-                            
-                            <div className="p-10 flex flex-col items-center justify-center flex-1 min-h-[400px]">
-                                {q.image && (
-                                    <img src={q.image} className="max-h-64 mx-auto mb-8 rounded-lg shadow-lg object-contain" onError={(e) => e.target.style.display='none'} />
-                                )}
-                                <h3 className="text-4xl md:text-5xl font-bold text-center text-slate-800 dark:text-slate-100 leading-tight mb-12">
+                            <div className="flex-1">
+                                <h3 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 leading-snug">
                                     {q.question}
                                 </h3>
-
-                                {/* REMOVED scale-125 which caused clipping */}
-                                {/* ADDED overflow-x-auto to handle super long words gracefully */}
-                                <div className="w-full overflow-x-auto custom-scroll p-4 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner flex justify-center">
-                                     <CrosswordRow 
-                                        q={q} 
-                                        index={index}
-                                        isActive={true} 
-                                        isRevealed={gameState.revealedRows.includes(q.id)}
-                                        inputValue={gameState.inputValues[q.id] || ''}
-                                        isTyping={gameState.typingRowId === q.id}
-                                        stopRevealAnimation={false} // Overlay always animates immediately
-                                    />
+                                <div className="mt-1 flex items-center gap-4 text-sm text-slate-500">
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                        <i className="fas fa-font mr-2"></i> {q.answer.length} Ký tự
+                                    </span>
                                 </div>
                             </div>
+                            {q.image && (
+                                <img src={q.image} className="w-24 h-24 object-contain rounded-lg border border-slate-200 dark:border-slate-700 bg-white" onError={(e) => e.target.style.display='none'} />
+                            )}
                         </div>
                     </div>
                 );
             };
+
+            const currentActiveQ = game.questions.find(x => x.id === gameState.currentQuestionId);
 
             return (
                 <div className={`h-full w-full bg-slate-100 dark:bg-slate-950 flex flex-col relative overflow-hidden ${isPreview ? 'text-[0.8em]' : ''}`}>
@@ -1123,8 +1105,8 @@
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scroll relative">
-                        <div className="min-h-full flex items-center justify-center p-10">
-                            <div className="flex flex-col gap-3 w-full max-w-5xl">
+                        <div className="min-h-full flex items-center justify-center p-10 pb-32">
+                            <div className="flex flex-col gap-3 w-full max-w-5xl transition-all duration-500">
                                 {game.questions.map((q, idx) => (
                                     <CrosswordRow 
                                         key={q.id} 
@@ -1134,8 +1116,8 @@
                                         isRevealed={gameState.revealedRows.includes(q.id)}
                                         inputValue={gameState.inputValues[q.id] || ''}
                                         isTyping={gameState.typingRowId === q.id}
-                                        // STOP animation on Main Board IF this question is currently active (Overlay Open)
-                                        stopRevealAnimation={gameState.isOverlayVisible && gameState.currentQuestionId === q.id}
+                                        // No longer stopping reveal animation based on overlay since overlay is gone
+                                        stopRevealAnimation={false}
                                     />
                                 ))}
 
@@ -1158,9 +1140,9 @@
                         </div>
                     </div>
 
-                    {/* Show Overlay ONLY if visible */}
-                    {gameState.currentQuestionId && gameState.isOverlayVisible && (
-                        <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
+                    {/* Floating Question Bar at Bottom */}
+                    {currentActiveQ && (
+                        <QuestionBar q={currentActiveQ} />
                     )}
                 </div>
             );
@@ -1182,8 +1164,6 @@
                         easing: 'easeInOutQuad'
                     });
                 } else if (isRevealed && stopRevealAnimation) {
-                    // Reset to 0 if stopped (wait state), or ensure it stays 0
-                    // Actually, we want it to stay 0 (face front) so the user doesn't see the answer on main board yet.
                     anime.set(rowRef.current.querySelectorAll('.letter-inner'), { rotateY: 0 });
                 }
             }, [isRevealed, stopRevealAnimation]);
@@ -1191,10 +1171,10 @@
             const chars = q.answer.split('');
 
             return (
-                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-105 z-10' : 'opacity-90'}`}>
+                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110 z-10 my-2 drop-shadow-2xl' : 'opacity-80 blur-[1px]'}`}>
                     {/* Number Indicator */}
                     <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 shrink-0 ${
-                        isActive ? 'bg-blue-600 text-white border-blue-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                        isActive ? 'bg-blue-600 text-white border-blue-400 scale-110' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                     }`}>
                         {index + 1}
                     </div>
@@ -1210,7 +1190,7 @@
                                         
                                         {/* FRONT FACE (Hidden/Typing) */}
                                         <div className={`letter-front rounded-lg border-2 ${
-                                            isActive ? 'border-blue-400 bg-blue-50 dark:bg-slate-800' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                            isActive ? 'border-blue-400 bg-blue-50 dark:bg-slate-800 shadow-inner' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                                         }`}>
                                             {isTyping && (
                                                 <span className="text-2xl font-bold text-slate-800 dark:text-slate-200 animate-[popIn_0.2s]">{userChar}</span>
@@ -1230,7 +1210,7 @@
                             );
                         })}
                         
-                        <div className="ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700 shrink-0">
+                        <div className={`ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700 shrink-0 ${isActive ? 'scale-110 border-blue-400 text-blue-500' : ''}`}>
                             {chars.length}
                         </div>
                     </div>
