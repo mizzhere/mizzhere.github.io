@@ -172,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v2';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v3';
 
         // --- COMPONENTS ---
 
@@ -239,7 +239,7 @@
                     left: Math.random() * 100 + '%',
                     delay: Math.random() * 5 + 's',
                     duration: (Math.random() * 5 + 8) + 's',
-                    size: Math.random() * 20 + 15 + 'px', // Increased size for visibility
+                    size: Math.random() * 20 + 15 + 'px', 
                     opacity: Math.random() * 0.5 + 0.4
                 }));
             }, []);
@@ -262,12 +262,12 @@
             );
         };
 
-        const CrosswordRow = ({ q, index, isActive, isAnyActive, isRevealed, inputValue, isTyping, stopRevealAnimation, theme }) => {
+        const CrosswordRow = ({ q, index, isActive, isAnyActive, isRevealed, theme }) => {
             const rowRef = useRef(null);
             const hasAnimatedRef = useRef(false);
 
             useEffect(() => {
-                if (isRevealed && !stopRevealAnimation && !hasAnimatedRef.current) {
+                if (isRevealed && !hasAnimatedRef.current) {
                     anime({
                         targets: rowRef.current.querySelectorAll('.letter-inner'),
                         rotateY: '180deg',
@@ -282,7 +282,7 @@
                      anime.set(rowRef.current.querySelectorAll('.letter-inner'), { rotateY: 0 });
                      hasAnimatedRef.current = false;
                 }
-            }, [isRevealed, stopRevealAnimation]);
+            }, [isRevealed]);
 
             const chars = q.answer.split('');
             const isTet = theme === 'tet';
@@ -302,7 +302,6 @@
                     <div className="flex gap-1 md:gap-2 items-center">
                         {chars.map((char, i) => {
                             const isSpecial = q.specialCharIndices && q.specialCharIndices.includes(i);
-                            const userChar = inputValue[i] || '';
                             
                             return (
                                 <div key={i} className={`letter-box w-10 h-10 md:w-14 md:h-14 shrink-0`}>
@@ -312,9 +311,6 @@
                                                 ? (isTet ? 'border-yellow-500 bg-[#300000] shadow-inner' : 'border-blue-400 bg-blue-50 dark:bg-slate-800 shadow-inner')
                                                 : (isTet ? 'border-[#600000] bg-[#400000]' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900')
                                         }`}>
-                                            {isTyping && (
-                                                <span className="text-2xl font-bold text-slate-800 dark:text-slate-200 animate-[popIn_0.2s]">{userChar}</span>
-                                            )}
                                         </div>
                                         <div className={`letter-back rounded-lg border-2 text-2xl md:text-3xl font-bold ${
                                             isSpecial 
@@ -375,13 +371,11 @@
                             )
                         })}
                     </div>
-                    {!isHeader && <div className={`mt-4 font-mono text-sm tracking-widest uppercase ${isTet ? 'text-yellow-200/60' : 'text-slate-500'}`}>Các ký tự gợi ý</div>}
                 </div>
             );
         };
 
         const QuestionBar = ({ q, isSpecial, timer, game, isPreview, theme, fontSize }) => {
-            // Updated logic: if isSpecial is true, we display the special question text
             if (!q && !isSpecial) return null;
             
             const index = isSpecial ? '★' : (game.questions.findIndex(x => x.id === q.id) + 1);
@@ -480,8 +474,6 @@
             const [gameState, setGameState] = useState({
                 currentQuestionId: null, // Can be ID or 'SPECIAL'
                 revealedRows: [],
-                typingRowId: null,
-                inputValues: {},
                 showAnswer: false,
                 specialRevealedChars: [],
                 isSpecialRound: false,
@@ -608,7 +600,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.0 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.1 Pro
                             </div>
                         </div>
                     </div>
@@ -1117,33 +1109,21 @@
             }, [gameState.timer, gameState.isTimerRunning]);
 
             const selectQuestion = (qId) => {
-                if (gameState.currentQuestionId === qId) {
-                    syncState({
-                        ...gameState,
-                        currentQuestionId: null,
-                        showAnswer: false,
-                        typingRowId: null,
-                        isTimerRunning: false
-                    });
-                } else {
-                    syncState({
-                        ...gameState,
-                        currentQuestionId: qId,
-                        showAnswer: false,
-                        typingRowId: null,
-                        inputValues: { ...gameState.inputValues, [qId]: '' },
-                        timer: 30,
-                        isTimerRunning: true
-                    });
-                }
-            };
-
-            const toggleTypingMode = () => {
-                if (!gameState.currentQuestionId || gameState.currentQuestionId === 'SPECIAL') return;
-                const isTyping = gameState.typingRowId === gameState.currentQuestionId;
+                // Always reset timer when switching questions
                 syncState({
                     ...gameState,
-                    typingRowId: isTyping ? null : gameState.currentQuestionId
+                    currentQuestionId: qId,
+                    showAnswer: false,
+                    typingRowId: null,
+                    timer: 30, // Reset timer
+                    isTimerRunning: true // Auto start
+                });
+            };
+
+            const toggleTimer = () => {
+                syncState({
+                    ...gameState,
+                    isTimerRunning: !gameState.isTimerRunning
                 });
             };
 
@@ -1194,7 +1174,6 @@
                 });
             };
 
-            // NEW: Show Special Question exactly like a normal question
             const showSpecialQuestion = () => {
                 if (gameState.currentQuestionId === 'SPECIAL') {
                     syncState({
@@ -1228,7 +1207,6 @@
                         currentQuestionId: null,
                         revealedRows: [],
                         typingRowId: null,
-                        inputValues: {},
                         showAnswer: false,
                         specialRevealedChars: [],
                         isSpecialRound: false,
@@ -1248,41 +1226,6 @@
                     setTimeout(() => syncState(gameState), 1500);
                 }
             }
-            
-            // KEYBOARD
-            useEffect(() => {
-                const handleHostTyping = (e) => {
-                    if (!gameState.typingRowId) return;
-                    if (gameState.showAnswer) return; 
-
-                    const qId = gameState.typingRowId;
-                    const currentVal = gameState.inputValues[qId] || '';
-                    const q = game.questions.find(x => x.id === qId);
-                    if(!q) return;
-                    
-                    const maxLen = q.answer.length;
-
-                    if (e.key === 'Backspace') {
-                        const newVal = currentVal.slice(0, -1);
-                        syncState({
-                            ...gameState,
-                            inputValues: { ...gameState.inputValues, [qId]: newVal }
-                        });
-                    } else if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9]/)) {
-                        if (currentVal.length < maxLen) {
-                            const char = e.key.toUpperCase();
-                            const newVal = currentVal + char;
-                            syncState({
-                                ...gameState,
-                                inputValues: { ...gameState.inputValues, [qId]: newVal }
-                            });
-                        }
-                    }
-                };
-
-                window.addEventListener('keydown', handleHostTyping);
-                return () => window.removeEventListener('keydown', handleHostTyping);
-            }, [gameState, game, syncState]);
 
             return (
                 <div className="flex h-full overflow-hidden">
@@ -1320,8 +1263,10 @@
                         </div>
                         
                          <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shrink-0 space-y-2">
-                            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded">
-                                <span className="text-xs font-bold text-slate-500">THỜI GIAN</span>
+                            <div onClick={toggleTimer} className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Click để Dừng/Chạy">
+                                <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                                    THỜI GIAN {gameState.isTimerRunning ? <i className="fas fa-play text-green-500 text-[10px]"></i> : <i className="fas fa-pause text-red-500 text-[10px]"></i>}
+                                </span>
                                 <span className={`text-xl font-bold font-mono ${gameState.timer <= 5 ? 'text-red-500 animate-pulse' : ''}`}>{gameState.timer}s</span>
                             </div>
 
@@ -1342,14 +1287,9 @@
                             </div>
 
                             {currentQuestion && (
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={toggleTypingMode} disabled={gameState.revealedRows.includes(currentQuestion.id)} className={`py-2 rounded font-bold text-xs flex items-center justify-center gap-1 ${gameState.typingRowId === currentQuestion.id ? 'bg-amber-100 text-amber-600 border border-amber-500' : 'bg-white border border-slate-300'}`}>
-                                        <i className="fas fa-keyboard"></i> NHẬP
-                                    </button>
-                                    <button onClick={revealAnswer} disabled={gameState.revealedRows.includes(currentQuestion.id)} className={`py-2 rounded font-bold text-white text-xs flex items-center justify-center gap-1 ${gameState.revealedRows.includes(currentQuestion.id) ? 'bg-green-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-                                        <i className="fas fa-eye"></i> MỞ
-                                    </button>
-                                </div>
+                                <button onClick={revealAnswer} disabled={gameState.revealedRows.includes(currentQuestion.id)} className={`w-full py-2 rounded font-bold text-white text-xs flex items-center justify-center gap-1 ${gameState.revealedRows.includes(currentQuestion.id) ? 'bg-green-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                                    <i className="fas fa-eye"></i> MỞ ĐÁP ÁN
+                                </button>
                             )}
                             <button onClick={resetGame} className="w-full py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 text-xs font-medium">RESET GAME</button>
                         </div>
@@ -1443,28 +1383,13 @@
                                         isActive={gameState.currentQuestionId === q.id}
                                         isAnyActive={isAnyActive}
                                         isRevealed={gameState.revealedRows.includes(q.id)}
-                                        inputValue={gameState.inputValues[q.id] || ''}
-                                        isTyping={gameState.typingRowId === q.id}
-                                        stopRevealAnimation={false}
                                         theme={gameState.appTheme}
                                     />
                                 ))}
-
-                                {game.specialKeyword && (
-                                    <div className={`mt-16 transition-all duration-1000 ${gameState.isSpecialRound ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
-                                        <SpecialRow 
-                                            keyword={game.specialKeyword} 
-                                            revealedChars={gameState.specialRevealedChars}
-                                            isFullReveal={gameState.showSpecialAnswer}
-                                            theme={gameState.appTheme}
-                                        />
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Question Bar - Handles both Normal and Special questions now */}
                     {(currentActiveQ || isSpecialActive) && (
                         <QuestionBar 
                             q={currentActiveQ} 
