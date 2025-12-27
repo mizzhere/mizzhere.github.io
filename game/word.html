@@ -465,24 +465,17 @@
                 // Reset map
                 newQs.forEach(q => q.specialCharIndices = []);
                 
-                // Strategy: Iterate through each character needed for the keyword.
-                // For each character, find a question that contains it.
-                // Prioritize questions that have the fewest special characters assigned so far to distribute evenly.
-                
                 for (let i = 0; i < keyword.length; i++) {
                     const charNeeded = keyword[i];
                     let bestQIndex = -1;
                     let bestCharIndex = -1;
                     let minLoad = Infinity;
 
-                    // Scan all questions to find the best candidate for this char
                     for (let qIdx = 0; qIdx < newQs.length; qIdx++) {
                         const q = newQs[qIdx];
-                        // Find index of charNeeded in this question's answer that isn't already used
                         const charIndex = q.answer.split('').findIndex((c, idx) => c === charNeeded && !q.specialCharIndices.includes(idx));
                         
                         if (charIndex !== -1) {
-                            // Found a candidate slot. Check load.
                             const load = q.specialCharIndices.length;
                             if (load < minLoad) {
                                 minLoad = load;
@@ -492,7 +485,6 @@
                         }
                     }
 
-                    // If we found a place for this keyword char, assign it
                     if (bestQIndex !== -1) {
                         newQs[bestQIndex].specialCharIndices.push(bestCharIndex);
                     }
@@ -500,6 +492,36 @@
                 
                 setData({...data, questions: newQs});
             };
+
+            // CHECK MISSING CHARACTERS
+            const checkMissingChars = () => {
+                const needed = removeVietnameseTones(data.specialKeyword).split('');
+                const current = [];
+                data.questions.forEach(q => {
+                    if (q.specialCharIndices) {
+                        q.specialCharIndices.forEach(idx => {
+                            if (q.answer[idx]) current.push(q.answer[idx]);
+                        });
+                    }
+                });
+
+                // Find missing (simple diff)
+                const missing = [];
+                const currentCopy = [...current];
+                
+                needed.forEach(char => {
+                    const idx = currentCopy.indexOf(char);
+                    if (idx !== -1) {
+                        currentCopy.splice(idx, 1);
+                    } else {
+                        missing.push(char);
+                    }
+                });
+                
+                return missing;
+            };
+
+            const missingChars = checkMissingChars();
 
             return (
                 <div className="flex flex-col h-full overflow-hidden">
@@ -528,7 +550,7 @@
                         {/* Sidebar Settings */}
                         <div className="w-80 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto custom-scroll">
                             <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Cấu hình từ khóa</h3>
-                            <div className="mb-6">
+                            <div className="mb-2">
                                 <label className="block text-sm font-medium mb-2">Từ khóa đặc biệt (Kết quả cuối)</label>
                                 <input 
                                     value={data.specialKeyword}
@@ -536,7 +558,15 @@
                                     className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-3 font-mono tracking-widest text-center uppercase focus:ring-2 focus:ring-blue-500 outline-none"
                                     placeholder="VIETNAM"
                                 />
-                                <p className="text-xs text-slate-500 mt-2">Nhập không dấu. Các ký tự này sẽ được lấy từ các câu hỏi con.</p>
+                            </div>
+
+                            {/* Missing Chars Indicator */}
+                            <div className={`mb-6 p-3 rounded-lg text-xs font-bold border ${missingChars.length === 0 ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                                {missingChars.length === 0 ? (
+                                    <><i className="fas fa-check-circle mr-1"></i> Đã đủ ký tự đặc biệt!</>
+                                ) : (
+                                    <><i className="fas fa-exclamation-circle mr-1"></i> Còn thiếu: {missingChars.join(', ')}</>
+                                )}
                             </div>
                             
                             <div className="mb-6">
@@ -664,8 +694,6 @@
                 if (q.specialCharIndices && q.specialCharIndices.length > 0) {
                     q.specialCharIndices.forEach(idx => {
                         const char = q.answer[idx];
-                        // Avoid duplicates from same source? No, allow multiple if indices differ.
-                        // Store sourceId + index to be unique
                         if(!newSpecialRevealed.some(s => s.sourceId === q.id && s.sourceIndex === idx)) {
                             newSpecialRevealed.push({ sourceId: q.id, sourceIndex: idx, char: char });
                         }
@@ -722,7 +750,7 @@
                 }
             }
             
-            // KEYBOARD LISTENER MOVED HERE (Correct Placement)
+            // KEYBOARD LISTENER
             useEffect(() => {
                 const handleHostTyping = (e) => {
                     if (!gameState.typingRowId) return;
@@ -782,7 +810,11 @@
                                             <span className={`font-bold text-sm ${isSelected ? 'text-blue-600' : ''}`}>Câu {idx + 1}</span>
                                             {isDone && <i className="fas fa-check text-green-500 text-xs"></i>}
                                         </div>
-                                        <div className="text-xs text-slate-500 truncate">{q.question}</div>
+                                        <div className="text-xs text-slate-500 truncate mb-1">{q.question}</div>
+                                        {/* SHOW ANSWER FOR HOST */}
+                                        <div className="text-xs font-mono text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded inline-block">
+                                            ĐA: {q.answer}
+                                        </div>
                                     </div>
                                 )
                             })}
@@ -855,14 +887,8 @@
 
                         {/* Preview Container */}
                         <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden relative border-4 border-slate-300 dark:border-slate-700">
-                             {/* Embed ProjectorView directly here, using a transform to scale it down to fit */}
                              <div className="w-full h-full relative overflow-hidden">
-                                 {/* We use a container that is technically 100% width/height but internally we might want to scale contents if needed. 
-                                     However, since ProjectorView is responsive (using Tailwind), it should just fit nicely!
-                                 */}
                                  <ProjectorView game={game} gameState={gameState} isPreview={true} />
-                                 
-                                 {/* Overlay to prevent clicking inside preview */}
                                  <div className="absolute inset-0 z-50 cursor-default"></div>
                              </div>
                         </div>
@@ -876,7 +902,6 @@
             const [isProjectorReady, setIsProjectorReady] = useState(false);
 
             useEffect(() => {
-                // If it is preview, it's always ready (bypass setup screen)
                 if (isPreview) {
                     setIsProjectorReady(true);
                 }
@@ -884,33 +909,23 @@
 
             const handleSetup = async () => {
                 try {
-                    // 1. Try to find other screens and move there using standard Window Management API (Chrome/Edge)
                     if ('getScreenDetails' in window) {
                         try {
                             const screenDetails = await window.getScreenDetails();
                             const currentScreen = screenDetails.currentScreen;
-                            // Find a screen that is NOT the current one (assuming that's the projector)
                             const externalScreen = screenDetails.screens.find(s => s.id !== currentScreen.id);
-                            
-                            if (externalScreen) {
-                                await window.moveTo(externalScreen.left, externalScreen.top);
-                            }
+                            if (externalScreen) await window.moveTo(externalScreen.left, externalScreen.top);
                         } catch (permErr) {
                             console.log("Quyền truy cập màn hình bị từ chối hoặc không hỗ trợ", permErr);
                         }
                     } 
-                    
-                    // 2. Request Fullscreen (Must be user triggered, which this click is)
                     await document.documentElement.requestFullscreen();
                 } catch (err) {
                     console.log("Fullscreen/Move error", err);
                 }
-                
-                // 3. Mark as ready to show content
                 setIsProjectorReady(true);
             };
 
-            // WAITING STATE (Only for real projector window)
             if (!game) return (
                 <div className="h-full w-full flex items-center justify-center bg-black text-white">
                     <div className="text-center animate-pulse-slow">
@@ -921,7 +936,6 @@
                 </div>
             );
 
-            // SETUP STATE (Only for real projector window)
             if (!isProjectorReady && !isPreview) {
                 return (
                     <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white p-10">
@@ -933,23 +947,13 @@
                             <p className="text-slate-400 mb-8">
                                 Cửa sổ này đang ở màn hình hiện tại. Bấm nút dưới đây để tự động chuyển sang màn hình máy chiếu (nếu có) và phóng to.
                             </p>
-                            
-                            <button 
-                                onClick={handleSetup}
-                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl font-bold text-lg shadow-lg transform transition-all hover:scale-105 active:scale-95"
-                            >
+                            <button onClick={handleSetup} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl font-bold text-lg shadow-lg transform transition-all hover:scale-105 active:scale-95">
                                 BẮT ĐẦU CHIẾU & PHÓNG TO <i className="fas fa-expand ml-2"></i>
                             </button>
-                            
-                            <p className="text-xs text-slate-500 mt-4 italic">
-                                *Nếu không tự chuyển màn hình được, vui lòng kéo cửa sổ này sang màn hình máy chiếu rồi bấm F11.
-                            </p>
                         </div>
                     </div>
                 );
             }
-
-            // --- PROJECTOR UI COMPONENTS (ACTUAL CONTENT) ---
 
             // Question Modal - Updated to include CrosswordRow
             const ActiveQuestionOverlay = ({ qId }) => {
@@ -975,15 +979,15 @@
                                     {q.question}
                                 </h3>
 
-                                {/* THE ROW INSIDE THE MODAL */}
                                 <div className="transform scale-125 origin-center p-4 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
                                      <CrosswordRow 
                                         q={q} 
                                         index={index}
-                                        isActive={true} // Always active in modal
+                                        isActive={true} 
                                         isRevealed={gameState.revealedRows.includes(q.id)}
                                         inputValue={gameState.inputValues[q.id] || ''}
                                         isTyping={gameState.typingRowId === q.id}
+                                        stopRevealAnimation={false} // Overlay always animates immediately
                                     />
                                 </div>
                             </div>
@@ -992,17 +996,12 @@
                 );
             };
 
-            // Calculate grid layout logic
-            // We want rows to be centered.
-            
             return (
                 <div className={`h-full w-full bg-slate-100 dark:bg-slate-950 flex flex-col relative overflow-hidden ${isPreview ? 'text-[0.8em]' : ''}`}>
-                    {/* Header */}
                     <div className="h-20 flex items-center justify-center bg-white dark:bg-black shadow-sm z-10 shrink-0 relative">
                         <h1 className="text-4xl font-black uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                             {game.title}
                         </h1>
-                        {/* Special Keyword Container */}
                         {gameState.isSpecialRound && (
                              <div className="absolute bottom-[-60px] left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-6 py-2 rounded-b-xl shadow-lg font-bold text-xl animate-[slideDown_0.5s_ease-out] z-20 whitespace-nowrap">
                                 TỪ KHÓA ĐẶC BIỆT
@@ -1010,7 +1009,6 @@
                         )}
                     </div>
 
-                    {/* Main Board - Scroll Fix */}
                     <div className="flex-1 overflow-y-auto custom-scroll relative">
                         <div className="min-h-full flex items-center justify-center p-10">
                             <div className="flex flex-col gap-3 w-full max-w-5xl">
@@ -1023,21 +1021,19 @@
                                         isRevealed={gameState.revealedRows.includes(q.id)}
                                         inputValue={gameState.inputValues[q.id] || ''}
                                         isTyping={gameState.typingRowId === q.id}
+                                        // STOP animation on Main Board IF this question is currently active (Overlay Open)
+                                        stopRevealAnimation={gameState.currentQuestionId === q.id}
                                     />
                                 ))}
 
-                                {/* SPECIAL KEYWORD ROW (Always at bottom or separate) */}
                                 {game.specialKeyword && (
                                     <div className={`mt-16 transition-all duration-1000 ${gameState.isSpecialRound ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
-                                        
-                                        {/* Display Special Question if Enabled */}
                                         {gameState.showSpecialQuestion && game.specialQuestion && (
                                             <div className="mb-6 bg-purple-600 text-white p-6 rounded-2xl shadow-xl text-center animate-[popIn_0.5s] border-4 border-purple-400">
                                                 <h3 className="text-xl font-bold uppercase mb-2 text-purple-200">Câu hỏi đặc biệt</h3>
                                                 <p className="text-2xl md:text-3xl font-bold leading-relaxed">{game.specialQuestion}</p>
                                             </div>
                                         )}
-
                                         <SpecialRow 
                                             keyword={game.specialKeyword} 
                                             revealedChars={gameState.specialRevealedChars}
@@ -1048,10 +1044,16 @@
                         </div>
                     </div>
 
-                    {/* Overlay for Active Question (Only if not revealed yet and currently selected) */}
                     {gameState.currentQuestionId && 
                      !gameState.revealedRows.includes(gameState.currentQuestionId) && 
-                     !gameState.typingRowId && // Hide overlay when typing mode is on to see the grid
+                     !gameState.typingRowId && 
+                     (
+                        <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
+                    )}
+                    
+                    {/* Also show Overlay if revealed but still active (to show reveal animation) */}
+                    {gameState.currentQuestionId && 
+                     gameState.revealedRows.includes(gameState.currentQuestionId) &&
                      (
                         <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
                     )}
@@ -1061,25 +1063,30 @@
 
         // --- GAME UI COMPONENTS ---
 
-        const CrosswordRow = ({ q, index, isActive, isRevealed, inputValue, isTyping }) => {
-            // Animation Trigger
+        const CrosswordRow = ({ q, index, isActive, isRevealed, inputValue, isTyping, stopRevealAnimation }) => {
+            const rowRef = useRef(null);
+
             useEffect(() => {
-                if (isRevealed) {
+                // Only animate if revealed AND NOT stopped
+                if (isRevealed && !stopRevealAnimation) {
                     anime({
-                        targets: `#row-${q.id} .letter-inner`,
+                        targets: rowRef.current.querySelectorAll('.letter-inner'),
                         rotateY: '180deg',
                         delay: anime.stagger(100), // domino effect
                         duration: 800,
                         easing: 'easeInOutQuad'
                     });
+                } else if (isRevealed && stopRevealAnimation) {
+                    // Reset to 0 if stopped (wait state), or ensure it stays 0
+                    // Actually, we want it to stay 0 (face front) so the user doesn't see the answer on main board yet.
+                    anime.set(rowRef.current.querySelectorAll('.letter-inner'), { rotateY: 0 });
                 }
-            }, [isRevealed, q.id]);
+            }, [isRevealed, stopRevealAnimation]);
 
             const chars = q.answer.split('');
 
             return (
-                <div id={`row-${q.id}`} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-105 z-10' : 'opacity-90'}`}>
-                    {/* Number Indicator */}
+                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-105 z-10' : 'opacity-90'}`}>
                     <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 ${
                         isActive ? 'bg-blue-600 text-white border-blue-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                     }`}>
@@ -1088,9 +1095,7 @@
 
                     <div className="flex gap-1 md:gap-2 items-center">
                         {chars.map((char, i) => {
-                            // Check using array includes instead of === index
                             const isSpecial = q.specialCharIndices && q.specialCharIndices.includes(i);
-                            // Logic: Show char if revealed OR if user typed it in typing mode
                             const userChar = inputValue[i] || '';
                             
                             return (
@@ -1119,7 +1124,6 @@
                             );
                         })}
                         
-                        {/* Character Count Badge - New Feature */}
                         <div className="ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700">
                             {chars.length}
                         </div>
@@ -1129,22 +1133,10 @@
         };
 
         const SpecialRow = ({ keyword, revealedChars }) => {
-            // revealedChars is array of {sourceId, char}.
-            // We need to map these to the keyword slots but "scrambled" (jumbled) visual style initially?
-            // User requirement: "Ô chữ đặc biệt sẽ lộn xộn chứ không phải hiện theo đáp án gốc"
-            // Implementation: We display the Keyword boxes. But the letters appear randomly or simply they just fill in.
-            // Since the user said "scrambled", let's display the collected letters in a container that looks like a pool, OR display the slots and fill them.
-            // Let's stick to the classic "Vertical Keyword" logic but displayed Horizontally here.
-            
-            // actually, we just fill the slots based on index. If scrambled view is needed, that's a different feature. 
-            // The previous code implementation filled it sequentially based on collected chars.
-            
             const [displayLetters, setDisplayLetters] = useState([]);
 
             useEffect(() => {
-                // Collect all chars currently revealed
                 const chars = revealedChars.map(r => r.char);
-                // We pad the rest with empty
                 const total = keyword.length;
                 const current = new Array(total).fill(null).map((_, i) => chars[i] || '');
                 setDisplayLetters(current);
@@ -1154,8 +1146,6 @@
                 <div className="flex flex-col items-center">
                     <div className="flex gap-3 p-6 bg-slate-200 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-400 relative flex-wrap justify-center">
                         {keyword.split('').map((kChar, i) => {
-                            // Find if we have this char revealed.
-                            // This is tricky. Let's just show the revealed chars in order of discovery (Scrambled effect relative to final word)
                             const charToShow = displayLetters[i]; 
                             
                             return (
