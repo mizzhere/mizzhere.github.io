@@ -172,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v3';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v4';
 
         // --- COMPONENTS ---
 
@@ -600,7 +600,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.1 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.2 Pro
                             </div>
                         </div>
                     </div>
@@ -1109,15 +1109,29 @@
             }, [gameState.timer, gameState.isTimerRunning]);
 
             const selectQuestion = (qId) => {
-                // Always reset timer when switching questions
-                syncState({
-                    ...gameState,
-                    currentQuestionId: qId,
-                    showAnswer: false,
-                    typingRowId: null,
-                    timer: 30, // Reset timer
-                    isTimerRunning: true // Auto start
-                });
+                // Check if this question is already revealed (done)
+                const isDone = gameState.revealedRows.includes(qId);
+
+                // If clicking the current active question again, CLOSE it.
+                if (gameState.currentQuestionId === qId) {
+                    syncState({
+                        ...gameState,
+                        currentQuestionId: null,
+                        showAnswer: false,
+                        typingRowId: null,
+                        isTimerRunning: false
+                    });
+                } else {
+                    // New question selected
+                    syncState({
+                        ...gameState,
+                        currentQuestionId: qId,
+                        showAnswer: false,
+                        typingRowId: null,
+                        timer: 30, // Always reset timer to 30s
+                        isTimerRunning: !isDone // Only run timer if question is NOT done
+                    });
+                }
             };
 
             const toggleTimer = () => {
