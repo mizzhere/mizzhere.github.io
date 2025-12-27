@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crossword Master Pro 2025</title>
     
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Excel Parser (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,6 +30,8 @@
                         'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'float': 'float 3s ease-in-out infinite',
                         'spin-slow': 'spin 8s linear infinite',
+                        'sway': 'sway 3s ease-in-out infinite alternate',
+                        'fall': 'fall 10s linear infinite',
                     },
                     keyframes: {
                         slideUp: {
@@ -42,6 +41,14 @@
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-10px)' },
+                        },
+                        sway: {
+                            '0%': { transform: 'rotate(-5deg)' },
+                            '100%': { transform: 'rotate(5deg)' }
+                        },
+                        fall: {
+                            '0%': { transform: 'translateY(-10%) rotate(0deg)', opacity: '1' },
+                            '100%': { transform: 'translateY(110vh) rotate(360deg)', opacity: '0' }
                         }
                     }
                 }
@@ -49,11 +56,9 @@
         }
     </script>
 
-    <!-- Icons & Animation -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     
-    <!-- Google Fonts: Be Vietnam Pro -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -121,12 +126,6 @@
         }
         .toast-enter { animation: slideIn 0.3s forwards; }
         
-        /* Drag Drop Overlay */
-        .drag-overlay {
-            background-color: rgba(59, 130, 246, 0.9);
-            backdrop-filter: blur(4px);
-        }
-
         /* Tet Theme Specifics */
         .tet-bg {
             background-color: #8D0801;
@@ -135,6 +134,15 @@
         .tet-pattern {
              background-image: radial-gradient(#FFD700 1px, transparent 1px);
              background-size: 20px 20px;
+        }
+        
+        /* Tet Falling Elements */
+        .falling-petal {
+            position: absolute;
+            top: -10%;
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear infinite;
         }
     </style>
 </head>
@@ -168,12 +176,85 @@
 
         const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v1';
 
-        // --- SHARED COMPONENTS (MOVED OUTSIDE TO FIX RENDER ISSUES) ---
+        // --- DECORATIONS ---
+        const TetDecorations = () => {
+            // Generate random petals
+            const petals = useMemo(() => {
+                return new Array(15).fill(0).map((_, i) => ({
+                    left: Math.random() * 100 + '%',
+                    delay: Math.random() * 5 + 's',
+                    duration: (Math.random() * 5 + 5) + 's',
+                    size: Math.random() * 20 + 10 + 'px',
+                    type: Math.random() > 0.5 ? 'mai' : 'dao'
+                }));
+            }, []);
 
-        const CrosswordRow = ({ q, index, isActive, isRevealed, inputValue, isTyping, stopRevealAnimation, theme }) => {
+            return (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                    {/* Lanterns Left */}
+                    <div className="absolute top-0 left-10 animate-sway origin-top z-10">
+                        <div className="w-1 h-20 bg-yellow-600 mx-auto"></div>
+                        <div className="w-24 h-32 bg-red-600 rounded-lg shadow-lg flex items-center justify-center border-4 border-yellow-500 relative">
+                             <span className="text-yellow-300 font-bold text-4xl font-serif">TẾT</span>
+                             <div className="absolute -bottom-4 w-4 h-4 bg-yellow-500 rounded-full"></div>
+                             <div className="absolute -bottom-16 w-1 h-12 bg-red-500 mx-auto left-0 right-0"></div>
+                        </div>
+                    </div>
+
+                    {/* Lanterns Right */}
+                    <div className="absolute top-10 right-20 animate-sway origin-top z-10" style={{animationDelay: '-1.5s'}}>
+                         <div className="w-1 h-12 bg-yellow-600 mx-auto"></div>
+                         <div className="w-20 h-28 bg-red-700 rounded-full shadow-lg flex items-center justify-center border-2 border-yellow-400">
+                             <span className="text-yellow-300 font-bold text-3xl font-serif">XUÂN</span>
+                         </div>
+                    </div>
+
+                    {/* Couplets (Cau doi) */}
+                    <div className="absolute top-1/4 left-4 w-16 bg-red-700 border-2 border-yellow-500 shadow-xl hidden lg:flex flex-col items-center py-4 gap-4 z-0">
+                         {['CHÚC','MỪNG','NĂM','MỚI'].map((char, i) => (
+                             <div key={i} className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center text-yellow-300 font-bold text-xl border border-yellow-600 shadow-inner">
+                                {char}
+                             </div>
+                         ))}
+                    </div>
+
+                    <div className="absolute top-1/4 right-4 w-16 bg-red-700 border-2 border-yellow-500 shadow-xl hidden lg:flex flex-col items-center py-4 gap-4 z-0">
+                         {['VẠN','SỰ','NHƯ','Ý'].map((char, i) => (
+                             <div key={i} className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center text-yellow-300 font-bold text-xl border border-yellow-600 shadow-inner">
+                                {char}
+                             </div>
+                         ))}
+                    </div>
+
+                    {/* Falling Petals */}
+                    {petals.map((p, i) => (
+                        <div key={i} className="falling-petal" style={{
+                            left: p.left,
+                            animationDelay: p.delay,
+                            animationDuration: p.duration,
+                            width: p.size,
+                            height: p.size
+                        }}>
+                            {p.type === 'mai' ? (
+                                <svg viewBox="0 0 50 50" className="fill-yellow-400 drop-shadow-sm"><path d="M25 0 C30 20 50 25 50 25 C30 30 25 50 25 50 C20 30 0 25 0 25 C20 20 25 0 25 0 Z" /></svg>
+                            ) : (
+                                <svg viewBox="0 0 50 50" className="fill-pink-300 drop-shadow-sm"><path d="M25 0 C35 15 50 20 50 25 C35 30 25 50 25 50 C15 35 0 30 0 25 C15 20 25 0 25 0 Z" /></svg>
+                            )}
+                        </div>
+                    ))}
+                    
+                    {/* Bottom Branch */}
+                    <div className="absolute bottom-0 left-0 w-64 h-64 opacity-60 pointer-events-none z-10">
+                         <img src="https://media.istockphoto.com/vectors/cherry-blossom-branch-with-falling-petals-vector-id1130636356?k=20&m=1130636356&s=612x612&w=0&h=hW4e4WvWz-M3w-7w-7w-7w-7w-7w-7w-7w-7w-7w=" className="w-full h-full object-contain rotate-12" style={{filter: 'hue-rotate(320deg)'}} />
+                    </div>
+                </div>
+            );
+        };
+
+        // --- SHARED COMPONENTS ---
+
+        const CrosswordRow = ({ q, index, isActive, isAnyActive, isRevealed, inputValue, isTyping, stopRevealAnimation, theme }) => {
             const rowRef = useRef(null);
-            
-            // Fix: Check if animation has already run to avoid re-running on parent re-renders
             const hasAnimatedRef = useRef(false);
 
             useEffect(() => {
@@ -187,7 +268,6 @@
                         complete: () => { hasAnimatedRef.current = true; }
                     });
                 } else if (isRevealed) {
-                     // Ensure state is correct without animation if it's just a refresh
                      anime.set(rowRef.current.querySelectorAll('.letter-inner'), { rotateY: '180deg' });
                 } else {
                      anime.set(rowRef.current.querySelectorAll('.letter-inner'), { rotateY: 0 });
@@ -197,9 +277,13 @@
 
             const chars = q.answer.split('');
             const isTet = theme === 'tet';
+            
+            // Logic for Blur: Only blur if ANY question is active AND this one is NOT active.
+            // If NO question is active (isAnyActive = false), show fully opaque.
+            const isDimmed = isAnyActive && !isActive;
 
             return (
-                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110 z-10 my-2 drop-shadow-2xl' : 'opacity-80 blur-[1px]'}`}>
+                <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110 z-10 my-2 drop-shadow-2xl opacity-100' : (isDimmed ? 'opacity-50 blur-[1px]' : 'opacity-100')}`}>
                     <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 shrink-0 ${
                         isActive 
                             ? (isTet ? 'bg-tet-red text-yellow-300 border-yellow-500 scale-110' : 'bg-blue-600 text-white border-blue-400 scale-110')
@@ -289,8 +373,7 @@
             );
         };
 
-        const QuestionBar = ({ q, isSpecial, timer, game, isPreview, theme }) => {
-            // NOTE: Logic moved here to be a pure component
+        const QuestionBar = ({ q, isSpecial, timer, game, isPreview, theme, fontSize }) => {
             if (!q && !isSpecial) return null;
             
             const index = isSpecial ? '★' : (game.questions.findIndex(x => x.id === q.id) + 1);
@@ -298,11 +381,13 @@
             const charCount = isSpecial ? game.specialKeyword.length : q.answer.length;
             const isTet = theme === 'tet';
             
-            // SVG Circle Props
             const radius = 24;
             const circumference = 2 * Math.PI * radius;
             const progress = (timer / 30) * circumference;
             const dashoffset = circumference - progress;
+
+            // Typography Size Class
+            const sizeClass = fontSize === 'small' ? 'text-base' : fontSize === 'large' ? 'text-3xl' : 'text-xl md:text-2xl';
 
             return (
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 animate-slide-up z-50 flex justify-center">
@@ -310,7 +395,6 @@
                         
                         {isTet && <div className="absolute top-0 right-0 opacity-20"><i className="fas fa-certificate text-6xl text-yellow-500 -mt-2 -mr-2"></i></div>}
 
-                        {/* Timer Circle */}
                         {timer > 0 && (
                             <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
                                 <svg className="absolute w-full h-full -rotate-90 transform">
@@ -329,7 +413,7 @@
 
                         <div className="flex-1 relative z-10">
                             {isSpecial && <span className="text-purple-500 font-bold text-xs uppercase tracking-wider mb-1 block">Câu hỏi đặc biệt</span>}
-                            <h3 className={`text-xl md:text-2xl font-bold leading-snug ${isTet ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
+                            <h3 className={`font-bold leading-snug ${isTet ? 'text-white' : 'text-slate-800 dark:text-slate-100'} ${sizeClass}`}>
                                 {questionText}
                             </h3>
                             <div className="mt-1 flex items-center gap-4 text-sm text-slate-500">
@@ -347,10 +431,8 @@
             );
         };
 
-        // --- COMPONENTS ---
-
         const ToastContainer = ({ toasts, removeToast }) => (
-            <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2">
+            <div className="fixed top-4 right-4 z-[300] flex flex-col gap-2">
                 {toasts.map(t => (
                     <div key={t.id} className={`toast-enter px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] border-l-4 ${
                         t.type === 'success' ? 'bg-white dark:bg-slate-800 border-green-500 text-slate-800 dark:text-white' : 
@@ -378,7 +460,7 @@
         const App = () => {
             const [view, setView] = useState('dashboard');
             const [darkMode, setDarkMode] = useState(false);
-            const [settings, setSettings] = useState({ theme: 'default', sound: true }); // New Settings State
+            const [settings, setSettings] = useState({ theme: 'default', sound: true, fontSize: 'normal' });
             const [games, setGames] = useState([]);
             const [currentGame, setCurrentGame] = useState(null);
             const [toasts, setToasts] = useState([]);
@@ -396,7 +478,8 @@
                 showSpecialAnswer: false,
                 timer: 30,
                 isTimerRunning: false,
-                appTheme: 'default' // sync theme to projector
+                appTheme: 'default',
+                appFontSize: 'normal'
             });
 
             const broadcastRef = useRef(null);
@@ -405,13 +488,11 @@
                 const savedGames = localStorage.getItem('cw_games');
                 if (savedGames) setGames(JSON.parse(savedGames));
 
-                // Load settings
                 const savedSettings = localStorage.getItem('cw_settings');
                 if (savedSettings) {
                     const parsed = JSON.parse(savedSettings);
                     setSettings(parsed);
-                    // Apply theme immediately to local state for projector sync
-                    setGameState(prev => ({ ...prev, appTheme: parsed.theme }));
+                    setGameState(prev => ({ ...prev, appTheme: parsed.theme, appFontSize: parsed.fontSize || 'normal' }));
                 }
 
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -442,16 +523,14 @@
                 document.documentElement.className = darkMode ? 'dark' : 'light';
             }, [darkMode]);
             
-            // Sync settings changes to gameState so Projector sees theme updates
             useEffect(() => {
-                setGameState(prev => ({ ...prev, appTheme: settings.theme }));
+                const updatedState = { ...gameState, appTheme: settings.theme, appFontSize: settings.fontSize };
+                setGameState(updatedState);
                 if(view === 'host') {
-                    // Force a sync if we are host so projector updates instantly
-                    const newState = { ...gameState, appTheme: settings.theme };
-                    broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: newState });
+                    broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: updatedState });
                 }
                 localStorage.setItem('cw_settings', JSON.stringify(settings));
-            }, [settings.theme]);
+            }, [settings.theme, settings.fontSize]);
 
             const addToast = (title, message, type = 'info') => {
                 const id = Date.now();
@@ -467,10 +546,9 @@
             };
 
             const syncState = (newState) => {
-                // Always ensure theme is carried over
-                const stateWithTheme = { ...newState, appTheme: settings.theme };
-                setGameState(stateWithTheme);
-                broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: stateWithTheme });
+                const stateWithSettings = { ...newState, appTheme: settings.theme, appFontSize: settings.fontSize };
+                setGameState(stateWithSettings);
+                broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: stateWithSettings });
             };
             
             const loadGameToProjector = (game) => {
@@ -478,7 +556,7 @@
             }
 
             const SettingsModal = () => (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-96 transform transition-all scale-100">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold">Cài đặt</h3>
@@ -486,6 +564,7 @@
                         </div>
                         
                         <div className="space-y-6">
+                            {/* Tet Theme Toggle */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
@@ -493,7 +572,7 @@
                                     </div>
                                     <div>
                                         <p className="font-bold">Giao diện Tết</p>
-                                        <p className="text-xs text-slate-500">Kích hoạt hoa mai, bao lì xì</p>
+                                        <p className="text-xs text-slate-500">Hoa mai, bao lì xì, câu đối</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -502,8 +581,32 @@
                                 </label>
                             </div>
 
+                            {/* Typography Settings */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                                        <i className="fas fa-text-height"></i>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">Cỡ chữ hiển thị</p>
+                                        <p className="text-xs text-slate-500">Điều chỉnh cỡ chữ câu hỏi</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                                    {['small', 'normal', 'large'].map(size => (
+                                        <button 
+                                            key={size}
+                                            onClick={() => setSettings({...settings, fontSize: size})}
+                                            className={`flex-1 py-2 rounded text-sm font-medium transition-all ${settings.fontSize === size ? 'bg-white dark:bg-slate-600 shadow text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            {size === 'small' ? 'Nhỏ' : size === 'normal' ? 'Vừa' : 'Lớn'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2025.1.0
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2025.1.2 Pro
                             </div>
                         </div>
                     </div>
@@ -584,7 +687,6 @@
         // --- SUB-VIEWS ---
 
         const Dashboard = ({ games, saveGames, onEdit, onPlay, addToast, theme }) => {
-            const [dragActive, setDragActive] = useState(false);
             const isTet = theme === 'tet';
 
             const createNew = () => {
@@ -629,9 +731,6 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
                         
-                        // Parse structure: Assume row 1 is header. 
-                        // Columns: Question, Answer, Image (optional)
-                        // Heuristic: Find column index for Question and Answer
                         const header = jsonData[0].map(h => h.toString().toLowerCase());
                         const qIdx = header.findIndex(h => h.includes('câu hỏi') || h.includes('question'));
                         const aIdx = header.findIndex(h => h.includes('đáp án') || h.includes('answer'));
@@ -1280,6 +1379,7 @@
         const ProjectorView = ({ game, gameState, isPreview }) => {
             const [isProjectorReady, setIsProjectorReady] = useState(false);
             const isTet = gameState.appTheme === 'tet';
+            const fontSize = gameState.appFontSize || 'normal';
 
             useEffect(() => {
                 if (isPreview) setIsProjectorReady(true);
@@ -1313,20 +1413,12 @@
 
             const currentActiveQ = game.questions.find(x => x.id === gameState.currentQuestionId);
             const isSpecialActive = gameState.currentQuestionId === 'SPECIAL';
+            const isAnyActive = !!gameState.currentQuestionId;
 
             return (
                 <div className={`h-full w-full flex flex-col relative overflow-hidden ${isTet ? 'tet-bg tet-pattern' : 'bg-slate-100 dark:bg-slate-950'} ${isPreview ? 'text-[0.8em]' : ''}`}>
-                    {/* Tet Decorations */}
-                    {isTet && (
-                        <>
-                            <div className="absolute top-0 left-0 w-40 h-40 opacity-80 pointer-events-none">
-                                <img src="https://media.istockphoto.com/vectors/cherry-blossom-branch-with-falling-petals-vector-id1130636356?k=20&m=1130636356&s=612x612&w=0&h=hW4e4WvWz-M3w-7w-7w-7w-7w-7w-7w-7w-7w-7w=" className="w-full h-full object-contain -rotate-45" style={{filter: 'hue-rotate(320deg)'}} />
-                            </div>
-                             <div className="absolute top-0 right-0 w-32 h-32 opacity-80 pointer-events-none">
-                                <i className="fas fa-lantern text-6xl text-yellow-500 absolute top-4 right-8 animate-float"></i>
-                            </div>
-                        </>
-                    )}
+                    {/* Enhanced Tet Decorations */}
+                    {isTet && <TetDecorations />}
 
                     <div className={`min-h-[120px] flex flex-col items-center justify-center shadow-sm z-10 shrink-0 relative py-4 ${isTet ? 'bg-red-900/90 border-b border-yellow-600' : 'bg-white dark:bg-black'}`}>
                         <SpecialRow 
@@ -1339,7 +1431,7 @@
                         />
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scroll relative">
+                    <div className="flex-1 overflow-y-auto custom-scroll relative z-10">
                         <div className="min-h-full min-w-full flex items-center justify-center p-10 pb-32">
                             <div className={`flex flex-col gap-3 items-center transition-all duration-500 ${isSpecialActive ? 'opacity-30 blur-sm scale-95' : ''}`}>
                                 {game.questions.map((q, idx) => (
@@ -1348,6 +1440,7 @@
                                         q={q} 
                                         index={idx}
                                         isActive={gameState.currentQuestionId === q.id}
+                                        isAnyActive={isAnyActive}
                                         isRevealed={gameState.revealedRows.includes(q.id)}
                                         inputValue={gameState.inputValues[q.id] || ''}
                                         isTyping={gameState.typingRowId === q.id}
@@ -1370,7 +1463,7 @@
                         </div>
                     </div>
 
-                    {/* Conditional Rendering of QuestionBar: FIXED FLICKER by using key={gameState.currentQuestionId} if needed, but mainly component is outside now */}
+                    {/* Question Bar now has fontSize Prop */}
                     {(currentActiveQ || isSpecialActive) && (
                         <QuestionBar 
                             q={currentActiveQ} 
@@ -1379,6 +1472,7 @@
                             game={game}
                             isPreview={isPreview}
                             theme={gameState.appTheme}
+                            fontSize={fontSize}
                         />
                     )}
                 </div>
