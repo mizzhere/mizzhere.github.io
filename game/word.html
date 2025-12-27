@@ -172,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v7';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v8';
 
         // --- COMPONENTS ---
 
@@ -344,35 +344,6 @@
             useEffect(() => {
                 if (isFullReveal) {
                     setDisplayLetters(keyword.split(''));
-                    // EFFECT: REARRANGE (Sắp xếp lại vị trí)
-                    setTimeout(() => {
-                         if(containerRef.current) {
-                             const timeline = anime.timeline();
-                             
-                             // 1. Xuất hiện lộn xộn (Scattered)
-                             timeline.add({
-                                 targets: containerRef.current.children,
-                                 opacity: [0, 1],
-                                 scale: [0.5, 1.2],
-                                 translateX: () => anime.random(-150, 150),
-                                 translateY: () => anime.random(-100, 100),
-                                 rotate: () => anime.random(-360, 360),
-                                 duration: 100, // Xuất hiện ngay lập tức
-                                 easing: 'linear'
-                             })
-                             // 2. Bay về đúng vị trí (Arrange to correct slot)
-                             .add({
-                                 targets: containerRef.current.children,
-                                 translateX: 0,
-                                 translateY: 0,
-                                 rotate: 0,
-                                 scale: 1,
-                                 duration: 1000,
-                                 delay: anime.stagger(100), // Bay về từng chữ một
-                                 easing: 'spring(1, 80, 10, 0)' // Hiệu ứng lực hút nam châm
-                             });
-                         }
-                    }, 50);
                 } else {
                     const chars = revealedChars.map(r => r.char);
                     const total = keyword.length;
@@ -380,6 +351,19 @@
                     setDisplayLetters(current);
                 }
             }, [revealedChars, keyword, isFullReveal]);
+
+            // EFFECT: 3D Flip (Lật từng ô như câu thường)
+            useEffect(() => {
+                if (isFullReveal && containerRef.current) {
+                    anime({
+                        targets: containerRef.current.querySelectorAll('.letter-inner'),
+                        rotateY: '180deg',
+                        delay: anime.stagger(100),
+                        duration: 800,
+                        easing: 'easeInOutQuad'
+                    });
+                }
+            }, [isFullReveal]);
 
             return (
                 <div className={`flex flex-col items-center transition-all duration-500 ${isActive ? 'scale-110 z-20 drop-shadow-2xl' : ''}`}>
@@ -389,14 +373,30 @@
                         
                         {keyword.split('').map((kChar, i) => {
                             const charToShow = displayLetters[i]; 
+                            // Nếu đã hiện (do hint hoặc full reveal) thì có nội dung.
+                            // Nhưng logic flip: Nếu là hint (charToShow có, nhưng !isFullReveal) -> Ta render nó đã lật sẵn (style rotate).
+                            // Nếu là Full Reveal -> Ta để nó ở trạng thái 0 rồi animate.
                             
+                            const isHint = !!charToShow && !isFullReveal;
+
                             return (
-                                <div key={i} className={`rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'} ${isTet ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-200' : 'bg-gradient-to-br from-yellow-400 to-orange-500'}`}>
-                                    {charToShow ? (
-                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black ${isTet ? 'text-[#800000]' : 'text-white'} drop-shadow-md`}>{charToShow}</span>
-                                    ) : (
-                                        <div className="w-2 h-2 md:w-4 md:h-4 bg-black/10 rounded-full"></div>
-                                    )}
+                                <div key={i} className={`letter-box ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'}`}>
+                                    <div 
+                                        className="letter-inner relative w-full h-full shadow-md rounded-lg duration-500 transform transition-transform"
+                                        style={{ transform: isHint ? 'rotateY(180deg)' : '' }}
+                                    >
+                                        {/* Front (Mặt úp) */}
+                                        <div className={`letter-front rounded-lg border-2 ${isTet ? 'bg-[#400000] border-[#600000]' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+                                        
+                                        {/* Back (Mặt ngửa - chứa chữ) */}
+                                        <div className={`letter-back rounded-lg border-2 text-2xl md:text-3xl font-bold 
+                                            ${isTet 
+                                                ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border-yellow-200 text-[#800000]' 
+                                                : 'bg-gradient-to-br from-purple-500 to-indigo-600 border-purple-400 text-white'
+                                            }`}>
+                                            {charToShow}
+                                        </div>
+                                    </div>
                                 </div>
                             )
                         })}
@@ -544,7 +544,7 @@
                             setCurrentGame(payload);
                             setView('projector');
                         } else if (type === 'CLOSE_PROJECTOR') {
-                            window.close(); // FIX: Đóng cửa sổ khi nhận lệnh
+                            window.close(); 
                         }
                     } else {
                         // HOST LOGIC - HANDSHAKE REPLY
@@ -668,7 +668,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.3.0
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.3.1
                             </div>
                         </div>
                     </div>
@@ -731,7 +731,7 @@
                                 game={currentGame} 
                                 gameState={gameState} 
                                 syncState={syncState}
-                                onExit={() => { closeProjector(); setView('dashboard'); }} // FIX: Gọi hàm đóng projector khi thoát
+                                onExit={() => { closeProjector(); setView('dashboard'); }}
                                 addToast={addToast}
                                 loadGameToProjector={loadGameToProjector}
                                 settings={settings}
