@@ -172,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v4';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v5';
 
         // --- COMPONENTS ---
 
@@ -338,11 +338,27 @@
 
         const SpecialRow = ({ keyword, revealedChars, isHeader, isFullReveal, isActive, theme }) => {
             const [displayLetters, setDisplayLetters] = useState([]);
+            const containerRef = useRef(null);
             const isTet = theme === 'tet';
 
             useEffect(() => {
                 if (isFullReveal) {
                     setDisplayLetters(keyword.split(''));
+                    // Animate Special Answer Reveal
+                    setTimeout(() => {
+                         if(containerRef.current) {
+                             anime({
+                                 targets: containerRef.current.children,
+                                 scale: [0, 1.2, 1],
+                                 rotateY: [-90, 0],
+                                 opacity: [0, 1],
+                                 translateY: [20, 0],
+                                 delay: anime.stagger(100),
+                                 duration: 1200,
+                                 easing: 'easeOutElastic(1, .6)'
+                             });
+                         }
+                    }, 50);
                 } else {
                     const chars = revealedChars.map(r => r.char);
                     const total = keyword.length;
@@ -353,7 +369,7 @@
 
             return (
                 <div className={`flex flex-col items-center transition-all duration-500 ${isActive ? 'scale-110 z-20 drop-shadow-2xl' : ''}`}>
-                    <div className={`flex gap-2 md:gap-3 p-4 rounded-2xl border-2 border-dashed relative flex-wrap justify-center 
+                    <div ref={containerRef} className={`flex gap-2 md:gap-3 p-4 rounded-2xl border-2 border-dashed relative flex-wrap justify-center 
                         ${isHeader ? 'scale-75 md:scale-100 bg-transparent border-none p-0' : (isTet ? 'bg-black/20 border-yellow-500/30' : 'bg-slate-200 dark:bg-slate-800/50 border-slate-400')} 
                         ${isActive ? (isTet ? 'bg-red-900 border-yellow-400' : 'bg-purple-100 border-purple-400') : ''}`}>
                         
@@ -361,9 +377,9 @@
                             const charToShow = displayLetters[i]; 
                             
                             return (
-                                <div key={i} className={`rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 hover:scale-110 ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'} ${isTet ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-200' : 'bg-gradient-to-br from-yellow-400 to-orange-500'}`}>
+                                <div key={i} className={`rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'} ${isTet ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-200' : 'bg-gradient-to-br from-yellow-400 to-orange-500'}`}>
                                     {charToShow ? (
-                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black ${isTet ? 'text-[#800000]' : 'text-white'} drop-shadow-md animate-[bounceIn_0.6s]`}>{charToShow}</span>
+                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black ${isTet ? 'text-[#800000]' : 'text-white'} drop-shadow-md`}>{charToShow}</span>
                                     ) : (
                                         <div className="w-2 h-2 md:w-4 md:h-4 bg-black/10 rounded-full"></div>
                                     )}
@@ -600,7 +616,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.2 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.3 Pro
                             </div>
                         </div>
                     </div>
@@ -1091,22 +1107,35 @@
         const HostController = ({ game, gameState, syncState, onExit, addToast, loadGameToProjector, settings }) => {
             const currentQuestion = game.questions.find(q => q.id === gameState.currentQuestionId);
             const isTet = settings.theme === 'tet';
+            
+            // Ref to hold the latest gameState for the interval closure
+            const gameStateRef = useRef(gameState);
+            useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
 
-            // Timer Logic
+            // Timer Logic (Fixed: Time-based)
             useEffect(() => {
                 let interval;
                 if (gameState.isTimerRunning && gameState.timer > 0) {
+                    const startTime = Date.now();
+                    const initialTimer = gameState.timer;
+                    
                     interval = setInterval(() => {
-                        syncState({
-                            ...gameState,
-                            timer: gameState.timer - 1
-                        });
-                    }, 1000);
-                } else if (gameState.timer === 0 && gameState.isTimerRunning) {
-                    syncState({ ...gameState, isTimerRunning: false });
+                        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                        const newTime = initialTimer - elapsed;
+                        
+                        if (newTime <= 0) {
+                             syncState({ ...gameStateRef.current, timer: 0, isTimerRunning: false });
+                             clearInterval(interval);
+                        } else {
+                             // Only sync if time changed
+                             if(newTime !== gameStateRef.current.timer) {
+                                  syncState({ ...gameStateRef.current, timer: newTime });
+                             }
+                        }
+                    }, 500); // Check twice a second for smoothness
                 }
                 return () => clearInterval(interval);
-            }, [gameState.timer, gameState.isTimerRunning]);
+            }, [gameState.isTimerRunning]); // Only restart when running status changes
 
             const selectQuestion = (qId) => {
                 // Check if this question is already revealed (done)
@@ -1157,27 +1186,16 @@
                     });
                 }
 
+                // Close question IMMEDIATELY (currentQuestionId: null) but allow animation on board
                 syncState({
                     ...gameState,
                     revealedRows: newRevealed,
                     showAnswer: true,
                     typingRowId: null,
                     specialRevealedChars: newSpecialRevealed,
+                    currentQuestionId: null, // CLOSE BAR INSTANTLY
                     isTimerRunning: false
                 });
-
-                // Auto Close Timeout
-                setTimeout(() => {
-                    syncState({
-                        ...gameState,
-                        revealedRows: newRevealed,
-                        showAnswer: true,
-                        typingRowId: null,
-                        specialRevealedChars: newSpecialRevealed,
-                        isTimerRunning: false,
-                        currentQuestionId: null // Force Close question
-                    });
-                }, 4000); 
             };
 
             const toggleSpecialRound = () => {
