@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Master Pro 2025</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' },
+                        dark: { 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Icons & Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        /* FIX SCROLL ISSUE HERE */
+        html, body, #root {
+            height: 100%;
+            overflow: hidden; /* Global prevent scroll */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            width: 100vw;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Custom Scrollbar for inner containers */
+        .custom-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .custom-scroll {
+            scrollbar-color: #475569 transparent;
+        }
+        .dark .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+
+        .letter-box {
+            perspective: 1000px;
+        }
+        .letter-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .letter-front, .letter-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .letter-back {
+            transform: rotateY(180deg);
+        }
+        .flipped .letter-inner {
+            transform: rotateY(180deg);
+        }
+        
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideIn 0.3s forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useContext, createContext } = React;
+
+        // --- UTILS ---
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        
+        const removeVietnameseTones = (str) => {
+            if(!str) return '';
+            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+            str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+            str = str.replace(/đ/g,"d");
+            str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+            str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+            str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+            str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+            str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+            str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+            str = str.replace(/Đ/g, "D");
+            return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        };
+
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v1';
+
+        // --- COMPONENTS ---
+
+        // 1. Toast Notification
+        const ToastContainer = ({ toasts, removeToast }) => (
+            <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+                {toasts.map(t => (
+                    <div key={t.id} className={`toast-enter px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] border-l-4 ${
+                        t.type === 'success' ? 'bg-white dark:bg-slate-800 border-green-500' : 
+                        t.type === 'error' ? 'bg-white dark:bg-slate-800 border-red-500' : 
+                        'bg-white dark:bg-slate-800 border-blue-500'
+                    }`}>
+                        <i className={`fas ${
+                            t.type === 'success' ? 'fa-check-circle text-green-500' :
+                            t.type === 'error' ? 'fa-exclamation-circle text-red-500' :
+                            'fa-info-circle text-blue-500'
+                        }`}></i>
+                        <div>
+                            <p className="font-semibold text-sm">{t.title}</p>
+                            <p className="text-xs opacity-70">{t.message}</p>
+                        </div>
+                        <button onClick={() => removeToast(t.id)} className="ml-auto text-slate-400 hover:text-slate-600">
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+                ))}
+            </div>
+        );
+
+        // 2. Main App Logic
+        const App = () => {
+            const [view, setView] = useState('dashboard'); // dashboard, editor, host, projector
+            const [darkMode, setDarkMode] = useState(false);
+            const [games, setGames] = useState([]);
+            const [currentGame, setCurrentGame] = useState(null);
+            const [toasts, setToasts] = useState([]);
+
+            // State for Host/Projector Sync
+            const [gameState, setGameState] = useState({
+                currentQuestionId: null, // ID of question being shown
+                revealedRows: [], // IDs of completed rows
+                typingRowId: null, // ID of row currently being typed by player
+                inputValues: {}, // Current text in rows { rowId: "TEXT" }
+                showAnswer: false, // Force show answer mode
+                specialRevealedChars: [], // List of {char, sourceId}
+                isSpecialRound: false, // Is showing special round
+                showSpecialQuestion: false // New: Show the question text for the special round
+            });
+
+            const broadcastRef = useRef(null);
+
+            // --- EFFECTS ---
+            useEffect(() => {
+                const savedGames = localStorage.getItem('cw_games');
+                if (savedGames) {
+                    let parsedGames = JSON.parse(savedGames);
+                    // MIGRATION: Ensure all questions have specialCharIndices array
+                    parsedGames = parsedGames.map(g => ({
+                        ...g,
+                        questions: g.questions.map(q => {
+                            if (q.specialCharIndices === undefined) {
+                                return { 
+                                    ...q, 
+                                    specialCharIndices: q.specialCharIndex !== undefined && q.specialCharIndex !== -1 ? [q.specialCharIndex] : [] 
+                                };
+                            }
+                            return q;
+                        })
+                    }));
+                    setGames(parsedGames);
+                }
+
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    setDarkMode(true);
+                }
+
+                // Setup Broadcast
+                broadcastRef.current = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+                broadcastRef.current.onmessage = (event) => {
+                    const { type, payload } = event.data;
+                    if (type === 'SYNC_STATE') {
+                        setGameState(payload);
+                    } else if (type === 'LOAD_GAME') {
+                        setCurrentGame(payload);
+                        // If we are just loading, reset state locally
+                        if(window.location.hash === '#projector') {
+                             setView('projector');
+                        }
+                    }
+                };
+
+                // Check URL hash for projector mode
+                if (window.location.hash === '#projector') {
+                    setView('projector');
+                }
+
+                return () => broadcastRef.current?.close();
+            }, []);
+
+            useEffect(() => {
+                document.documentElement.className = darkMode ? 'dark' : 'light';
+            }, [darkMode]);
+
+            // --- ACTIONS ---
+            const addToast = (title, message, type = 'info') => {
+                const id = Date.now();
+                setToasts(prev => [...prev, { id, title, message, type }]);
+                setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+            };
+
+            const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+
+            const saveGames = (newGames) => {
+                setGames(newGames);
+                localStorage.setItem('cw_games', JSON.stringify(newGames));
+            };
+
+            const syncState = (newState) => {
+                setGameState(newState);
+                broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: newState });
+            };
+            
+            const loadGameToProjector = (game) => {
+                broadcastRef.current.postMessage({ type: 'LOAD_GAME', payload: game });
+            }
+
+            // --- RENDERERS ---
+            
+            return (
+                <div className="h-full w-full flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
+                    <ToastContainer toasts={toasts} removeToast={removeToast} />
+                    
+                    {/* Top Bar (Hidden in Projector) */}
+                    {view !== 'projector' && (
+                        <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-6 shrink-0 z-10">
+                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('dashboard')}>
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">
+                                    <i className="fas fa-cube"></i>
+                                </div>
+                                <h1 className="font-bold text-lg tracking-tight">Crossword<span className="text-blue-500">Master</span></h1>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                    <i className={`fas ${darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-slate-500'}`}></i>
+                                </button>
+                            </div>
+                        </header>
+                    )}
+
+                    {/* Main Content Area - Added min-h-0 for safe flex scrolling */}
+                    <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
+                        {view === 'dashboard' && (
+                            <Dashboard 
+                                games={games} 
+                                saveGames={saveGames} 
+                                onEdit={(g) => { setCurrentGame(g); setView('editor'); }}
+                                onPlay={(g) => { setCurrentGame(g); setView('host'); loadGameToProjector(g); }}
+                                addToast={addToast}
+                            />
+                        )}
+                        {view === 'editor' && (
+                            <Editor 
+                                game={currentGame} 
+                                onSave={(g) => { 
+                                    const idx = games.findIndex(x => x.id === g.id);
+                                    const newGames = idx >= 0 ? [...games] : [...games, g];
+                                    if(idx >= 0) newGames[idx] = g;
+                                    saveGames(newGames);
+                                    setView('dashboard');
+                                    addToast("Thành công", "Đã lưu bộ câu hỏi", "success");
+                                }}
+                                onCancel={() => setView('dashboard')}
+                            />
+                        )}
+                        {view === 'host' && (
+                            <HostController 
+                                game={currentGame} 
+                                gameState={gameState} 
+                                syncState={syncState}
+                                onExit={() => setView('dashboard')}
+                                addToast={addToast}
+                                loadGameToProjector={loadGameToProjector}
+                            />
+                        )}
+                        {view === 'projector' && (
+                            <ProjectorView 
+                                game={currentGame}
+                                gameState={gameState}
+                            />
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        // --- SUB-VIEWS ---
+
+        const Dashboard = ({ games, saveGames, onEdit, onPlay, addToast }) => {
+            const createNew = () => {
+                onEdit({
+                    id: generateId(),
+                    title: "Ô Chữ Mới " + new Date().toLocaleDateString('vi-VN'),
+                    specialKeyword: "",
+                    specialQuestion: "", // New Field
+                    questions: []
+                });
+            };
+
+            const deleteGame = (e, id) => {
+                e.stopPropagation();
+                if(confirm("Bạn có chắc muốn xóa không?")) {
+                    saveGames(games.filter(g => g.id !== id));
+                    addToast("Đã xóa", "Bộ câu hỏi đã được xóa", "success");
+                }
+            }
+
+            return (
+                <div className="flex-1 overflow-y-auto custom-scroll p-8">
+                    <div className="max-w-5xl mx-auto pb-10">
+                        <div className="flex justify-between items-end mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Thư viện câu hỏi</h2>
+                                <p className="text-slate-500 mt-1">Quản lý các bộ ô chữ của bạn</p>
+                            </div>
+                            <button onClick={createNew} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-500/30 font-medium transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                <i className="fas fa-plus"></i> Tạo mới
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {games.map(game => (
+                                <div key={game.id} onClick={() => onPlay(game)} className="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl transition-all relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                        <button onClick={(e) => { e.stopPropagation(); onEdit(game); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-colors">
+                                            <i className="fas fa-pen text-xs"></i>
+                                        </button>
+                                        <button onClick={(e) => deleteGame(e, game.id)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-colors">
+                                            <i className="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                            <i className="fas fa-gamepad text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold truncate max-w-[180px]">{game.title}</h3>
+                                            <span className="text-xs text-slate-400">{game.questions.length} câu hỏi</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 text-xs font-mono text-slate-500 bg-slate-100 dark:bg-slate-900 p-2 rounded">
+                                        <span className="font-bold">KEY:</span> {game.specialKeyword || "(Chưa có)"}
+                                    </div>
+                                </div>
+                            ))}
+                            {games.length === 0 && (
+                                <div className="col-span-full py-20 text-center text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
+                                    <i className="fas fa-ghost text-4xl mb-3 opacity-50"></i>
+                                    <p>Chưa có trò chơi nào. Hãy tạo mới ngay!</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Editor = ({ game, onSave, onCancel }) => {
+            // Data Migration for Editor view
+            const prepareData = (g) => {
+                const deepCopy = JSON.parse(JSON.stringify(g));
+                deepCopy.questions = deepCopy.questions.map(q => {
+                    if (q.specialCharIndices === undefined) {
+                         return { 
+                             ...q, 
+                             specialCharIndices: q.specialCharIndex !== undefined && q.specialCharIndex !== -1 ? [q.specialCharIndex] : [] 
+                         };
+                    }
+                    return q;
+                });
+                return deepCopy;
+            };
+
+            const [data, setData] = useState(prepareData(game));
+
+            const addQuestion = () => {
+                setData({
+                    ...data,
+                    questions: [...data.questions, {
+                        id: generateId(),
+                        question: "",
+                        answer: "",
+                        image: "",
+                        specialCharIndices: [] // New structure: Array
+                    }]
+                });
+            };
+
+            const updateQuestion = (idx, field, value) => {
+                const newQs = [...data.questions];
+                newQs[idx][field] = value;
+                
+                // Auto normalize answer
+                if(field === 'answer') {
+                    newQs[idx].answer = removeVietnameseTones(value);
+                }
+                
+                setData({...data, questions: newQs});
+            };
+
+            // Toggle special char in list
+            const toggleSpecialChar = (qIdx, charIdx) => {
+                const newQs = [...data.questions];
+                const currentIndices = newQs[qIdx].specialCharIndices || [];
+                
+                if (currentIndices.includes(charIdx)) {
+                    newQs[qIdx].specialCharIndices = currentIndices.filter(i => i !== charIdx);
+                } else {
+                    newQs[qIdx].specialCharIndices = [...currentIndices, charIdx];
+                }
+                setData({...data, questions: newQs});
+            };
+
+            const removeQuestion = (idx) => {
+                const newQs = data.questions.filter((_, i) => i !== idx);
+                setData({...data, questions: newQs});
+            };
+
+            // Enhanced Auto Map
+            const autoMapSpecial = () => {
+                const keyword = removeVietnameseTones(data.specialKeyword).split('');
+                const newQs = [...data.questions];
+                
+                // Reset map
+                newQs.forEach(q => q.specialCharIndices = []);
+                
+                // Strategy: Distribute chars. If more keyword chars than questions, some will take multiple.
+                let keywordIdx = 0;
+                let questionIdx = 0;
+                
+                // If keyword is empty or no questions, stop
+                if (keyword.length === 0 || newQs.length === 0) {
+                    setData({...data, questions: newQs});
+                    return;
+                }
+
+                // Try to find each keyword char in the questions sequentially
+                while (keywordIdx < keyword.length && questionIdx < newQs.length) {
+                    const charNeeded = keyword[keywordIdx];
+                    const q = newQs[questionIdx];
+                    
+                    // Find char in current question answer
+                    // Avoid picking same index twice in this auto-step for simplicity (though physically possible)
+                    const foundAt = q.answer.split('').findIndex((c, i) => c === charNeeded && !q.specialCharIndices.includes(i));
+                    
+                    if (foundAt !== -1) {
+                        q.specialCharIndices.push(foundAt);
+                        keywordIdx++;
+                        
+                        // Decide whether to move to next question:
+                        // Strategy: Distribute evenly. 
+                        // If remaining keyword chars > remaining questions, stay on this question to try and fill more?
+                        // Or strictly top-down 1-by-1 then loop?
+                        // User request: "mặc định sẽ tự detect theo số lượng câu hỏi hiện có và số ký tự hiện có từ trên xuống như hiện tại."
+                        // "Như hiện tại" (Like current) implies flow Q1 -> Q2 -> Q3.
+                        // But if Keyword > Questions, we MUST double up or fail.
+                        // Let's implement a simple "Move to next" logic.
+                        // If we are at the last question, we stay there.
+                        if (questionIdx < newQs.length - 1) {
+                            questionIdx++;
+                        }
+                    } else {
+                        // Char not found in this question.
+                        // Move to next question to try and find it there?
+                        // Or skip this keyword char?
+                        // Usually you skip the QUESTION if it doesn't fit.
+                        questionIdx++;
+                    }
+                }
+                
+                setData({...data, questions: newQs});
+            };
+
+            return (
+                <div className="flex flex-col h-full overflow-hidden">
+                    {/* Header */}
+                    <div className="h-16 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-4">
+                            <button onClick={onCancel} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                                <i className="fas fa-arrow-left"></i>
+                            </button>
+                            <input 
+                                value={data.title}
+                                onChange={e => setData({...data, title: e.target.value})}
+                                className="bg-transparent text-xl font-bold focus:outline-none border-b border-transparent focus:border-blue-500 w-64"
+                                placeholder="Tên bộ câu hỏi"
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                             <button onClick={() => onSave(data)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/20">
+                                <i className="fas fa-save mr-2"></i> Lưu lại
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Content - Added min-h-0 */}
+                    <div className="flex-1 flex overflow-hidden min-h-0">
+                        {/* Sidebar Settings */}
+                        <div className="w-80 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto custom-scroll">
+                            <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Cấu hình từ khóa</h3>
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium mb-2">Từ khóa đặc biệt (Kết quả cuối)</label>
+                                <input 
+                                    value={data.specialKeyword}
+                                    onChange={e => setData({...data, specialKeyword: removeVietnameseTones(e.target.value)})}
+                                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-3 font-mono tracking-widest text-center uppercase focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="VIETNAM"
+                                />
+                                <p className="text-xs text-slate-500 mt-2">Nhập không dấu. Các ký tự này sẽ được lấy từ các câu hỏi con.</p>
+                            </div>
+                            
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium mb-2">Câu hỏi cho từ khóa đặc biệt</label>
+                                <textarea 
+                                    value={data.specialQuestion || ''}
+                                    onChange={e => setData({...data, specialQuestion: e.target.value})}
+                                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none h-24"
+                                    placeholder="Ví dụ: Đây là tên đất nước hình chữ S..."
+                                />
+                            </div>
+
+                            <button onClick={autoMapSpecial} className="w-full py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors">
+                                <i className="fas fa-magic mr-2"></i> Tự động khớp ký tự
+                            </button>
+                        </div>
+
+                        {/* Questions List */}
+                        <div className="flex-1 bg-slate-100 dark:bg-black p-8 overflow-y-auto custom-scroll">
+                            <div className="max-w-4xl mx-auto space-y-4 pb-10">
+                                {data.questions.map((q, idx) => (
+                                    <div key={q.id} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                        <div className="flex justify-between mb-4">
+                                            <span className="font-bold text-slate-400">Câu hỏi #{idx + 1}</span>
+                                            <button onClick={() => removeQuestion(idx)} className="text-red-400 hover:text-red-600"><i className="fas fa-trash"></i></button>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-12 gap-4">
+                                            <div className="col-span-8">
+                                                <label className="block text-xs font-semibold mb-1">Nội dung câu hỏi</label>
+                                                <input 
+                                                    value={q.question}
+                                                    onChange={e => updateQuestion(idx, 'question', e.target.value)}
+                                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-2 focus:border-blue-500 outline-none"
+                                                    placeholder="Nhập câu hỏi..."
+                                                />
+                                            </div>
+                                            <div className="col-span-4">
+                                                <label className="block text-xs font-semibold mb-1">Link Ảnh/Video (Tùy chọn)</label>
+                                                <input 
+                                                    value={q.image}
+                                                    onChange={e => updateQuestion(idx, 'image', e.target.value)}
+                                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-2 focus:border-blue-500 outline-none text-xs"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                            
+                                            <div className="col-span-12 mt-2">
+                                                <label className="block text-xs font-semibold mb-1">Đáp án & Vị trí ký tự đặc biệt</label>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {q.answer.split('').map((char, charIdx) => {
+                                                        const isSelected = q.specialCharIndices && q.specialCharIndices.includes(charIdx);
+                                                        return (
+                                                            <div 
+                                                                key={charIdx} 
+                                                                onClick={() => toggleSpecialChar(idx, charIdx)}
+                                                                className={`w-10 h-10 border rounded flex items-center justify-center font-bold cursor-pointer transition-all ${
+                                                                    isSelected
+                                                                    ? 'bg-yellow-400 text-black border-yellow-500 scale-110 shadow-lg' 
+                                                                    : 'bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:bg-slate-200'
+                                                                }`}
+                                                            >
+                                                                {char}
+                                                                {isSelected && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    <input 
+                                                        value={q.answer}
+                                                        onChange={e => updateQuestion(idx, 'answer', e.target.value)}
+                                                        className="ml-4 bg-transparent border-b border-slate-300 focus:border-blue-500 outline-none w-32 font-mono uppercase"
+                                                        placeholder="ĐÁP ÁN"
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-slate-400 mt-2 italic">Click vào các ô chữ để đánh dấu ký tự thuộc từ khóa đặc biệt. (Có thể chọn nhiều)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                
+                                <button onClick={addQuestion} className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:border-blue-500 hover:text-blue-500 transition-colors font-medium">
+                                    <i className="fas fa-plus-circle mr-2"></i> Thêm câu hỏi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HostController = ({ game, gameState, syncState, onExit, addToast, loadGameToProjector }) => {
+            const currentQuestion = game.questions.find(q => q.id === gameState.currentQuestionId);
+
+            // Logic Actions
+            const selectQuestion = (qId) => {
+                syncState({
+                    ...gameState,
+                    currentQuestionId: qId,
+                    showAnswer: false,
+                    typingRowId: null,
+                    inputValues: { ...gameState.inputValues, [qId]: '' } // Reset input for this q
+                });
+            };
+
+            const toggleTypingMode = () => {
+                if (!gameState.currentQuestionId) return;
+                const isTyping = gameState.typingRowId === gameState.currentQuestionId;
+                syncState({
+                    ...gameState,
+                    typingRowId: isTyping ? null : gameState.currentQuestionId
+                });
+            };
+
+            const revealAnswer = () => {
+                if (!gameState.currentQuestionId) return;
+                
+                // Add to revealed list
+                const newRevealed = [...new Set([...gameState.revealedRows, gameState.currentQuestionId])];
+                
+                // Check if this row has special chars
+                const q = game.questions.find(q => q.id === gameState.currentQuestionId);
+                let newSpecialRevealed = [...gameState.specialRevealedChars];
+                
+                // Add ALL marked chars from this question
+                if (q.specialCharIndices && q.specialCharIndices.length > 0) {
+                    q.specialCharIndices.forEach(idx => {
+                        const char = q.answer[idx];
+                        // Avoid duplicates from same source? No, allow multiple if indices differ.
+                        // Store sourceId + index to be unique
+                        if(!newSpecialRevealed.some(s => s.sourceId === q.id && s.sourceIndex === idx)) {
+                            newSpecialRevealed.push({ sourceId: q.id, sourceIndex: idx, char: char });
+                        }
+                    });
+                }
+
+                syncState({
+                    ...gameState,
+                    revealedRows: newRevealed,
+                    showAnswer: true,
+                    typingRowId: null,
+                    specialRevealedChars: newSpecialRevealed
+                });
+            };
+
+            const toggleSpecialRound = () => {
+                syncState({
+                    ...gameState,
+                    isSpecialRound: !gameState.isSpecialRound,
+                    showSpecialQuestion: false // Reset question visibility when toggling round
+                });
+            };
+
+            const toggleSpecialQuestion = () => {
+                syncState({
+                    ...gameState,
+                    showSpecialQuestion: !gameState.showSpecialQuestion
+                });
+            };
+
+            const resetGame = () => {
+                if(confirm("Reset toàn bộ trạng thái chơi?")) {
+                    syncState({
+                        currentQuestionId: null,
+                        revealedRows: [],
+                        typingRowId: null,
+                        inputValues: {},
+                        showAnswer: false,
+                        specialRevealedChars: [],
+                        isSpecialRound: false,
+                        showSpecialQuestion: false
+                    });
+                }
+            }
+
+            const openProjectorWindow = () => {
+                const win = window.open(window.location.href + '#projector', '_blank', 'menubar=no,toolbar=no,location=no,status=no');
+                if(!win) {
+                    addToast("Lỗi", "Trình duyệt đã chặn cửa sổ bật lên (Pop-up). Hãy cho phép để mở màn hình chiếu.", "error");
+                } else {
+                    // Send current game to the new window after a slight delay to ensure it loads
+                    setTimeout(() => loadGameToProjector(game), 1000);
+                    setTimeout(() => syncState(gameState), 1500); // Sync current state as well
+                }
+            }
+            
+            // KEYBOARD LISTENER MOVED HERE (Correct Placement)
+            useEffect(() => {
+                const handleHostTyping = (e) => {
+                    if (!gameState.typingRowId) return;
+                    if (gameState.showAnswer) return; // Locked
+
+                    const qId = gameState.typingRowId;
+                    const currentVal = gameState.inputValues[qId] || '';
+                    const q = game.questions.find(x => x.id === qId);
+                    const maxLen = q.answer.length;
+
+                    if (e.key === 'Backspace') {
+                        const newVal = currentVal.slice(0, -1);
+                        syncState({
+                            ...gameState,
+                            inputValues: { ...gameState.inputValues, [qId]: newVal }
+                        });
+                    } else if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9]/)) {
+                        if (currentVal.length < maxLen) {
+                            const char = e.key.toUpperCase(); // Auto uppercase
+                            const newVal = currentVal + char;
+                            syncState({
+                                ...gameState,
+                                inputValues: { ...gameState.inputValues, [qId]: newVal }
+                            });
+                        }
+                    }
+                };
+
+                window.addEventListener('keydown', handleHostTyping);
+                return () => window.removeEventListener('keydown', handleHostTyping);
+            }, [gameState, game, syncState]);
+
+            return (
+                <div className="flex h-full overflow-hidden">
+                    {/* Left: Question List & Controls */}
+                    <div className="w-1/4 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col min-h-0 z-20 shadow-xl">
+                        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+                            <h3 className="font-bold">Bảng điều khiển</h3>
+                            <button onClick={onExit} className="text-xs text-red-500 hover:underline">Thoát</button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scroll">
+                            {game.questions.map((q, idx) => {
+                                const isSelected = gameState.currentQuestionId === q.id;
+                                const isDone = gameState.revealedRows.includes(q.id);
+                                return (
+                                    <div 
+                                        key={q.id} 
+                                        onClick={() => selectQuestion(q.id)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-all border ${
+                                            isSelected ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-md' : 
+                                            isDone ? 'bg-slate-100 dark:bg-slate-800 border-transparent opacity-60' :
+                                            'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className={`font-bold text-sm ${isSelected ? 'text-blue-600' : ''}`}>Câu {idx + 1}</span>
+                                            {isDone && <i className="fas fa-check text-green-500 text-xs"></i>}
+                                        </div>
+                                        <div className="text-xs text-slate-500 truncate">{q.question}</div>
+                                        <div className="text-xs font-mono mt-1 text-slate-400">Đ.Án: {q.answer} ({q.answer.length} ký tự)</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        
+                        {/* Host Controls */}
+                         <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shrink-0 space-y-2">
+                            {/* Special Round Controls */}
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800">
+                                <button onClick={toggleSpecialRound} className={`w-full py-2 mb-2 rounded font-bold text-sm text-white ${gameState.isSpecialRound ? 'bg-purple-600' : 'bg-slate-500'}`}>
+                                    {gameState.isSpecialRound ? 'ẨN CÂU ĐẶC BIỆT' : 'BẬT VÒNG ĐẶC BIỆT'}
+                                </button>
+                                {gameState.isSpecialRound && (
+                                    <button onClick={toggleSpecialQuestion} className={`w-full py-1.5 rounded text-xs font-bold border ${gameState.showSpecialQuestion ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-slate-600 border-slate-300'}`}>
+                                        {gameState.showSpecialQuestion ? 'ĐANG HIỆN CÂU HỎI' : 'HIỆN CÂU HỎI ĐẶC BIỆT'}
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Active Question Controls */}
+                            {currentQuestion && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button 
+                                        onClick={toggleTypingMode}
+                                        disabled={gameState.revealedRows.includes(currentQuestion.id)}
+                                        className={`py-2 rounded font-bold text-xs flex items-center justify-center gap-1 ${
+                                            gameState.typingRowId === currentQuestion.id
+                                            ? 'bg-amber-100 text-amber-600 border border-amber-500' 
+                                            : 'bg-white border border-slate-300'
+                                        }`}
+                                    >
+                                        <i className="fas fa-keyboard"></i> NHẬP
+                                    </button>
+
+                                    <button 
+                                        onClick={revealAnswer}
+                                        disabled={gameState.revealedRows.includes(currentQuestion.id)}
+                                        className={`py-2 rounded font-bold text-white text-xs flex items-center justify-center gap-1 ${
+                                            gameState.revealedRows.includes(currentQuestion.id)
+                                            ? 'bg-green-600 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
+                                    >
+                                        <i className="fas fa-eye"></i> MỞ
+                                    </button>
+                                </div>
+                            )}
+
+                            <button onClick={resetGame} className="w-full py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 text-xs font-medium">
+                                RESET GAME
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Right: Live Projector Preview */}
+                    <div className="flex-1 bg-slate-200 dark:bg-black p-4 flex flex-col relative overflow-hidden">
+                        {/* Header for Preview */}
+                        <div className="flex justify-between items-center mb-4 shrink-0">
+                            <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                                <span className="font-bold uppercase text-slate-500 text-sm tracking-widest">Live Preview (Màn hình chiếu)</span>
+                            </div>
+                            <button 
+                                onClick={openProjectorWindow}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transition-transform hover:scale-105"
+                            >
+                                <i className="fas fa-external-link-alt"></i> PHÓNG TO RA MÀN HÌNH RIÊNG
+                            </button>
+                        </div>
+
+                        {/* Preview Container */}
+                        <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden relative border-4 border-slate-300 dark:border-slate-700">
+                             {/* Embed ProjectorView directly here, using a transform to scale it down to fit */}
+                             <div className="w-full h-full relative overflow-hidden">
+                                 {/* We use a container that is technically 100% width/height but internally we might want to scale contents if needed. 
+                                     However, since ProjectorView is responsive (using Tailwind), it should just fit nicely!
+                                 */}
+                                 <ProjectorView game={game} gameState={gameState} isPreview={true} />
+                                 
+                                 {/* Overlay to prevent clicking inside preview */}
+                                 <div className="absolute inset-0 z-50 cursor-default"></div>
+                             </div>
+                        </div>
+                        <p className="text-center text-xs text-slate-400 mt-2">Đây là những gì người chơi đang nhìn thấy.</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProjectorView = ({ game, gameState, isPreview }) => {
+            const [isProjectorReady, setIsProjectorReady] = useState(false);
+
+            useEffect(() => {
+                // If it is preview, it's always ready (bypass setup screen)
+                if (isPreview) {
+                    setIsProjectorReady(true);
+                }
+            }, [isPreview]);
+
+            const handleSetup = async () => {
+                try {
+                    // 1. Try to find other screens and move there using standard Window Management API (Chrome/Edge)
+                    if ('getScreenDetails' in window) {
+                        try {
+                            const screenDetails = await window.getScreenDetails();
+                            const currentScreen = screenDetails.currentScreen;
+                            // Find a screen that is NOT the current one (assuming that's the projector)
+                            const externalScreen = screenDetails.screens.find(s => s.id !== currentScreen.id);
+                            
+                            if (externalScreen) {
+                                await window.moveTo(externalScreen.left, externalScreen.top);
+                            }
+                        } catch (permErr) {
+                            console.log("Quyền truy cập màn hình bị từ chối hoặc không hỗ trợ", permErr);
+                        }
+                    } 
+                    
+                    // 2. Request Fullscreen (Must be user triggered, which this click is)
+                    await document.documentElement.requestFullscreen();
+                } catch (err) {
+                    console.log("Fullscreen/Move error", err);
+                }
+                
+                // 3. Mark as ready to show content
+                setIsProjectorReady(true);
+            };
+
+            // WAITING STATE (Only for real projector window)
+            if (!game) return (
+                <div className="h-full w-full flex items-center justify-center bg-black text-white">
+                    <div className="text-center animate-pulse-slow">
+                        <i className="fas fa-wifi text-6xl mb-4 text-blue-500"></i>
+                        <h2 className="text-3xl font-light">Chờ tín hiệu từ máy chủ...</h2>
+                        <p className="text-slate-500 mt-2">Vui lòng chọn màn chơi từ Dashboard</p>
+                    </div>
+                </div>
+            );
+
+            // SETUP STATE (Only for real projector window)
+            if (!isProjectorReady && !isPreview) {
+                return (
+                    <div className="h-full w-full flex items-center justify-center bg-slate-900 text-white p-10">
+                        <div className="max-w-lg w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
+                            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(37,99,235,0.5)] animate-bounce">
+                                <i className="fas fa-desktop text-3xl"></i>
+                            </div>
+                            <h1 className="text-2xl font-bold mb-2">SẴN SÀNG TRÌNH CHIẾU</h1>
+                            <p className="text-slate-400 mb-8">
+                                Cửa sổ này đang ở màn hình hiện tại. Bấm nút dưới đây để tự động chuyển sang màn hình máy chiếu (nếu có) và phóng to.
+                            </p>
+                            
+                            <button 
+                                onClick={handleSetup}
+                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl font-bold text-lg shadow-lg transform transition-all hover:scale-105 active:scale-95"
+                            >
+                                BẮT ĐẦU CHIẾU & PHÓNG TO <i className="fas fa-expand ml-2"></i>
+                            </button>
+                            
+                            <p className="text-xs text-slate-500 mt-4 italic">
+                                *Nếu không tự chuyển màn hình được, vui lòng kéo cửa sổ này sang màn hình máy chiếu rồi bấm F11.
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- PROJECTOR UI COMPONENTS (ACTUAL CONTENT) ---
+
+            // Question Modal
+            const ActiveQuestionOverlay = ({ qId }) => {
+                const q = game.questions.find(x => x.id === qId);
+                if (!q) return null;
+                
+                return (
+                    <div className="absolute inset-0 z-40 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-12 animate-[fadeIn_0.5s_ease-out]">
+                        <div className={`w-full max-w-4xl bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50 ${isPreview ? 'scale-75 origin-center' : ''}`}>
+                            <div className="bg-blue-600 p-6 flex justify-between items-center">
+                                <h2 className="text-3xl font-bold text-white">Câu hỏi số {game.questions.findIndex(x => x.id === qId) + 1}</h2>
+                                <div className="text-blue-200">
+                                    {q.answer.length} Ký tự
+                                </div>
+                            </div>
+                            <div className="p-12 text-center">
+                                {q.image && (
+                                    <img src={q.image} className="max-h-64 mx-auto mb-8 rounded-lg shadow-lg object-contain" onError={(e) => e.target.style.display='none'} />
+                                )}
+                                <h3 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                                    {q.question}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Calculate grid layout logic
+            // We want rows to be centered.
+            
+            return (
+                <div className={`h-full w-full bg-slate-100 dark:bg-slate-950 flex flex-col relative overflow-hidden ${isPreview ? 'text-[0.8em]' : ''}`}>
+                    {/* Header */}
+                    <div className="h-20 flex items-center justify-center bg-white dark:bg-black shadow-sm z-10 shrink-0 relative">
+                        <h1 className="text-4xl font-black uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                            {game.title}
+                        </h1>
+                        {/* Special Keyword Container */}
+                        {gameState.isSpecialRound && (
+                             <div className="absolute bottom-[-60px] left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-6 py-2 rounded-b-xl shadow-lg font-bold text-xl animate-[slideDown_0.5s_ease-out] z-20 whitespace-nowrap">
+                                TỪ KHÓA ĐẶC BIỆT
+                             </div>
+                        )}
+                    </div>
+
+                    {/* Main Board - Scroll Fix */}
+                    <div className="flex-1 overflow-y-auto custom-scroll relative">
+                        <div className="min-h-full flex items-center justify-center p-10">
+                            <div className="flex flex-col gap-3 w-full max-w-5xl">
+                                {game.questions.map((q, idx) => (
+                                    <CrosswordRow 
+                                        key={q.id} 
+                                        q={q} 
+                                        index={idx}
+                                        isActive={gameState.currentQuestionId === q.id}
+                                        isRevealed={gameState.revealedRows.includes(q.id)}
+                                        inputValue={gameState.inputValues[q.id] || ''}
+                                        isTyping={gameState.typingRowId === q.id}
+                                    />
+                                ))}
+
+                                {/* SPECIAL KEYWORD ROW (Always at bottom or separate) */}
+                                {game.specialKeyword && (
+                                    <div className={`mt-16 transition-all duration-1000 ${gameState.isSpecialRound ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
+                                        
+                                        {/* Display Special Question if Enabled */}
+                                        {gameState.showSpecialQuestion && game.specialQuestion && (
+                                            <div className="mb-6 bg-purple-600 text-white p-6 rounded-2xl shadow-xl text-center animate-[popIn_0.5s] border-4 border-purple-400">
+                                                <h3 className="text-xl font-bold uppercase mb-2 text-purple-200">Câu hỏi đặc biệt</h3>
+                                                <p className="text-2xl md:text-3xl font-bold leading-relaxed">{game.specialQuestion}</p>
+                                            </div>
+                                        )}
+
+                                        <SpecialRow 
+                                            keyword={game.specialKeyword} 
+                                            revealedChars={gameState.specialRevealedChars}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Overlay for Active Question (Only if not revealed yet and currently selected) */}
+                    {gameState.currentQuestionId && 
+                     !gameState.revealedRows.includes(gameState.currentQuestionId) && 
+                     !gameState.typingRowId && // Hide overlay when typing mode is on to see the grid
+                     (
+                        <ActiveQuestionOverlay qId={gameState.currentQuestionId} />
+                    )}
+                </div>
+            );
+        };
+
+        // --- GAME UI COMPONENTS ---
+
+        const CrosswordRow = ({ q, index, isActive, isRevealed, inputValue, isTyping }) => {
+            // Animation Trigger
+            useEffect(() => {
+                if (isRevealed) {
+                    anime({
+                        targets: `#row-${q.id} .letter-inner`,
+                        rotateY: '180deg',
+                        delay: anime.stagger(100), // domino effect
+                        duration: 800,
+                        easing: 'easeInOutQuad'
+                    });
+                }
+            }, [isRevealed, q.id]);
+
+            const chars = q.answer.split('');
+
+            return (
+                <div id={`row-${q.id}`} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-105 z-10' : 'opacity-90'}`}>
+                    {/* Number Indicator */}
+                    <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 ${
+                        isActive ? 'bg-blue-600 text-white border-blue-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                    }`}>
+                        {index + 1}
+                    </div>
+
+                    <div className="flex gap-1 md:gap-2 items-center">
+                        {chars.map((char, i) => {
+                            // Check using array includes instead of === index
+                            const isSpecial = q.specialCharIndices && q.specialCharIndices.includes(i);
+                            // Logic: Show char if revealed OR if user typed it in typing mode
+                            const userChar = inputValue[i] || '';
+                            
+                            return (
+                                <div key={i} className={`letter-box w-10 h-10 md:w-14 md:h-14`}>
+                                    <div className={`letter-inner relative w-full h-full shadow-md rounded-lg duration-500 transform transition-transform`}>
+                                        
+                                        {/* FRONT FACE (Hidden/Typing) */}
+                                        <div className={`letter-front rounded-lg border-2 ${
+                                            isActive ? 'border-blue-400 bg-blue-50 dark:bg-slate-800' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                        }`}>
+                                            {isTyping && (
+                                                <span className="text-2xl font-bold text-slate-800 dark:text-slate-200 animate-[popIn_0.2s]">{userChar}</span>
+                                            )}
+                                        </div>
+
+                                        {/* BACK FACE (Revealed Answer) */}
+                                        <div className={`letter-back rounded-lg border-2 text-2xl md:text-3xl font-bold ${
+                                            isSpecial 
+                                            ? 'bg-yellow-400 border-yellow-500 text-black shadow-[0_0_15px_rgba(250,204,21,0.6)]' 
+                                            : 'bg-blue-600 border-blue-500 text-white'
+                                        }`}>
+                                            {char}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        
+                        {/* Character Count Badge - New Feature */}
+                        <div className="ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700">
+                            {chars.length}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SpecialRow = ({ keyword, revealedChars }) => {
+            // revealedChars is array of {sourceId, char}.
+            // We need to map these to the keyword slots but "scrambled" (jumbled) visual style initially?
+            // User requirement: "Ô chữ đặc biệt sẽ lộn xộn chứ không phải hiện theo đáp án gốc"
+            // Implementation: We display the Keyword boxes. But the letters appear randomly or simply they just fill in.
+            // Since the user said "scrambled", let's display the collected letters in a container that looks like a pool, OR display the slots and fill them.
+            // Let's stick to the classic "Vertical Keyword" logic but displayed Horizontally here.
+            
+            // actually, we just fill the slots based on index. If scrambled view is needed, that's a different feature. 
+            // The previous code implementation filled it sequentially based on collected chars.
+            
+            const [displayLetters, setDisplayLetters] = useState([]);
+
+            useEffect(() => {
+                // Collect all chars currently revealed
+                const chars = revealedChars.map(r => r.char);
+                // We pad the rest with empty
+                const total = keyword.length;
+                const current = new Array(total).fill(null).map((_, i) => chars[i] || '');
+                setDisplayLetters(current);
+            }, [revealedChars, keyword]);
+
+            return (
+                <div className="flex flex-col items-center">
+                    <div className="flex gap-3 p-6 bg-slate-200 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-400 relative flex-wrap justify-center">
+                        {keyword.split('').map((kChar, i) => {
+                            // Find if we have this char revealed.
+                            // This is tricky. Let's just show the revealed chars in order of discovery (Scrambled effect relative to final word)
+                            const charToShow = displayLetters[i]; 
+                            
+                            return (
+                                <div key={i} className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 hover:scale-110">
+                                    {charToShow ? (
+                                        <span className="text-4xl font-black text-white drop-shadow-md animate-[bounceIn_0.6s]">{charToShow}</span>
+                                    ) : (
+                                        <div className="w-4 h-4 bg-black/10 rounded-full"></div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <div className="mt-4 text-slate-500 font-mono text-sm tracking-widest uppercase">Các ký tự gợi ý</div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    
+    <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes slideDown { from { transform: translate(-50%, -100%); } to { transform: translate(-50%, 0); } }
+    </style>
+</body>
+</html>
