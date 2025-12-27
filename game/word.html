@@ -172,7 +172,7 @@
             return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
         };
 
-        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v5';
+        const BROADCAST_CHANNEL_NAME = 'crossword_game_channel_v6';
 
         // --- COMPONENTS ---
 
@@ -500,7 +500,14 @@
                 appFontSize: settings.fontSize
             });
 
+            // REFS to hold state for Broadcast Handshake
+            const gameStateRef = useRef(gameState);
+            const gameRef = useRef(currentGame);
             const broadcastRef = useRef(null);
+
+            // Sync Refs with State
+            useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
+            useEffect(() => { gameRef.current = currentGame; }, [currentGame]);
 
             useEffect(() => {
                 const savedGames = localStorage.getItem('cw_games');
@@ -511,21 +518,46 @@
                 }
 
                 broadcastRef.current = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+                
                 broadcastRef.current.onmessage = (event) => {
                     const { type, payload } = event.data;
-                    if (type === 'SYNC_STATE') {
-                        setGameState(payload);
-                    } else if (type === 'LOAD_GAME') {
-                        setCurrentGame(payload);
-                        if(window.location.hash === '#projector') {
-                             setView('projector');
+                    
+                    if (window.location.hash === '#projector') {
+                        // PROJECTOR LOGIC
+                        if (type === 'SYNC_STATE') {
+                            setGameState(payload);
+                        } else if (type === 'LOAD_GAME') {
+                            setCurrentGame(payload);
+                            setView('projector');
+                        }
+                    } else {
+                        // HOST LOGIC - HANDSHAKE REPLY
+                        if (type === 'REQUEST_STATE') {
+                            // Only reply if we have a game loaded
+                            if (gameRef.current) {
+                                broadcastRef.current.postMessage({ type: 'LOAD_GAME', payload: gameRef.current });
+                                broadcastRef.current.postMessage({ type: 'SYNC_STATE', payload: gameStateRef.current });
+                                addToast("Kết nối mới", "Màn hình phụ đã được đồng bộ", "success");
+                            }
                         }
                     }
                 };
 
+                // PROJECTOR INIT LOGIC - SEND HANDSHAKE
                 if (window.location.hash === '#projector') {
                     setView('projector');
                     setLoading(false);
+                    // Poll for game data every 1s until loaded
+                    const interval = setInterval(() => {
+                         if (!gameRef.current) {
+                             broadcastRef.current.postMessage({ type: 'REQUEST_STATE' });
+                         } else {
+                             clearInterval(interval);
+                         }
+                    }, 1000);
+                    // Initial shot
+                    setTimeout(() => broadcastRef.current.postMessage({ type: 'REQUEST_STATE' }), 500);
+                    return () => clearInterval(interval);
                 }
 
                 return () => broadcastRef.current?.close();
@@ -616,7 +648,7 @@
                             </div>
 
                             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-sm text-slate-500 text-center">
-                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.3 Pro
+                                <i className="fas fa-code-branch mr-2"></i> Phiên bản 2026.2.4 (SyncFix)
                             </div>
                         </div>
                     </div>
