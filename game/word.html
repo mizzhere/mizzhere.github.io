@@ -963,7 +963,8 @@
                 
                 return (
                     <div className="absolute inset-0 z-40 bg-slate-900/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-[fadeIn_0.5s_ease-out]">
-                        <div className={`w-full max-w-5xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50 flex flex-col ${isPreview ? 'scale-75 origin-center' : ''}`}>
+                        {/* REMOVED max-w-5xl, changed to w-auto max-w-[95vw] to fit content */}
+                        <div className={`w-auto max-w-[95vw] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50 flex flex-col ${isPreview ? 'scale-75 origin-center' : ''}`}>
                             <div className="bg-blue-600 p-6 flex justify-between items-center shrink-0">
                                 <h2 className="text-3xl font-bold text-white">Câu hỏi số {index + 1}</h2>
                                 <div className="text-blue-200 font-mono text-xl">
@@ -979,7 +980,9 @@
                                     {q.question}
                                 </h3>
 
-                                <div className="transform scale-125 origin-center p-4 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
+                                {/* REMOVED scale-125 which caused clipping */}
+                                {/* ADDED overflow-x-auto to handle super long words gracefully */}
+                                <div className="w-full overflow-x-auto custom-scroll p-4 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner flex justify-center">
                                      <CrosswordRow 
                                         q={q} 
                                         index={index}
@@ -998,15 +1001,13 @@
 
             return (
                 <div className={`h-full w-full bg-slate-100 dark:bg-slate-950 flex flex-col relative overflow-hidden ${isPreview ? 'text-[0.8em]' : ''}`}>
-                    <div className="h-20 flex items-center justify-center bg-white dark:bg-black shadow-sm z-10 shrink-0 relative">
-                        <h1 className="text-4xl font-black uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                            {game.title}
-                        </h1>
-                        {gameState.isSpecialRound && (
-                             <div className="absolute bottom-[-60px] left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-6 py-2 rounded-b-xl shadow-lg font-bold text-xl animate-[slideDown_0.5s_ease-out] z-20 whitespace-nowrap">
-                                TỪ KHÓA ĐẶC BIỆT
-                             </div>
-                        )}
+                    {/* Header modified to show SpecialRow instead of Title */}
+                    <div className="min-h-[120px] flex flex-col items-center justify-center bg-white dark:bg-black shadow-sm z-10 shrink-0 relative py-4">
+                        <SpecialRow 
+                            keyword={game.specialKeyword} 
+                            revealedChars={gameState.specialRevealedChars}
+                            isHeader={true}
+                        />
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scroll relative">
@@ -1034,6 +1035,14 @@
                                                 <p className="text-2xl md:text-3xl font-bold leading-relaxed">{game.specialQuestion}</p>
                                             </div>
                                         )}
+                                        {/* REMOVED SpecialRow from here if you only want it at top, 
+                                            BUT usually having it larger at the bottom for the reveal is nice.
+                                            However, user said "show at top INSTEAD of title". 
+                                            It didn't explicitly say remove from bottom, but usually duplicated is redundant.
+                                            Let's keep bottom ONLY if Special Round is active?
+                                            Actually, let's keep the bottom one as the "Main Reveal" location for the Special Round moment.
+                                            The top one is the "Status Bar".
+                                        */}
                                         <SpecialRow 
                                             keyword={game.specialKeyword} 
                                             revealedChars={gameState.specialRevealedChars}
@@ -1087,7 +1096,8 @@
 
             return (
                 <div ref={rowRef} className={`flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-105 z-10' : 'opacity-90'}`}>
-                    <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 ${
+                    {/* Number Indicator */}
+                    <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl mr-2 md:mr-4 shadow-lg border-2 shrink-0 ${
                         isActive ? 'bg-blue-600 text-white border-blue-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                     }`}>
                         {index + 1}
@@ -1099,7 +1109,7 @@
                             const userChar = inputValue[i] || '';
                             
                             return (
-                                <div key={i} className={`letter-box w-10 h-10 md:w-14 md:h-14`}>
+                                <div key={i} className={`letter-box w-10 h-10 md:w-14 md:h-14 shrink-0`}>
                                     <div className={`letter-inner relative w-full h-full shadow-md rounded-lg duration-500 transform transition-transform`}>
                                         
                                         {/* FRONT FACE (Hidden/Typing) */}
@@ -1124,7 +1134,7 @@
                             );
                         })}
                         
-                        <div className="ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700">
+                        <div className="ml-2 md:ml-4 w-10 h-10 md:w-12 md:h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-lg md:text-xl border-2 border-slate-300 dark:border-slate-700 shrink-0">
                             {chars.length}
                         </div>
                     </div>
@@ -1132,7 +1142,7 @@
             );
         };
 
-        const SpecialRow = ({ keyword, revealedChars }) => {
+        const SpecialRow = ({ keyword, revealedChars, isHeader }) => {
             const [displayLetters, setDisplayLetters] = useState([]);
 
             useEffect(() => {
@@ -1144,22 +1154,22 @@
 
             return (
                 <div className="flex flex-col items-center">
-                    <div className="flex gap-3 p-6 bg-slate-200 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-400 relative flex-wrap justify-center">
+                    <div className={`flex gap-2 md:gap-3 p-4 bg-slate-200 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-400 relative flex-wrap justify-center ${isHeader ? 'scale-75 md:scale-100 bg-transparent border-none p-0' : ''}`}>
                         {keyword.split('').map((kChar, i) => {
                             const charToShow = displayLetters[i]; 
                             
                             return (
-                                <div key={i} className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 hover:scale-110">
+                                <div key={i} className={`rounded-xl shadow-lg flex items-center justify-center transform transition-all duration-500 hover:scale-110 ${isHeader ? 'w-10 h-10 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'} bg-gradient-to-br from-yellow-400 to-orange-500`}>
                                     {charToShow ? (
-                                        <span className="text-4xl font-black text-white drop-shadow-md animate-[bounceIn_0.6s]">{charToShow}</span>
+                                        <span className={`${isHeader ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-black text-white drop-shadow-md animate-[bounceIn_0.6s]`}>{charToShow}</span>
                                     ) : (
-                                        <div className="w-4 h-4 bg-black/10 rounded-full"></div>
+                                        <div className="w-2 h-2 md:w-4 md:h-4 bg-black/10 rounded-full"></div>
                                     )}
                                 </div>
                             )
                         })}
                     </div>
-                    <div className="mt-4 text-slate-500 font-mono text-sm tracking-widest uppercase">Các ký tự gợi ý</div>
+                    {!isHeader && <div className="mt-4 text-slate-500 font-mono text-sm tracking-widest uppercase">Các ký tự gợi ý</div>}
                 </div>
             );
         };
