@@ -1672,12 +1672,16 @@
 
             <div class="right-controls">
                 <button id="speed-btn" class="icon-btn" title="Tốc độ phát">
-                   <svg viewBox="0 0 24 24"><path d="M20.38,8.57L21.88,7.07L20.46,5.66L18.96,7.16C18.66,6.96 18.33,6.8 17.97,6.69L17.97,4.5H15.97L15.97,6.69C15.61,6.8 15.28,6.96 14.97,7.16L13.47,5.66L12.06,7.07L13.56,8.57C13.36,8.87 13.2,9.2 13.09,9.56H10.91C10.8,9.2 10.63,8.87 10.43,8.57L11.93,7.07L10.5,5.66L9,7.16C8.7,6.96 8.37,6.8 8,6.69V4.5H6V6.69C5.64,6.8 5.31,6.96 5,7.16L3.5,5.66L2.09,7.07L3.59,8.57C3.38,8.87 3.22,9.2 3.11,9.56H1V11.56H3.11C3.22,11.92 3.38,12.25 3.59,12.56L2.09,14.06L3.5,15.47L5,13.97C5.31,14.17 5.64,14.33 6,14.44V16.63H8V14.44C8.37,14.33 8.7,14.17 9,13.97L10.5,15.47L11.93,14.06L10.43,12.56C10.63,12.25 10.8,11.92 10.91,11.56H13.09C13.2,11.92 13.36,12.25 13.56,12.56L12.06,14.06L13.47,15.47L14.97,13.97C15.28,14.17 15.61,14.33 15.97,14.44V16.63H17.97V14.44C18.33,14.33 18.66,14.17 18.96,13.97L20.46,15.47L21.88,14.06L20.38,12.56C20.58,12.25 20.74,11.92 20.85,11.56H23V9.56H20.85C20.74,9.2 20.58,8.87 20.38,8.57M12,18A6,6 0 1,1 18,12A6,6 0 0,1 12,18Z" /></svg>
-                </button>
+    <svg viewBox="0 0 24 24">
+        <path d="M5.58,16.89l5.77-4.07c0.56-0.4,0.56-1.24,0-1.63L5.58,7.11C4.91,6.65,4,7.12,4,7.93v8.14 C4,16.88,4.91,17.35,5.58,16.89z M13.58,16.89l5.77-4.07c0.56-0.4,0.56-1.24,0-1.63l-5.77-4.07c-0.67-0.47-1.58,0-1.58,0.81v8.14 C12,16.88,12.91,17.35,13.58,16.89z"/>
+    </svg>
+</button>
 
-                <button id="cc-toggle-btn" class="icon-btn" title="Bật/Tắt Phụ đề">
-                    <svg viewBox="0 0 24 24"><path d="M19,4H5A2,2 0 0,0 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6A2,2 0 0,0 19,4M11,11H7V10H10V9H7V8H11V7H6V12H11V11M18,11H14V10H17V9H14V8H18V7H13V12H18V11Z" /></svg>
-                </button>
+<button id="cc-toggle-btn" class="icon-btn" title="Bật/Tắt Phụ đề">
+    <svg viewBox="0 0 24 24">
+        <path d="M19,4H5C3.89,4,3,4.9,3,6v12c0,1.1,0.89,2,2,2h14c1.1,0,2-0.9,2-2V6C21,4.9,20.11,4,19,4z M11,11H7v2h4v2H7 c-1.1,0-2-0.9-2-2v-4c0-1.1,0.9-2,2-2h4V11z M17,11h-4v2h4v2h-4c-1.1,0-2-0.9-2-2v-4c0-1.1,0.9-2,2-2h4V11z"/>
+    </svg>
+</button>
 
                 <button id="episodes-btn" class="icon-btn hidden" title="Danh sách tập">
                     <svg viewBox="0 0 24 24"><path d="M4,10H20V12H4V10M4,6H20V8H4V6M4,14H14V16H4V14M16,13V21L22,17L16,13Z" /></svg>
@@ -2103,47 +2107,51 @@
                 initializeLibrary();
             });
 
-            function toggleFloatingMenu(menuId) {
+           function toggleFloatingMenu(menuId) {
     const targetMenu = document.getElementById(menuId);
     if (!targetMenu) return;
 
     // Danh sách tất cả menu nổi
     const allMenus = ["settings-menu", "episodes-sidebar", "speed-menu"];
     
-    // 1. Kiểm tra xem menu mục tiêu có đang mở không
-    const isTargetOpen = targetMenu.classList.contains("visible");
+    // 1. [QUAN TRỌNG] Kiểm tra trạng thái TRƯỚC khi reset
+    // Nếu nó đang có class 'visible', tức là đang mở -> User muốn đóng nó.
+    const wasVisible = targetMenu.classList.contains("visible");
 
-    // 2. Đóng TẤT CẢ menu trước
+    // 2. Đóng TẤT CẢ menu trước (Reset về trạng thái sạch)
     allMenus.forEach(id => {
         const m = document.getElementById(id);
         if (m) {
             m.classList.remove("visible");
-            setTimeout(() => { if(!m.classList.contains("visible")) m.style.display = "none"; }, 300);
+            // Ẩn display sau khi hết animation
+            setTimeout(() => { 
+                if(!m.classList.contains("visible")) m.style.display = "none"; 
+            }, 300);
         }
     });
     
-    // Reset active state của các nút
+    // Reset active state của các nút (Bỏ sáng nút)
     document.getElementById("settings-btn").classList.remove("active");
     document.getElementById("episodes-btn").classList.remove("active");
-    // (Nếu có nút speed active thì reset ở đây luôn nếu muốn style icon xoay)
+    // (Nếu muốn nút speed cũng sáng khi mở thì thêm logic remove active cho speed-btn ở đây)
 
-    // 3. Nếu menu mục tiêu CHƯA mở -> Mở nó ra
-    if (!isTargetOpen) {
-        targetMenu.style.display = "flex"; // hoặc block tuỳ menu
+    // 3. LOGIC QUYẾT ĐỊNH:
+    // Chỉ mở lại nếu TRƯỚC ĐÓ nó CHƯA mở (wasVisible === false)
+    if (!wasVisible) {
+        targetMenu.style.display = "flex"; // hoặc block tuỳ CSS của bạn
         
-        // Render content nếu là episodes
+        // Render content nếu là episodes (Logic cũ của bạn)
         if (menuId === "episodes-sidebar") renderEpisodeList();
 
         requestAnimationFrame(() => {
             targetMenu.classList.add("visible");
         });
 
-        // Set active icon tương ứng
+        // Set active icon tương ứng (Làm sáng nút đang mở)
         if (menuId === "settings-menu") document.getElementById("settings-btn").classList.add("active");
         if (menuId === "episodes-sidebar") document.getElementById("episodes-btn").classList.add("active");
     }
 }
-
             // --- [FIXED] LOGIC HIỂN THỊ PORTAL ---
             // Thêm tham số isProgramCard để biết đây là thẻ Series hay thẻ Video lẻ
             function showPortal(card, videoData, isProgramCard = false) {
