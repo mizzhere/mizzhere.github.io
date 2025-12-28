@@ -227,7 +227,63 @@
             width: 100%;
         }
     }
+/* --- FIX CSS TÌM KIẾM --- */
+#search-box-wrapper {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+    position: relative; /* Để quản lý z-index */
+}
 
+#search-box-wrapper.active {
+    background-color: rgba(0, 0, 0, 0.8); /* Đậm hơn chút để che nền */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 5px 10px;
+    z-index: 9999;
+}
+
+#search-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 1rem;
+    
+    /* Trạng thái đóng: Rút gọn hoàn toàn */
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none; /* Không cho bấm khi đóng */
+    
+    transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+/* Trạng thái mở: Buộc phải hiện */
+#search-box-wrapper.active #search-input {
+    width: 250px !important; /* Force độ rộng */
+    opacity: 1 !important;
+    padding-left: 10px;
+    pointer-events: auto !important; /* Cho phép nhập liệu */
+}
+
+/* Fix trên mobile */
+@media (max-width: 768px) {
+    #page-header.search-active #search-box-wrapper.active {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        background-color: #141414;
+        z-index: 10001;
+    }
+    #page-header.search-active #search-box-wrapper.active #search-input {
+        width: 100% !important;
+    }
+}
     /* ========================================= */
     /* 3. HERO SLIDER (CINEMA BANNER)            */
     /* ========================================= */
@@ -2910,74 +2966,94 @@
             }
             // --- Event Handling ---
 
-            function setupEventListeners() {
-    // --- 1. SỰ KIỆN SCROLL HEADER ---
+function setupEventListeners() {
+    // --- 1. SCROLL HEADER ---
     const header = document.getElementById("page-header");
     window.addEventListener("scroll", () => {
-        if (window.scrollY > 50) {
-            header.classList.add("scrolled");
-        } else {
-            header.classList.remove("scrolled");
-        }
-        hidePortal(true); // Ẩn portal ngay khi cuộn trang
+        if (window.scrollY > 50) header.classList.add("scrolled");
+        else header.classList.remove("scrolled");
+        hidePortal(true);
         clearTimeout(hoverTimeout);
     });
 
-    // --- 2. SỬA LỖI TÌM KIẾM (SEARCH FIX) ---
+    // --- 2. FIX TÌM KIẾM (SEARCH) ---
     const searchWrapper = document.getElementById("search-box-wrapper");
     const searchTrigger = document.getElementById("search-trigger-btn");
     const searchClear = document.getElementById("search-clear-btn");
     const searchInput = document.getElementById("search-input");
     const pageHeader = document.getElementById("page-header");
 
-    // Click kính lúp -> Mở/Đóng
+    // Click icon kính lúp
     searchTrigger.addEventListener("click", (e) => {
-        e.stopPropagation(); // Chặn sự kiện lan ra ngoài để không bị đóng ngay lập tức
+        e.stopPropagation(); // Ngăn chặn sự kiện click lan ra document
+        
+        // Toggle class active
         const isActive = searchWrapper.classList.toggle("active");
 
         if (isActive) {
-            searchInput.focus();
             pageHeader.classList.add("search-active");
+            // Chờ animation CSS 1 chút rồi focus để bàn phím ảo (mobile) hiện lên
+            setTimeout(() => {
+                searchInput.focus(); 
+            }, 100);
         } else {
-            // Chỉ bỏ class search-active nếu input rỗng
+            // Chỉ đóng nếu rỗng
             if (searchInput.value.trim() === "") {
                 pageHeader.classList.remove("search-active");
+                searchInput.blur();
             }
         }
     });
 
-    // Click nút X -> Xóa text
+    // Click nút X (Clear)
     searchClear.addEventListener("click", (e) => {
         e.stopPropagation();
         searchInput.value = "";
         searchInput.focus();
-        handleSearchAndFilter(); // Reset danh sách
+        handleSearchAndFilter();
         searchClear.classList.remove("visible");
     });
 
-    // Nhập liệu -> Hiện nút X và lọc
+    // Nhập liệu
     searchInput.addEventListener("input", () => {
-        if (searchInput.value.trim().length > 0) {
-            searchClear.classList.add("visible");
-        } else {
-            searchClear.classList.remove("visible");
-        }
+        if (searchInput.value.trim().length > 0) searchClear.classList.add("visible");
+        else searchClear.classList.remove("visible");
         handleSearchAndFilter();
     });
 
-    // Click ra ngoài -> Đóng search (nếu rỗng)
+    // Click ra ngoài để đóng tìm kiếm
     document.addEventListener("click", (e) => {
+        // Nếu click KHÔNG nằm trong searchWrapper VÀ searchWrapper đang mở
         if (searchWrapper.classList.contains("active") && !searchWrapper.contains(e.target)) {
+            // Chỉ đóng nếu input rỗng
             if (searchInput.value.trim() === "") {
                 searchWrapper.classList.remove("active");
                 searchClear.classList.remove("visible");
                 pageHeader.classList.remove("search-active");
+                searchInput.blur();
             }
         }
     });
 
-    // --- 3. SỰ KIỆN CUỘN NGANG (MOUSE WHEEL) ---
-    // Cho danh sách video ở trang chủ
+    // --- 3. FIX CLICK LIST TRONG MODAL (RELATED CONTENT) ---
+    // [QUAN TRỌNG] Thêm lắng nghe sự kiện cho danh sách "Có thể bạn sẽ thích"
+    const relatedList = document.getElementById("modal-related-list");
+    if (relatedList) {
+        relatedList.addEventListener("click", (e) => {
+            // Tái sử dụng hàm handleCardClick có sẵn
+            // Vì handleCardClick dựa vào e.target.closest('.video-card') nên dùng lại được luôn
+            handleCardClick(e); 
+            
+            // Tùy chọn: Cuộn modal lên đầu sau khi bấm chuyển phim
+            document.getElementById("detail-modal-content").scrollTop = 0;
+        });
+    }
+
+    // --- 4. CLICK LIBRARY CHÍNH ---
+    const libraryContainer = document.getElementById("library-container");
+    libraryContainer.addEventListener("click", handleCardClick);
+    
+    // --- 5. SỰ KIỆN HOVER/SCROLL (Giữ nguyên logic cũ) ---
     const videoLists = document.querySelectorAll(".video-list");
     videoLists.forEach((list) => {
         list.addEventListener("wheel", (evt) => {
@@ -2987,35 +3063,29 @@
             }
         }, { passive: false });
     });
-
-    // Cho danh sách tập trong Modal
-    const modalList = document.getElementById("modal-episodes-list");
-    if (modalList) {
-        modalList.addEventListener("wheel", (evt) => {
-            if (modalList.scrollWidth > modalList.clientWidth) {
+    
+    // Scroll cho list tập trong Modal
+    const modalEpList = document.getElementById("modal-episodes-list");
+    if (modalEpList) {
+        modalEpList.addEventListener("wheel", (evt) => {
+            if (modalEpList.scrollWidth > modalEpList.clientWidth) {
                 evt.preventDefault();
-                modalList.scrollLeft += evt.deltaY * 3;
+                modalEpList.scrollLeft += evt.deltaY * 3;
+            }
+        }, { passive: false });
+    }
+    
+    // Scroll cho list Related trong Modal
+    if (relatedList) {
+        relatedList.addEventListener("wheel", (evt) => {
+            if (relatedList.scrollWidth > relatedList.clientWidth) {
+                 evt.preventDefault();
+                 relatedList.scrollLeft += evt.deltaY * 3;
             }
         }, { passive: false });
     }
 
-    // Cho Portal (để ẩn khi lăn chuột)
-    const portal = document.getElementById("hover-portal");
-    portal.addEventListener("wheel", (e) => {
-        if (!currentHoveredCard) return;
-        const list = currentHoveredCard.closest(".video-list");
-        if (list) {
-            e.preventDefault();
-            list.scrollLeft += e.deltaY * 8;
-            hidePortal();
-        }
-    }, { passive: false });
-
-    // --- 4. SỰ KIỆN LIBRARY INTERACTION ---
-    const libraryContainer = document.getElementById("library-container");
-    libraryContainer.addEventListener("click", handleCardClick);
-    
-    // Hover Portal Logic (PC Only)
+    // --- 6. PORTAL HOVER EVENTS ---
     libraryContainer.addEventListener("mouseover", (e) => {
         const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 1024;
         if (!isDesktop) return;
@@ -3064,6 +3134,7 @@
     });
 
     // Portal Mouse Events
+    const portal = document.getElementById("hover-portal");
     portal.addEventListener("mouseenter", () => {
         clearTimeout(hideTimeout);
         clearTimeout(hoverTimeout);
@@ -3072,19 +3143,20 @@
         clearTimeout(hideTimeout);
         hideTimeout = setTimeout(() => hidePortal(), 200);
     });
+    portal.addEventListener("wheel", (e) => {
+        if (!currentHoveredCard) return;
+        const list = currentHoveredCard.closest(".video-list");
+        if (list) {
+            e.preventDefault();
+            list.scrollLeft += e.deltaY * 8;
+            hidePortal();
+        }
+    }, { passive: false });
 
-    // --- 5. MODAL EVENTS (DETAIL & ADD VIDEO) ---
-    // Detail Modal
-    const detailModalOverlay = document.getElementById("detail-modal-overlay");
-    const detailModalCloseBtn = document.getElementById("detail-modal-close-btn");
-    const modalPlayBtn = document.getElementById("modal-play-btn");
 
-    detailModalCloseBtn.addEventListener("click", () => closeModal(detailModalOverlay));
-    detailModalOverlay.addEventListener("click", (e) => {
-        if (e.target === detailModalOverlay) closeModal(detailModalOverlay);
-    });
-    modalPlayBtn.addEventListener("click", handleModalPlay);
-
+    // --- 7. PLAYER & MODAL BUTTONS (Back, Close, etc.) ---
+    document.getElementById("back-btn").addEventListener("click", goHome);
+    
     // Add Video Modal
     const addVideoBtn = document.getElementById("add-video-btn");
     const addVideoModalOverlay = document.getElementById("add-video-modal-overlay");
@@ -3103,6 +3175,15 @@
         srtFileName.textContent = srtFileInput.files.length > 0 ? srtFileInput.files[0].name : "";
     });
 
+    // Detail Modal Close
+    const detailModalOverlay = document.getElementById("detail-modal-overlay");
+    const detailModalCloseBtn = document.getElementById("detail-modal-close-btn");
+    detailModalCloseBtn.addEventListener("click", () => closeModal(detailModalOverlay));
+    detailModalOverlay.addEventListener("click", (e) => {
+        if (e.target === detailModalOverlay) closeModal(detailModalOverlay);
+    });
+    document.getElementById("modal-play-btn").addEventListener("click", handleModalPlay);
+
     // Teaser Volume
     document.getElementById("teaser-volume-btn").addEventListener("click", (e) => {
         e.stopPropagation();
@@ -3110,68 +3191,56 @@
         updateVolumeUI();
     });
 
-    // --- 6. PLAYER EVENTS (BASIC) ---
-    const playerContainer = document.getElementById("player-container");
-    const playerWrapper = document.getElementById("player-wrapper");
-    const backBtn = document.getElementById("back-btn");
-
-    backBtn.addEventListener("click", goHome);
-
-    // Interaction Overlay (Tap to show controls / Double tap to seek)
-    document.getElementById("interaction-overlay").addEventListener("pointerup", handleInteraction);
-
-    // Center Big Play Button
+    // --- 8. PLAYER CONTROLS ---
+    // Play/Pause Center
     document.getElementById("center-play-pause-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         togglePlayPause();
     });
-
-    // Bottom Play/Pause Button
+    // Play/Pause Bottom
     document.getElementById("play-pause-btn").addEventListener("click", togglePlayPause);
-
-    // Progress Bar Seek
+    // Seek
     document.getElementById("progress-bar").addEventListener("input", handleSeek);
-
-    // Show controls on mouse move
-    playerContainer.addEventListener("pointermove", (e) => {
+    // Interaction Overlay
+    document.getElementById("interaction-overlay").addEventListener("pointerup", handleInteraction);
+    // Show controls on move
+    document.getElementById("player-container").addEventListener("pointermove", (e) => {
         if (e.pointerType === "mouse") showControlsAndSetHideTimeout();
     });
-
-    // Skip Intro Button
+    
+    // Skip Button
     document.getElementById("skip-btn").addEventListener("click", handleSkipClick);
-
-    // Keyboard Shortcuts
+    
+    // Keyboard
     document.addEventListener("keydown", handleKeyboardShortcuts);
-
-    // Fullscreen Change
+    
+    // Fullscreen
     document.addEventListener("fullscreenchange", () => {
         if (!document.fullscreenElement) goHome();
     });
-
-    // Drag & Drop SRT
+    
+    // Drag Drop Subtitle
     document.body.addEventListener("dragover", (e) => {
-        if (playerWrapper.classList.contains("hidden")) return;
+        if (document.getElementById("player-wrapper").classList.contains("hidden")) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = "copy";
     });
     document.body.addEventListener("drop", (e) => {
-        if (playerWrapper.classList.contains("hidden")) return;
+        if (document.getElementById("player-wrapper").classList.contains("hidden")) return;
         e.preventDefault();
         handleFileDrop(e);
     });
 
-    // --- 7. PLAYER EVENTS (NEW CONTROLS & MENUS) ---
-
-    // A. Nút Next Episode (Chuyển tập)
+    // --- 9. PLAYER EXTRA BUTTONS (Next, CC, Speed, EpList, Settings) ---
+    // Nút Next
     const nextEpBtn = document.getElementById("next-ep-btn");
     if (nextEpBtn) {
         nextEpBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            handleVideoEnd(true); // Force chuyển tập
+            handleVideoEnd(true);
         });
     }
-
-    // B. Nút Bật/Tắt Phụ đề (CC)
+    // Nút CC
     const ccBtn = document.getElementById("cc-toggle-btn");
     if (ccBtn) {
         ccBtn.addEventListener("click", (e) => {
@@ -3186,8 +3255,7 @@
             }
         });
     }
-
-    // C. Nút Tốc độ (Mở Menu Speed)
+    // Nút Speed
     const speedBtn = document.getElementById("speed-btn");
     if (speedBtn) {
         speedBtn.addEventListener("click", (e) => {
@@ -3195,37 +3263,22 @@
             toggleFloatingMenu("speed-menu");
         });
     }
-
-    // D. Chọn Tốc độ (Speed Items)
+    // Speed Items
     document.querySelectorAll(".speed-item").forEach(item => {
         item.addEventListener("click", (e) => {
             const speed = parseFloat(e.target.dataset.speed);
-            if (player && typeof player.setPlaybackRate === 'function') {
-                player.setPlaybackRate(speed);
-            }
-            // Update UI active class
+            if (player && typeof player.setPlaybackRate === 'function') player.setPlaybackRate(speed);
             document.querySelectorAll(".speed-item").forEach(b => b.classList.remove("active"));
             e.target.classList.add("active");
-            // Đóng menu sau khi chọn
             toggleFloatingMenu("speed-menu");
         });
     });
-
-    // E. Nút Episodes Sidebar (Danh sách tập)
+    // Episode List Sidebar
     const episodesBtn = document.getElementById("episodes-btn");
     episodesBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         toggleFloatingMenu("episodes-sidebar");
     });
-
-    // F. Nút Settings (Cài đặt sub)
-    const settingsBtn = document.getElementById("settings-btn");
-    settingsBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleFloatingMenu("settings-menu");
-    });
-
-    // G. Nút đóng Sidebar tập phim
     const closeEpisodesBtn = document.getElementById("close-episodes-btn");
     if (closeEpisodesBtn) {
         closeEpisodesBtn.addEventListener("click", () => {
@@ -3233,28 +3286,29 @@
             episodesBtn.classList.remove("active");
         });
     }
+    // Settings
+    const settingsBtn = document.getElementById("settings-btn");
+    settingsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFloatingMenu("settings-menu");
+    });
 
-    // H. Click ra ngoài để đóng các Menu nổi
-    playerContainer.addEventListener("click", (e) => {
-        // Nếu click không trúng bất kỳ menu nào và không trúng các nút mở menu
+    // Close floating menus on click outside
+    document.getElementById("player-container").addEventListener("click", (e) => {
         const clickedMenu = e.target.closest(".floating-menu");
         const clickedBtn = e.target.closest(".icon-btn");
-
         if (!clickedMenu && !clickedBtn) {
             const menus = document.querySelectorAll(".floating-menu.visible");
             menus.forEach(menu => {
                 menu.classList.remove("visible");
-                setTimeout(() => { 
-                    if (!menu.classList.contains("visible")) menu.style.display = "none"; 
-                }, 300);
+                setTimeout(() => { if (!menu.classList.contains("visible")) menu.style.display = "none"; }, 300);
             });
-            // Reset icon states
-            if (settingsBtn) settingsBtn.classList.remove("active");
-            if (episodesBtn) episodesBtn.classList.remove("active");
+            settingsBtn.classList.remove("active");
+            episodesBtn.classList.remove("active");
         }
     });
 
-    // I. Events cho Sliders trong Settings Menu
+    // Setting Sliders
     document.getElementById("font-size-slider").addEventListener("input", (e) => {
         subtitleSettings.fontSize = e.target.value;
         applyAndSaveSubtitleStyles();
@@ -3272,67 +3326,47 @@
         applyAndSaveSubtitleStyles();
     });
 
-    // --- 8. MOBILE MODAL DRAG (KÉO XUỐNG ĐỂ ĐÓNG) ---
-    const mobileModals = [
-        document.getElementById("detail-modal-content"),
-        document.getElementById("add-video-modal-content")
-    ];
-
+    // --- 10. MOBILE DRAG MODAL ---
+    const mobileModals = [document.getElementById("detail-modal-content"), document.getElementById("add-video-modal-content")];
     mobileModals.forEach(content => {
         if (!content) return;
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
-
-        // Thêm thanh visual cue (tay nắm) nếu chưa có
+        let startY = 0; let currentY = 0; let isDragging = false;
         if (!content.querySelector(".modal-drag-handle")) {
             const handle = document.createElement("div");
             handle.className = "modal-drag-handle";
             content.insertBefore(handle, content.firstChild);
         }
-
         content.addEventListener("touchstart", (e) => {
-            // Chỉ cho phép kéo nếu nội dung đang ở đỉnh (scrollTop = 0)
             if (content.scrollTop <= 0) {
                 startY = e.touches[0].clientY;
                 isDragging = true;
-                content.classList.remove("snapping"); // Tắt transition để kéo mượt
+                content.classList.remove("snapping");
             }
         }, { passive: true });
-
         content.addEventListener("touchmove", (e) => {
             if (!isDragging) return;
-            const y = e.touches[0].clientY;
-            const delta = y - startY;
-
-            // Chỉ xử lý khi kéo xuống (delta > 0)
+            const delta = e.touches[0].clientY - startY;
             if (delta > 0) {
-                // Nếu content đang scroll, không can thiệp drag modal
-                if (e.cancelable) e.preventDefault(); 
+                if (e.cancelable) e.preventDefault();
                 content.style.transform = `translateY(${delta}px)`;
                 currentY = delta;
             }
         }, { passive: false });
-
         content.addEventListener("touchend", () => {
             if (!isDragging) return;
             isDragging = false;
-            content.classList.add("snapping"); // Bật lại transition
-
-            if (currentY > 150) { // Ngưỡng kéo để đóng (150px)
+            content.classList.add("snapping");
+            if (currentY > 150) {
                 const parentOverlay = content.closest(".modal-overlay");
                 closeModal(parentOverlay);
-                // Reset vị trí sau khi đóng xong
                 setTimeout(() => { content.style.transform = ""; }, 300);
             } else {
-                // Hồi về vị trí cũ (nảy lên)
                 content.style.transform = "";
             }
             currentY = 0;
         });
     });
 }
-            
             // 3. Hàm logic mới
             function toggleEpisodesSidebar() {
                 const isVisible = episodesSidebar.classList.contains("visible");
