@@ -1475,6 +1475,42 @@
         #up-next-card { width: 160px; }
         #up-next-title { font-size: 1.2rem; }
     }
+    /* --- CSS CHO PHẦN RELATED SERIES TRONG MODAL --- */
+#modal-related-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+#modal-related-list {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+    /* Ẩn thanh cuộn */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#modal-related-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Tái sử dụng style của video-card nhưng chỉnh lại chút cho Modal */
+#modal-related-list .video-card {
+    min-width: 160px; /* Nhỏ hơn card ngoài trang chủ chút */
+    width: 160px;
+    flex-shrink: 0;
+}
+
+/* Chỉnh nút mũi tên trong phần Related */
+#modal-related-wrapper .scroll-btn {
+    width: 35px;
+    background: rgba(0,0,0,0.6);
+}
+#modal-related-wrapper:hover .scroll-btn {
+    opacity: 1;
+}
 </style>
     </head>
     <body>
@@ -1521,83 +1557,85 @@
             </div>
 
             <div id="detail-modal-overlay" class="modal-overlay hidden">
-                <div id="detail-modal-content" class="modal-content">
-                    <button id="detail-modal-close-btn" class="modal-close-btn" title="Đóng">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
-                            <path
-                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                            ></path>
-                        </svg>
-                    </button>
-                    <header id="modal-header">
-                        <img id="modal-thumbnail" src="" alt="Video thumbnail" />
+               <div id="detail-modal-content" class="modal-content">
+    <button id="detail-modal-close-btn" class="modal-close-btn" title="Đóng">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+        </svg>
+    </button>
+    <header id="modal-header">
+        <img id="modal-thumbnail" src="" alt="Video thumbnail" />
 
-                        <div id="teaser-container">
-                            <div class="video-background">
-                                <div id="teaser-player-iframe"></div>
-                            </div>
-                            <div id="teaser-subtitle"></div>
-                            <button id="teaser-volume-btn" title="Bật tiếng">
-                                <svg id="icon-mute" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                    <path
-                                        d="M16.5,12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45,2.45C16.41,12.5,16.5,12.26,16.5,12z M19,12c0,0.94-0.2,1.82-0.54,2.64l1.51,1.51C20.63,14.91,21,13.5,21,12c0-4.28-2.99-7.86-7-8.77v2.06C16.54,6.14,19,8.83,19,12z M4.27,3L3,4.27l4.56,4.57C7.51,8.91,7.5,8.95,7.5,9v6h4l5,5v-6.73l4.25,4.25c-0.67,0.52-1.42,0.93-2.25,1.18v2.06c1.38-0.31,2.63-0.95,3.69-1.81L19.73,21L21,19.73l-9-9L4.27,3z M12,4L9.91,6.09L12,8.18V4z"
-                                    ></path>
-                                </svg>
-                                <svg
-                                    id="icon-unmute"
-                                    class="hidden"
-                                    viewBox="0 0 24 24"
-                                    width="24"
-                                    height="24"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S17.01,4.14,14,3.23z"
-                                    ></path>
-                                </svg>
-                            </button>
-                        </div>
+        <div id="teaser-container">
+            <div class="video-background">
+                <div id="teaser-player-iframe"></div>
+            </div>
+            <div id="teaser-subtitle"></div>
+            <button id="teaser-volume-btn" title="Bật tiếng">
+                <svg id="icon-mute" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M16.5,12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45,2.45C16.41,12.5,16.5,12.26,16.5,12z M19,12c0,0.94-0.2,1.82-0.54,2.64l1.51,1.51C20.63,14.91,21,13.5,21,12c0-4.28-2.99-7.86-7-8.77v2.06C16.54,6.14,19,8.83,19,12z M4.27,3L3,4.27l4.56,4.57C7.51,8.91,7.5,8.95,7.5,9v6h4l5,5v-6.73l4.25,4.25c-0.67,0.52-1.42,0.93-2.25,1.18v2.06c1.38-0.31,2.63-0.95,3.69-1.81L19.73,21L21,19.73l-9-9L4.27,3z M12,4L9.91,6.09L12,8.18V4z"></path>
+                </svg>
+                <svg id="icon-unmute" class="hidden" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S17.01,4.14,14,3.23z"></path>
+                </svg>
+            </button>
+        </div>
 
-                        <button id="modal-play-btn">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path>
-                            </svg>
-                            Phát
-                        </button>
-                    </header>
-                    <div id="modal-body">
-                        <h3 id="modal-title"></h3>
-                        <h4 id="modal-original-title"></h4>
-                        <div id="modal-meta">
-                            <span id="modal-program"></span>
-                            <span id="modal-author"></span>
-                        </div>
-                        <!-- Chỗ chứa mới cho thể loại -->
-                        <div id="modal-genres-container" class="hidden">
-                            <ul id="modal-genres-list"></ul>
-                        </div>
-                        <!-- Chỗ chứa mới cho mô tả -->
-                        <p id="modal-description"></p>
-                        <div id="modal-episodes-section" class="hidden">
-    <h4>Danh sách tập</h4>
-    <div class="list-wrapper" id="modal-list-wrapper">
-        <button id="modal-arrow-left" class="scroll-btn left hidden-arrow">
-            <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+        <button id="modal-play-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path>
+            </svg>
+            Phát
         </button>
+    </header>
+    <div id="modal-body">
+        <h3 id="modal-title"></h3>
+        <h4 id="modal-original-title"></h4>
+        <div id="modal-meta">
+            <span id="modal-program"></span>
+            <span id="modal-author"></span>
+        </div>
+        
+        <div id="modal-genres-container" class="hidden">
+            <ul id="modal-genres-list"></ul>
+        </div>
+        
+        <p id="modal-description"></p>
+        
+        <div id="modal-episodes-section" class="hidden">
+            <h4>Danh sách tập</h4>
+            <div class="list-wrapper" id="modal-list-wrapper">
+                <button id="modal-arrow-left" class="scroll-btn left hidden-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+                </button>
+                <div id="modal-episodes-list"></div>
+                <button id="modal-arrow-right" class="scroll-btn right">
+                    <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div id="modal-participants-container" class="hidden">
+            <h4 id="modal-participants-title">Với sự tham gia của:</h4>
+            <ul id="modal-participants-list"></ul>
+        </div>
 
-        <div id="modal-episodes-list"></div>
-
-        <button id="modal-arrow-right" class="scroll-btn right">
-            <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
-        </button>
+        <div id="modal-related-section" class="hidden">
+            <h4 style="margin-top: 30px; margin-bottom: 15px; font-size: 1.1rem; color: #fff;">Có thể bạn sẽ thích</h4>
+            <div class="list-wrapper" id="modal-related-wrapper">
+                <button id="modal-related-arrow-left" class="scroll-btn left hidden-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+                </button>
+                
+                <div id="modal-related-list" class="video-list" style="padding-left: 0;"></div>
+                
+                <button id="modal-related-arrow-right" class="scroll-btn right">
+                    <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
-                        <div id="modal-participants-container" class="hidden">
-                            <h4 id="modal-participants-title">Với sự tham gia của:</h4>
-                            <ul id="modal-participants-list"></ul>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div id="add-video-modal-overlay" class="modal-overlay hidden">
@@ -3568,146 +3606,133 @@
              * @param {Array<Object> | null} programEpisodes Danh sách các tập của chương trình, nếu là Program Card.
              */
             function openDetailModal(videoData, programEpisodes = null) {
-                // 1. Lấy đúng ID từ HTML hiện tại
-                const modalThumbnail = doc.getElementById("modal-thumbnail");
-                const modalTitle = doc.getElementById("modal-title");
-                const modalOriginalTitle = doc.getElementById("modal-original-title");
-                const modalProgram = doc.getElementById("modal-program");
-                const modalAuthor = doc.getElementById("modal-author");
-                const modalDescription = doc.getElementById("modal-description");
-                const modalPlayBtn = doc.getElementById("modal-play-btn");
+    // 1. Lấy đúng ID từ HTML hiện tại
+    const modalThumbnail = document.getElementById("modal-thumbnail");
+    const modalTitle = document.getElementById("modal-title");
+    const modalOriginalTitle = document.getElementById("modal-original-title");
+    const modalProgram = document.getElementById("modal-program");
+    const modalAuthor = document.getElementById("modal-author");
+    const modalDescription = document.getElementById("modal-description");
+    const modalPlayBtn = document.getElementById("modal-play-btn");
 
-                // SỬA: Lấy đúng ID list và container để xử lý ẩn/hiện
-                const modalParticipantsList = doc.getElementById("modal-participants-list");
-                const modalParticipantsContainer = doc.getElementById("modal-participants-container");
+    const modalParticipantsList = document.getElementById("modal-participants-list");
+    const modalParticipantsContainer = document.getElementById("modal-participants-container");
+    const modalGenresList = document.getElementById("modal-genres-list");
+    const modalGenresContainer = document.getElementById("modal-genres-container");
+    const modalEpisodeSection = document.getElementById("modal-episodes-section");
+    const modalEpisodesList = document.getElementById("modal-episodes-list");
 
-                const modalGenresList = doc.getElementById("modal-genres-list");
-                const modalGenresContainer = doc.getElementById("modal-genres-container");
-
-                const modalEpisodeSection = doc.getElementById("modal-episodes-section");
-                const modalEpisodesList = doc.getElementById("modal-episodes-list");
-
-                // 2. Xử lý thumbnail
-                const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-                modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
-                modalThumbnail.onerror = () => {
-                    modalThumbnail.src = thumbnailUrl;
-                };
-
-                // 3. Xử lý TIÊU ĐỀ
-                if (programEpisodes) {
-                    modalTitle.textContent = videoData.program;
-                    modalOriginalTitle.textContent = videoData.userTitle || videoData.title;
-                    modalOriginalTitle.style.display = "block";
-                } else {
-                    modalTitle.textContent = videoData.userTitle || videoData.title;
-                    modalOriginalTitle.style.display = videoData.originalTitle_auto ? "block" : "none";
-                    if (videoData.originalTitle_auto) modalOriginalTitle.textContent = videoData.originalTitle_auto;
-                }
-
-                // 4. Các thông tin cơ bản
-                modalProgram.textContent = videoData.program || "";
-                modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
-                modalDescription.textContent = videoData.description || "Chưa có mô tả chi tiết.";
-
-                // 5. Xử lý GENRES (Sửa lỗi logic cũ)
-                // HTML của bạn dùng <ul> nên ta render thẻ <li> hoặc text bên trong, và phải gỡ class hidden ở container
-                modalGenresList.innerHTML = "";
-                if (videoData.genres && videoData.genres.length > 0) {
-                    // Hiển thị dạng text đơn giản bên trong thẻ ul
-                    modalGenresList.innerHTML =
-                        `<span style="font-weight: 700; color: #fff; margin-right: 5px;">Thể loại:</span>` +
-                        videoData.genres.map((g) => `<span class="genre-tag">${g}</span>`).join(" ");
-                    modalGenresContainer.classList.remove("hidden"); // Quan trọng: Hiện container
-                } else {
-                    modalGenresContainer.classList.add("hidden");
-                }
-
-                // 6. Xử lý PARTICIPANTS (Sửa lỗi logic cũ)
-                modalParticipantsList.innerHTML = "";
-                if (videoData.participants && videoData.participants.length > 0) {
-                    modalParticipantsList.innerHTML = videoData.participants
-                        .map((p) => `<li class="participant-tag">${p}</li>`)
-                        .join("");
-                    modalParticipantsContainer.classList.remove("hidden"); // Quan trọng: Hiện container
-                } else {
-                    modalParticipantsContainer.classList.add("hidden");
-                }
-
-                // 7. Xử lý DANH SÁCH TẬP
-
-modalEpisodesList.innerHTML = "";
-if (programEpisodes && programEpisodes.length > 0) {
-    modalEpisodeSection.classList.remove("hidden");
-
-    // [SỬA 1] Sắp xếp TĂNG DẦN (a - b) thay vì giảm dần
-    programEpisodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
-
-    programEpisodes.forEach((ep) => {
-        const el = doc.createElement("div");
-        el.className = "modal-episode-item"; // Class giữ nguyên nhưng CSS đã đổi
-        const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
-        
-        // Highlight tập đang chọn
-        const isLatestClass = ep.videoId === videoData.videoId ? ' style="color: var(--accent-color);"' : '';
-        const isPlayingBorder = ep.videoId === videoData.videoId ? ' border: 1px solid var(--accent-color);' : '';
-        
-        if (ep.videoId === videoData.videoId) {
-             el.style.cssText = isPlayingBorder;
-        }
-
-        // [SỬA 2] HTML Structure mới cho Card đứng (Bỏ nút Play icon, đặt ảnh lên trên)
-        el.innerHTML = `
-            <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
-            <div class="modal-ep-info">
-                <span class="modal-ep-number"${isLatestClass}>Tập ${ep.episode || "Lẻ"}</span>
-                <span class="modal-ep-title">${ep.userTitle || ep.title}</span>
-            </div>
-        `;
-
-        el.onclick = () => {
-            closeModal(detailModalOverlay);
-            launchPlayer(ep);
-        };
-        modalEpisodesList.appendChild(el);
-    });
-    
-    // Logic nút "Phát" to đùng ở Header modal: Phát tập ĐẦU TIÊN (Tập 1) thay vì tập mới nhất
-    // Hoặc phát tập đang chọn (videoData)
-    modalPlayBtn.onclick = () => {
-        closeModal(detailModalOverlay);
-        launchPlayer(videoData); // Phát tập đang xem thông tin
+    // 2. Xử lý thumbnail
+    const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+    modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
+    modalThumbnail.onerror = () => {
+        modalThumbnail.src = thumbnailUrl;
     };
-} else {
-                    modalEpisodeSection.classList.add("hidden");
-                    modalPlayBtn.onclick = handleModalPlay;
-                    modalPlayBtn.dataset.videoId = videoData.videoId;
-                }
 
-                const prog = videoData.program || null;
-                openModal(detailModalOverlay);
+    // 3. Xử lý TIÊU ĐỀ
+    if (programEpisodes) {
+        modalTitle.textContent = videoData.program;
+        modalOriginalTitle.textContent = videoData.userTitle || videoData.title;
+        modalOriginalTitle.style.display = "block";
+    } else {
+        modalTitle.textContent = videoData.userTitle || videoData.title;
+        modalOriginalTitle.style.display = videoData.originalTitle_auto ? "block" : "none";
+        if (videoData.originalTitle_auto) modalOriginalTitle.textContent = videoData.originalTitle_auto;
+    }
 
-                // 2. Đợi 1 chút (100ms) cho Modal mở xong rồi mới tải Teaser nặng nề
-                // Điều này giúp loại bỏ cảm giác "bấm xong phải đợi"
-                if (prog) {
-                    setTimeout(() => {
-                        // Chỉ tải nếu Modal vẫn đang mở (tránh trường hợp user đóng quá nhanh)
-                        if (!detailModalOverlay.classList.contains("hidden")) {
-                            checkAndLoadTeaser(prog);
-                        }
-                    }, 100);
-                } else {
-                    // Nếu không phải series thì dọn dẹp teaser cũ
-                    destroyTeaser();
-                }
-                modalEpisodesList.scrollLeft = 0;
+    // 4. Các thông tin cơ bản
+    modalProgram.textContent = videoData.program || "";
+    modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
+    modalDescription.textContent = videoData.description || "Chưa có mô tả chi tiết.";
 
-// Cập nhật mũi tên ngay lập tức (nếu danh sách ngắn quá thì ẩn hết nút)
-if (window.updateModalArrows) {
-    // Timeout nhỏ để chờ trình duyệt render độ rộng thực tế
-    setTimeout(window.updateModalArrows, 50); 
-}
+    // 5. GENRES
+    modalGenresList.innerHTML = "";
+    if (videoData.genres && videoData.genres.length > 0) {
+        modalGenresList.innerHTML =
+            `<span style="font-weight: 700; color: #fff; margin-right: 5px;">Thể loại:</span>` +
+            videoData.genres.map((g) => `<span class="genre-tag">${g}</span>`).join(" ");
+        modalGenresContainer.classList.remove("hidden");
+    } else {
+        modalGenresContainer.classList.add("hidden");
+    }
+
+    // 6. PARTICIPANTS
+    modalParticipantsList.innerHTML = "";
+    if (videoData.participants && videoData.participants.length > 0) {
+        modalParticipantsList.innerHTML = videoData.participants
+            .map((p) => `<li class="participant-tag">${p}</li>`)
+            .join("");
+        modalParticipantsContainer.classList.remove("hidden");
+    } else {
+        modalParticipantsContainer.classList.add("hidden");
+    }
+
+    // 7. DANH SÁCH TẬP
+    modalEpisodesList.innerHTML = "";
+    if (programEpisodes && programEpisodes.length > 0) {
+        modalEpisodeSection.classList.remove("hidden");
+        programEpisodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
+
+        programEpisodes.forEach((ep) => {
+            const el = document.createElement("div");
+            el.className = "modal-episode-item";
+            const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
+            
+            const isPlayingBorder = ep.videoId === videoData.videoId ? ' border: 1px solid var(--accent-color);' : '';
+            if (ep.videoId === videoData.videoId) el.style.cssText = isPlayingBorder;
+
+            // Highlight tập đang xem
+            const numStyle = ep.videoId === videoData.videoId ? 'style="color: var(--accent-color)"' : '';
+
+            el.innerHTML = `
+                <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
+                <div class="modal-ep-info">
+                    <span class="modal-ep-number" ${numStyle}>Tập ${ep.episode || "Lẻ"}</span>
+                    <span class="modal-ep-title">${ep.userTitle || ep.title}</span>
+                </div>
+            `;
+            el.onclick = () => {
+                closeModal(detailModalOverlay);
+                launchPlayer(ep);
+            };
+            modalEpisodesList.appendChild(el);
+        });
+
+        modalPlayBtn.onclick = () => {
+            closeModal(detailModalOverlay);
+            launchPlayer(videoData); 
+        };
+    } else {
+        modalEpisodeSection.classList.add("hidden");
+        modalPlayBtn.onclick = handleModalPlay;
+        modalPlayBtn.dataset.videoId = videoData.videoId;
+    }
+
+    // 8. [MỚI] RENDER SERIES LIÊN QUAN
+    renderRelatedContent(videoData);
+
+    const prog = videoData.program || null;
+    openModal(detailModalOverlay);
+
+    if (prog) {
+        setTimeout(() => {
+            if (!detailModalOverlay.classList.contains("hidden")) {
+                checkAndLoadTeaser(prog);
             }
+        }, 100);
+    } else {
+        destroyTeaser();
+    }
+    
+    // Reset scroll về đầu
+    modalEpisodesList.scrollLeft = 0;
+    
+    // Cập nhật trạng thái mũi tên cho cả 2 list (tập & related)
+    if (window.updateModalArrows) {
+        setTimeout(window.updateModalArrows, 50);
+    }
+}
+            
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
                 // 1. Xóa các marker cũ trên thanh progress
@@ -3735,7 +3760,102 @@ if (window.updateModalArrows) {
                     progressContainer.appendChild(marker);
                 });
             }
+            function renderRelatedContent(currentData) {
+    const relatedSection = document.getElementById("modal-related-section");
+    const relatedList = document.getElementById("modal-related-list");
+    relatedList.innerHTML = "";
 
+    // 1. Tạo danh sách ứng viên (Loại bỏ chính chương trình/video hiện tại)
+    // Nếu đang xem Series -> Loại bỏ các tập cùng Series
+    // Nếu xem lẻ -> Loại bỏ chính nó
+    const currentProgramName = currentData.program;
+    
+    let candidates = [];
+    
+    // Lấy đại diện mỗi Program một cái thôi (để không bị trùng series)
+    const programRep = {}; 
+    const singles = [];
+
+    libraryData.forEach(v => {
+        if (currentProgramName && v.program === currentProgramName) return; // Bỏ qua chương trình hiện tại
+        if (v.videoId === currentData.videoId) return; // Bỏ qua video hiện tại
+
+        if (v.program) {
+            // Nếu là series, chỉ lấy 1 tập đại diện (tập mới nhất)
+            if (!programRep[v.program] || (v.episode > programRep[v.program].episode)) {
+                programRep[v.program] = v;
+            }
+        } else {
+            singles.push(v);
+        }
+    });
+
+    // Gộp lại thành danh sách cần lọc
+    const pool = [...Object.values(programRep), ...singles];
+
+    // 2. Chấm điểm sự liên quan
+    const scored = pool.map(v => {
+        let score = 0;
+        
+        // Trùng thể loại: +2 điểm mỗi thể loại
+        if (currentData.genres && v.genres) {
+            const intersection = currentData.genres.filter(g => v.genres.includes(g));
+            score += intersection.length * 2;
+        }
+
+        // Trùng tác giả/diễn viên: +1 điểm
+        if (currentData.participants && v.participants) {
+             const intersection = currentData.participants.filter(p => v.participants.includes(p));
+             score += intersection.length * 1;
+        }
+
+        return { v, score };
+    });
+
+    // 3. Sắp xếp điểm cao xuống thấp & Lấy Top 10
+    scored.sort((a, b) => b.score - a.score);
+    const finalRelated = scored.slice(0, 10).map(item => item.v);
+
+    // 4. Render
+    if (finalRelated.length > 0) {
+        relatedSection.classList.remove("hidden");
+        finalRelated.forEach(video => {
+            // Tái sử dụng hàm createProgramCardHtml hoặc createVideoCardHtml tùy loại
+            // Ở đây ta dùng createVideoCardHtml cho đơn giản, nhưng sửa class để không bị vỡ layout
+            
+            let html = "";
+            if (video.program) {
+                 // Nếu là series thì hiện kiểu card series
+                 // Đếm số tập trong library gốc
+                 const count = libraryData.filter(x => x.program === video.program).length;
+                 const thumb = video.thumbnailUrl || video.thumbnailUrl_auto;
+                 html = `
+                    <div class="video-card" data-program-name="${video.program}">
+                        <div class="card-image-wrapper">
+                            <div class="episode-badge" style="background: var(--accent-color);">${count} Tập</div>
+                            <img src="${thumb}" class="video-thumbnail" loading="lazy">
+                        </div>
+                    </div>`;
+            } else {
+                 html = createVideoCardHtml(video); // Hàm cũ của bạn
+            }
+
+            // Chuyển string thành DOM
+            const div = document.createElement("div");
+            div.innerHTML = html.trim();
+            const card = div.firstChild;
+            
+            // Fix lại style width inline để đè CSS grid nếu cần
+            card.style.width = "160px"; 
+            
+            relatedList.appendChild(card);
+        });
+        // Reset scroll
+        relatedList.scrollLeft = 0;
+    } else {
+        relatedSection.classList.add("hidden");
+    }
+}
             // [MỚI] Hàm xử lý click nút Skip
             function handleSkipClick(e) {
                 e.stopPropagation();
@@ -4578,57 +4698,61 @@ function hideUpNextOverlay() {
                 if (!data || data.isFinished) return 0;
                 return data.time;
             }
-            // --- LOGIC CUỘN NGANG CHO MODAL (COPY TỪ TRANG CHỦ) ---
 function setupModalScrolling() {
-    const list = document.getElementById("modal-episodes-list");
-    const btnLeft = document.getElementById("modal-arrow-left");
-    const btnRight = document.getElementById("modal-arrow-right");
+    // Helper function để setup cho 1 cặp list + buttons
+    const setupOneList = (listId, leftBtnId, rightBtnId) => {
+        const list = document.getElementById(listId);
+        const btnLeft = document.getElementById(leftBtnId);
+        const btnRight = document.getElementById(rightBtnId);
 
-    if (!list || !btnLeft || !btnRight) return;
+        if (!list || !btnLeft || !btnRight) return () => {}; // Return no-op
 
-    // 1. Hàm kiểm tra ẩn hiện mũi tên
-    const checkModalArrows = () => {
-        const scrollLeft = list.scrollLeft;
-        // Sai số 2px để xử lý việc làm tròn số trên một số màn hình
-        const maxScroll = list.scrollWidth - list.clientWidth - 2; 
+        const checkArrows = () => {
+            const scrollLeft = list.scrollLeft;
+            const maxScroll = list.scrollWidth - list.clientWidth - 2;
 
-        // Nút Trái
-        if (scrollLeft <= 0) btnLeft.classList.add("hidden-arrow");
-        else btnLeft.classList.remove("hidden-arrow");
+            if (scrollLeft <= 0) btnLeft.classList.add("hidden-arrow");
+            else btnLeft.classList.remove("hidden-arrow");
 
-        // Nút Phải
-        if (scrollLeft >= maxScroll) btnRight.classList.add("hidden-arrow");
-        else btnRight.classList.remove("hidden-arrow");
+            if (scrollLeft >= maxScroll) btnRight.classList.add("hidden-arrow");
+            else btnRight.classList.remove("hidden-arrow");
+        };
+
+        btnLeft.onclick = (e) => {
+            e.stopPropagation();
+            list.scrollBy({ left: -300, behavior: "smooth" });
+        };
+
+        btnRight.onclick = (e) => {
+            e.stopPropagation();
+            list.scrollBy({ left: 300, behavior: "smooth" });
+        };
+
+        list.addEventListener("wheel", (evt) => {
+            if (list.scrollWidth > list.clientWidth) {
+                evt.preventDefault();
+                list.scrollLeft += evt.deltaY * 3;
+            }
+        }, { passive: false });
+
+        list.addEventListener("scroll", checkArrows);
+        
+        // Trả về hàm check để gọi từ bên ngoài
+        return checkArrows;
     };
 
-    // 2. Sự kiện Click nút
-    btnLeft.onclick = (e) => {
-        e.stopPropagation(); // Tránh click xuyên qua đóng modal
-        list.scrollBy({ left: -300, behavior: "smooth" }); // Cuộn 300px
-    };
-
-    btnRight.onclick = (e) => {
-        e.stopPropagation();
-        list.scrollBy({ left: 300, behavior: "smooth" });
-    };
-
-    // 3. Sự kiện Lăn chuột (Mouse Wheel) -> Chuyển thành Cuộn ngang
-    list.addEventListener("wheel", (evt) => {
-        // Chỉ chặn cuộn dọc nếu danh sách thực sự dài hơn khung chứa
-        if (list.scrollWidth > list.clientWidth) {
-            evt.preventDefault();
-            list.scrollLeft += evt.deltaY * 3; // *3 để cuộn nhanh hơn chút
-        }
-    }, { passive: false });
-
-    // 4. Lắng nghe sự kiện cuộn để ẩn/hiện nút
-    list.addEventListener("scroll", checkModalArrows);
+    // Setup cho danh sách Tập
+    const checkEpisodes = setupOneList("modal-episodes-list", "modal-arrow-left", "modal-arrow-right");
     
-    // Gọi check lần đầu khi mở modal
-    // (Ta sẽ gọi lại hàm này trong openDetailModal để reset trạng thái)
-    window.updateModalArrows = checkModalArrows; 
-}
+    // Setup cho danh sách Related (Mới)
+    const checkRelated = setupOneList("modal-related-list", "modal-related-arrow-left", "modal-related-arrow-right");
 
+    // Tạo hàm global để update cả 2 (dùng trong openDetailModal)
+    window.updateModalArrows = () => {
+        if(checkEpisodes) checkEpisodes();
+        if(checkRelated) checkRelated();
+    };
+}
 // GỌI HÀM NÀY NGAY KHI KHỞI TẠO (Trong setupEventListeners hoặc cuối file)
 setupModalScrolling();
         </script>
