@@ -321,7 +321,6 @@
         width: 100%; height: 100%;
         object-fit: cover;
         opacity: 0.6;
-        will-change: transform;
     }
 
     .hero-overlay {
@@ -2838,18 +2837,12 @@
                     moveHeroSlide(1, true); // True = auto move
                 }, 6000); 
             }
-            function updateParallaxForSlide(slide) {
-    if (!slide) return;
-    const bg = slide.querySelector(".hero-bg");
-    if (bg) {
-        const scrollY = window.scrollY;
-        // Tính toán vị trí ngay lập tức dựa trên scroll hiện tại
-        // Đảm bảo ảnh luôn phủ kín (thêm tí scale nhẹ nếu cần)
-    
-    }
-}
-         function moveHeroSlide(direction, isAuto = false) {
+            
+            function moveHeroSlide(direction, isAuto = false) {
                 if (isHeroTransitioning) return;
+
+                // FIX 1: Nếu người dùng tự bấm (không phải auto), reset timer ngay lập tức
+                // Để tránh việc vừa bấm xong thì timer cũ kích hoạt gây nhảy hình/đen hình
                 if (!isAuto) startHeroTimer();
 
                 const track = document.querySelector(".hero-track");
@@ -2864,40 +2857,43 @@
                 track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)";
                 track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
 
+                // Update class active cho slide (để chạy animation chữ)
                 slides.forEach(s => s.classList.remove("active"));
-                
-                // [FIX QUAN TRỌNG] Cập nhật ngay vị trí ảnh cho slide sắp hiện
-                if (slides[currentHeroIndex]) {
-                    slides[currentHeroIndex].classList.add("active");
-                    updateParallaxForSlide(slides[currentHeroIndex]); // <--- THÊM DÒNG NÀY
-                }
+                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
 
+                // Xử lý Infinite Loop khi animation kết thúc
                 track.ontransitionend = () => {
                     isHeroTransitioning = false;
-                    track.ontransitionend = null; 
+                    track.ontransitionend = null; // Clear event để tránh gọi lặp
 
-                    // Logic Loop (giữ nguyên)
+                    // Nếu đi quá slide cuối (vào Clone đầu) -> Nhảy về Slide 1 thật
                     if (currentHeroIndex >= totalHeroSlides - 1) {
                         track.style.transition = "none"; 
                         currentHeroIndex = 1;
                         track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                        // Re-add active class
                         slides.forEach(s => s.classList.remove("active"));
                         slides[currentHeroIndex].classList.add("active");
-                        updateParallaxForSlide(slides[currentHeroIndex]); // Update lại khi nhảy
                     }
+                    // Nếu đi lùi quá slide đầu (vào Clone cuối) -> Nhảy về Slide cuối thật
                     else if (currentHeroIndex <= 0) {
                         track.style.transition = "none";
                         currentHeroIndex = totalHeroSlides - 2;
                         track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                        // Re-add active class
                         slides.forEach(s => s.classList.remove("active"));
                         slides[currentHeroIndex].classList.add("active");
-                        updateParallaxForSlide(slides[currentHeroIndex]); // Update lại khi nhảy
                     }
+
+                    // Update Thumbnails Active State
                     updateActiveThumb(thumbs);
                 };
             }
+
             function goToHeroSlide(index) {
                 if (index === currentHeroIndex || isHeroTransitioning) return;
+                
+                // FIX 1: Reset timer khi click chọn ảnh
                 startHeroTimer();
 
                 const track = document.querySelector(".hero-track");
@@ -2911,13 +2907,9 @@
                 track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
 
                 slides.forEach(s => s.classList.remove("active"));
+                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
                 
-                // [FIX QUAN TRỌNG]
-                if (slides[currentHeroIndex]) {
-                    slides[currentHeroIndex].classList.add("active");
-                    updateParallaxForSlide(slides[currentHeroIndex]); // <--- THÊM DÒNG NÀY
-                }
-                
+                // Khi click trực tiếp, ta update thumb ngay (hoặc đợi transitionEnd tùy ý, ở đây update luôn cho nhanh)
                 updateActiveThumb(thumbs);
                 
                 track.ontransitionend = () => {
@@ -2925,6 +2917,7 @@
                     track.ontransitionend = null;
                 };
             }
+
             function updateActiveThumb(thumbs) {
                 // Tính toán index thật (trừ đi 1 do clone đầu)
                 let realIndex = currentHeroIndex - 1;
