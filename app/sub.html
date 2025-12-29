@@ -2859,7 +2859,13 @@
 
                 // Update class active cho slide (để chạy animation chữ)
                 slides.forEach(s => s.classList.remove("active"));
-                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
+                if (slides[currentHeroIndex]) {
+                const activeSlide = slides[currentHeroIndex];
+                activeSlide.classList.add("active");
+                
+                // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
+                resetParallaxForSlide(activeSlide); 
+            }
 
                 // Xử lý Infinite Loop khi animation kết thúc
                 track.ontransitionend = () => {
@@ -2907,7 +2913,13 @@
                 track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
 
                 slides.forEach(s => s.classList.remove("active"));
-                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
+                if (slides[currentHeroIndex]) {
+                const activeSlide = slides[currentHeroIndex];
+                activeSlide.classList.add("active");
+                
+                // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
+                resetParallaxForSlide(activeSlide);
+            }
                 
                 // Khi click trực tiếp, ta update thumb ngay (hoặc đợi transitionEnd tùy ý, ở đây update luôn cho nhanh)
                 updateActiveThumb(thumbs);
@@ -2928,15 +2940,26 @@
                 thumbs.forEach(t => t.classList.remove("active"));
                 if (thumbs[realIndex]) thumbs[realIndex].classList.add("active");
             }
-
+            // Hàm này sẽ đưa ảnh nền về vị trí 0 (chuẩn) ngay lập tức
+function resetParallaxForSlide(slideElement) {
+    const bg = slideElement.querySelector(".hero-bg");
+    if (bg) {
+        // Xóa inline style transform do parallax tạo ra
+        bg.style.transform = ""; 
+        // Hoặc set cứng về 0 nếu muốn chắc chắn hơn:
+        // bg.style.transform = "translate3d(0, 0, 0)";
+    }
+}
             // [PARALLAX] Fix nhẹ: kiểm tra phần tử tồn tại trước khi style
             function handleHeroParallax() {
                 if (!isParallaxTicking) {
                     window.requestAnimationFrame(() => {
                         const scrollY = window.scrollY;
+                        // Chỉ tính toán khi đang ở trong vùng Hero (70vh ~ 700px)
                         if (scrollY <= window.innerHeight) {
                             const activeSlideBg = document.querySelector(".hero-slide.active .hero-bg");
                             if (activeSlideBg) {
+                                // Di chuyển ảnh xuống 1 nửa tốc độ cuộn
                                 activeSlideBg.style.transform = `translate3d(0, ${scrollY * 0.5}px, 0)`;
                             }
                         }
