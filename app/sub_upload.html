@@ -390,6 +390,25 @@
     border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
 }
 .editor-toolbar-btn:hover { background: #f1f1f1; }
+/* --- Season Divider Style --- */
+.season-divider {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    background-color: #e8f0fe; /* Màu xanh nhạt */
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent-blue);
+    display: flex;
+    align-items: center;
+}
+/* Ẩn divider nếu là phần tử đầu tiên trong list (tùy chọn, ở đây ta cứ hiện cho rõ) */
+.video-card-list .season-divider:first-child {
+    margin-top: 0;
+}
 </style>
 </head>
 <body>
@@ -442,8 +461,17 @@
                 <div class="editor-content-wrapper">
                     <div class="form-group"><label for="youtube-url">Link YouTube</label><input type="text" id="youtube-url"></div>
                     <div class="form-group"><label for="user-title">Tên hiển thị</label><input type="text" id="user-title"></div>
-                    <div class="form-group"><label for="episode-number">Số tập</label><input type="number" id="episode-number"></div>
-                    <div class="form-group"><label for="program-select">Chương trình</label><select id="program-select"></select></div>
+<div class="form-group" style="display: flex; gap: 15px;">
+    <div style="flex: 1;">
+        <label for="season-number">Mùa (Season)</label>
+        <input type="number" id="season-number" placeholder="VD: 1 (Để trống nếu ko có)">
+    </div>
+    <div style="flex: 1;">
+        <label for="episode-number">Số tập</label>
+        <input type="number" id="episode-number" placeholder="VD: 5">
+    </div>
+</div>                    
+<div class="form-group"><label for="program-select">Chương trình</label><select id="program-select"></select></div>
                     <div class="form-group">
                         <label>Người tham gia</label>
                         <div class="tag-input-container"><div id="participants-tags-container"></div><input type="text" class="tag-editor-input" id="participants-input" placeholder="Thêm..."></div>
@@ -654,6 +682,7 @@ const ui = {
         srtPath: doc.getElementById("gh-srt-path"),
         youtubeUrl: doc.getElementById("youtube-url"),
         userTitle: doc.getElementById("user-title"),
+        seasonNumber: doc.getElementById("season-number"),
         episodeNumber: doc.getElementById("episode-number"),
         programSelect: doc.getElementById("program-select"),
         participantsInput: doc.getElementById("participants-input"),
@@ -733,26 +762,94 @@ async function commitFile(path, message, content, sha) { log(`Committing ${path}
 // --- UI Rendering ---
 function renderLibraryList() {
     ui.libraryListContainer.innerHTML = '';
-    const grouped = currentLibrary.reduce((acc, video) => { const program = video.program || 'Khác'; if (!acc[program]) acc[program] = []; acc[program].push(video); return acc; }, {});
-    const groupKeys = Object.keys(grouped).sort((a,b) => { const aIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === a); const bIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === b); return aIndex - bIndex; });
+    
+    // 1. Gom nhóm theo Program (Giữ nguyên logic cũ)
+    const grouped = currentLibrary.reduce((acc, video) => { 
+        const program = video.program || 'Khác'; 
+        if (!acc[program]) acc[program] = []; 
+        acc[program].push(video); 
+        return acc; 
+    }, {});
+
+    const groupKeys = Object.keys(grouped).sort((a,b) => { 
+        const aIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === a); 
+        const bIndex = currentLibrary.findIndex(v => (v.program || 'Khác') === b); 
+        return aIndex - bIndex; 
+    });
     
     groupKeys.forEach(programName => {
-        const groupEl = doc.createElement('div'); groupEl.className = 'program-group'; groupEl.dataset.program = programName;
-        groupEl.innerHTML = `<div class="program-group-header">${programName}</div><div class="video-card-list"></div>`;
+        const groupEl = doc.createElement('div'); 
+        groupEl.className = 'program-group'; 
+        groupEl.dataset.program = programName;
+        
+        // Thêm Header cho Program
+        const headerHtml = `<div class="program-group-header"><div class="icon-drag-wrapper"><svg class="icon icon-drag"><use xlink:href="#icon-drag"></use></svg></div>${programName}</div>`;
+        groupEl.innerHTML = headerHtml + `<div class="video-card-list"></div>`;
+        
         const videoListEl = groupEl.querySelector('.video-card-list');
-        const sortedVideos = grouped[programName].sort((a,b) => (a.episode || 0) - (b.episode || 0));
+        
+        // 2. LOGIC MỚI: Sắp xếp theo Mùa -> Tập
+        const sortedVideos = grouped[programName].sort((a,b) => {
+            const seasonA = a.season || 0;
+            const seasonB = b.season || 0;
+            if (seasonA !== seasonB) return seasonA - seasonB; // Mùa nhỏ trước
+            return (a.episode || 0) - (b.episode || 0);      // Tập nhỏ trước
+        });
+
+        let currentSeasonTracker = -1; // Biến theo dõi để chèn tiêu đề Mùa
+
         sortedVideos.forEach(video => {
-            const card = doc.createElement('div'); card.className = 'video-card-item';
+            const vidSeason = video.season || 0;
+
+            // Nếu phát hiện Mùa mới (và Mùa đó > 0), chèn tiêu đề
+            if (vidSeason > 0 && vidSeason !== currentSeasonTracker) {
+                const seasonDiv = doc.createElement('div');
+                seasonDiv.className = 'season-divider';
+                seasonDiv.innerHTML = `Mùa ${vidSeason}`;
+                videoListEl.appendChild(seasonDiv);
+                currentSeasonTracker = vidSeason;
+            } else if (vidSeason === 0 && currentSeasonTracker !== 0 && currentSeasonTracker !== -1) {
+                // Trường hợp video lẻ không có mùa nằm lẫn (ít xảy ra do đã sort, nhưng cứ handle)
+                // Không làm gì hoặc thêm divider "Video lẻ" nếu muốn
+            }
+
+            // Render Video Card (Giữ nguyên style cũ)
+            const card = doc.createElement('div'); 
+            card.className = 'video-card-item';
             if (video.videoId === editingVideoId) card.classList.add('active');
             card.dataset.videoId = video.videoId;
-            const episodePrefix = video.episode ? `[Tập ${video.episode}] ` : '';
+            
+            // Format tên hiển thị: [Mùa X - Tập Y] hoặc [Tập Y]
+            let prefix = '';
+            if (video.season) prefix += `S${video.season} `;
+            if (video.episode) prefix += `E${String(video.episode).padStart(2,'0')} `;
+            if (prefix) prefix = `[${prefix.trim()}] `;
+
             const duration = video.duration_auto ? new Date(video.duration_auto * 1000).toISOString().substr(14, 5) : '';
-            card.innerHTML = `<div class="video-card-thumbnail-wrapper"><img src="${video.thumbnailUrl_auto}" class="video-card-thumbnail" loading="lazy">${duration ? `<span class="video-card-duration">${duration}</span>` : ''}</div><div class="video-card-info"><div class="video-card-title">${episodePrefix}${video.userTitle}</div><div class="video-card-meta">${video.program || video.authorName_auto}</div></div><div class="video-card-actions"><button class="edit-btn" title="Sửa">✏️</button><button class="refresh-btn" title="Làm mới">🔄</button><button class="delete-btn" title="Xóa">🗑️</button></div>`;
+            
+            card.innerHTML = `
+                <div class="video-card-thumbnail-wrapper">
+                    <img src="${video.thumbnailUrl_auto}" class="video-card-thumbnail" loading="lazy">
+                    ${duration ? `<span class="video-card-duration">${duration}</span>` : ''}
+                </div>
+                <div class="video-card-info">
+                    <div class="video-card-title">${prefix}${video.userTitle}</div>
+                    <div class="video-card-meta">${video.program || video.authorName_auto}</div>
+                </div>
+                <div class="video-card-actions">
+                    <button class="edit-sub-btn" title="Chỉnh sửa Phụ đề" onclick="event.stopPropagation(); SubEditor.load('${video.videoId}')">🎬</button>
+                    <button class="edit-btn" title="Sửa"><svg class="icon"><use xlink:href="#icon-edit"></use></svg></button>
+                    <button class="refresh-btn" title="Làm mới"><svg class="icon"><use xlink:href="#icon-refresh"></use></svg></button>
+                    <button class="delete-btn" title="Xóa"><svg class="icon"><use xlink:href="#icon-trash"></use></svg></button>
+                </div>`;
+            
             videoListEl.appendChild(card);
         });
+        
         ui.libraryListContainer.appendChild(groupEl);
     });
-    initSortable();
+    
+    initSortable(); // Kích hoạt lại kéo thả
 }
 
 function initSortable() { if(sortableGroups) sortableGroups.destroy(); sortableVideos.forEach(s => s.destroy()); sortableVideos = []; sortableGroups = new Sortable(ui.libraryListContainer, { animation: 150, handle: '.program-group-header', onEnd: () => setDirty(true) }); doc.querySelectorAll('.video-card-list').forEach(el => { sortableVideos.push(new Sortable(el, { group: 'videos', animation: 150, onEnd: () => setDirty(true) })); }); }
@@ -776,23 +873,33 @@ renderBookmarkEditor([]);
 }
 function populateFormForEdit(videoId) {
     const video = currentLibrary.find(v => v.videoId === videoId); if (!video) return;
-    clearFormAndState(); editingVideoId = videoId;
+    clearFormAndState(); 
+    editingVideoId = videoId;
+    
     ui.inputs.youtubeUrl.value = `https://www.youtube.com/watch?v=${video.videoId}`;
     ui.inputs.userTitle.value = video.userTitle || "";
+    
+    // --- CODE MỚI ---
     ui.inputs.episodeNumber.value = video.episode || "";
+    ui.inputs.seasonNumber.value = video.season || ""; // Load season
+    // ----------------
+    
     ui.inputs.programSelect.value = video.program || "";
     ui.inputs.description.value = video.description || "";
-	renderBookmarkEditor(video.bookmarks || []);
+    renderBookmarkEditor(video.bookmarks || []); // Giả sử hàm này bạn đã có
 
-  (video.bookmarks || []).map(b => `${b.label}: ${b.time}${b.skip ? ' [skip]' : ''}`).join('\n');
-
-    selectedParticipants = [...(video.participants || [])]; selectedGenres = [...(video.genres || [])];
-    renderTagEditor('participants', selectedParticipants); renderTagEditor('genres', selectedGenres);
-    ui.formTitle.textContent = `Chỉnh sửa: ${video.userTitle}`; hideSpinner(ui.deployBtn, "Lưu Thay Đổi");
+    selectedParticipants = [...(video.participants || [])]; 
+    selectedGenres = [...(video.genres || [])];
+    renderTagEditor('participants', selectedParticipants); 
+    renderTagEditor('genres', selectedGenres);
+    
+    ui.formTitle.textContent = `Chỉnh sửa: ${video.userTitle}`; 
+    hideSpinner(ui.deployBtn, "Lưu Thay Đổi");
     ui.inputs.youtubeUrl.readOnly = true;
     doc.querySelector(`[data-video-id="${videoId}"]`)?.classList.add('active');
     ui.cancelEditBtn.classList.remove('hidden');
 }
+
 function setDirty(state) { isDirty = state; ui.saveOrderBtn.classList.toggle('hidden', !state); }
 
 // --- Main Action Handlers ---
@@ -836,15 +943,35 @@ if (srtFile) {
         
         const oembed = existingEntry ? {} : await getOEmbedData(videoId);
         const episodeValue = ui.inputs.episodeNumber.value;
-        const newEntryData = { videoId, userTitle: ui.inputs.userTitle.value.trim() || oembed.title, program, participants: selectedParticipants, genres: selectedGenres, description: ui.inputs.description.value.trim(), subtitleUrl, originalTitle_auto: existingEntry?.originalTitle_auto || oembed.title, authorName_auto: existingEntry?.authorName_auto || oembed.author_name, thumbnailUrl_auto: existingEntry?.thumbnailUrl_auto || oembed.thumbnail_url?.replace('hqdefault.jpg', 'maxresdefault.jpg'), duration_auto: existingEntry?.duration_auto || oembed.duration, uploadDate_auto: existingEntry?.uploadDate_auto || oembed.upload_date };
-        // Parse bookmark từ textarea
-const bookmarks = getBookmarkList();
-if (bookmarks.length > 0) newEntryData.bookmarks = bookmarks;
+        const seasonValue = ui.inputs.seasonNumber.value;
+        const newEntryData = { 
+            videoId, 
+            userTitle: ui.inputs.userTitle.value.trim() || oembed.title, 
+            program, 
+            participants: selectedParticipants, 
+            genres: selectedGenres, 
+            description: ui.inputs.description.value.trim(), 
+            subtitleUrl, 
+            originalTitle_auto: existingEntry?.originalTitle_auto || oembed.title, 
+            authorName_auto: existingEntry?.authorName_auto || oembed.author_name, 
+            thumbnailUrl_auto: existingEntry?.thumbnailUrl_auto || oembed.thumbnail_url?.replace('hqdefault.jpg', 'maxresdefault.jpg'), 
+            duration_auto: existingEntry?.duration_auto || oembed.duration, 
+            uploadDate_auto: existingEntry?.uploadDate_auto || oembed.upload_date 
+        };
 
+        // Parse bookmark (Giữ nguyên)
+        const bookmarks = getBookmarkList();
+        if (bookmarks.length > 0) newEntryData.bookmarks = bookmarks;
 
-
-		if (episodeValue && !isNaN(parseInt(episodeValue, 10))) { newEntryData.episode = parseInt(episodeValue, 10); } else { delete newEntryData.episode; }
-
+        // Xử lý Tập
+        if (episodeValue && !isNaN(parseInt(episodeValue, 10))) { 
+            newEntryData.episode = parseInt(episodeValue, 10); 
+        } else { delete newEntryData.episode; }
+        
+        // --- XỬ LÝ MÙA (CODE MỚI) ---
+        if (seasonValue && !isNaN(parseInt(seasonValue, 10))) { 
+            newEntryData.season = parseInt(seasonValue, 10); 
+        } else { delete newEntryData.season; }
         const idx = currentLibrary.findIndex(item => item.videoId === videoId);
         if (idx >= 0) { currentLibrary[idx] = newEntryData; } else { currentLibrary.unshift(newEntryData); }
         
