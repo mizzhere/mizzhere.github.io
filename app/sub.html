@@ -1567,6 +1567,52 @@
 #modal-related-wrapper:hover .scroll-btn {
     opacity: 1;
 }
+/* --- SEASON SELECTOR (DROPDOWN) --- */
+#season-select-wrapper {
+    margin-bottom: 15px;
+    display: inline-block;
+    position: relative;
+}
+
+#season-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 35px 8px 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+#season-select:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+}
+
+/* Mũi tên trỏ xuống tùy chỉnh */
+#season-select-wrapper::after {
+    content: "▼";
+    font-size: 0.7rem;
+    color: #aaa;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+#season-select option {
+    background-color: #141414; /* Màu nền menu khi xổ xuống */
+    color: #fff;
+    padding: 10px;
+}
 </style>
     </head>
     <body>
@@ -1659,7 +1705,13 @@
         <p id="modal-description"></p>
         
         <div id="modal-episodes-section" class="hidden">
-            <h4>Danh sách tập</h4>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <h4 style="margin: 0;">Danh sách tập</h4>
+                
+                <div id="season-select-wrapper" class="hidden">
+                    <select id="season-select"></select>
+                </div>
+                </div>
             <div class="list-wrapper" id="modal-list-wrapper">
                 <button id="modal-arrow-left" class="scroll-btn left hidden-arrow">
                     <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
@@ -3639,8 +3691,11 @@ function setupEventListeners() {
              * @param {Object} videoData Dữ liệu của video/tập mới nhất được chọn.
              * @param {Array<Object> | null} programEpisodes Danh sách các tập của chương trình, nếu là Program Card.
              */
-            function openDetailModal(videoData, programEpisodes = null) {
-    // 1. Lấy đúng ID từ HTML hiện tại
+            /**
+ * Mở modal chi tiết, có thể hiển thị danh sách tập theo MÙA nếu là một PROGRAM (Series).
+ */
+function openDetailModal(videoData, programEpisodes = null) {
+    // 1. Lấy DOM
     const modalThumbnail = document.getElementById("modal-thumbnail");
     const modalTitle = document.getElementById("modal-title");
     const modalOriginalTitle = document.getElementById("modal-original-title");
@@ -3653,15 +3708,18 @@ function setupEventListeners() {
     const modalParticipantsContainer = document.getElementById("modal-participants-container");
     const modalGenresList = document.getElementById("modal-genres-list");
     const modalGenresContainer = document.getElementById("modal-genres-container");
+    
     const modalEpisodeSection = document.getElementById("modal-episodes-section");
     const modalEpisodesList = document.getElementById("modal-episodes-list");
+    
+    // [MỚI] DOM cho Season
+    const seasonSelectWrapper = document.getElementById("season-select-wrapper");
+    const seasonSelect = document.getElementById("season-select");
 
     // 2. Xử lý thumbnail
     const thumbnailUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
     modalThumbnail.src = thumbnailUrl.replace("hqdefault", "maxresdefault");
-    modalThumbnail.onerror = () => {
-        modalThumbnail.src = thumbnailUrl;
-    };
+    modalThumbnail.onerror = () => { modalThumbnail.src = thumbnailUrl; };
 
     // 3. Xử lý TIÊU ĐỀ
     if (programEpisodes) {
@@ -3674,7 +3732,7 @@ function setupEventListeners() {
         if (videoData.originalTitle_auto) modalOriginalTitle.textContent = videoData.originalTitle_auto;
     }
 
-    // 4. Các thông tin cơ bản
+    // 4. Thông tin cơ bản
     modalProgram.textContent = videoData.program || "";
     modalAuthor.textContent = videoData.authorName || videoData.authorName_auto || "";
     modalDescription.textContent = videoData.description || "Chưa có mô tả chi tiết.";
@@ -3682,9 +3740,7 @@ function setupEventListeners() {
     // 5. GENRES
     modalGenresList.innerHTML = "";
     if (videoData.genres && videoData.genres.length > 0) {
-        modalGenresList.innerHTML =
-            `<span style="font-weight: 700; color: #fff; margin-right: 5px;">Thể loại:</span>` +
-            videoData.genres.map((g) => `<span class="genre-tag">${g}</span>`).join(" ");
+        modalGenresList.innerHTML = `<span style="font-weight: 700; color: #fff; margin-right: 5px;">Thể loại:</span>` + videoData.genres.map((g) => `<span class="genre-tag">${g}</span>`).join(" ");
         modalGenresContainer.classList.remove("hidden");
     } else {
         modalGenresContainer.classList.add("hidden");
@@ -3693,80 +3749,130 @@ function setupEventListeners() {
     // 6. PARTICIPANTS
     modalParticipantsList.innerHTML = "";
     if (videoData.participants && videoData.participants.length > 0) {
-        modalParticipantsList.innerHTML = videoData.participants
-            .map((p) => `<li class="participant-tag">${p}</li>`)
-            .join("");
+        modalParticipantsList.innerHTML = videoData.participants.map((p) => `<li class="participant-tag">${p}</li>`).join("");
         modalParticipantsContainer.classList.remove("hidden");
     } else {
         modalParticipantsContainer.classList.add("hidden");
     }
 
-    // 7. DANH SÁCH TẬP
+    // 7. [LOGIC MỚI] XỬ LÝ DANH SÁCH TẬP & MÙA (SEASONS)
     modalEpisodesList.innerHTML = "";
+    seasonSelect.innerHTML = "";
+    
     if (programEpisodes && programEpisodes.length > 0) {
         modalEpisodeSection.classList.remove("hidden");
-        programEpisodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
 
-        programEpisodes.forEach((ep) => {
-            const el = document.createElement("div");
-            el.className = "modal-episode-item";
-            const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
-            
-            const isPlayingBorder = ep.videoId === videoData.videoId ? ' border: 1px solid var(--accent-color);' : '';
-            if (ep.videoId === videoData.videoId) el.style.cssText = isPlayingBorder;
-
-            // Highlight tập đang xem
-            const numStyle = ep.videoId === videoData.videoId ? 'style="color: var(--accent-color)"' : '';
-
-            el.innerHTML = `
-                <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
-                <div class="modal-ep-info">
-                    <span class="modal-ep-number" ${numStyle}>Tập ${ep.episode || "Lẻ"}</span>
-                    <span class="modal-ep-title">${ep.userTitle || ep.title}</span>
-                </div>
-            `;
-            el.onclick = () => {
-                closeModal(detailModalOverlay);
-                launchPlayer(ep);
-            };
-            modalEpisodesList.appendChild(el);
+        // --- BƯỚC 7A: GOM NHÓM THEO MÙA ---
+        const seasonsMap = {};
+        programEpisodes.forEach(ep => {
+            const s = ep.season || 1; // Mặc định là Mùa 1 nếu không ghi
+            if (!seasonsMap[s]) seasonsMap[s] = [];
+            seasonsMap[s].push(ep);
         });
 
+        // Lấy danh sách số mùa và sắp xếp tăng dần
+        const seasonKeys = Object.keys(seasonsMap).sort((a, b) => parseInt(a) - parseInt(b));
+
+        // --- BƯỚC 7B: XỬ LÝ DROPDOWN ---
+        if (seasonKeys.length > 1) {
+            seasonSelectWrapper.classList.remove("hidden");
+            
+            // Tạo options cho select
+            seasonKeys.forEach(s => {
+                const option = document.createElement("option");
+                option.value = s;
+                // Đếm số tập trong mùa đó
+                const count = seasonsMap[s].length;
+                option.textContent = `Mùa ${s} (${count} tập)`;
+                seasonSelect.appendChild(option);
+            });
+
+            // Chọn mùa của video đang hiển thị (nếu có)
+            const currentSeason = videoData.season || 1;
+            if (seasonsMap[currentSeason]) {
+                seasonSelect.value = currentSeason;
+            } else {
+                seasonSelect.value = seasonKeys[0];
+            }
+
+        } else {
+            // Nếu chỉ có 1 mùa thì ẩn dropdown đi cho gọn
+            seasonSelectWrapper.classList.add("hidden");
+        }
+
+        // --- BƯỚC 7C: HÀM RENDER TẬP THEO MÙA ---
+        const renderEpisodes = (seasonNum) => {
+            modalEpisodesList.innerHTML = "";
+            const episodes = seasonsMap[seasonNum] || [];
+            
+            // Sắp xếp tập tăng dần (1, 2, 3...) cho dễ tìm trong list
+            episodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
+
+            episodes.forEach((ep) => {
+                const el = document.createElement("div");
+                el.className = "modal-episode-item";
+                const epThumb = ep.thumbnailUrl || ep.thumbnailUrl_auto;
+                
+                const isPlayingBorder = ep.videoId === videoData.videoId ? ' border: 1px solid var(--accent-color);' : '';
+                if (ep.videoId === videoData.videoId) el.style.cssText = isPlayingBorder;
+
+                const numStyle = ep.videoId === videoData.videoId ? 'style="color: var(--accent-color)"' : '';
+
+                el.innerHTML = `
+                    <img src="${epThumb}" class="modal-ep-thumb" loading="lazy">
+                    <div class="modal-ep-info">
+                        <span class="modal-ep-number" ${numStyle}>Tập ${ep.episode || "Lẻ"}</span>
+                        <span class="modal-ep-title">${ep.userTitle || ep.title}</span>
+                    </div>
+                `;
+                el.onclick = () => {
+                    closeModal(document.getElementById("detail-modal-overlay"));
+                    launchPlayer(ep);
+                };
+                modalEpisodesList.appendChild(el);
+            });
+            
+            // Reset scroll
+            modalEpisodesList.scrollLeft = 0;
+            if (window.updateModalArrows) window.updateModalArrows();
+        };
+
+        // Render lần đầu (dựa trên value hiện tại của select hoặc mùa 1)
+        const initialSeason = seasonKeys.length > 1 ? seasonSelect.value : (seasonKeys[0] || 1);
+        renderEpisodes(initialSeason);
+
+        // Sự kiện khi chọn mùa khác
+        seasonSelect.onchange = (e) => {
+            renderEpisodes(e.target.value);
+        };
+
         modalPlayBtn.onclick = () => {
-            closeModal(detailModalOverlay);
-            launchPlayer(videoData); 
+            closeModal(document.getElementById("detail-modal-overlay"));
+            launchPlayer(videoData);
         };
     } else {
+        // VIDEO LẺ (Không có danh sách tập)
         modalEpisodeSection.classList.add("hidden");
         modalPlayBtn.onclick = handleModalPlay;
         modalPlayBtn.dataset.videoId = videoData.videoId;
     }
 
-    // 8. [MỚI] RENDER SERIES LIÊN QUAN
+    // 8. RENDER SERIES LIÊN QUAN (Giữ nguyên)
     renderRelatedContent(videoData);
 
     const prog = videoData.program || null;
-    openModal(detailModalOverlay);
+    openModal(document.getElementById("detail-modal-overlay"));
 
     if (prog) {
         setTimeout(() => {
-            if (!detailModalOverlay.classList.contains("hidden")) {
+            if (!document.getElementById("detail-modal-overlay").classList.contains("hidden")) {
                 checkAndLoadTeaser(prog);
             }
         }, 100);
     } else {
         destroyTeaser();
     }
-    
-    // Reset scroll về đầu
-    modalEpisodesList.scrollLeft = 0;
-    
-    // Cập nhật trạng thái mũi tên cho cả 2 list (tập & related)
-    if (window.updateModalArrows) {
-        setTimeout(window.updateModalArrows, 50);
-    }
 }
-            
             // [THAY THẾ] Hàm vẽ vạch bookmark lên thanh tiến trình
             function renderBookmarksOverlay(bookmarks) {
                 // 1. Xóa các marker cũ trên thanh progress
