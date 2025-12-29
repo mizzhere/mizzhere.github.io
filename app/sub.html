@@ -3756,7 +3756,9 @@ function openDetailModal(videoData, programEpisodes = null) {
         const seasonKeys = Object.keys(seasonsMap).sort((a, b) => parseInt(a) - parseInt(b));
 
         // --- BƯỚC 7B: XỬ LÝ DROPDOWN ---
-        if (seasonKeys.length > 1) {
+       // --- BƯỚC 7B: XỬ LÝ DROPDOWN ---
+        // SỬA: Hiện dropdown nếu có > 1 mùa HOẶC (chỉ có 1 mùa NHƯNG đó không phải Mùa 1)
+        if (seasonKeys.length > 1 || (seasonKeys.length === 1 && String(seasonKeys[0]) !== "1")) {
             seasonSelectWrapper.classList.remove("hidden");
             
             // Tạo options cho select
@@ -3769,8 +3771,8 @@ function openDetailModal(videoData, programEpisodes = null) {
                 seasonSelect.appendChild(option);
             });
 
-            // Chọn mùa của video đang hiển thị (nếu có)
-            const currentSeason = videoData.season || 1;
+            // Chọn mùa của video đang hiển thị (nếu có), nếu không thì chọn mùa đầu tiên tìm thấy
+            const currentSeason = videoData.season || seasonKeys[0];
             if (seasonsMap[currentSeason]) {
                 seasonSelect.value = currentSeason;
             } else {
@@ -3778,7 +3780,7 @@ function openDetailModal(videoData, programEpisodes = null) {
             }
 
         } else {
-            // Nếu chỉ có 1 mùa thì ẩn dropdown đi cho gọn
+            // Chỉ ẩn khi có duy nhất 1 mùa VÀ đó là Mùa 1 (Mặc định)
             seasonSelectWrapper.classList.add("hidden");
         }
 
