@@ -2000,6 +2000,7 @@
             let teaserSyncInterval = null;
             let isTeaserMuted = true;
             let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
+            let isFiltering = false;
             let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
@@ -3039,11 +3040,20 @@ function setupEventListeners() {
     });
 
     // Nhập liệu
-    searchInput.addEventListener("input", () => {
-        if (searchInput.value.trim().length > 0) searchClear.classList.add("visible");
-        else searchClear.classList.remove("visible");
+    // Nhập liệu
+searchInput.addEventListener("input", () => {
+    const val = searchInput.value.trim();
+
+    if (val.length > 0) {
+        // Có chữ -> Hiện nút X và Lọc
+        searchClear.classList.add("visible");
         handleSearchAndFilter();
-    });
+    } else {
+        // Rỗng -> Ẩn nút X và Quay về trang chủ NGAY LẬP TỨC
+        searchClear.classList.remove("visible");
+        renderVideoRows(libraryData); // <--- Bắt buộc render lại trang chủ
+    }
+});
 
     // Click ra ngoài để đóng tìm kiếm
     document.addEventListener("click", (e) => {
