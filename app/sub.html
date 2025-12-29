@@ -1979,11 +1979,7 @@
             const teaserVolumeBtn = document.getElementById("teaser-volume-btn");
             const iconMute = document.getElementById("icon-mute");
             const iconUnmute = document.getElementById("icon-unmute");
-            // --- [FIX 2] LOGIC TÌM KIẾM CẬP NHẬT ---
-            const searchWrapper = document.getElementById("search-box-wrapper");
-            const searchTrigger = document.getElementById("search-trigger-btn");
-            const searchClear = document.getElementById("search-clear-btn");
-            const pageHeader = document.getElementById("page-header"); // Lấy header cha
+            
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -2144,22 +2140,7 @@
                     if (teaserPlayer) teaserPlayer.unMute();
                 }
             }
-            searchTrigger.addEventListener("click", () => {
-                const isActive = searchWrapper.classList.toggle("active");
-
-                if (isActive) {
-                    searchInput.focus();
-                    // [Mobile] Thêm class vào header để CSS biết mà ẩn logo
-                    pageHeader.classList.add("search-active");
-                } else {
-                    // [Mobile] Gỡ class nếu đóng bằng kính lúp
-                    // Chỉ gỡ nếu input rỗng, nếu có chữ thì giữ nguyên
-                    if (searchInput.value.trim() === "") {
-                        pageHeader.classList.remove("search-active");
-                    }
-                }
-            });
-
+            
             // 2. Click nút X -> Xóa sạch & Reset list & Focus lại
             searchClear.addEventListener("click", () => {
                 searchInput.value = ""; // Xóa text trong ô
