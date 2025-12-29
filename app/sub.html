@@ -1103,9 +1103,11 @@
         100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
-    /* ========================================= */
+   /* ========================================= */
     /* 12. PLAYER CONTROLS & OVERLAYS            */
     /* ========================================= */
+    
+    /* Mặc định: Ẩn và KHÔNG bấm được (pointer-events: none) */
     #video-header-overlay, #custom-controls, #center-play-pause-btn {
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -1113,15 +1115,16 @@
         left: 0;
         width: 100%;
         box-sizing: border-box;
-        pointer-events: none;
+        pointer-events: none; /* [QUAN TRỌNG] Chặn click khi ẩn */
     }
 
+    /* Khi Active: Hiện và CHO PHÉP bấm (pointer-events: auto) */
     #player-container.controls-active > #video-header-overlay,
     #player-container.controls-active > #custom-controls,
     #player-container.controls-active > #center-play-pause-btn {
         opacity: 1;
+        pointer-events: auto; /* [QUAN TRỌNG] Kích hoạt click lại */
     }
-    #player-container.controls-active > #center-play-pause-btn { pointer-events: auto; }
 
     /* Header Overlay */
     #video-header-overlay {
@@ -1145,7 +1148,7 @@
         padding: 8px;
         border-radius: 50%;
         transition: background 0.2s;
-        pointer-events: auto;
+        /* Đã xóa pointer-events: auto ở đây để phụ thuộc vào cha */
         margin-top: -5px;
     }
     #back-btn:hover { background: rgba(255, 255, 255, 0.15); }
@@ -1226,7 +1229,7 @@
         background: rgba(255, 255, 255, 0.2);
         border-radius: 3px;
         cursor: pointer;
-        pointer-events: auto;
+        /* Đã xóa pointer-events: auto ở đây */
         transition: height 0.1s;
         overflow: visible;
     }
@@ -1302,7 +1305,11 @@
     .left-controls { gap: 20px; }
     .right-controls { gap: 15px; }
 
-    #play-pause-btn { background: none; border: none; cursor: pointer; padding: 0; pointer-events: auto; display: flex; align-items: center; }
+    #play-pause-btn { 
+        background: none; border: none; cursor: pointer; padding: 0; 
+        /* Đã xóa pointer-events: auto ở đây */
+        display: flex; align-items: center; 
+    }
     #play-pause-btn svg { width: 32px; height: 32px; fill: #fff; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5)); }
 
     .icon-btn {
@@ -1310,7 +1317,7 @@
         border: none;
         cursor: pointer;
         padding: 8px;
-        pointer-events: auto;
+        /* Đã xóa pointer-events: auto ở đây */
         opacity: 0.8;
         transition: opacity 0.2s, transform 0.2s;
     }
@@ -1319,7 +1326,6 @@
 
     #cc-toggle-btn.off { opacity: 0.4; }
     #cc-toggle-btn.off:hover { opacity: 0.6; }
-
     /* ========================================= */
     /* 13. PLAYER FLOATING MENUS                 */
     /* ========================================= */
