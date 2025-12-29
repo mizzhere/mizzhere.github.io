@@ -284,13 +284,13 @@
         width: 100% !important;
     }
 }
-    /* ========================================= */
-    /* 3. HERO SLIDER (CINEMA BANNER)            */
+/* ========================================= */
+    /* 3. HERO SLIDER (UPDATED)                  */
     /* ========================================= */
     #hero-section {
         position: relative;
         width: 100%;
-        height: 70vh;
+        height: 70vh; /* Giữ nguyên chiều cao */
         overflow: hidden;
         background-color: #000;
         margin-bottom: 20px;
@@ -300,6 +300,7 @@
         display: flex;
         height: 100%;
         width: 100%;
+        will-change: transform; /* Tối ưu hiệu năng cuộn */
     }
 
     .hero-slide {
@@ -312,39 +313,29 @@
 
     .hero-bg-wrapper {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 110%;
+        top: 0; left: 0; width: 100%; height: 110%;
         z-index: 1;
     }
 
     .hero-bg {
-        width: 100%;
-        height: 100%;
+        width: 100%; height: 100%;
         object-fit: cover;
         opacity: 0.6;
-        transition: none !important;
-        will-change: transform;
     }
 
     .hero-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         z-index: 2;
-        background: linear-gradient(to right, #141414 0%, rgba(20, 20, 20, 0.6) 50%, transparent 100%),
-                    linear-gradient(to top, #141414 0%, transparent 50%);
+        background: linear-gradient(to right, #141414 0%, rgba(20, 20, 20, 0.4) 60%, transparent 100%),
+                    linear-gradient(to top, #141414 0%, transparent 40%);
     }
 
     .hero-content {
         position: absolute;
-        bottom: 5%;
+        bottom: 12%; /* Đẩy lên cao hơn chút để nhường chỗ cho ảnh nhỏ */
         left: clamp(20px, 4vw, 60px);
         z-index: 10;
-        max-width: 70%;
+        max-width: 60%; /* Giới hạn chiều rộng nội dung */
         opacity: 0;
         transform: translateY(30px);
         transition: opacity 0.8s ease, transform 0.8s ease;
@@ -357,162 +348,111 @@
 
     .hero-badge {
         display: inline-block;
-        background-color: var(--accent-color);
+        background-color: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.4);
         color: #fff;
-        padding: 5px 10px;
-        font-weight: 700;
-        font-size: 0.9rem;
+        padding: 4px 12px;
+        font-weight: 600;
+        font-size: 0.8rem;
         border-radius: 4px;
         margin-bottom: 15px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 4px 10px rgba(229, 9, 20, 0.4);
     }
 
     .hero-program {
-        font-size: 1.2rem;
+        font-size: 1rem;
         color: var(--accent-color);
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 2px;
         margin-bottom: 5px;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.8s ease 0.1s;
     }
 
-    .hero-slide.active .hero-program {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+    /* FIX 2: CHỮ NHỎ HƠN */
     .hero-title {
-        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-size: clamp(1.8rem, 4vw, 2.8rem); /* Giảm từ 3.5rem xuống */
         font-weight: 800;
-        line-height: 1.1;
+        line-height: 1.2;
         margin: 0 0 15px 0;
         color: #fff;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     }
 
     .hero-actions {
-        display: flex;
-        gap: 15px;
+        display: flex; gap: 15px;
     }
 
     .hero-btn {
-        padding: 12px 28px;
-        border: none;
-        border-radius: 6px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        padding: 10px 24px; /* Nút gọn hơn chút */
+        border: none; border-radius: 6px;
+        font-size: 1rem; font-weight: 600;
+        cursor: pointer; display: flex; align-items: center; gap: 8px;
         transition: transform 0.2s, background 0.2s;
     }
 
-    .hero-btn-primary {
-        background-color: #fff;
-        color: #000;
-    }
+    .hero-btn-primary { background-color: #fff; color: #000; }
+    .hero-btn-primary:hover { background-color: #ddd; transform: scale(1.05); }
 
-    .hero-btn-primary:hover {
-        background-color: #ddd;
-        transform: scale(1.05);
-    }
+    .hero-btn-secondary { background-color: rgba(109, 109, 110, 0.7); color: #fff; backdrop-filter: blur(4px); }
+    .hero-btn-secondary:hover { background-color: rgba(109, 109, 110, 0.4); transform: scale(1.05); }
 
-    .hero-btn-secondary {
-        background-color: rgba(109, 109, 110, 0.7);
-        color: #fff;
-        backdrop-filter: blur(4px);
-    }
-
-    .hero-btn-secondary:hover {
-        background-color: rgba(109, 109, 110, 0.4);
-        transform: scale(1.05);
-    }
-
-    .hero-dots {
+    /* FIX 4: THANH ĐIỀU HƯỚNG BẰNG ẢNH NHỎ */
+    .hero-thumb-nav {
         position: absolute;
-        bottom: 20px;
+        bottom: 30px;
         right: clamp(20px, 4vw, 60px);
         display: flex;
         gap: 10px;
         z-index: 20;
     }
 
-    .hero-dot {
-        width: 10px;
-        height: 10px;
-        background-color: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
+    .hero-thumb-item {
+        width: 60px;
+        height: 36px;
+        border-radius: 4px;
+        overflow: hidden;
         cursor: pointer;
-        transition: all 0.3s;
+        opacity: 0.5;
+        border: 2px solid transparent;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
     }
 
-    .hero-dot.active {
-        background-color: #fff;
-        transform: scale(1.3);
+    .hero-thumb-item img {
+        width: 100%; height: 100%; object-fit: cover;
     }
 
-    /* Hero Nav Buttons */
-    .hero-nav-btn {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 80px;
-        border: none;
-        cursor: pointer;
-        z-index: 30;
-        color: #fff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: all 0.3s;
-        background: transparent;
-        border-radius: 0;
-    }
-
-    #hero-section:hover .hero-nav-btn {
+    .hero-thumb-item:hover { opacity: 1; transform: scale(1.1); }
+    
+    .hero-thumb-item.active {
         opacity: 1;
+        border-color: #fff;
+        transform: scale(1.15);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
 
-    .hero-nav-btn:hover {
-        background: rgba(0, 0, 0, 0.2);
+    /* Mũi tên điều hướng 2 bên (ẩn bớt đi cho đỡ rối hoặc làm mờ) */
+    .hero-nav-btn {
+        position: absolute; top: 0; bottom: 0; width: 60px;
+        border: none; cursor: pointer; z-index: 25; color: #fff;
+        display: flex; justify-content: center; align-items: center;
+        opacity: 0; transition: all 0.3s; background: transparent;
     }
-
-    .hero-nav-btn:hover svg {
-        transform: scale(1.3);
-    }
-
-    .hero-nav-btn svg {
-        width: 40px;
-        height: 40px;
-        fill: #fff;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-        transition: transform 0.2s;
-    }
-
-    .hero-nav-btn.prev {
-        left: 0;
-        background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-    }
-
-    .hero-nav-btn.next {
-        right: 0;
-        background: linear-gradient(to left, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-    }
+    #hero-section:hover .hero-nav-btn { opacity: 1; }
+    .hero-nav-btn:hover { background: rgba(0,0,0,0.3); }
+    .hero-nav-btn svg { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+    .hero-nav-btn.prev { left: 0; }
+    .hero-nav-btn.next { right: 0; }
 
     @media (max-width: 768px) {
-        #hero-section { height: 55vh; }
-        .hero-content { bottom: 15%; width: 90%; }
-        .hero-btn { padding: 10px 20px; font-size: 1rem; }
+        #hero-section { height: 60vh; }
+        .hero-content { bottom: 15%; width: 90%; max-width: 100%; }
+        /* Mobile ẩn ảnh nhỏ đi cho đỡ chật, dùng dots hoặc ẩn luôn */
+        .hero-thumb-nav { display: none; } 
     }
-
     /* ========================================= */
     /* 4. MAIN LAYOUT, LISTS & SCROLL BUTTONS    */
     /* ========================================= */
@@ -2794,183 +2734,211 @@
     `;
             }
             /* ========================================= */
-            /* START: HERO SLIDER LOGIC (INFINITE LOOP)  */
+            /* START: HERO SLIDER LOGIC (REFINED)        */
             /* ========================================= */
 
             let heroTimer;
-            let currentHeroIndex = 1; // Bắt đầu từ 1 vì có Clone
+            let currentHeroIndex = 1; // Bắt đầu từ 1 vì có Clone đầu
             let isHeroTransitioning = false;
+            let totalHeroSlides = 0; // Tổng số slide (bao gồm clones)
 
-            /* --- LOGIC HERO SLIDER (CẬP NHẬT: MŨI TÊN ĐẸP + TÊN CHƯƠNG TRÌNH) --- */
             function setupHeroSlider(videos) {
                 const heroSection = document.getElementById("hero-section");
                 if (!heroSection || videos.length === 0) return;
 
-                // 1. Clone Loop
+                // 1. Clone Loop Logic
+                // Tạo Clone cuối vào đầu, và Clone đầu vào cuối
                 const firstClone = videos[0];
                 const lastClone = videos[videos.length - 1];
                 const displayList = [lastClone, ...videos, firstClone];
+                totalHeroSlides = displayList.length;
 
-                // 2. Render HTML
+                // 2. Render HTML Slide
                 let html = `<div class="hero-track" style="transform: translateX(-100%)">`;
 
                 displayList.forEach((video, index) => {
                     const isActive = index === 1 ? "active" : "";
-                    const thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace(
-                        "hqdefault",
-                        "maxresdefault"
-                    );
-
-                    // [MỚI] Lấy tên chương trình
+                    const thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
                     const programName = video.program ? `<div class="hero-program">${video.program}</div>` : "";
+                    
+                    // FIX 3: Đổi Text Badge
+                    const badgeText = "Nổi bật & Đáng xem"; 
 
                     html += `
-            <div class="hero-slide ${isActive}" data-index="${index}">
-                <div class="hero-bg-wrapper">
-                    <img src="${thumbUrl}" class="hero-bg" alt="bg">
-                </div>
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <span class="hero-badge">Mới phát hành</span>
-                    
-                    ${programName}
-                    
-                    <h1 class="hero-title">${video.userTitle || video.title}</h1>
-                    
-                    <div class="hero-actions">
-                        <button class="hero-btn hero-btn-primary" onclick="launchPlayerByVideoId('${video.videoId}')">
-                            <svg viewBox="0 0 24 24" width="24" height="24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="currentColor"/></svg>
-                            Phát ngay
-                        </button>
-                        <button class="hero-btn hero-btn-secondary" onclick="openDetailModalByVideoId('${video.videoId}')">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M11,9H13V7H11M11,20H13V11H11M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
-                            Thông tin
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+                        <div class="hero-slide ${isActive}" data-index="${index}">
+                            <div class="hero-bg-wrapper">
+                                <img src="${thumbUrl}" class="hero-bg" alt="bg">
+                            </div>
+                            <div class="hero-overlay"></div>
+                            <div class="hero-content">
+                                <span class="hero-badge">${badgeText}</span>
+                                ${programName}
+                                <h1 class="hero-title">${video.userTitle || video.title}</h1>
+                                <div class="hero-actions">
+                                    <button class="hero-btn hero-btn-primary" onclick="launchPlayerByVideoId('${video.videoId}')">
+                                        <svg viewBox="0 0 24 24" width="24" height="24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="currentColor"/></svg>
+                                        Phát ngay
+                                    </button>
+                                    <button class="hero-btn hero-btn-secondary" onclick="openDetailModalByVideoId('${video.videoId}')">
+                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M11,9H13V7H11M11,20H13V11H11M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
+                                        Thông tin
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
                 html += `</div>`; // Đóng track
 
-                // 3. [MỚI] Mũi tên SVG (Giống danh sách dưới)
+                // 3. Render Mũi tên
                 html += `
-        <button class="hero-nav-btn prev" onclick="moveHeroSlide(-1)">
-            <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
-        </button>
-        <button class="hero-nav-btn next" onclick="moveHeroSlide(1)">
-            <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
-        </button>
-    `;
+                    <button class="hero-nav-btn prev" onclick="moveHeroSlide(-1)">
+                        <svg viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg>
+                    </button>
+                    <button class="hero-nav-btn next" onclick="moveHeroSlide(1)">
+                        <svg viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg>
+                    </button>
+                `;
 
-                // 4. Dots
-                html += `<div class="hero-dots">`;
-                videos.forEach((_, i) => {
-                    html += `<div class="hero-dot ${i === 0 ? "active" : ""}" onclick="goToHeroSlide(${i + 1})"></div>`;
+                // 4. FIX 4: Render Ảnh Nhỏ (Thumbnails) thay vì chấm tròn
+                html += `<div class="hero-thumb-nav">`;
+                videos.forEach((video, i) => {
+                    const thumbSmall = video.thumbnailUrl || video.thumbnailUrl_auto;
+                    html += `
+                        <div class="hero-thumb-item ${i === 0 ? "active" : ""}" onclick="goToHeroSlide(${i + 1})">
+                            <img src="${thumbSmall}" alt="thumb">
+                        </div>
+                    `;
                 });
                 html += `</div>`;
 
                 heroSection.innerHTML = html;
 
-                // Logic giữ nguyên
+                // Khởi động
                 startHeroTimer();
+                
+                // Parallax Effect
                 window.addEventListener("scroll", handleHeroParallax);
+                
+                // Dừng auto khi chuột vào để dễ đọc, rời ra thì chạy tiếp
                 heroSection.addEventListener("mouseenter", () => clearInterval(heroTimer));
                 heroSection.addEventListener("mouseleave", startHeroTimer);
             }
 
-            // Hàm khởi động timer
             function startHeroTimer() {
                 clearInterval(heroTimer);
                 heroTimer = setInterval(() => {
-                    moveHeroSlide(1); // Next slide
-                }, 6000); // 6 giây đổi 1 lần
+                    moveHeroSlide(1, true); // True = auto move
+                }, 6000); 
             }
 
-            // Hàm di chuyển slide
-            function moveHeroSlide(direction) {
+            function moveHeroSlide(direction, isAuto = false) {
                 if (isHeroTransitioning) return;
+
+                // FIX 1: Nếu người dùng tự bấm (không phải auto), reset timer ngay lập tức
+                // Để tránh việc vừa bấm xong thì timer cũ kích hoạt gây nhảy hình/đen hình
+                if (!isAuto) startHeroTimer();
+
                 const track = document.querySelector(".hero-track");
                 const slides = document.querySelectorAll(".hero-slide");
-                const dots = document.querySelectorAll(".hero-dot");
-                const totalSlides = slides.length; // Bao gồm 2 clone
+                const thumbs = document.querySelectorAll(".hero-thumb-item");
+
+                if (!track || slides.length === 0) return;
 
                 isHeroTransitioning = true;
                 currentHeroIndex += direction;
 
-                track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)"; // Easing mượt
+                track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)";
                 track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
 
-                // Cập nhật Animation chữ (active class)
-                slides.forEach((s) => s.classList.remove("active"));
-                // Active tạm thời để hiện chữ, logic active thật sẽ ở transitionend
+                // Update class active cho slide (để chạy animation chữ)
+                slides.forEach(s => s.classList.remove("active"));
                 if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
 
                 // Xử lý Infinite Loop khi animation kết thúc
                 track.ontransitionend = () => {
                     isHeroTransitioning = false;
+                    track.ontransitionend = null; // Clear event để tránh gọi lặp
 
                     // Nếu đi quá slide cuối (vào Clone đầu) -> Nhảy về Slide 1 thật
-                    if (currentHeroIndex >= totalSlides - 1) {
-                        track.style.transition = "none"; // Tắt animation để nhảy tức thì
+                    if (currentHeroIndex >= totalHeroSlides - 1) {
+                        track.style.transition = "none"; 
                         currentHeroIndex = 1;
                         track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                        // Re-add active class
+                        slides.forEach(s => s.classList.remove("active"));
+                        slides[currentHeroIndex].classList.add("active");
                     }
                     // Nếu đi lùi quá slide đầu (vào Clone cuối) -> Nhảy về Slide cuối thật
                     else if (currentHeroIndex <= 0) {
                         track.style.transition = "none";
-                        currentHeroIndex = totalSlides - 2;
+                        currentHeroIndex = totalHeroSlides - 2;
                         track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+                        // Re-add active class
+                        slides.forEach(s => s.classList.remove("active"));
+                        slides[currentHeroIndex].classList.add("active");
                     }
 
-                    // Update lại active class chuẩn sau khi nhảy
-                    slides.forEach((s) => s.classList.remove("active"));
-                    slides[currentHeroIndex].classList.add("active");
-
-                    // Update Dots (Trừ 1 vì index bắt đầu từ 1 do clone)
-                    let realIndex = currentHeroIndex - 1;
-                    if (realIndex < 0) realIndex = dots.length - 1;
-                    if (realIndex >= dots.length) realIndex = 0;
-
-                    dots.forEach((d) => d.classList.remove("active"));
-                    if (dots[realIndex]) dots[realIndex].classList.add("active");
+                    // Update Thumbnails Active State
+                    updateActiveThumb(thumbs);
                 };
             }
 
-            // Hàm nhảy đến slide cụ thể (khi bấm dot)
             function goToHeroSlide(index) {
-                if (index === currentHeroIndex) return;
-                currentHeroIndex = index;
+                if (index === currentHeroIndex || isHeroTransitioning) return;
+                
+                // FIX 1: Reset timer khi click chọn ảnh
+                startHeroTimer();
+
                 const track = document.querySelector(".hero-track");
+                const slides = document.querySelectorAll(".hero-slide");
+                const thumbs = document.querySelectorAll(".hero-thumb-item");
+
+                currentHeroIndex = index;
+                isHeroTransitioning = true;
+
                 track.style.transition = "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)";
                 track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
-                // ... logic active class sẽ do transitionend ở trên lo
+
+                slides.forEach(s => s.classList.remove("active"));
+                if (slides[currentHeroIndex]) slides[currentHeroIndex].classList.add("active");
+                
+                // Khi click trực tiếp, ta update thumb ngay (hoặc đợi transitionEnd tùy ý, ở đây update luôn cho nhanh)
+                updateActiveThumb(thumbs);
+                
+                track.ontransitionend = () => {
+                    isHeroTransitioning = false;
+                    track.ontransitionend = null;
+                };
             }
 
-            // [PARALLAX] Hàm xử lý hiệu ứng chiều sâu
+            function updateActiveThumb(thumbs) {
+                // Tính toán index thật (trừ đi 1 do clone đầu)
+                let realIndex = currentHeroIndex - 1;
+                // Xử lý biên (nếu đang ở clone)
+                if (realIndex < 0) realIndex = thumbs.length - 1;
+                if (realIndex >= thumbs.length) realIndex = 0;
+
+                thumbs.forEach(t => t.classList.remove("active"));
+                if (thumbs[realIndex]) thumbs[realIndex].classList.add("active");
+            }
+
+            // [PARALLAX] Fix nhẹ: kiểm tra phần tử tồn tại trước khi style
             function handleHeroParallax() {
-                // Nếu đang có 1 frame chờ xử lý thì bỏ qua, không spam lệnh
                 if (!isParallaxTicking) {
                     window.requestAnimationFrame(() => {
                         const scrollY = window.scrollY;
-
-                        // Chỉ tính toán nếu Hero còn trong tầm nhìn (để tiết kiệm pin)
                         if (scrollY <= window.innerHeight) {
-                            const activeSlide = document.querySelector(".hero-slide.active .hero-bg");
-                            if (activeSlide) {
-                                // Tăng tốc độ lên 0.6 (cũ là 0.5) cho cảm giác rõ rệt hơn
-                                // Dùng translate3d để kích hoạt GPU Acceleration
-                                activeSlide.style.transform = `translate3d(0, ${scrollY * 0.6}px, 0)`;
+                            const activeSlideBg = document.querySelector(".hero-slide.active .hero-bg");
+                            if (activeSlideBg) {
+                                activeSlideBg.style.transform = `translate3d(0, ${scrollY * 0.5}px, 0)`;
                             }
                         }
-
-                        isParallaxTicking = false; // Mở khóa cho frame tiếp theo
+                        isParallaxTicking = false;
                     });
-
-                    isParallaxTicking = true; // Khóa lại
+                    isParallaxTicking = true;
                 }
             }
-
             // Helper: Gọi player từ ID (do button trong HTML string không truyền obj được)
             function launchPlayerByVideoId(vid) {
                 const video = libraryData.find((v) => v.videoId === vid);
