@@ -2142,16 +2142,7 @@
             }
             
             // 2. Click nút X -> Xóa sạch & Reset list & Focus lại
-            searchClear.addEventListener("click", () => {
-                searchInput.value = ""; // Xóa text trong ô
-                searchInput.focus(); // Giữ bàn phím/con trỏ
-
-                handleSearchAndFilter(); // [QUAN TRỌNG] Gọi hàm lọc ngay để list phim hiện lại đầy đủ
-
-                searchClear.classList.remove("visible"); // Ẩn nút X
-
-                // Lưu ý: Không đóng thanh tìm kiếm ngay để user còn nhập cái khác nếu muốn
-            });
+         
             // Hàm xóa dấu Tiếng Việt để tìm kiếm chính xác hơn
             // VD: "Đô thị" -> "do thi"
             function toNonAccentVietnamese(str) {
