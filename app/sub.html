@@ -3268,7 +3268,7 @@ function setupEventListeners() {
     // Bổ sung: Ẩn gợi ý khi click ra ngoài
     document.addEventListener("click", (e) => {
         const suggestionsBox = document.getElementById("search-suggestions");
-        const searchWrapper = document.getElementById("search-box-wrapper");
+        
         if (!searchWrapper.contains(e.target)) {
             suggestionsBox.classList.remove("visible");
         }
