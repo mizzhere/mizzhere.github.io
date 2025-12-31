@@ -3704,6 +3704,7 @@ pBar.addEventListener("change", () => {
             currentY = 0;
         });
     });
+    setupSmartHoverScroll();
 }
             // 3. Hàm logic mới
             function toggleEpisodesSidebar() {
@@ -5222,6 +5223,51 @@ function setupModalScrolling() {
 }
 // GỌI HÀM NÀY NGAY KHI KHỞI TẠO (Trong setupEventListeners hoặc cuối file)
 setupModalScrolling();
+/* --- TÍNH NĂNG: TỰ ĐỘNG CUỘN KHI DI CHUỘT --- */
+function setupSmartHoverScroll() {
+    // 1. Áp dụng cho Danh sách Video (Carousel)
+    const library = document.getElementById("library-container");
+    
+    // Sử dụng Event Delegation để bắt sự kiện cho cả các card được render sau này
+    library.addEventListener("mouseover", (e) => {
+        // Tìm thẻ card gần nhất
+        const card = e.target.closest(".video-card");
+        if (!card) return;
+
+        // Chỉ xử lý nếu card nằm trong một danh sách cuộn ngang (.video-list)
+        const list = card.closest(".video-list");
+        if (!list) return;
+
+        // [QUAN TRỌNG] Logic kiểm tra xem có cần cuộn không
+        // (Để tránh việc cứ di chuột là nó giật giật)
+        const listRect = list.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+
+        // Kiểm tra biên trái và biên phải
+        const isCutOffLeft = cardRect.left < listRect.left;
+        const isCutOffRight = cardRect.right > listRect.right;
+
+        if (isCutOffLeft || isCutOffRight) {
+            // Thực hiện cuộn mượt mà
+            card.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest', // Giữ nguyên vị trí dọc (không làm nhảy trang web)
+                inline: 'nearest' // Cuộn ngang tới vị trí gần nhất để nhìn thấy
+            });
+        }
+    });
+
+    // 2. Áp dụng cho Danh sách Tập trong Modal (nếu cần)
+    const modalEpList = document.getElementById("modal-episodes-list");
+    if (modalEpList) {
+        modalEpList.addEventListener("mouseover", (e) => {
+            const item = e.target.closest(".modal-episode-item");
+            if (item) {
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+        });
+    }
+}
         </script>
         
         <script src="https://www.youtube.com/iframe_api"></script>
