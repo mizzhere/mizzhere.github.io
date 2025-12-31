@@ -385,6 +385,11 @@
         top: 0; left: 0; width: 100%; height: 110%;
         z-index: 1;
     }
+    #hero-section {
+    /* Đặt giá trị mặc định */
+    --local-bg: 20, 20, 20; 
+    --local-accent: #e50914; 
+}
 
     .hero-bg {
         width: 100%; height: 100%;
@@ -393,20 +398,20 @@
     }
 
     .hero-overlay {
-    /* Thay vì màu đen cứng, ta dùng gradient từ màu động */
+    /* SỬA: Dùng biến --local-bg thay vì --dynamic-color */
     background: linear-gradient(
         to right,
-        rgba(var(--dynamic-color), 1) 0%,
-        rgba(var(--dynamic-color), 0.6) 50%,
-        rgba(var(--dynamic-color), 0.2) 80%,
+        rgba(var(--local-bg), 1) 0%,
+        rgba(var(--local-bg), 0.6) 50%,
+        rgba(var(--local-bg), 0.2) 80%,
         transparent 100%
     ),
     linear-gradient(
         to top,
-        rgba(var(--dynamic-color), 1) 0%,
+        rgba(var(--local-bg), 1) 0%,
         transparent 50%
     );
-    transition: background 1s ease; /* Chuyển màu mượt mà */
+    transition: background 1s ease;
 }
 
 
@@ -939,6 +944,13 @@
 
     /* Modal Body & Detail Specifics */
     #detail-modal-content { width: 100%; max-width: 800px; }
+    #detail-modal-content {
+    --local-bg: 20, 20, 20;
+    /* SỬA: Dùng biến --local-bg */
+    background: linear-gradient(to bottom, rgba(var(--local-bg), 0.9), #141414 80%) !important;
+    transition: background 0.5s ease;
+}
+
     #modal-body { padding: 20px 30px 30px 30px; overflow-y: visible; height: auto; }
     
     #modal-header {
@@ -1149,10 +1161,29 @@
         color: white;
         font-family: "Inter", sans-serif;
         overflow: hidden;
+        --local-accent: #e50914;
     }
 
     #player-container.no-cursor { cursor: none; }
-
+    #player-container #progress-bar::-webkit-slider-thumb {
+    background: var(--local-accent) !important;
+}
+#player-container #progress-bar {
+    /* Gradient cho phần đã chạy */
+    background: linear-gradient(
+        to right,
+        var(--local-accent) 0%,
+        var(--local-accent) var(--progress-percent, 0%),
+        rgba(255,255,255,0.2) var(--progress-percent, 0%),
+        rgba(255,255,255,0.2) 100%
+    ) !important;
+}
+#player-container .watched-bar {
+    background-color: var(--local-accent) !important;
+}
+#player-container .episode-item.playing .episode-number {
+    color: var(--local-accent) !important;
+}
     #youtube-player {
         position: absolute;
         width: 100%;
@@ -2042,43 +2073,80 @@ const colorThief = new ColorThief();
             let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
             let isFiltering = false;
             let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
-  function applyThemeFromImage(imageUrl) {
+/* --- LOGIC LẤY MÀU THÔNG MINH MỚI --- */
+
+// Hàm tính độ sáng (0-255)
+function getBrightness(rgb) {
+    return (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+}
+
+// Hàm áp dụng màu cho một phần tử cụ thể
+function applyThemeFromImage(imageUrl, targetElement) {
+    if (!targetElement) return;
+
     const img = new Image();
     img.crossOrigin = "Anonymous";
     img.src = imageUrl;
 
     img.onload = function() {
         try {
-            const color = colorThief.getColor(img);
-            // Lấy bảng màu để tìm màu sáng hơn cho accent (tránh màu đen kịt)
-            const palette = colorThief.getPalette(img, 3); 
-            
-            // Chọn màu thứ 2 trong bảng màu làm accent (thường là màu nổi bật hơn nền)
-            // Nếu không có thì dùng màu chủ đạo
-            const accent = palette[1] || color;
+            const palette = colorThief.getPalette(img, 5); // Lấy 5 màu
+            let dominantRGB = palette[0];
+            let accentRGB = palette[0];
 
-            const root = document.documentElement;
-            
-            // 1. Màu nền mờ (Dynamic Color)
-            root.style.setProperty('--dynamic-color', `${color[0]}, ${color[1]}, ${color[2]}`);
-            
-            // 2. [MỚI] Màu nhấn (Accent Color) cho Player (Progress bar, Text)
-            // Tăng độ sáng một chút để đảm bảo nổi bật trên nền đen
-            root.style.setProperty('--accent-color', `rgb(${accent[0]}, ${accent[1]}, ${accent[2]})`);
+            // --- 1. CHỌN MÀU NỀN (Dominant) ---
+            // Màu nền thường là màu chiếm diện tích nhiều nhất (palette[0])
+            // Không cần xử lý nhiều, chỉ cần nó không quá chói.
+
+            // --- 2. CHỌN MÀU NHẤN (Accent) THÔNG MINH ---
+            // Tìm trong bảng màu, màu nào có độ sáng > 60 (để nổi trên nền đen)
+            // và khác biệt với màu đen.
+            let foundAccent = false;
+            for (let i = 0; i < palette.length; i++) {
+                const color = palette[i];
+                const brightness = getBrightness(color);
+                
+                // Điều kiện: Không quá tối (<50) và không quá gần màu trắng (>220)
+                if (brightness > 50 && brightness < 220) {
+                    accentRGB = color;
+                    foundAccent = true;
+                    break;
+                }
+            }
+
+            // Nếu tất cả đều tối (ví dụ ảnh đen xì), hãy làm sáng màu chủ đạo lên một chút
+            if (!foundAccent) {
+                // Kỹ thuật: Cộng thêm giá trị để làm sáng (Tint)
+                accentRGB = [
+                    Math.min(dominantRGB[0] + 60, 255),
+                    Math.min(dominantRGB[1] + 60, 255),
+                    Math.min(dominantRGB[2] + 60, 255)
+                ];
+            }
+
+            // --- 3. ÁP DỤNG VÀO PHẦN TỬ ĐÍCH ---
+            // Set biến CSS cục bộ cho element đó
+            targetElement.style.setProperty('--local-bg', `${dominantRGB[0]}, ${dominantRGB[1]}, ${dominantRGB[2]}`);
+            targetElement.style.setProperty('--local-accent', `rgb(${accentRGB[0]}, ${accentRGB[1]}, ${accentRGB[2]})`);
 
         } catch (e) {
             console.log("Lỗi lấy màu:", e);
-            // Fallback
-            document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
-            document.documentElement.style.setProperty('--accent-color', '#e50914');
+            resetLocalTheme(targetElement);
         }
     };
-    
+
     img.onerror = function() {
-        document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
-        document.documentElement.style.setProperty('--accent-color', '#e50914');
+        resetLocalTheme(targetElement);
     };
 }
+
+// Hàm reset về mặc định
+function resetLocalTheme(element) {
+    if(!element) return;
+    element.style.setProperty('--local-bg', '20, 20, 20');
+    element.style.setProperty('--local-accent', '#e50914');
+}
+
 const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
@@ -2946,7 +3014,7 @@ const top6 = sortedByDate.slice(0, 6);
                 heroSection.innerHTML = html;
                 const firstVideo = videos[0];
     const firstThumb = (firstVideo.thumbnailUrl || firstVideo.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
-    applyThemeFromImage(firstThumb);
+    applyThemeFromImage(firstThumb, document.getElementById("hero-section"));
 
                 // Khởi động
                 startHeroTimer();
@@ -2996,7 +3064,7 @@ const top6 = sortedByDate.slice(0, 6);
                  const bgImg = activeSlide.querySelector(".hero-bg");
     if (bgImg) {
         // Gọi hàm đổi màu
-        applyThemeFromImage(bgImg.src);
+        applyThemeFromImage(bgImg.src, document.getElementById("hero-section"));
     }
             }
 
@@ -3049,7 +3117,10 @@ const top6 = sortedByDate.slice(0, 6);
                 if (slides[currentHeroIndex]) {
                 const activeSlide = slides[currentHeroIndex];
                 activeSlide.classList.add("active");
-                
+                if (bgImg) {
+    // [SỬA]: Chỉ áp dụng cho Hero Section
+    applyThemeFromImage(bgImg.src, document.getElementById("hero-section"));
+}
                 // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
                 resetParallaxForSlide(activeSlide);
             }
@@ -4087,7 +4158,14 @@ function openDetailModal(videoData, programEpisodes = null) {
 
     const prog = videoData.program || null;
     const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-    applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"));
+    const modalContent = document.getElementById("detail-modal-content");
+    resetLocalTheme(modalContent); 
+    
+    applyThemeFromImage(
+        thumbUrl.replace("hqdefault", "maxresdefault"), 
+        modalContent
+    );
+
     openModal(document.getElementById("detail-modal-overlay"));
 
     if (prog) {
@@ -4304,8 +4382,16 @@ function openDetailModal(videoData, programEpisodes = null) {
 
                     renderBookmarksOverlay(videoData.bookmarks || []);
                     const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+        const playerContainer = document.getElementById("player-container");
+        
+        // Reset về đỏ trước khi load màu mới
+        resetLocalTheme(playerContainer);
+
         if (thumbUrl) {
-            applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"));
+            applyThemeFromImage(
+                thumbUrl.replace("hqdefault", "maxresdefault"), 
+                playerContainer
+            );
         }
                     enterCinematicMode().then(() => {
                         if (videoData.subtitleUrl) {
