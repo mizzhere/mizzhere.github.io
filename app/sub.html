@@ -124,9 +124,75 @@
         border: 1px solid transparent;
         padding: 5px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+        overflow: visible !important;
     }
+    #search-suggestions {
+    position: absolute;
+    top: 100%; /* Nằm ngay dưới ô input */
+    left: 0;
+    width: 100%;
+    background-color: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    z-index: 10000;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    display: none; /* Mặc định ẩn */
+}
 
+#search-suggestions.visible {
+    display: block;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.2s;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #333;
+}
+
+.suggestion-thumb {
+    width: 60px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #000;
+}
+
+.suggestion-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.suggestion-title {
+    font-size: 0.95rem;
+    color: #fff;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-type {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    font-weight: 700;
+}
     #search-box-wrapper.active {
         background-color: rgba(0, 0, 0, 0.7);
         border: 1px solid #fff;
@@ -1581,6 +1647,7 @@
                         autocomplete="off"
                     />
                     <button id="search-clear-btn">✕</button>
+                    <div id="search-suggestions"></div> 
                 </div>
 
                 <button id="add-video-btn" title="Nhập link video">
@@ -3028,30 +3095,127 @@ function setupEventListeners() {
     });
 
     // Click nút X (Clear)
+    // Click nút X (Clear)
     searchClear.addEventListener("click", (e) => {
         e.stopPropagation();
         searchInput.value = "";
         searchInput.focus();
-        handleSearchAndFilter();
+        
+        // [MỚI] Hiện lại Hero và ẩn gợi ý
+        const heroSection = document.getElementById("hero-section");
+        const suggestionsBox = document.getElementById("search-suggestions");
+        if(heroSection) heroSection.classList.remove("hidden");
+        if(suggestionsBox) suggestionsBox.classList.remove("visible");
+
+        // Render lại trang chủ
+        renderVideoRows(libraryData);
+        
         searchClear.classList.remove("visible");
     });
 
-    // Nhập liệu
-    // Nhập liệu
-searchInput.addEventListener("input", () => {
-    const val = searchInput.value.trim();
+// [CẬP NHẬT] Nhập liệu tìm kiếm
+    searchInput.addEventListener("input", () => {
+        const val = searchInput.value.trim();
+        const heroSection = document.getElementById("hero-section");
+        const suggestionsBox = document.getElementById("search-suggestions");
+        const clearBtn = document.getElementById("search-clear-btn");
 
-    if (val.length > 0) {
-        // Có chữ -> Hiện nút X và Lọc
-        searchClear.classList.add("visible");
-        handleSearchAndFilter();
-    } else {
-        // Rỗng -> Ẩn nút X và Quay về trang chủ NGAY LẬP TỨC
-        searchClear.classList.remove("visible");
-        renderVideoRows(libraryData); // <--- Bắt buộc render lại trang chủ
-    }
-});
+        if (val.length > 0) {
+            // 1. Hiện nút X và ẨN HERO SECTION
+            clearBtn.classList.add("visible");
+            if(heroSection) heroSection.classList.add("hidden"); 
 
+            // 2. LOGIC AUTOCOMPLETE (GỢI Ý)
+            const keyword = toNonAccentVietnamese(val);
+            suggestionsBox.innerHTML = ""; // Xóa gợi ý cũ
+            
+            // Tìm kiếm: Lấy cả Program (Series) lẫn Video lẻ
+            // A. Lọc Program trùng tên
+            const matchedPrograms = [];
+            const programSet = new Set();
+            
+            libraryData.forEach(v => {
+                if(v.program) {
+                    const pNameNorm = toNonAccentVietnamese(v.program);
+                    if(pNameNorm.includes(keyword) && !programSet.has(v.program)) {
+                        programSet.add(v.program);
+                        matchedPrograms.push({
+                            type: 'Series',
+                            title: v.program,
+                            thumb: v.thumbnailUrl || v.thumbnailUrl_auto,
+                            data: v // Lấy video này làm đại diện để click vào
+                        });
+                    }
+                }
+            });
+
+            // B. Lọc Video lẻ hoặc Video có tiêu đề khớp
+            const matchedVideos = libraryData.filter(v => {
+                const titleNorm = toNonAccentVietnamese(v.userTitle || v.title);
+                // Chỉ lấy nếu tiêu đề khớp, và không phải là video đã đại diện cho program ở trên (để đỡ trùng lặp quá nhiều)
+                return titleNorm.includes(keyword);
+            }).map(v => ({
+                type: 'Video',
+                title: v.userTitle || v.title,
+                thumb: v.thumbnailUrl || v.thumbnailUrl_auto,
+                data: v
+            }));
+
+            // Gộp lại (Series lên trước, Video sau), lấy tối đa 5-7 kết quả
+            const allSuggestions = [...matchedPrograms, ...matchedVideos].slice(0, 7);
+
+            if (allSuggestions.length > 0) {
+                suggestionsBox.classList.add("visible");
+                
+                allSuggestions.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "suggestion-item";
+                    div.innerHTML = `
+                        <img src="${item.thumb}" class="suggestion-thumb" loading="lazy">
+                        <div class="suggestion-info">
+                            <span class="suggestion-title">${item.title}</span>
+                            <span class="suggestion-type">${item.type}</span>
+                        </div>
+                    `;
+                    
+                    // Sự kiện click vào gợi ý
+                    div.onclick = (e) => {
+                        e.stopPropagation();
+                        // 1. Điền text vào ô input
+                        searchInput.value = item.title;
+                        // 2. Ẩn gợi ý
+                        suggestionsBox.classList.remove("visible");
+                        // 3. Thực hiện lọc trang chủ
+                        handleSearchAndFilter();
+                        // 4. Nếu là Series, có thể mở luôn Modal (tùy chọn), ở đây ta chỉ lọc ra Grid View
+                    };
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.classList.remove("visible");
+            }
+            
+            // Gọi hàm lọc chính của trang (để render Grid View bên dưới)
+            handleSearchAndFilter();
+
+        } else {
+            // Rỗng -> Ẩn nút X, HIỆN LẠI HERO, Ẩn gợi ý, Về trang chủ
+            clearBtn.classList.remove("visible");
+            if(heroSection) heroSection.classList.remove("hidden");
+            suggestionsBox.classList.remove("visible");
+            
+            renderVideoRows(libraryData);
+        }
+    });
+
+    // Bổ sung: Ẩn gợi ý khi click ra ngoài
+    document.addEventListener("click", (e) => {
+        const suggestionsBox = document.getElementById("search-suggestions");
+        const searchWrapper = document.getElementById("search-box-wrapper");
+        if (!searchWrapper.contains(e.target)) {
+            suggestionsBox.classList.remove("visible");
+        }
+    });
     // Click ra ngoài để đóng tìm kiếm
     document.addEventListener("click", (e) => {
         // Nếu click KHÔNG nằm trong searchWrapper VÀ searchWrapper đang mở
@@ -3090,7 +3254,7 @@ searchInput.addEventListener("input", () => {
         list.addEventListener("wheel", (evt) => {
             if (list.scrollWidth > list.clientWidth) {
                 evt.preventDefault();
-                list.scrollLeft += evt.deltaY * 8;
+                list.scrollLeft += evt.deltaY * 5;
             }
         }, { passive: false });
     });
