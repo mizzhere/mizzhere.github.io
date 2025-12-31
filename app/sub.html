@@ -1925,7 +1925,12 @@
             const teaserVolumeBtn = document.getElementById("teaser-volume-btn");
             const iconMute = document.getElementById("icon-mute");
             const iconUnmute = document.getElementById("icon-unmute");
-            
+            // Helper: Lấy timestamp chuẩn nhất (Ưu tiên publishedAt_official)
+const getVideoTimestamp = (v) => {
+    if (v.publishedAt_official) return new Date(v.publishedAt_official).getTime();
+    if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
+    return 0; 
+};
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -1948,6 +1953,7 @@
             let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
             let isFiltering = false;
             let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
+            
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
@@ -2140,11 +2146,9 @@
                     // 1. [MỚI] Tách 6 video mới nhất để làm Hero Slider
                     // Sort theo ngày mới nhất
                     const sortedByDate = [...libraryData].sort((a, b) => {
-                        const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
-                        const dateB = b.uploadDate_auto ? new Date(b.uploadDate_auto).getTime() : 0;
-                        return dateB - dateA;
-                    });
-                    const top6 = sortedByDate.slice(0, 6); // Lấy 6 cái đầu
+    return getVideoTimestamp(b) - getVideoTimestamp(a);
+});
+const top6 = sortedByDate.slice(0, 6); 
 
                     // 2. Render Hero Slider
                     setupHeroSlider(top6);
@@ -2261,7 +2265,7 @@
                         // Tìm tất cả các tập của chương trình này
                         const episodes = libraryData
                             .filter((v) => v.program === videoData.program)
-                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                            .sort((a, b) => getVideoTimestamp(a) - getVideoTimestamp(b));
 
                         // Mở Modal Series (truyền list tập vào)
                         openDetailModal(videoData, episodes);
@@ -2359,7 +2363,7 @@
                         isProgramCard = true; // Bật cờ lên
                         const videos = libraryData
                             .filter((v) => v.program === card.dataset.programName)
-                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                            .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                         videoData = videos[0]; // Lấy tập mới nhất làm đại diện ảnh bìa
                     }
                     // TRƯỜNG HỢP 2: Hover vào Card Video lẻ
@@ -2484,7 +2488,7 @@
             /* --- HÀM 2: TẠO CARD CHƯƠNG TRÌNH/SERIES --- */
             function createProgramCardHtml(programName, videos) {
                 // 1. Lấy tập mới nhất làm ảnh bìa
-                videos.sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                videos.sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                 const latest = videos[0];
                 const thumbUrl = latest.thumbnailUrl || latest.thumbnailUrl_auto;
                 const count = videos.length;
@@ -2590,11 +2594,7 @@
 
                 // 1. HÀNG: MỚI PHÁT HÀNH (Video lẻ hoặc tập mới nhất)
                 const latestVideos = [...videoArray]
-                    .sort((a, b) => {
-                        const dateA = a.uploadDate_auto ? new Date(a.uploadDate_auto).getTime() : 0;
-                        const dateB = b.uploadDate_auto ? new Date(b.uploadDate_auto).getTime() : 0;
-                        return dateB - dateA;
-                    })
+                    .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a))
                     .slice(0, 10);
                 // Ở hàng này vẫn hiện video lẻ để người dùng biết có cái mới
                 createCarouselSection(
@@ -2979,7 +2979,7 @@ function resetParallaxForSlide(slideElement) {
                     if (video.program) {
                         const eps = libraryData
                             .filter((v) => v.program === video.program)
-                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                            .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                         openDetailModal(video, eps);
                     } else {
                         openDetailModal(video, null);
@@ -3136,7 +3136,7 @@ searchInput.addEventListener("input", () => {
             if (card.dataset.programName) {
                 isProgramCard = true;
                 const videos = libraryData.filter((v) => v.program === card.dataset.programName)
-                                          .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                                          .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                 videoData = videos[0];
             } else if (card.dataset.videoId) {
                 isProgramCard = false;
@@ -3558,7 +3558,7 @@ searchInput.addEventListener("input", () => {
                     const progName = card.dataset.programName;
                     const videos = libraryData
                         .filter((v) => v.program === progName)
-                        .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                        .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                     videoData = videos[0];
                 } else if (card.dataset.videoId) {
                     // Click vào Card Video lẻ
@@ -3571,7 +3571,7 @@ searchInput.addEventListener("input", () => {
                         // Có -> Mở Modal Series
                         const episodes = libraryData
                             .filter((v) => v.program === videoData.program)
-                            .sort((a, b) => (b.episode || 0) - (a.episode || 0));
+                            .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
                         openDetailModal(videoData, episodes);
                     } else {
                         // Không -> Mở Modal lẻ
@@ -3786,8 +3786,7 @@ function openDetailModal(videoData, programEpisodes = null) {
             modalEpisodesList.innerHTML = "";
             const episodes = seasonsMap[seasonNum] || [];
             
-            // Sắp xếp tập tăng dần (1, 2, 3...) cho dễ tìm trong list
-            episodes.sort((a, b) => (a.episode || 0) - (b.episode || 0));
+            episodes.sort((a, b) => getVideoTimestamp(a) - getVideoTimestamp(b)); 
 
             episodes.forEach((ep) => {
                 const el = document.createElement("div");
