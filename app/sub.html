@@ -1639,6 +1639,13 @@
     color: #fff;
     padding: 10px;
 }
+#progress-bar::-webkit-slider-thumb, 
+.watched-bar, 
+.hero-btn,
+.episode-item.playing .episode-number,
+#main-title {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
 </style>
     </head>
     <body>
@@ -2035,42 +2042,44 @@ const colorThief = new ColorThief();
             let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
             let isFiltering = false;
             let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
-            function applyThemeFromImage(imageUrl) {
+  function applyThemeFromImage(imageUrl) {
     const img = new Image();
-    // [QUAN TRỌNG] Cho phép tải ảnh từ domain khác (YouTube) để lấy màu
-    img.crossOrigin = "Anonymous"; 
+    img.crossOrigin = "Anonymous";
     img.src = imageUrl;
 
     img.onload = function() {
         try {
-            // 1. Lấy màu chủ đạo (Dominant Color) -> Trả về mảng [R, G, B]
             const color = colorThief.getColor(img);
+            // Lấy bảng màu để tìm màu sáng hơn cho accent (tránh màu đen kịt)
+            const palette = colorThief.getPalette(img, 3); 
             
-            // 2. Lấy bảng màu (Palette) để tìm màu tương phản làm điểm nhấn (tùy chọn)
-            const palette = colorThief.getPalette(img, 5);
-            
-            // 3. Gán vào biến CSS
+            // Chọn màu thứ 2 trong bảng màu làm accent (thường là màu nổi bật hơn nền)
+            // Nếu không có thì dùng màu chủ đạo
+            const accent = palette[1] || color;
+
             const root = document.documentElement;
             
-            // Màu nền chủ đạo (RGB)
+            // 1. Màu nền mờ (Dynamic Color)
             root.style.setProperty('--dynamic-color', `${color[0]}, ${color[1]}, ${color[2]}`);
             
-            // (Tùy chọn) Đổi màu accent nếu muốn
-            // root.style.setProperty('--accent-color', `rgb(${palette[1][0]}, ${palette[1][1]}, ${palette[1][2]})`);
-            
+            // 2. [MỚI] Màu nhấn (Accent Color) cho Player (Progress bar, Text)
+            // Tăng độ sáng một chút để đảm bảo nổi bật trên nền đen
+            root.style.setProperty('--accent-color', `rgb(${accent[0]}, ${accent[1]}, ${accent[2]})`);
+
         } catch (e) {
-            console.log("Lỗi lấy màu (có thể do CORS):", e);
-            // Fallback về màu mặc định nếu lỗi
+            console.log("Lỗi lấy màu:", e);
+            // Fallback
             document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+            document.documentElement.style.setProperty('--accent-color', '#e50914');
         }
     };
     
     img.onerror = function() {
-        // Fallback nếu ảnh lỗi
         document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+        document.documentElement.style.setProperty('--accent-color', '#e50914');
     };
 }
-            const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
+const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
                 if (!programName) {
@@ -3577,7 +3586,13 @@ function setupEventListeners() {
         subtitleSettings.bgOpacity = e.target.value;
         applyAndSaveSubtitleStyles();
     });
+    const pBar = document.getElementById("progress-bar");
+pBar.addEventListener("input", handleSeek);
 
+// [MỚI] Khi nhả chuột ra khỏi thanh progress -> Bỏ focus ngay lập tức
+pBar.addEventListener("change", () => {
+    pBar.blur(); // Bỏ focus để phím Space/Arrow hoạt động đúng logic global
+});
     // --- 10. MOBILE DRAG MODAL ---
     const mobileModals = [document.getElementById("detail-modal-content"), document.getElementById("add-video-modal-content")];
     mobileModals.forEach(content => {
@@ -4288,7 +4303,10 @@ function openDetailModal(videoData, programEpisodes = null) {
                     
 
                     renderBookmarksOverlay(videoData.bookmarks || []);
-
+                    const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+        if (thumbUrl) {
+            applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"));
+        }
                     enterCinematicMode().then(() => {
                         if (videoData.subtitleUrl) {
                             loadRemoteSubtitle(videoData.subtitleUrl);
@@ -4330,7 +4348,8 @@ function openDetailModal(videoData, programEpisodes = null) {
                 }
                 playerWrapper.classList.add("hidden");
                 if (document.fullscreenElement) document.exitFullscreen();
-
+                ocument.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+    document.documentElement.style.setProperty('--accent-color', '#e50914');
                 // --- LOGIC GIỮ VỊ TRÍ CUỘN MƯỢT MÀ ---
                 // 1. Lưu vị trí đang đứng ở trang chủ
                 const currentScroll = window.scrollY;
@@ -4340,7 +4359,7 @@ function openDetailModal(videoData, programEpisodes = null) {
 
                 // 3. Nếu trước đó đang ở tít dưới sâu, trả lại vị trí cũ
                 // (Trừ khi bạn muốn user luôn thấy hàng Xem tiếp ở trên cùng thì bỏ dòng này)
-                window.scrollTo(0, currentScroll);
+                //window.scrollTo(0, currentScroll);
             }
 
             function onPlayerReady(event) {
@@ -4361,37 +4380,35 @@ function openDetailModal(videoData, programEpisodes = null) {
     const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
     const pausePath = "M14,19H18V5H14M6,19H10V5H6V19Z";
 
-    // 1. XỬ LÝ TRẠNG THÁI LOADING
     if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.UNSTARTED) {
         spinner.style.display = "block"; 
         centerBtn.style.opacity = "0";
         centerBtn.style.pointerEvents = "none";
+        
+        // [MỚI] ẨN THANH CONTROL KHI ĐANG LOAD
+        hideControls(); 
     }
-    // 2. XỬ LÝ KHI ĐANG PHÁT (PLAYING)
+    // 2. PLAYING
     else if (event.data === YT.PlayerState.PLAYING) {
         spinner.style.display = "none"; 
         iframe.classList.add("ready"); 
-
         centerBtn.style.opacity = "0";
         centerBtn.style.pointerEvents = "none";
-
         playerContainer.classList.add("playing");
 
+        // Update icon pause...
         playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
         if (centerIcon) centerIcon.setAttribute("d", pausePath);
 
         startSyncing();
         
-        // [FIX QUAN TRỌNG TẠI ĐÂY]
-        // Chỉ ẩn bảng "Tiếp theo" nếu chưa đến giờ kích hoạt.
-        // Nếu biến cờ đang True (tức là bạn vừa tua đến đoạn cuối), thì ĐỪNG ẩn nó.
-        if (!isUpNextTriggered) {
-            hideUpNextOverlay();
-        }
+        if (!isUpNextTriggered) hideUpNextOverlay();
 
-        showControlsAndSetHideTimeout();
+        // [MỚI - QUAN TRỌNG] ĐÃ XÓA DÒNG: showControlsAndSetHideTimeout();
+        // Để khi video tự chạy hoặc tua xong, thanh control KHÔNG tự hiện lên.
+        // Chỉ hiện khi di chuột (do sự kiện pointermove quản lý).
     }
-    // 3. XỬ LÝ KHI TẠM DỪNG HOẶC KẾT THÚC
+    // 3. PAUSED / ENDED
     else {
         spinner.style.display = "none"; 
 
@@ -4501,29 +4518,41 @@ function openDetailModal(videoData, programEpisodes = null) {
                 }
             }
             function handleKeyboardShortcuts(e) {
-                if (
-                    doc.activeElement === searchInput ||
-                    doc.activeElement === urlInput ||
-                    playerWrapper.classList.contains("hidden")
-                )
-                    return;
-                switch (e.code) {
-                    case "Space":
-                        e.preventDefault();
-                        togglePlayPause();
-                        break;
-                    case "Escape":
-                        e.preventDefault();
-                        goHome();
-                        break;
-                    case "ArrowLeft":
-                        player.seekTo(player.getCurrentTime() - 5, true);
-                        break;
-                    case "ArrowRight":
-                        player.seekTo(player.getCurrentTime() + 5, true);
-                        break;
-                }
-            }
+    // Nếu đang gõ text hoặc player ẩn thì bỏ qua
+    if (
+        doc.activeElement === searchInput ||
+        doc.activeElement === urlInput ||
+        playerWrapper.classList.contains("hidden")
+    )
+        return;
+
+    switch (e.code) {
+        case "Space":
+            e.preventDefault();
+            togglePlayPause();
+            break;
+        case "Escape":
+            e.preventDefault();
+            goHome();
+            break;
+        case "ArrowLeft":
+            e.preventDefault(); // [QUAN TRỌNG] Chặn thanh progress tự trượt
+            // Tua lùi 5s
+            const newTimeBack = Math.max(0, player.getCurrentTime() - 5);
+            player.seekTo(newTimeBack, true);
+            updateProgressBarUI(newTimeBack, player.getDuration()); // Update UI ngay cho mượt
+            // Không gọi showControlsAndSetHideTimeout() -> Player sẽ không hiện lên
+            break;
+        case "ArrowRight":
+            e.preventDefault(); // [QUAN TRỌNG] Chặn thanh progress tự trượt
+            // Tua tới 5s
+            const newTimeFwd = Math.min(player.getDuration(), player.getCurrentTime() + 5);
+            player.seekTo(newTimeFwd, true);
+            updateProgressBarUI(newTimeFwd, player.getDuration()); // Update UI ngay cho mượt
+            // Không gọi showControlsAndSetHideTimeout() -> Player sẽ không hiện lên
+            break;
+    }
+}
 
             function applyAndSaveSubtitleStyles() {
                 applySubtitleStyles();
