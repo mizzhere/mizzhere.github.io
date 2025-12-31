@@ -2355,16 +2355,7 @@ const top6 = sortedByDate.slice(0, 6);
                     libraryContainer.innerHTML = `<p style="color: #ff8a8a; text-align: center;">Lỗi: ${e.message}</p>`;
                 }
             }
-            document.addEventListener("click", (e) => {
-                if (!searchWrapper.contains(e.target) && searchWrapper.classList.contains("active")) {
-                    // Chỉ đóng nếu input rỗng
-                    if (searchInput.value.trim() === "") {
-                        searchWrapper.classList.remove("active");
-                        searchClear.classList.remove("visible");
-                        pageHeader.classList.remove("search-active"); // [Mobile] Hiện lại Logo
-                    }
-                }
-            });
+            
             document.addEventListener("DOMContentLoaded", () => {
                 initializeLibrary();
             });
@@ -3097,7 +3088,7 @@ const top6 = sortedByDate.slice(0, 6);
                 };
             }
 
-            function goToHeroSlide(index) {
+           function goToHeroSlide(index) {
                 if (index === currentHeroIndex || isHeroTransitioning) return;
                 
                 // FIX 1: Reset timer khi click chọn ảnh
@@ -3115,17 +3106,20 @@ const top6 = sortedByDate.slice(0, 6);
 
                 slides.forEach(s => s.classList.remove("active"));
                 if (slides[currentHeroIndex]) {
-                const activeSlide = slides[currentHeroIndex];
-                activeSlide.classList.add("active");
-                if (bgImg) {
-    // [SỬA]: Chỉ áp dụng cho Hero Section
-    applyThemeFromImage(bgImg.src, document.getElementById("hero-section"));
-}
-                // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
-                resetParallaxForSlide(activeSlide);
-            }
+                    const activeSlide = slides[currentHeroIndex];
+                    activeSlide.classList.add("active");
+                    
+                    // [SỬA LỖI TẠI ĐÂY] Khai báo biến bgImg trước khi dùng
+                    const bgImg = activeSlide.querySelector(".hero-bg");
+                    if (bgImg) {
+                        applyThemeFromImage(bgImg.src, document.getElementById("hero-section"));
+                    }
+                    
+                    // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
+                    resetParallaxForSlide(activeSlide);
+                }
                 
-                // Khi click trực tiếp, ta update thumb ngay (hoặc đợi transitionEnd tùy ý, ở đây update luôn cho nhanh)
+                // Khi click trực tiếp, ta update thumb ngay
                 updateActiveThumb(thumbs);
                 
                 track.ontransitionend = () => {
@@ -3133,7 +3127,6 @@ const top6 = sortedByDate.slice(0, 6);
                     track.ontransitionend = null;
                 };
             }
-
             function updateActiveThumb(thumbs) {
                 // Tính toán index thật (trừ đi 1 do clone đầu)
                 let realIndex = currentHeroIndex - 1;
