@@ -10,6 +10,7 @@
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
         <style>
     /* ========================================= */
     /* 1. GLOBAL VARIABLES & BASE STYLES         */
@@ -20,6 +21,8 @@
         --text-color: #e5e5e5;
         --accent-color: #e50914;
         --text-light: #fff;
+        --dynamic-color: 20, 20, 20; /* Dạng R, G, B để dễ chỉnh độ mờ */
+    --dynamic-accent: #e50914;   /* Màu nhấn động */
     }
 
     body {
@@ -390,11 +393,22 @@
     }
 
     .hero-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        z-index: 2;
-        background: linear-gradient(to right, #141414 0%, rgba(20, 20, 20, 0.4) 60%, transparent 100%),
-                    linear-gradient(to top, #141414 0%, transparent 40%);
-    }
+    /* Thay vì màu đen cứng, ta dùng gradient từ màu động */
+    background: linear-gradient(
+        to right,
+        rgba(var(--dynamic-color), 1) 0%,
+        rgba(var(--dynamic-color), 0.6) 50%,
+        rgba(var(--dynamic-color), 0.2) 80%,
+        transparent 100%
+    ),
+    linear-gradient(
+        to top,
+        rgba(var(--dynamic-color), 1) 0%,
+        transparent 50%
+    );
+    transition: background 1s ease; /* Chuyển màu mượt mà */
+}
+
 
     .hero-content {
         position: absolute;
@@ -840,7 +854,7 @@
     }
 
     .modal-content {
-        background-color: var(--primary-bg);
+        background: linear-gradient(to bottom, rgba(var(--dynamic-color), 0.8), #141414 80%);
         border-radius: 8px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         position: relative;
@@ -1998,6 +2012,7 @@ const getVideoTimestamp = (v) => {
     if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
     return 0; 
 };
+const colorThief = new ColorThief();
             // --- State Variables ---
             let player;
             let libraryData = [];
@@ -2020,7 +2035,41 @@ const getVideoTimestamp = (v) => {
             let isUpNextTriggered = false; // Cờ chặn gọi trùng lặp
             let isFiltering = false;
             let lastSubtitleEnd = 0;       // Thời gian kết thúc của dòng sub cuối cùng
+            function applyThemeFromImage(imageUrl) {
+    const img = new Image();
+    // [QUAN TRỌNG] Cho phép tải ảnh từ domain khác (YouTube) để lấy màu
+    img.crossOrigin = "Anonymous"; 
+    img.src = imageUrl;
+
+    img.onload = function() {
+        try {
+            // 1. Lấy màu chủ đạo (Dominant Color) -> Trả về mảng [R, G, B]
+            const color = colorThief.getColor(img);
             
+            // 2. Lấy bảng màu (Palette) để tìm màu tương phản làm điểm nhấn (tùy chọn)
+            const palette = colorThief.getPalette(img, 5);
+            
+            // 3. Gán vào biến CSS
+            const root = document.documentElement;
+            
+            // Màu nền chủ đạo (RGB)
+            root.style.setProperty('--dynamic-color', `${color[0]}, ${color[1]}, ${color[2]}`);
+            
+            // (Tùy chọn) Đổi màu accent nếu muốn
+            // root.style.setProperty('--accent-color', `rgb(${palette[1][0]}, ${palette[1][1]}, ${palette[1][2]})`);
+            
+        } catch (e) {
+            console.log("Lỗi lấy màu (có thể do CORS):", e);
+            // Fallback về màu mặc định nếu lỗi
+            document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+        }
+    };
+    
+    img.onerror = function() {
+        // Fallback nếu ảnh lỗi
+        document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+    };
+}
             const DEFAULT_SUB_SETTINGS = { fontSize: "24", fontColor: "#FFFFFF", bgColor: "#000000", bgOpacity: "0.5" };
             /* --- LOGIC TEASER MỚI --- */
             function checkAndLoadTeaser(programName) {
@@ -2886,6 +2935,9 @@ const top6 = sortedByDate.slice(0, 6);
                 html += `</div>`;
 
                 heroSection.innerHTML = html;
+                const firstVideo = videos[0];
+    const firstThumb = (firstVideo.thumbnailUrl || firstVideo.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
+    applyThemeFromImage(firstThumb);
 
                 // Khởi động
                 startHeroTimer();
@@ -2932,6 +2984,11 @@ const top6 = sortedByDate.slice(0, 6);
                 
                 // [FIX MỚI] Reset vị trí ảnh ngay khi slide hiện lên
                 resetParallaxForSlide(activeSlide); 
+                 const bgImg = activeSlide.querySelector(".hero-bg");
+    if (bgImg) {
+        // Gọi hàm đổi màu
+        applyThemeFromImage(bgImg.src);
+    }
             }
 
                 // Xử lý Infinite Loop khi animation kết thúc
@@ -3823,7 +3880,16 @@ function setupEventListeners() {
                     const content = modal.querySelector(".modal-content");
                     if (content) content.scrollTop = 0;
                 }, 300); // Thời gian này khớp với transition trong CSS
-            }
+            if (modal.id === "detail-modal-overlay") {
+        const activeHeroImg = document.querySelector(".hero-slide.active .hero-bg");
+        if (activeHeroImg) {
+            applyThemeFromImage(activeHeroImg.src);
+        } else {
+            // Hoặc về màu đen mặc định
+            document.documentElement.style.setProperty('--dynamic-color', '20, 20, 20');
+        }
+    }
+}
             teaserVolumeBtn.addEventListener("click", (e) => {
                 e.stopPropagation(); // Tránh click xuyên qua làm đóng modal hay play
                 isTeaserMuted = !isTeaserMuted;
@@ -4005,6 +4071,8 @@ function openDetailModal(videoData, programEpisodes = null) {
     renderRelatedContent(videoData);
 
     const prog = videoData.program || null;
+    const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+    applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"));
     openModal(document.getElementById("detail-modal-overlay"));
 
     if (prog) {
@@ -5040,6 +5108,7 @@ function setupModalScrolling() {
 // GỌI HÀM NÀY NGAY KHI KHỞI TẠO (Trong setupEventListeners hoặc cuối file)
 setupModalScrolling();
         </script>
+        
         <script src="https://www.youtube.com/iframe_api"></script>
     </body>
 </html>
