@@ -428,6 +428,8 @@
       <input type="text" id="gh-srt-path" value="subtitles/">
     </div>
     <div class="form-group"><label for="gh-token">Personal Access Token (PAT)</label><input type="password" id="gh-token" placeholder="dán token của bạn vào đây"></div>
+
+<div class="form-group"><label for="yt-api-key">YouTube API Key (Để lấy ngày đăng chính xác)</label><input type="password" id="yt-api-key" placeholder="AIzaSy..."></div>
     <button id="save-config-btn" class="btn-primary" style="width: 100%;">Lưu và Bắt đầu</button>
   </div>
 
@@ -678,6 +680,7 @@ const ui = {
         username: doc.getElementById("gh-username"),
         repo: doc.getElementById("gh-repo"),
         token: doc.getElementById("gh-token"),
+        ytApiKey: doc.getElementById("yt-api-key"),
         appPath: doc.getElementById("gh-app-path"),
         srtPath: doc.getElementById("gh-srt-path"),
         youtubeUrl: doc.getElementById("youtube-url"),
@@ -707,7 +710,41 @@ const toBase64 = (file) => new Promise((resolve, reject) => { const r = new File
 const toBase64Str = (str) => btoa(unescape(encodeURIComponent(str)));
 const fromBase64 = (str) => decodeURIComponent(escape(atob(str)));
 const extractVideoID = (url) => (url.match(/(?:watch\?v=|youtu\.be\/|embed\/|v\/|e\/|shorts\/)([a-zA-Z0-9_-]{11})/) || [])[1] || null;
-const getOEmbedData = async (videoId) => { try { const res = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`); if (!res.ok) throw new Error(); const data = await res.json(); const res2 = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`); const data2 = await res2.json(); return {...data, upload_date: data2.upload_date, duration: data2.duration }; } catch (e) { throw new Error(`oEmbed failed for ${videoId}.`); } };
+// --- ĐÃ SỬA: Hỗ trợ YouTube Data API v3 ---
+const getOEmbedData = async (videoId) => { 
+    let apiData = {};
+    
+    // 1. Nếu có API Key, gọi chính chủ Google để lấy ngày đăng chuẩn (publishedAt)
+    if (config.youtubeApiKey) {
+        try {
+            const ytUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${config.youtubeApiKey}`;
+            const ytRes = await fetch(ytUrl);
+            const ytJson = await ytRes.json();
+            if (ytJson.items && ytJson.items.length > 0) {
+                // Đây là cái bạn cần: Ngày giờ đăng chính xác
+                apiData.publishedAt_official = ytJson.items[0].snippet.publishedAt; 
+            }
+        } catch (e) { console.warn("Lỗi YouTube API:", e); }
+    }
+
+    // 2. Vẫn gọi oEmbed/NoEmbed để lấy các thông tin khác (đỡ tốn quota Google)
+    try { 
+        const res = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`); 
+        if (!res.ok) throw new Error(); 
+        const data = await res.json(); 
+        
+        const res2 = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`); 
+        const data2 = await res2.json(); 
+        
+        // Trả về dữ liệu gộp: Cũ + Mới (publishedAt_official)
+        return {
+            ...data, 
+            upload_date: data2.upload_date, // Cái cũ (chỉ có ngày)
+            duration: data2.duration,
+            ...apiData // Thêm mục mới vào JSON trả về
+        }; 
+    } catch (e) { throw new Error(`oEmbed failed for ${videoId}.`); } 
+};
 const showSpinner = (btn, text = "...") => { btn.disabled = true; btn.innerHTML = `<svg class="spinner" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="currentColor" stroke-linecap="round"></circle></svg> ${text}`; };
 const hideSpinner = (btn, text) => { btn.disabled = false; btn.innerHTML = text; };
 function parseBookmarksInput(rawText) {
@@ -956,7 +993,8 @@ if (srtFile) {
             authorName_auto: existingEntry?.authorName_auto || oembed.author_name, 
             thumbnailUrl_auto: existingEntry?.thumbnailUrl_auto || oembed.thumbnail_url?.replace('hqdefault.jpg', 'maxresdefault.jpg'), 
             duration_auto: existingEntry?.duration_auto || oembed.duration, 
-            uploadDate_auto: existingEntry?.uploadDate_auto || oembed.upload_date 
+            uploadDate_auto: existingEntry?.uploadDate_auto || oembed.upload_date,
+            publishedAt_official: existingEntry?.publishedAt_official || oembed.publishedAt_official || "" 
         };
 
         // Parse bookmark (Giữ nguyên)
@@ -1158,12 +1196,13 @@ if (srtPath && !srtPath.endsWith("/")) srtPath += "/";
 
 
     const cfg = {
-        username: ui.inputs.username.value,
-        repo: ui.inputs.repo.value,
-        token: ui.inputs.token.value,
-        appPath,
-        srtPath
-    };
+    username: ui.inputs.username.value,
+    repo: ui.inputs.repo.value,
+    token: ui.inputs.token.value,
+    youtubeApiKey: ui.inputs.ytApiKey.value.trim(), // <--- THÊM DÒNG NÀY
+    appPath,
+    srtPath
+};
 
     if (!cfg.username || !cfg.repo || !cfg.token) {
         return alert("Vui lòng điền đủ Tên người dùng, Repo và Token.");
@@ -1243,7 +1282,9 @@ async function handleBatchRefresh() {
                 // [QUAN TRỌNG] Lấy ngày đăng
                 // NoEmbed thường trả về 'upload_date' dạng '2023-10-25'
                 video.uploadDate_auto = meta.upload_date; 
-
+                if (meta.publishedAt_official) {
+    video.publishedAt_official = meta.publishedAt_official;
+}
                 updatedCount++;
             } catch (e) {
                 console.warn(`Lỗi cập nhật video ${video.videoId}:`, e);
