@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tipping Point Simulator 2025 (Fixed)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { light: '#e2e8f0', dark: '#0f172a' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; user-select: none; }
+        canvas { display: block; width: 100vw; height: 100vh; outline: none; }
+        
+        /* UI Styling matching ma.html glass effect */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading Spinner */
+        #loader { transition: opacity 0.5s; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-500">
+
+    <div id="game-container" class="absolute inset-0 z-0"></div>
+
+    <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-4 md:p-6">
+        
+        <div class="flex justify-between items-start pointer-events-auto">
+            <div class="glass-panel p-4 rounded-2xl flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg shadow-lg">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider opacity-60 font-bold">Score</div>
+                    <div id="score" class="text-2xl font-black leading-none font-mono">0</div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="toggleTheme()" class="glass-panel w-12 h-12 rounded-xl flex items-center justify-center hover:scale-105 transition-transform text-xl text-gray-700 dark:text-white">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+                <button onclick="resetGame()" class="glass-panel w-12 h-12 rounded-xl flex items-center justify-center hover:scale-105 transition-transform text-xl text-red-500">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="w-full max-w-lg mx-auto pointer-events-auto">
+            <div class="glass-panel p-2 rounded-2xl">
+                <div class="text-center text-xs opacity-50 font-bold mb-2 uppercase">Thả xu (Drop Zones)</div>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="triggerDrop(1)" class="h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white font-bold text-lg active:scale-95 shadow-sm border-b-4 border-indigo-800 active:border-b-0">1</button>
+                    <button onclick="triggerDrop(2)" class="h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white font-bold text-lg active:scale-95 shadow-sm border-b-4 border-blue-800 active:border-b-0">2</button>
+                    <button onclick="triggerDrop(3)" class="h-16 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white font-bold text-lg active:scale-95 shadow-sm border-b-4 border-cyan-800 active:border-b-0">3</button>
+                    <button onclick="triggerDrop(4)" class="h-16 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-bold text-lg active:scale-95 shadow-sm border-b-4 border-teal-800 active:border-b-0">4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loader" class="absolute inset-0 z-50 bg-gray-100 dark:bg-slate-900 flex items-center justify-center">
+        <div class="text-center">
+            <div class="animate-spin text-4xl text-blue-600 mb-4"><i class="fa-solid fa-circle-notch"></i></div>
+            <div class="font-bold text-lg animate-pulse dark:text-white">Initializing System...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import * as CANNON from 'cannon-es';
+
+        // --- CONSTANTS & CONFIGURATION ---
+        const D = 2.0; 
+        const R = D / 2;
+        const H = 0.15; 
+        const SAFETY_FACTOR = 1.49;
+        const SAFE_DIST = SAFETY_FACTOR * D; 
+        const MACHINE_WIDTH =28; 
+        const COL_WIDTH = MACHINE_WIDTH / 4;
+        const WALL_HEIGHT = 22;
+        const STROKE = 5.0 * D; 
+        
+        const Z_WALL = 0;
+        const Z_RETRACT = Z_WALL + SAFE_DIST; 
+        const Z_EXTEND = Z_RETRACT + STROKE; 
+        const Z_CLIFF = Z_EXTEND + SAFE_DIST; 
+
+        const Y_BED = 0;
+        const Y_PUSHER = 3; 
+        const GLASS_GAP = 1.2 * D;
+
+        // Visual Colors (Matched to ma.html)
+        const CONFIG = {
+            colors: {
+                coinLight: 0xCCCCCC, coinDark: 0xFFD700,
+                bedLight: 0xf8fafc, bedDark: 0x1e293b,
+                dozerLight: 0x3b82f6, dozerDark: 0x6366f1,
+                wall: 0x64748b, peg: 0xcbd5e1, glass: 0xa5f3fc
+            }
+        };
+
+        // --- STATE ---
+        let scene, camera, renderer;
+        let world, timeStep = 1/60;
+        // FIX: Khai báo clock ở đây để tránh ReferenceError
+        const clock = new THREE.Clock();
+        let virtualTime = 0;
+        let coins = [];
+        let pusherBody, pusherMesh;
+        let score = 0;
+        let lastDropTime = 0;
+        let isDark = document.documentElement.classList.contains('dark');
+        
+        // Materials references for updates
+        let bedMesh, dozerMesh;
+
+        // Physics Materials
+        let matCoin, matGround, matPusher, matGlass;
+
+        init();
+        animate();
+
+        function init() {
+            // 1. SETUP THREE.JS
+            const container = document.getElementById('game-container');
+            scene = new THREE.Scene();
+            updateSceneBackground();
+            scene.fog = new THREE.Fog(scene.background, 30, 120);
+
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 35, 55); 
+            camera.lookAt(0, 5, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Lighting (Brighter like ma.html)
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(0, 60, 30);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.set(2048, 2048);
+            dirLight.shadow.camera.left = -20;
+            dirLight.shadow.camera.right = 20;
+            dirLight.shadow.camera.top = 20;
+            dirLight.shadow.camera.bottom = -20;
+            scene.add(dirLight);
+
+            // 2. SETUP CANNON-ES
+            world = new CANNON.World();
+            world.gravity.set(0, -150, 0); // Tăng gravity như ma.html
+            world.broadphase = new CANNON.SAPBroadphase(world);
+            world.solver.iterations = 100;
+
+            // Material Logic
+            matGround = new CANNON.Material('ground');
+            matCoin = new CANNON.Material('coin');
+            matPusher = new CANNON.Material('pusher');
+            matGlass = new CANNON.Material('glass');
+
+           // SỬA: Giảm ma sát sàn xuống cực thấp (0.03) để xu dễ dàng trượt đi, không bị kẹt chân lại gây lật.
+            const groundCoin = new CANNON.ContactMaterial(matGround, matCoin, { friction: 0.01, restitution: 0.0 });
+
+            // SỬA: Tăng ma sát giữa xu-với-xu (0.5) để chúng bám vào nhau thành một khối thống nhất.
+            // Khi xu sau bị đẩy, nó sẽ kéo xu trước đi theo thay vì trượt lên lưng nhau.
+            const coinCoin = new CANNON.ContactMaterial(matCoin, matCoin, { friction: 0.001, restitution: 0.0 });
+
+            // Giữ nguyên cái này (mặt đẩy trơn)
+            const pusherCoin = new CANNON.ContactMaterial(matPusher, matCoin, { friction: 0.01, restitution: 0.0 });
+            const glassCoin = new CANNON.ContactMaterial(matGlass, matCoin, { friction: 0, restitution: 0.00 });
+
+            world.addContactMaterial(groundCoin);
+            world.addContactMaterial(coinCoin);
+            world.addContactMaterial(pusherCoin);
+            world.addContactMaterial(glassCoin);
+
+            // 3. BUILD THE MACHINE
+            buildMachine();
+            
+            // 4. PRE-FILL COINS
+            prefillCoins();
+
+            // Hide loader
+            document.getElementById('loader').style.opacity = 0;
+            setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function buildMachine() {
+           // -- A. BED (SÀN TĨNH) --
+            // SỬA: Tính toán chiều dài chính xác từ Tường đến Mép vực
+            // Z bắt đầu khoảng -5 (lùi vào trong tường chút) đến Z_CLIFF (mép vực)
+            const bedStart = -5;
+            const bedLength = Z_CLIFF - bedStart; 
+            const bedCenterZ = bedStart + bedLength / 2;
+
+            const bedGeo = new THREE.BoxGeometry(MACHINE_WIDTH, 1, bedLength);
+            bedMesh = new THREE.Mesh(bedGeo, new THREE.MeshStandardMaterial({ 
+                color: isDark ? CONFIG.colors.bedDark : CONFIG.colors.bedLight 
+            }));
+            
+            // Đặt vị trí chính xác
+            bedMesh.position.set(0, Y_BED - 0.5, bedCenterZ);
+            bedMesh.receiveShadow = true;
+            scene.add(bedMesh);
+            
+            // Physics
+            const bedBody = new CANNON.Body({ mass: 0, material: matGround });
+            bedBody.addShape(new CANNON.Box(new CANNON.Vec3(MACHINE_WIDTH/2, 0.5, bedLength/2)), new CANNON.Vec3(0, Y_BED - 0.5, bedCenterZ));
+            world.addBody(bedBody);
+
+            // --- B. VÁCH NGĂN THEO BỘ PHẬN (SEGMENTED WALLS) ---
+            
+            // 1. Vách ngăn cho SÀN TĨNH (Bed Walls)
+            // Gắn chặt vào 2 bên mép sàn tĩnh
+            const bedWallHeight = 4.0;
+            const bedWallThick = 0.5;
+            const bedWallGeo = new THREE.BoxGeometry(bedWallThick, bedWallHeight, bedLength);
+            const bedWallMat = new THREE.MeshStandardMaterial({ 
+                color: isDark ? 0x334155 : 0xcbd5e1, transparent: true, opacity: 0.4
+            });
+
+            [-1, 1].forEach(dir => {
+                const x = (MACHINE_WIDTH/2 + bedWallThick/2) * dir;
+                // Visual
+                const mesh = new THREE.Mesh(bedWallGeo, bedWallMat);
+                mesh.position.set(x, Y_BED + bedWallHeight/2 - 0.5, bedLength/2 - 5);
+                scene.add(mesh);
+                
+                // Physics (Static)
+                const shape = new CANNON.Box(new CANNON.Vec3(bedWallThick/2, bedWallHeight/2, bedLength/2));
+                const body = new CANNON.Body({ mass: 0, material: matGlass });
+                body.addShape(shape);
+                body.position.copy(mesh.position);
+                world.addBody(body);
+            });
+
+            // 2. Vách ngăn cho MẶT ĐẨY (Pusher Walls)
+            // QUAN TRỌNG: Sẽ AddShape trực tiếp vào pusherBody để nó DI CHUYỂN CÙNG mặt đẩy
+            // Không tạo Body rời.
+            
+            // -- C. PUSHER (MẶT ĐẨY) --
+const pusherHeight = (Y_PUSHER - Y_BED) + 0.5;            const pusherDepth = 30; 
+            const pusherGeo = new THREE.BoxGeometry(MACHINE_WIDTH - 0.2, pusherHeight, pusherDepth);
+            
+            const dozerMat = new THREE.MeshStandardMaterial({ 
+                color: isDark ? CONFIG.colors.dozerDark : CONFIG.colors.dozerLight,
+                roughness: 0.7 
+            });
+            pusherMesh = new THREE.Mesh(pusherGeo, dozerMat);
+            pusherMesh.castShadow = true;
+            pusherMesh.receiveShadow = true;
+            scene.add(pusherMesh);
+
+            // Tạo Kinematic Body
+            pusherBody = new CANNON.Body({ mass: 0, type: CANNON.Body.KINEMATIC, material: matPusher });
+            const pusherYCenter = Y_BED + (pusherHeight / 2);
+            
+            // Shape 1: Mặt sàn đẩy (Chính giữa)
+            pusherBody.addShape(new CANNON.Box(new CANNON.Vec3((MACHINE_WIDTH - 0.2)/2, pusherHeight/2, pusherDepth/2)));
+
+            // Shape 2 & 3: Vách ngăn 2 bên (Gắn vào Pusher)
+            const pWallH = 3.0; // Cao lên một chút
+            const pWallThick = 0.5;
+            const pWallZ = 0; // Cùng trục Z với pusher
+            
+            // Visual cho vách pusher (Add vào pusherMesh làm con để đi theo)
+            const pWallGeo = new THREE.BoxGeometry(pWallThick, pWallH, pusherDepth);
+            const pWallMeshL = new THREE.Mesh(pWallGeo, dozerMat);
+            const pWallMeshR = new THREE.Mesh(pWallGeo, dozerMat);
+            
+            // Vị trí tương đối so với tâm Pusher
+            const pWallX = (MACHINE_WIDTH/2); 
+            pWallMeshL.position.set(-pWallX, pWallH/2, 0);
+            pWallMeshR.position.set(pWallX, pWallH/2, 0);
+            
+            pusherMesh.add(pWallMeshL);
+            pusherMesh.add(pWallMeshR);
+
+            // Physics Offset cho vách pusher
+            // Offset X, Offset Y (cao hơn mặt pusher), Offset Z
+            const shapeWall = new CANNON.Box(new CANNON.Vec3(pWallThick/2, pWallH/2, pusherDepth/2));
+            pusherBody.addShape(shapeWall, new CANNON.Vec3(-pWallX, pWallH/2 + pusherHeight/2, 0));
+            pusherBody.addShape(shapeWall, new CANNON.Vec3(pWallX, pWallH/2 + pusherHeight/2, 0));
+
+            const centerZ = (Z_RETRACT + Z_EXTEND) / 2;
+            const startZ = centerZ - (pusherDepth / 2); // Trừ đi một nửa độ sâu (30/2)
+            
+            pusherBody.position.set(0, pusherYCenter, startZ);
+            world.addBody(pusherBody);
+            // -- D. WALL (TƯỜNG THẢ) --
+            const glassHeight = WALL_HEIGHT - GLASS_GAP; 
+            const glassCenterY = GLASS_GAP + (glassHeight/2) + Y_PUSHER;
+            const glassZ = Z_WALL + H + 0.6; 
+
+            // Kính trước
+            const glassGeo = new THREE.BoxGeometry(MACHINE_WIDTH, glassHeight, 0.2);
+            const glassMatVis = new THREE.MeshPhysicalMaterial({
+                color: CONFIG.colors.glass, transmission: 0.95, opacity: 0.3, roughness: 0, thickness: 0.5
+            });
+            const glassFront = new THREE.Mesh(glassGeo, glassMatVis);
+            glassFront.position.set(0, glassCenterY, glassZ);
+            scene.add(glassFront);
+
+            const glassBody = new CANNON.Body({ mass: 0, material: matGlass });
+            glassBody.addShape(new CANNON.Box(new CANNON.Vec3(MACHINE_WIDTH/2, glassHeight/2, 0.1)), new CANNON.Vec3(0, glassCenterY, glassZ));
+            world.addBody(glassBody);
+
+            // Tấm lưng
+            const backGeo = new THREE.BoxGeometry(MACHINE_WIDTH, WALL_HEIGHT, 1);
+            const backMesh = new THREE.Mesh(backGeo, new THREE.MeshStandardMaterial({ color: CONFIG.colors.wall }));
+            backMesh.position.set(0, glassCenterY, Z_WALL - 0.5);
+            backMesh.receiveShadow = true;
+            scene.add(backMesh);
+            
+            const backBody = new CANNON.Body({ mass: 0, material: matGlass });
+            backBody.addShape(new CANNON.Box(new CANNON.Vec3(MACHINE_WIDTH/2, WALL_HEIGHT/2, 0.5)), new CANNON.Vec3(0, glassCenterY, Z_WALL - 0.5));
+            world.addBody(backBody);
+
+            // Vách ngăn cột
+            const divGeo = new THREE.BoxGeometry(0.1, glassHeight, 1.0);
+            for(let i=1; i<4; i++) {
+                const x = -MACHINE_WIDTH/2 + i*COL_WIDTH;
+                const div = new THREE.Mesh(divGeo, new THREE.MeshStandardMaterial({color: 0x94a3b8}));
+                div.position.set(x, glassCenterY, (Z_WALL + glassZ)/2);
+                scene.add(div);
+                const divBody = new CANNON.Body({ mass: 0, material: matGlass });
+                divBody.addShape(new CANNON.Box(new CANNON.Vec3(0.05, glassHeight/2, 0.5)), div.position);
+                world.addBody(divBody);
+            }
+            // -- E. VÁCH NGĂN 2 BÊN HÔNG TƯỜNG (UPPER SIDE WALLS) --
+            // Chặn 2 bên của khu vực thả xu (Gắn chết vào khung kính)
+            const upperSideH = WALL_HEIGHT;
+            const upperSideGeo = new THREE.BoxGeometry(0.5, upperSideH, 4.0); // Dày 0.5, Cao bằng tường, Sâu đủ che khe hở
+            const upperSideMat = new THREE.MeshStandardMaterial({ color: 0x64748b, transparent: true, opacity: 0.3 });
+
+            [-1, 1].forEach(dir => {
+                // Đặt sát mép ngoài cùng của máy
+                const x = (MACHINE_WIDTH/2 + 0.25) * dir;
+                // Vị trí Z: Nằm giữa tường sau và kính trước
+                const zPos = (Z_WALL + glassZ) / 2;
+                
+                const mesh = new THREE.Mesh(upperSideGeo, upperSideMat);
+                mesh.position.set(x, glassCenterY, zPos);
+                scene.add(mesh);
+
+                // Vật lý chặn xu
+                const body = new CANNON.Body({ mass: 0, material: matGlass }); // Dùng matGlass cho trơn
+                body.addShape(new CANNON.Box(new CANNON.Vec3(0.25, upperSideH/2, 2.0)));
+                body.position.copy(mesh.position);
+                world.addBody(body);
+            });
+
+            // -- F. BACKSTOP (TƯỜNG CHẶN ĐÁY) - QUAN TRỌNG --
+            // Đây là bức tường cố định nằm sát mặt bàn đẩy ở phía sau.
+            // Khi bàn đẩy lùi lại, xu sẽ đập vào tường này -> Bị gạt ra mép trước.
+            
+            // -- F. BACKSTOP (TƯỜNG CHẶN ĐÁY) --
+            const backStopHeight = 5.0;
+            const backStopThick = 1.0;
+            const backStopZ = Z_WALL - 0.6; 
+            
+            // SỬA: Giảm chiều rộng (MACHINE_WIDTH - 3.0) để không va vào vách ngăn của bàn đẩy
+            const bsGeo = new THREE.BoxGeometry(MACHINE_WIDTH - 3.0, backStopHeight, backStopThick);
+            
+            const bsMat = new THREE.MeshStandardMaterial({ 
+                color: isDark ? 0x1e293b : 0x475569,
+                roughness: 0.9 
+            });
+            const bsMesh = new THREE.Mesh(bsGeo, bsMat);
+            bsMesh.position.set(0, Y_PUSHER + backStopHeight/2 + 0.05, backStopZ); // Nhích lên 0.05 để không cạ mặt bàn
+            bsMesh.receiveShadow = true;
+            scene.add(bsMesh);
+
+            // Physics
+            const bsBody = new CANNON.Body({ mass: 0, material: matGround });
+            // SỬA: Shape cũng phải giảm chiều rộng tương ứng
+            bsBody.addShape(new CANNON.Box(new CANNON.Vec3((MACHINE_WIDTH - 3.0)/2, backStopHeight/2, backStopThick/2)));
+            bsBody.position.copy(bsMesh.position);
+            world.addBody(bsBody);
+           // CHỐT ZIGZAC (PEGS)
+            const pegRows = 6;
+            const pegStartY = glassCenterY + 6;
+            const pegSpacingY = 2.5;
+            const pegZ = (Z_WALL + glassZ) / 2;
+            const pegGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.8, 8);
+            const pegMatVis = new THREE.MeshStandardMaterial({ color: CONFIG.colors.peg });
+
+            // --- TÍNH TOÁN KHOẢNG CÁCH CHIA ĐỀU ---
+            // 1. Offset cho hàng 3 chốt (Chia không gian làm 4 phần bằng nhau)
+            // Khoảng cách từ Tâm ra chốt biên = 1/4 chiều rộng cột
+            const offsetFor3 = COL_WIDTH / 4;
+
+            // 2. Offset cho hàng 2 chốt (Chia không gian làm 3 phần bằng nhau)
+            // Khoảng cách từ Tâm ra chốt = 1/6 chiều rộng cột
+            const offsetFor2 = COL_WIDTH / 6;
+
+            for (let c=0; c<4; c++) {
+                const colCenterX = -MACHINE_WIDTH/2 + (c * COL_WIDTH) + (COL_WIDTH/2);
+                
+                for (let r=0; r<pegRows; r++) {
+                    const y = pegStartY - (r * pegSpacingY);
+                    const isEven = r % 2 === 0; 
+                    
+                    if (isEven) {
+                        // --- SỬA Ở ĐÂY: Hàng Chẵn (Giờ có 3 chốt: 1 giữa + 2 biên) ---
+                        // Chốt giữa
+                        createPeg(colCenterX, y, pegZ, pegGeo, pegMatVis);
+                        // Chốt bên trái (sát vách nhưng hở đều)
+                        createPeg(colCenterX - offsetFor3-0.75, y, pegZ, pegGeo, pegMatVis);
+                        // Chốt bên phải (sát vách nhưng hở đều)
+                        createPeg(colCenterX + offsetFor3+0.75, y, pegZ, pegGeo, pegMatVis);
+                    } else {
+                        // --- Hàng Lẻ (Giữ nguyên 2 chốt) ---
+                        // Cách đều nhau và cách đều vách (chia 3)
+                        createPeg(colCenterX - offsetFor2, y, pegZ, pegGeo, pegMatVis);
+                        createPeg(colCenterX + offsetFor2, y, pegZ, pegGeo, pegMatVis);
+                    }
+                }
+            }
+        }
+
+        function createPeg(x, y, z, geo, mat) {
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = Math.PI / 2;
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            scene.add(mesh);
+
+            const body = new CANNON.Body({ mass: 0, material: matGlass });
+            const shape = new CANNON.Cylinder(0.15, 0.15, 0.8, 8);
+            const q = new CANNON.Quaternion();
+            q.setFromAxisAngle(new CANNON.Vec3(1,0,0), Math.PI/2);
+            body.addShape(shape, new CANNON.Vec3(0,0,0), q);
+            body.position.copy(mesh.position);
+            world.addBody(body);
+        }
+
+        function createCoin(x, y, z, isDrop = false) {
+            // Visual
+            const geo = new THREE.CylinderGeometry(R, R, H, 32);
+            const matColor = isDark ? CONFIG.colors.coinDark : CONFIG.colors.coinLight;
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: matColor,
+                metalness: 0.9,
+                roughness: 0.2
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            // Physics
+            const body = new CANNON.Body({ 
+                mass: 0.25,
+                material: matCoin,
+                linearDamping: 0, // Tăng từ 0.5 lên 0.8 -> Xu sẽ rất "đầm", khó bị trượt lung tung
+                angularDamping: 0.95
+            });
+
+            // Shape chuẩn không xoay
+            const shape = new CANNON.Cylinder(R, R, H, 16);
+            
+            // CANNON Cylinder trục Y.
+            // Để khớp với ThreeJS Cylinder (cũng trục Y), ta add thẳng không xoay local.
+            // Xoay là xoay cả Body.
+            body.addShape(shape); // FIX: Không xoay local ở đây nữa
+
+            body.position.set(x, y, z);
+
+            if (isDrop) {
+                // Thả: Xoay 90 độ trục X -> Đỉnh xu hướng về phía trước/sau (Mặt xu hướng về tường)
+                // Giống logic ma.html
+                const qDrop = new CANNON.Quaternion();
+                qDrop.setFromAxisAngle(new CANNON.Vec3(1,0,0), Math.PI/2); 
+                
+                // Random tilt nhẹ
+                const tilt = (Math.random() - 0.5) * 0.2;
+                const qTilt = new CANNON.Quaternion();
+                qTilt.setFromAxisAngle(new CANNON.Vec3(0,0,1), tilt); // Nghiêng trái phải chút
+                
+                body.quaternion = qDrop.mult(qTilt);
+            } else {
+                // Nằm ngửa trên bàn: Không xoay gì cả (Mặc định trục Y hướng lên trời)
+                body.quaternion.set(0,0,0,1);
+            }
+
+            world.addBody(body);
+            coins.push({ mesh, body });
+        }
+
+        // --- GAME LOGIC ---
+
+       function prefillCoins() {
+            // SỬA: Giảm khoảng cách giữa các hàng xu (từ 2.2 xuống 2.0) để xếp khít hơn
+            const spacing = 2; 
+            
+            const createStack = (baseY, edgeZ) => {
+                // Giữ nguyên logic Z
+                const row1_Z = edgeZ - 0.5;
+                const row2_Z = row1_Z - spacing;
+                const rowTop_Z = row1_Z - (spacing / 2);
+
+                for(let x = -MACHINE_WIDTH/2 + 1.5; x < MACHINE_WIDTH/2 - 1.5; x += spacing) {                    
+                    const noise = () => (Math.random() - 0.5) * 0.05; 
+
+                    // 1. Hàng dưới - Mép ngoài (Giữ nguyên x)
+                    // Lưu ý: Vẫn giữ fix độ cao H/2 như câu trước
+                    createCoin(x + noise(), baseY + H/2, row1_Z + noise(), false);
+
+                    // 2. Hàng dưới - Phía sau (SỬA: Thêm spacing/2 để SO LE)
+                    createCoin(x + (spacing/2) + noise(), baseY + H/2, row2_Z + noise(), false);
+
+                    // 3. Hàng trên cùng (Giữ nguyên như cũ - tức là thẳng trục với hàng 2)
+                    createCoin(x  + noise(), baseY + H/2 + H, rowTop_Z + noise(), false);
+                }
+            };
+
+            // --- 1. XẾP Ở MÉP BÀN DƯỚI (BED) ---
+            // Z_CLIFF là mép vực thẳm.
+            createStack(Y_BED, Z_CLIFF-0.5);
+
+            // --- 2. XẾP Ở MÉP BÀN ĐẨY (PUSHER) ---
+            const startPusherFaceZ = (Z_RETRACT + Z_EXTEND) / 2;
+            createStack(Y_PUSHER, startPusherFaceZ);
+        }
+       
+       
+        window.triggerDrop = (colIdx) => {
+            const now = Date.now();
+            if (now - lastDropTime < 350) return; 
+            lastDropTime = now;
+
+            const colCenter = -MACHINE_WIDTH/2 + ((colIdx-1) * COL_WIDTH) + (COL_WIDTH/2);
+            
+            // SỬA DÒNG NÀY:
+            // Cũ: (COL_WIDTH - 2) -> Rải rác khắp cột
+            // Mới: 0.6 -> Chỉ dao động 0.3 đơn vị quanh tâm (Rất nhỏ so với đồng xu đường kính 2.0)
+            const deviation = 0.6; 
+            const randX = colCenter + (Math.random() - 0.5) * deviation; 
+            
+            const dropY = Y_PUSHER + 20; 
+            const dropZ = (Z_WALL + (Z_WALL + H + 0.6)) / 2; 
+
+            createCoin(randX, dropY, dropZ, true);
+
+            Toastify({
+                text: "Drop Zone " + colIdx,
+                duration: 1000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "linear-gradient(to right, #3b82f6, #2563eb)", borderRadius: "20px" }
+            }).showToast();
+        };
+
+        window.resetGame = () => {
+            coins.forEach(c => {
+                world.removeBody(c.body);
+                scene.remove(c.mesh);
+            });
+            coins = [];
+            score = 0;
+            document.getElementById('score').innerText = 0;
+            prefillCoins();
+        };
+
+        window.toggleTheme = () => {
+            document.documentElement.classList.toggle('dark');
+            isDark = !isDark;
+            updateSceneBackground();
+            
+            // Update materials manually
+            bedMesh.material.color.setHex(isDark ? CONFIG.colors.bedDark : CONFIG.colors.bedLight);
+            dozerMesh.material.color.setHex(isDark ? CONFIG.colors.dozerDark : CONFIG.colors.dozerLight);
+        };
+
+        function updateSceneBackground() {
+            scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- ANIMATION LOOP ---
+        // --- ANIMATION LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. TIME MANAGEMENT (FIX LAG/TAB SWITCHING)
+            let dt = clock.getDelta();
+            
+            // Kỹ thuật "Clamping": Nếu dt > 0.1s (do chuyển tab/lag), ta ép nó về 0.1s
+            // Điều này giữ cho vật lý và chuyển động mượt mà, không bao giờ bị nhảy cóc.
+            dt = Math.min(dt, 0.1); 
+
+            // Cộng dồn thời gian ảo
+            virtualTime += dt;
+
+            // 2. UPDATE PUSHER LOGIC
+            const centerZ = (Z_RETRACT + Z_EXTEND) / 2;
+            const amplitude = STROKE / 2;
+            const speed = 0.6; 
+
+            // Dùng virtualTime thay vì elapsedTime -> Bàn đẩy sẽ tiếp tục chạy mượt từ vị trí cũ
+            let wave = Math.sin(virtualTime * speed);
+            
+            const targetZ = centerZ + amplitude * wave;
+            const nextZ = targetZ - (30/2); 
+            
+            if (dt > 0) {
+                // Lerp vận tốc để mượt hơn nữa (Optional, nhưng tốt cho cơ khí)
+                const targetVel = (nextZ - pusherBody.position.z) / dt;
+                pusherBody.velocity.z = targetVel;
+                
+                pusherBody.velocity.x = 0;
+                pusherBody.velocity.y = 0;
+            }
+
+            // Khóa cứng các trục khác
+            pusherBody.position.x = 0;
+            pusherBody.position.y = (Y_BED + (Y_PUSHER - Y_BED) / 2)- 0.2;
+
+            pusherMesh.position.copy(pusherBody.position);
+
+            // 3. PHYSICS STEP
+            // Truyền dt đã được kẹp (clamped) vào đây để tránh nổ vật lý
+            world.step(timeStep, dt, 10);
+
+            // 4. SYNC & CLEANUP
+            for (let i = coins.length - 1; i >= 0; i--) {
+                const c = coins[i];
+                c.mesh.position.copy(c.body.position);
+                c.mesh.quaternion.copy(c.body.quaternion);
+
+                // Scoring Check
+                if (c.body.position.y < -5) {
+                    if (c.body.position.z > Z_CLIFF) {
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        // Dùng thư viện anime.js có sẵn để tạo hiệu ứng nảy số
+                        anime({
+                            targets: '#score',
+                            scale: [1.5, 1],
+                            duration: 200,
+                            easing: 'easeOutQuad'
+                        });
+                    }
+                    
+                    // Cleanup memory
+                    world.removeBody(c.body);
+                    scene.remove(c.mesh);
+                    // Dispose geometry/material nếu cần thiết để tránh leak memory lâu dài
+                    c.mesh.geometry.dispose(); 
+                    coins.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
