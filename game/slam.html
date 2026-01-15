@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
     <head>
         <meta charset="UTF-8" />
@@ -7,7 +7,10 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap"
+            rel="stylesheet"
+        />
         <style>
             /* Dán dòng này ngay dưới thẻ <style> hoặc trong :root */
             * {
@@ -80,7 +83,9 @@
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
                 backdrop-filter: blur(5px);
-                transition: transform 0.2s, box-shadow 0.2s;
+                transition:
+                    transform 0.2s,
+                    box-shadow 0.2s;
                 cursor: pointer;
             }
             .puzzle-card:hover {
@@ -310,7 +315,8 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                pointer-events: none;
+                pointer-events: none; /* Lớp phủ không chặn click */
+                z-index: 100; /* Đảm bảo số nằm trên cùng */
             }
             .word-number-label {
                 position: absolute;
@@ -326,6 +332,10 @@
                 justify-content: center;
                 align-items: center;
                 opacity: 0;
+
+                pointer-events: auto;
+                cursor: pointer;
+                transition: transform 0.2s;
             }
             .word-number-label.visible {
                 display: flex;
@@ -346,7 +356,9 @@
             .playable {
                 width: 100%;
                 height: 100%;
-                transition: opacity 0.3s ease, transform 0.3s ease;
+                transition:
+                    opacity 0.3s ease,
+                    transform 0.3s ease;
                 cursor: pointer;
             }
             .cell-face {
@@ -359,7 +371,11 @@
                 font-weight: 900;
                 border-radius: 0;
                 font-size: var(--font-size);
-                transition: background 0.3s, color 0.3s, border 0.3s, transform 0.3s;
+                transition:
+                    background 0.3s,
+                    color 0.3s,
+                    border 0.3s,
+                    transform 0.3s;
             }
             /* --- CSS MỚI CHO HIỆU ỨNG TRẢ LỜI SAI --- */
             @keyframes zoom-in-incorrect {
@@ -378,7 +394,9 @@
             .playable.is-locked .cell-front {
                 background: var(--incorrect-color);
                 /* Thêm viền trắng vào cùng với hiệu ứng đổ bóng cũ */
-                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 0 0 1.5px white;
+                box-shadow:
+                    inset 0 0 10px rgba(0, 0, 0, 0.3),
+                    inset 0 0 0 1.5px white;
                 border-color: #546e7a;
             }
             #grid-wrapper.selection-active .playable {
@@ -391,8 +409,13 @@
             }
             .cell-front {
                 background: linear-gradient(145deg, #ffd700, #ffb300);
-                box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.3);
-                box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 0 0 1px #ffc700;
+                box-shadow:
+                    inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                    0 2px 5px rgba(0, 0, 0, 0.3);
+                box-shadow:
+                    inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                    0 2px 5px rgba(0, 0, 0, 0.3),
+                    inset 0 0 0 1px #ffc700;
             }
             .cell-front .letter-pop-in {
                 animation: letter-pop-in 0.3s ease-out forwards;
@@ -401,7 +424,9 @@
             .playable.is-locked .cell-front {
                 background: var(--incorrect-color);
                 /* Thêm viền trắng vào cùng với hiệu ứng đổ bóng cũ */
-                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 0 0 1.5px white;
+                box-shadow:
+                    inset 0 0 10px rgba(0, 0, 0, 0.3),
+                    inset 0 0 0 1.5px white;
                 border-color: #546e7a;
             }
 
@@ -444,7 +469,10 @@
             #slam-button-container {
                 display: flex;
                 justify-content: center;
-                padding: 5px 0;
+                padding: 50px 0 0px 0; /* Tăng padding để tách biệt */
+                width: 100%;
+                z-index: 50; /* Thấp hơn bàn phím (200) để bị che khi bàn phím hiện */
+                display: none;
             }
             #slam-btn {
                 background: linear-gradient(145deg, var(--danger-color), #c62828);
@@ -902,7 +930,9 @@
                 display: none; /* Mặc định ẩn */
                 flex-direction: row;
                 opacity: 0.65;
-                transition: top 0.05s, left 0.05s; /* Di chuyển mượt một chút */
+                transition:
+                    top 0.05s,
+                    left 0.05s; /* Di chuyển mượt một chút */
             }
             .placement-preview .preview-letter {
                 width: 25px;
@@ -925,13 +955,54 @@
         <div id="toast-container"></div>
 
         <div id="lobby-page" class="page">
-            <h1 class="page-title">SLAM PUZZLE</h1>
-            <div id="puzzle-list"></div>
+            <div
+                style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    width: 100%;
+                    position: relative;
+                "
+            >
+                <h1 class="page-title" style="margin-bottom: 0">SLAM PUZZLE</h1>
+                <button
+                    id="open-settings-btn"
+                    class="action-btn icon-btn"
+                    style="
+                        width: 30px;
+                        height: 30px;
+                        padding: 5px;
+                        background: transparent;
+                        border: none;
+                        color: var(--light-text);
+                    "
+                    title="Cấu hình Server"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                        ></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="puzzle-list" style="margin-top: 2rem"></div>
         </div>
         <div id="creation-page" class="page">
             <div id="creation-main-view">
                 <div id="creation-top-bar">
-                    <div class="form-group-material" style="flex-grow: 1;">
+                    <div class="form-group-material" style="flex-grow: 1">
                         <input type="text" id="puzzle-title-input" required placeholder=" " />
                         <label>Tên Bộ Đề</label>
                     </div>
@@ -940,7 +1011,11 @@
                 </div>
 
                 <div id="tab-content-words" class="creation-tab-content active">
-                    <div id="word-list-container" class="w-full" style="max-height: calc(100dvh - 250px); overflow-y: auto;"></div>
+                    <div
+                        id="word-list-container"
+                        class="w-full"
+                        style="max-height: calc(100dvh - 250px); overflow-y: auto"
+                    ></div>
                 </div>
 
                 <div id="tab-content-arrange" class="creation-tab-content">
@@ -956,38 +1031,118 @@
 
             <div class="creation-footer">
                 <button id="back-to-lobby-btn" class="action-btn" title="Quay Lại">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
                 </button>
                 <button id="import-puzzle-btn" class="action-btn icon-btn" title="Nhập bộ đề từ file">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
                 </button>
                 <button id="export-puzzle-btn" class="action-btn icon-btn" title="Xuất bộ đề ra file">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                     </svg>
                 </button>
-                <button id="delete-puzzle-btn" class="action-btn" style="background: linear-gradient(145deg, #c62828, #b71c1c); border-color: #e57373; display: none;">Xóa</button>
+                <button
+                    id="delete-puzzle-btn"
+                    class="action-btn"
+                    style="background: linear-gradient(145deg, #c62828, #b71c1c); border-color: #e57373; display: none"
+                >
+                    Xóa
+                </button>
+                <button
+                    id="upload-github-btn"
+                    class="action-btn"
+                    title="Tải lên Server"
+                    style="background: linear-gradient(145deg, #7b1fa2, #4a148c); border-color: #ba68c8"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Upload
+                </button>
                 <button id="save-puzzle-btn" class="action-btn primary" title="Lưu & Chơi">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                 </button>
             </div>
         </div>
 
+        <!-- TÌM ĐOẠN HTML CŨ CỦA #game-page VÀ THAY THẾ BẰNG ĐOẠN NÀY -->
         <div id="game-page" class="page">
             <div id="game-header">
                 <button id="back-to-lobby-btn-game" class="action-btn icon-btn" title="Về sảnh chờ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
@@ -999,26 +1154,41 @@
                     <div id="word-timer">00:30</div>
                 </div>
                 <button id="edit-puzzle-btn" class="action-btn icon-btn" title="Sửa bộ đề">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
                     </svg>
                 </button>
             </div>
+
+            <!-- KHỐI GAME-AREA ĐÃ ĐƯỢC SỬA ĐỔI: Thêm nút SLAM vào đây -->
             <div class="game-area">
                 <div id="grid-wrapper">
                     <div id="number-overlay"></div>
                     <div id="grid-container"></div>
                 </div>
+                <!-- Vị trí mới của nút SLAM: Nằm dưới bảng, trong vùng game-area -->
+                <div id="slam-button-container">
+                    <button id="slam-btn">SLAM</button>
+                </div>
             </div>
 
+            <!-- KHỐI GAME-HUD ĐÃ ĐƯỢC SỬA ĐỔI: Xóa nút SLAM khỏi đây -->
             <div id="game-hud" class="game-hud">
                 <div id="keyboard-wrapper" class="keyboard-wrapper">
                     <div id="clue-area">
                         <div id="clue-text">Chọn một ô để bắt đầu!</div>
                     </div>
-                    <div id="slam-button-container">
-                        <button id="slam-btn">SLAM</button>
-                    </div>
+                    <!-- Đã xóa div id="slam-button-container" khỏi đây -->
                     <div id="virtual-keyboard"></div>
                 </div>
             </div>
@@ -1027,9 +1197,14 @@
         <div class="modal-overlay" id="slam-modal">
             <div class="modal-content">
                 <h2>Thử Thách SLAM!</h2>
-                <p>Bạn có chắc chắn? Mọi gợi ý và trợ giúp sẽ biến mất. Bạn sẽ phải giải toàn bộ bảng chỉ với trí nhớ của mình.</p>
+                <p>
+                    Bạn có chắc chắn? Mọi gợi ý và trợ giúp sẽ biến mất. Bạn sẽ phải giải toàn bộ bảng chỉ với trí nhớ
+                    của mình.
+                </p>
                 <div class="modal-actions">
-                    <button id="slam-confirm-btn" class="action-btn primary" style="background: var(--danger-color);">Chấp nhận</button>
+                    <button id="slam-confirm-btn" class="action-btn primary" style="background: var(--danger-color)">
+                        Chấp nhận
+                    </button>
                     <button id="slam-cancel-btn" class="action-btn">Hủy bỏ</button>
                 </div>
             </div>
@@ -1045,7 +1220,38 @@
                 </div>
             </div>
         </div>
+        <!-- Modal Cấu Hình GitHub -->
+        <div class="modal-overlay" id="settings-modal">
+            <div class="modal-content" style="text-align: left; max-width: 500px">
+                <h2 style="text-align: center">Kết Nối GitHub</h2>
+                <p style="font-size: 0.9rem; color: var(--light-text); text-align: center; margin-bottom: 20px">
+                    Token được lưu trên trình duyệt của bạn. <br />
+                    Dùng để tải đề lên file dữ liệu chung.
+                </p>
 
+                <div class="form-group-material">
+                    <input type="text" id="gh-token" placeholder=" " type="password" />
+                    <label>GitHub Personal Access Token</label>
+                </div>
+                <div class="form-group-material">
+                    <input type="text" id="gh-owner" placeholder=" " />
+                    <label>Username / Organization</label>
+                </div>
+                <div class="form-group-material">
+                    <input type="text" id="gh-repo" placeholder=" " />
+                    <label>Repository Name</label>
+                </div>
+                <div class="form-group-material">
+                    <input type="text" id="gh-path" placeholder=" " value="slamde/data.json" />
+                    <label>File Path (VD: slamde/data.json)</label>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px">
+                    <button id="save-settings-btn" class="action-btn primary">Lưu Cấu Hình</button>
+                    <button id="close-settings-btn" class="action-btn">Đóng</button>
+                </div>
+            </div>
+        </div>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 let state = {
@@ -1068,6 +1274,8 @@
                     playableWordIds: new Set(),
                     disabledLetters: new Set(),
                     isGameFinished: false,
+                    serverPuzzles: {},
+                    editingServerId: null,
                 };
                 let editorState = {
                     isDragging: false,
@@ -1086,7 +1294,11 @@
                 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
                 const exportBtn = document.getElementById("export-puzzle-btn");
                 const importBtn = document.getElementById("import-puzzle-btn");
-                const pages = { lobby: document.getElementById("lobby-page"), creation: document.getElementById("creation-page"), game: document.getElementById("game-page") };
+                const pages = {
+                    lobby: document.getElementById("lobby-page"),
+                    creation: document.getElementById("creation-page"),
+                    game: document.getElementById("game-page"),
+                };
                 const puzzleListContainer = document.getElementById("puzzle-list");
                 const puzzleTitleInput = document.getElementById("puzzle-title-input");
                 const gameArea = document.querySelector(".game-area");
@@ -1123,13 +1335,177 @@
                 const savePuzzles = (p) => {
                     localStorage.setItem("slam-puzzles-list", JSON.stringify(p));
                 };
+                // Hàm mã hóa/giải mã Base64 hỗ trợ tiếng Việt (UTF-8)
+                const utf8_to_b64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+                const b64_to_utf8 = (str) => decodeURIComponent(escape(window.atob(str)));
                 // =======================================================================
                 // ★★★ LOGIC MỚI CHO TÍNH NĂNG XUẤT/NHẬP BỘ ĐỀ ★★★
                 // =======================================================================
+                const settingsModal = document.getElementById("settings-modal");
+                const openSettingsBtn = document.getElementById("open-settings-btn");
+                const saveSettingsBtn = document.getElementById("save-settings-btn");
+                const closeSettingsBtn = document.getElementById("close-settings-btn");
+                const uploadGithubBtn = document.getElementById("upload-github-btn");
 
-                // --- HÀM 1: XUẤT DỮ LIỆU RA FILE .JSON ---
+                // Input fields
+                const ghTokenInput = document.getElementById("gh-token");
+                const ghOwnerInput = document.getElementById("gh-owner");
+                const ghRepoInput = document.getElementById("gh-repo");
+                const ghPathInput = document.getElementById("gh-path");
+                // Load settings khi mở modal
+                openSettingsBtn.addEventListener("click", () => {
+                    const config = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
+                    ghTokenInput.value = config.token || "";
+                    ghOwnerInput.value = config.owner || "";
+                    ghRepoInput.value = config.repo || "";
+                    ghPathInput.value = config.path || "slamde/data.json";
+                    settingsModal.classList.add("visible");
+                });
+
+                closeSettingsBtn.addEventListener("click", () => settingsModal.classList.remove("visible"));
+
+                saveSettingsBtn.addEventListener("click", () => {
+                    const config = {
+                        token: ghTokenInput.value.trim(),
+                        owner: ghOwnerInput.value.trim(),
+                        repo: ghRepoInput.value.trim(),
+                        path: ghPathInput.value.trim(),
+                    };
+                    localStorage.setItem("slam-github-config", JSON.stringify(config));
+                    showToast("Đã lưu cấu hình GitHub!", "success");
+                    settingsModal.classList.remove("visible");
+                });
+
+                // --- TÌM VÀ THAY THẾ sự kiện uploadGithubBtn.addEventListener ---
+                uploadGithubBtn.addEventListener("click", async () => {
+                    updateStateFromForms();
+                    const title = puzzleTitleInput.value.trim();
+                    if (!title || state.words.length < 2) {
+                        showToast("Vui lòng hoàn thiện đề trước khi tải lên.", "error");
+                        return;
+                    }
+
+                    const config = JSON.parse(localStorage.getItem("slam-github-config"));
+                    if (!config || !config.token || !config.owner || !config.repo) {
+                        showToast("Vui lòng nhập cấu hình GitHub trước!", "error");
+                        settingsModal.classList.add("visible");
+                        return;
+                    }
+
+                    // Xác định chế độ: Cập nhật hay Tạo mới
+                    const isUpdate = !!state.editingServerId;
+                    const actionName = isUpdate ? "CẬP NHẬT" : "TẢI LÊN MỚI";
+
+                    const uploadConfirmed = await showConfirmation(
+                        `${actionName} Server?`,
+                        `Bạn muốn ${actionName.toLowerCase()} bộ đề "${title}" vào file "${config.path}"?`
+                    );
+                    if (!uploadConfirmed) return;
+
+                    showToast("Đang kết nối GitHub...", "info");
+
+                    // 1. Chuẩn bị dữ liệu đề
+                    let minRow = Infinity,
+                        minCol = Infinity;
+                    const validWords = state.words.filter((w) => w.word && w.clue);
+                    validWords.forEach((w) => {
+                        if (w.row !== null) minRow = Math.min(minRow, w.row);
+                        if (w.col !== null) minCol = Math.min(minCol, w.col);
+                    });
+
+                    // Nếu đang sửa -> Giữ nguyên ID cũ. Nếu mới -> Tạo ID mới.
+                    const puzzleId = isUpdate
+                        ? state.editingServerId
+                        : `server_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+                    const puzzleDataObj = {
+                        id: puzzleId,
+                        title: title,
+                        highScore: 0, // Reset điểm khi sửa đề (hoặc giữ nguyên nếu muốn, nhưng sửa layout thì nên reset)
+                        arrangedWords: validWords.map((w) => ({
+                            id: w.id,
+                            word: w.word,
+                            clue: w.clue,
+                            direction: w.direction,
+                            row: w.row !== null ? w.row - minRow : 0,
+                            col: w.col !== null ? w.col - minCol : 0,
+                        })),
+                    };
+
+                    const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+
+                    try {
+                        // 2. Lấy file hiện tại
+                        let currentData = [];
+                        let sha = null;
+
+                        const getResponse = await fetch(apiUrl, {
+                            headers: {
+                                Authorization: `Bearer ${config.token}`,
+                                Accept: "application/vnd.github.v3+json",
+                            },
+                        });
+
+                        if (getResponse.ok) {
+                            const fileData = await getResponse.json();
+                            sha = fileData.sha;
+                            const content = b64_to_utf8(fileData.content.replace(/\n/g, ""));
+                            currentData = JSON.parse(content);
+                        } else if (getResponse.status !== 404) {
+                            throw new Error("Lỗi khi đọc file từ Server.");
+                        }
+
+                        // 3. Xử lý Mảng dữ liệu (Update hoặc Push)
+                        if (isUpdate) {
+                            // Tìm và thay thế
+                            const index = currentData.findIndex((p) => p.id === puzzleId);
+                            if (index !== -1) {
+                                // Giữ lại highScore cũ nếu muốn
+                                // puzzleDataObj.highScore = currentData[index].highScore;
+                                currentData[index] = puzzleDataObj;
+                            } else {
+                                // ID không tồn tại (có thể bị xóa bởi người khác), thêm mới
+                                currentData.push(puzzleDataObj);
+                            }
+                        } else {
+                            // Thêm mới
+                            currentData.push(puzzleDataObj);
+                        }
+
+                        // 4. Đẩy file mới lên (PUT)
+                        const newContentBase64 = utf8_to_b64(JSON.stringify(currentData, null, 2));
+
+                        const putBody = {
+                            message: `${isUpdate ? "Update" : "Add"} puzzle: ${title}`,
+                            content: newContentBase64,
+                            sha: sha, // Bắt buộc có SHA để update file cũ
+                        };
+
+                        const putResponse = await fetch(apiUrl, {
+                            method: "PUT",
+                            headers: {
+                                Authorization: `Bearer ${config.token}`,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(putBody),
+                        });
+
+                        if (putResponse.ok) {
+                            showToast("Thao tác thành công!", "success");
+                            // Reset trạng thái
+                            state.editingServerId = null;
+                            switchView("lobby");
+                        } else {
+                            const err = await putResponse.json();
+                            throw new Error(err.message);
+                        }
+                    } catch (e) {
+                        showToast(`Lỗi: ${e.message}`, "error", 5000);
+                        console.error(e);
+                    }
+                });
                 const exportPuzzle = () => {
-                    updateStateFromForms(); // Cập nhật dữ liệu từ các ô input
+                    updateStateFromForms();
                     const title = puzzleTitleInput.value.trim();
                     if (!title) {
                         showToast("Vui lòng nhập tên bộ đề trước khi xuất.", "error");
@@ -1140,26 +1516,46 @@
                         showToast("Cần ít nhất 2 từ hợp lệ để xuất file.", "error");
                         return;
                     }
+                    // --- LOGIC GITHUB UPLOAD ---
 
-                    // Tạo đối tượng dữ liệu để xuất
+                    // Tính toán để chuẩn hóa tọa độ (đưa về 0,0) giống như lúc Lưu
+                    let minRow = Infinity,
+                        minCol = Infinity;
+                    let hasLayout = false;
+
+                    validWords.forEach((word) => {
+                        if (word.row !== null && word.col !== null) {
+                            minRow = Math.min(minRow, word.row);
+                            minCol = Math.min(minCol, word.col);
+                            hasLayout = true;
+                        }
+                    });
+
+                    const exportWords = validWords.map((w) => ({
+                        word: w.word,
+                        clue: w.clue,
+                        // Nếu đã xếp lưới thì lưu tọa độ đã chuẩn hóa, nếu chưa thì để null
+                        row: hasLayout && w.row !== null ? w.row - minRow : null,
+                        col: hasLayout && w.col !== null ? w.col - minCol : null,
+                        direction: w.direction || "horizontal",
+                    }));
+
                     const puzzleData = {
                         title: title,
-                        words: validWords.map(({ word, clue }) => ({ word, clue })), // Chỉ lấy word và clue
+                        words: exportWords,
                     };
 
-                    // Tạo file JSON
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(puzzleData, null, 2));
+                    const dataStr =
+                        "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(puzzleData, null, 2));
                     const downloadAnchorNode = document.createElement("a");
                     downloadAnchorNode.setAttribute("href", dataStr);
-                    // Tạo tên file an toàn
                     const safeFileName = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
                     downloadAnchorNode.setAttribute("download", `slam_puzzle_${safeFileName}.json`);
                     document.body.appendChild(downloadAnchorNode);
                     downloadAnchorNode.click();
                     downloadAnchorNode.remove();
-                    showToast("Đã xuất bộ đề!", "success");
+                    showToast("Đã xuất bộ đề (kèm bố cục)!", "success");
                 };
-
                 // --- HÀM 2: NHẬP DỮ LIỆU TỪ FILE .JSON ---
                 const importPuzzle = () => {
                     // Tạo một input ảo để người dùng chọn file
@@ -1172,36 +1568,51 @@
                         if (!file) return;
 
                         const reader = new FileReader();
+                        // --- TÌM VÀ SỬA ĐOẠN LOGIC TRONG importPuzzle (phần reader.onload) ---
                         reader.onload = async (event) => {
                             try {
                                 const puzzleData = JSON.parse(event.target.result);
-                                // Kiểm tra cấu trúc file
                                 if (!puzzleData.title || !Array.isArray(puzzleData.words)) {
                                     throw new Error("Cấu trúc file không hợp lệ.");
                                 }
 
-                                const confirmed = await showConfirmation("Nhập Bộ Đề?", `Bạn có muốn thay thế bộ đề hiện tại bằng "${puzzleData.title}" (${puzzleData.words.length} từ)? Mọi thay đổi chưa lưu sẽ bị mất.`);
+                                const confirmed = await showConfirmation(
+                                    "Nhập Bộ Đề?",
+                                    `Bạn có muốn thay thế bằng "${puzzleData.title}"?`
+                                );
 
                                 if (confirmed) {
                                     puzzleTitleInput.value = puzzleData.title;
-                                    // Reset ID và gán dữ liệu mới
+
+                                    // LOGIC MỚI: Đọc cả row, col, direction nếu có
                                     state.words = puzzleData.words.map((w, index) => ({
                                         id: index,
                                         word: w.word || "",
                                         clue: w.clue || "",
-                                        direction: "horizontal", // Thêm dòng này
-                                        row: null,
-                                        col: null,
+                                        direction: w.direction || "horizontal",
+                                        // Nếu file json có row/col thì lấy, không thì null
+                                        row: w.row !== undefined && w.row !== null ? w.row : null,
+                                        col: w.col !== undefined && w.col !== null ? w.col : null,
                                     }));
-                                    state.currentPuzzleId = null; // Coi như đây là một bộ đề mới
+
+                                    state.currentPuzzleId = null;
                                     deletePuzzleBtn.style.display = "none";
                                     renderWordForms();
-                                    showToast("Nhập bộ đề thành công!", "success");
+
+                                    // Nếu file import đã có sẵn layout, chuyển luôn sang tab Xếp Lưới để user thấy
+                                    const hasLayout = state.words.some((w) => w.row !== null);
+                                    if (hasLayout) {
+                                        showToast("Đã nhập bộ đề và sơ đồ lưới!", "success");
+                                        switchCreationTab("arrange");
+                                    } else {
+                                        showToast("Đã nhập danh sách từ!", "success");
+                                    }
                                 }
                             } catch (error) {
                                 showToast(`Lỗi khi đọc file: ${error.message}`, "error");
                             }
                         };
+
                         reader.readAsText(file);
                     };
 
@@ -1250,47 +1661,150 @@
                         toast.addEventListener("animationend", () => toast.remove());
                     }, duration);
                 };
+                // --- TÌM VÀ THAY THẾ TOÀN BỘ HÀM renderLobby ---
+                const renderLobby = async () => {
+                    puzzleListContainer.innerHTML = ""; // Xóa danh sách cũ
 
-                const renderLobby = () => {
-                    const puzzles = getPuzzles();
-                    const puzzleIds = Object.keys(puzzles).sort((a, b) => (puzzles[b].lastModified || 0) - (puzzles[a].lastModified || 0));
-                    puzzleListContainer.innerHTML = "";
-                    puzzleIds.forEach((id) => {
-                        const puzzle = puzzles[id];
-                        const card = document.createElement("div");
-                        card.className = "puzzle-card";
-                        card.innerHTML = `
-            <h3 class="puzzle-card-title">${puzzle.title}</h3>
-<p class="puzzle-card-meta">${puzzle.words.length} từ - Sửa đổi: ${new Date(puzzle.lastModified).toLocaleString("vi-VN")}</p>
-<p class="puzzle-card-meta" style="color: var(--primary-accent); font-weight: 700;">Điểm cao: ${puzzle.highScore || 0}</p>
-            <div class="puzzle-card-actions">
-                <button class="action-btn primary play-puzzle-btn" data-id="${id}" title="Chơi">
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-</button>
-                <button class="action-btn edit-puzzle-btn" data-id="${id}" title="Sửa">
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-</button>
-            </div>`;
-                        puzzleListContainer.appendChild(card);
-                    });
+                    // 1. Render nút tạo mới trước
                     const addNewCard = document.createElement("div");
                     addNewCard.className = "new-puzzle-card";
                     addNewCard.innerHTML = `<div class="plus-icon">+</div><div class="new-puzzle-text">Tạo Bộ Đề Mới</div>`;
-                    addNewCard.addEventListener("click", () => switchView("creation"));
+                    // Trong renderLobby:
+                    addNewCard.addEventListener("click", () => {
+                        state.editingServerId = null; // Reset về mode tạo mới
+                        document.getElementById("upload-github-btn").innerHTML = `Upload`; // Reset text nút
+                        document.getElementById("upload-github-btn").style.background =
+                            "linear-gradient(145deg, #7b1fa2, #4a148c)";
+                        switchView("creation");
+                    });
                     puzzleListContainer.appendChild(addNewCard);
+
+                    // 2. Lấy và Render dữ liệu Local (Trong máy)
+                    const localPuzzles = getPuzzles();
+                    const localIds = Object.keys(localPuzzles).sort(
+                        (a, b) => (localPuzzles[b].lastModified || 0) - (localPuzzles[a].lastModified || 0)
+                    );
+
+                    localIds.forEach((id) => {
+                        createPuzzleCard(id, localPuzzles[id], "local");
+                    });
+
+                    // 3. Fetch và Render dữ liệu Server
+                    try {
+                        // Giả định file nằm ở thư mục cùng cấp: slamde/data.json
+                        // Thêm timestamp để tránh cache trình duyệt khi update file mới
+                        const response = await fetch(`./slamde/data.json?t=${Date.now()}`);
+                        if (response.ok) {
+                            const serverData = await response.json();
+                            // serverData nên là mảng các object puzzle
+                            // Format file json server: [{ "id": "sv1", "title": "...", "arrangedWords": [...] }, ...]
+
+                            state.serverPuzzles = {}; // Reset cache server
+
+                            serverData.forEach((puzzle) => {
+                                // Lưu vào state để dùng khi bấm play
+                                // Đảm bảo ID không trùng với local, nếu trùng có thể prefix
+                                const serverId = puzzle.id || `server_${Math.random()}`;
+                                state.serverPuzzles[serverId] = puzzle;
+
+                                createPuzzleCard(serverId, puzzle, "server");
+                            });
+                        }
+                    } catch (e) {
+                        console.log("Không tải được dữ liệu server hoặc chưa có file data.json", e);
+                    }
                 };
 
+                // --- TÌM VÀ THAY THẾ HÀM createPuzzleCard ---
+                const createPuzzleCard = (id, puzzle, source) => {
+                    const card = document.createElement("div");
+                    card.className = "puzzle-card";
+
+                    let badge =
+                        source === "server"
+                            ? `<span style="background:#4caf50; font-size:0.7rem; padding:2px 6px; border-radius:4px; color:white; margin-left: 10px;">ONLINE</span>`
+                            : "";
+
+                    let actionBtnHtml = "";
+
+                    if (source === "local") {
+                        actionBtnHtml = `
+            <button class="action-btn edit-puzzle-btn" data-id="${id}" data-source="local" title="Sửa Local">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>`;
+                    } else {
+                        // VỚI ĐỀ SERVER: Thêm nút Sửa (màu cam) và nút Copy (màu xám)
+                        actionBtnHtml = `
+            <button class="action-btn edit-puzzle-btn" data-id="${id}" data-source="server" title="Sửa trên Server" style="background: linear-gradient(145deg, #f57c00, #e65100); border-color: #ff9800;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </button>
+            <button class="action-btn copy-puzzle-btn" data-id="${id}" title="Sao chép về máy" style="background: #546e7a; border-color: #78909c;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>`;
+                    }
+
+                    card.innerHTML = `
+        <h3 class="puzzle-card-title">${puzzle.title} ${badge}</h3>
+        <p class="puzzle-card-meta">${puzzle.words ? puzzle.words.length : puzzle.arrangedWords ? puzzle.arrangedWords.length : 0} từ</p>
+        <p class="puzzle-card-meta" style="color: var(--primary-accent); font-weight: 700;">Điểm cao: ${puzzle.highScore || 0}</p>
+        <div class="puzzle-card-actions">
+            <button class="action-btn primary play-puzzle-btn" data-id="${id}" data-source="${source}" title="Chơi">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+            ${actionBtnHtml}
+        </div>`;
+                    puzzleListContainer.appendChild(card);
+                };
+                // --- TÌM VÀ THAY THẾ puzzleListContainer.addEventListener ---
                 puzzleListContainer.addEventListener("click", (e) => {
                     const playBtn = e.target.closest(".play-puzzle-btn");
                     const editBtn = e.target.closest(".edit-puzzle-btn");
-                    if (playBtn) switchView("game", playBtn.dataset.id);
-                    if (editBtn) switchView("creation", editBtn.dataset.id);
+                    const copyBtn = e.target.closest(".copy-puzzle-btn");
+
+                    if (playBtn) {
+                        const source = playBtn.dataset.source; // 'local' hoặc 'server'
+                        switchView("game", { id: playBtn.dataset.id, source: source });
+                    }
+                    if (editBtn) {
+                        switchView("creation", editBtn.dataset.id);
+                    }
+                    // Chức năng sao chép đề Server về Local để sửa
+                    if (copyBtn) {
+                        const serverId = copyBtn.dataset.id;
+                        const puzzleData = state.serverPuzzles[serverId];
+                        if (puzzleData) {
+                            puzzleTitleInput.value = puzzleData.title + " (Copy)";
+                            // Chuyển format server sang format state
+                            state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
+                                ...w,
+                                id: i,
+                            }));
+                            state.currentPuzzleId = null; // Tạo ID mới khi lưu
+                            switchView("creation");
+                            showToast("Đã sao chép đề. Hãy lưu lại!", "success");
+                        }
+                    }
                 });
 
-                // THAY THẾ HÀM CŨ BẰNG HÀM NÀY
                 const initCreation = (puzzleId = null) => {
+                    // Reset trạng thái server edit nếu không phải do bấm nút Sửa Server gọi
+                    // (Logic ở Lobby đã set editingServerId trước khi gọi switchView, nên ở đây ta chỉ reset UI nếu id truyền vào khác null hoặc undefined)
+
+                    if (puzzleId === null && state.editingServerId === null) {
+                        // Trường hợp bấm nút "Tạo mới" thuần túy
+                        document.getElementById("upload-github-btn").innerHTML = `Upload`;
+                        document.getElementById("upload-github-btn").style.background =
+                            "linear-gradient(145deg, #7b1fa2, #4a148c)";
+                    }
+
+                    // Nếu đang Edit Server (đã set ở Lobby), giữ nguyên editingServerId
+                    // Nếu vào đây để Sửa Local hoặc Tạo Mới Local, thì reset editingServerId
+                    if (puzzleId || (puzzleId === null && !state.editingServerId)) {
+                        if (puzzleId) state.editingServerId = null; // Nếu có ID Local -> Reset ID Server
+                    }
+
                     state.currentPuzzleId = puzzleId;
-                    switchCreationTab("words"); // Luôn bắt đầu ở tab nhập từ
+                    switchCreationTab("words");
                     let wordsToRender = [];
                     puzzleTitleInput.value = "";
                     deletePuzzleBtn.style.display = "none";
@@ -1304,7 +1818,13 @@
                                 wordsToRender = puzzle.arrangedWords.map((w, i) => ({ ...w, id: i }));
                             } else {
                                 // Dữ liệu cũ chưa có arrangedWords
-                                wordsToRender = puzzle.words.map((w, i) => ({ ...w, id: i, direction: "horizontal", row: null, col: null }));
+                                wordsToRender = puzzle.words.map((w, i) => ({
+                                    ...w,
+                                    id: i,
+                                    direction: "horizontal",
+                                    row: null,
+                                    col: null,
+                                }));
                             }
                             deletePuzzleBtn.style.display = "flex";
                         } else {
@@ -1428,7 +1948,9 @@
                 };
                 const renderWordBank = () => {
                     wordBank.innerHTML = "";
-                    const unplacedWords = state.words.filter((w) => w.word && (!w.hasOwnProperty("row") || w.row === null));
+                    const unplacedWords = state.words.filter(
+                        (w) => w.word && (!w.hasOwnProperty("row") || w.row === null)
+                    );
 
                     unplacedWords.forEach((word) => {
                         const wordEl = document.createElement("div");
@@ -1487,7 +2009,7 @@
                         if (word.direction === "vertical") {
                             wordWrapper.style.flexDirection = "column";
                         }
-                        wordWrapper.style.gap = "1px"
+                        wordWrapper.style.gap = "1px";
                         // Tạo từng ô chữ cho từ
                         word.word.split("").forEach((char) => {
                             const letterEl = document.createElement("div");
@@ -1596,7 +2118,7 @@
                     // Create the preview element that snaps to the grid
                     editorState.placementPreview = document.createElement("div");
                     editorState.placementPreview.className = "placement-preview";
-                    editorState.placementPreview.style.gap = "1px"; 
+                    editorState.placementPreview.style.gap = "1px";
                     wordData.word.split("").forEach((char) => {
                         const letterEl = document.createElement("div");
                         letterEl.className = "preview-letter";
@@ -1637,7 +2159,11 @@
                     editorState.ghostElement.style.top = `${clientY - editorState.startOffset.y}px`;
 
                     const gridRect = editorGrid.getBoundingClientRect();
-                    const isOverGrid = clientX >= gridRect.left && clientX <= gridRect.right && clientY >= gridRect.top && clientY <= gridRect.bottom;
+                    const isOverGrid =
+                        clientX >= gridRect.left &&
+                        clientX <= gridRect.right &&
+                        clientY >= gridRect.top &&
+                        clientY <= gridRect.bottom;
 
                     if (isOverGrid) {
                         // Show the grid preview and hide the free-floating ghost
@@ -1660,7 +2186,8 @@
                             if (targetCellLetter && targetCellLetter.letter === wordData.word[i]) {
                                 const targetWord = state.words.find((w) => w.id === targetCellLetter.wordId);
                                 if (targetWord) {
-                                    const newDirection = targetWord.direction === "horizontal" ? "vertical" : "horizontal";
+                                    const newDirection =
+                                        targetWord.direction === "horizontal" ? "vertical" : "horizontal";
                                     let newRow = checkRow,
                                         newCol = checkCol;
                                     if (newDirection === "horizontal") newCol = checkCol - i;
@@ -1683,7 +2210,8 @@
                         // Update the grid preview's position and appearance
                         editorState.placementPreview.style.top = `${row * 26}px`;
                         editorState.placementPreview.style.left = `${col * 26}px`;
-                        editorState.placementPreview.style.flexDirection = snappedDirection === "vertical" ? "column" : "row";
+                        editorState.placementPreview.style.flexDirection =
+                            snappedDirection === "vertical" ? "column" : "row";
                         editorState.placementPreview.classList.toggle("invalid", !isValid);
                         editorState.ghostElement.classList.toggle("invalid", !isValid);
 
@@ -1735,7 +2263,9 @@
                     if (wordData.direction === "vertical" && row + wordData.word.length > gridSize) return false;
 
                     let intersectionFound = false;
-                    const placedWords = state.words.filter((w) => w.hasOwnProperty("row") && w.row !== null && w.id !== wordData.id);
+                    const placedWords = state.words.filter(
+                        (w) => w.hasOwnProperty("row") && w.row !== null && w.id !== wordData.id
+                    );
 
                     // 2. Loop through each letter of the word to check for collisions
                     for (let i = 0; i < wordData.word.length; i++) {
@@ -1786,13 +2316,23 @@
                     for (const word of state.words) {
                         if (!word.hasOwnProperty("row") || word.row === null) continue;
 
-                        if (word.direction === "horizontal" && word.row === row && col >= word.col && col < word.col + word.word.length) {
+                        if (
+                            word.direction === "horizontal" &&
+                            word.row === row &&
+                            col >= word.col &&
+                            col < word.col + word.word.length
+                        ) {
                             return {
                                 letter: word.word[col - word.col],
                                 wordId: word.id,
                             };
                         }
-                        if (word.direction === "vertical" && word.col === col && row >= word.row && row < word.row + word.word.length) {
+                        if (
+                            word.direction === "vertical" &&
+                            word.col === col &&
+                            row >= word.row &&
+                            row < word.row + word.word.length
+                        ) {
                             return {
                                 letter: word.word[row - word.row],
                                 wordId: word.id,
@@ -1820,7 +2360,7 @@
                     if (editorState.ghostElement) editorState.ghostElement.remove();
                     if (editorState.placementPreview) editorState.placementPreview.remove();
                     const lingeringPreviews = editorGrid.querySelectorAll(".placement-preview");
-                    lingeringPreviews.forEach(el => el.remove());
+                    lingeringPreviews.forEach((el) => el.remove());
                     // Reset dragging state
                     editorState.isDragging = false;
                     editorState.ghostElement = null;
@@ -1871,25 +2411,25 @@
                     renderWordForms();
                     wordListContainer.scrollTop = wordListContainer.scrollHeight;
                 });
-wordListContainer.addEventListener("click", (e) => {
-    // 1. Dùng .closest() để đảm bảo bắt được sự kiện dù người dùng bấm vào icon SVG
-    const removeBtn = e.target.closest(".remove-word-btn");
+                wordListContainer.addEventListener("click", (e) => {
+                    // 1. Dùng .closest() để đảm bảo bắt được sự kiện dù người dùng bấm vào icon SVG
+                    const removeBtn = e.target.closest(".remove-word-btn");
 
-    if (removeBtn) {
-        // Cập nhật trạng thái từ các form khác trước khi xóa
-        updateStateFromForms();
+                    if (removeBtn) {
+                        // Cập nhật trạng thái từ các form khác trước khi xóa
+                        updateStateFromForms();
 
-        // 2. Lấy .word-card cha để tìm đúng `data-id` của từ cần xóa
-        const cardToRemove = removeBtn.closest(".word-card");
-        const wordIdToRemove = parseInt(cardToRemove.dataset.id);
+                        // 2. Lấy .word-card cha để tìm đúng `data-id` của từ cần xóa
+                        const cardToRemove = removeBtn.closest(".word-card");
+                        const wordIdToRemove = parseInt(cardToRemove.dataset.id);
 
-        // 3. Dùng .filter() để xóa từ khỏi mảng một cách an toàn dựa trên ID
-        state.words = state.words.filter(word => word.id !== wordIdToRemove);
+                        // 3. Dùng .filter() để xóa từ khỏi mảng một cách an toàn dựa trên ID
+                        state.words = state.words.filter((word) => word.id !== wordIdToRemove);
 
-        // Render lại danh sách từ sau khi đã xóa
-        renderWordForms();
-    }
-});
+                        // Render lại danh sách từ sau khi đã xóa
+                        renderWordForms();
+                    }
+                });
 
                 // TÌM VÀ THAY THẾ TOÀN BỘ KHỐI NÀY
                 savePuzzleBtn.addEventListener("click", () => {
@@ -2035,7 +2575,9 @@ wordListContainer.addEventListener("click", (e) => {
                     const gameState = {
                         solvedWords: Array.from(state.solvedWords),
                         revealedLetters: Array.from(state.revealedLetters),
-                        elapsedSeconds: state.elapsedSeconds + (state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0),
+                        elapsedSeconds:
+                            state.elapsedSeconds +
+                            (state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0),
                         totalScore: state.totalScore,
                         gridContent: gridContent,
                         slamModeActive: state.slamModeActive,
@@ -2048,176 +2590,204 @@ wordListContainer.addEventListener("click", (e) => {
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
-// THAY THẾ TOÀN BỘ hàm selectNextLetterToReveal CŨ bằng phiên bản MỚI NHẤT này.
-const selectNextLetterToReveal = () => {
-    // --- BƯỚC 0: TẬP HỢP TẤT CẢ KÝ TỰ KHẢ DỤNG ---
-    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
-    if (unsolvedWords.length === 0) return null;
+                // TÌM VÀ THAY THẾ TOÀN BỘ HÀM selectNextLetterToReveal BẰNG CODE NÀY
+                const selectNextLetterToReveal = () => {
+                    // 1. Lấy danh sách các từ chưa giải quyết xong
+                    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+                    if (unsolvedWords.length === 0) return null;
 
-    const potentiallyAvailableChars = [
-        ...new Set(unsolvedWords.map((w) => w.word).join("").split("")),
-    ].filter((char) => !state.revealedLetters.has(char));
-
-    const availableChars = potentiallyAvailableChars.filter((char) => {
-        const locations = [];
-        unsolvedWords.forEach((wordData) => {
-            if (wordData.word.includes(char)) {
-                for (let i = 0; i < wordData.word.length; i++) {
-                    if (wordData.word[i] === char) {
-                        let r = wordData.row, c = wordData.col;
-                        if (wordData.direction === "horizontal") c += i;
-                        else r += i;
-                        locations.push({ r, c });
-                    }
-                }
-            }
-        });
-        const isAnyCellHidden = locations.some((loc) => {
-            const cell = gridContainer.querySelector(`[data-row="${loc.r}"][data-col="${loc.c}"]`);
-            return cell && !cell.classList.contains("is-solved") && !cell.classList.contains("anim-typing");
-        });
-        return isAnyCellHidden;
-    });
-
-    if (availableChars.length === 0) return null;
-
-    // --- BƯỚC 1: THU THẬP DỮ LIỆU CHI TIẾT CHO MỖI KÝ TỰ ---
-    const letterDetails = availableChars.map((char) => {
-        let frequency = 0;
-        let intersections = 0;
-        let autoCompletesWord = false; // Biến này sẽ xác định chữ "nguy hiểm"
-
-        unsolvedWords.forEach((wordData) => {
-            if (wordData.word.includes(char)) {
-                frequency += wordData.word.split(char).length - 1;
-
-                // ★★★ PHẦN LOGIC ĐƯỢC SỬA LỖI ★★★
-                // Thay vì đếm ngược, chúng ta dùng Set để kiểm tra một cách chính xác.
-                // Điều này tránh các lỗi logic tinh vi khi có các chữ cái trùng lặp.
-                if (!autoCompletesWord) {
-                    // Lấy tất cả các ký tự độc nhất trong từ
-                    const lettersInWord = new Set(wordData.word.split(""));
-                    // Tạo một bản sao của các chữ đã tiết lộ và thêm chữ đang xét vào
-                    const lettersIfRevealed = new Set(state.revealedLetters);
-                    lettersIfRevealed.add(char);
-
-                    // Kiểm tra xem tất cả các chữ trong từ có nằm trong bộ chữ "nếu được tiết lộ" không
-                    let isSubset = true;
-                    for (const l of lettersInWord) {
-                        if (!lettersIfRevealed.has(l)) {
-                            isSubset = false;
-                            break;
-                        }
-                    }
-                    
-                    if (isSubset) {
-                        autoCompletesWord = true;
-                    }
-                }
-                // ★★★ KẾT THÚC PHẦN SỬA LỖI ★★★
-
-                for (let i = 0; i < wordData.word.length; i++) {
-                    if (wordData.word[i] === char) {
-                        let r = wordData.row, c = wordData.col;
-                        if (wordData.direction === "horizontal") c += i;
-                        else r += i;
-                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                        if (cell) {
-                            const wordIdsInCell = Object.keys(cell.dataset).filter((k) => k.startsWith("word_")).length;
-                            if (wordIdsInCell > 1) {
-                                intersections++;
+                    // --- BƯỚC 1: XÁC ĐỊNH CÁC Ô ĐÃ SÁNG ĐÈN (VISIBILITY MAP) ---
+                    // Tập hợp tọa độ các ô đã hiện chữ (do người chơi giải được từ chứa ô đó)
+                    const visibleCells = new Set();
+                    state.solvedWords.forEach((id) => {
+                        const w = state.words.find((word) => word.id === id);
+                        if (w) {
+                            for (let i = 0; i < w.word.length; i++) {
+                                let r = w.row,
+                                    c = w.col;
+                                if (w.direction === "horizontal") c += i;
+                                else r += i;
+                                visibleCells.add(`${r}-${c}`);
                             }
                         }
+                    });
+
+                    // --- BƯỚC 2: TÌM ỨNG VIÊN (SỬA LỖI TẠI ĐÂY) ---
+                    // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
+                    const candidates = new Set();
+                    unsolvedWords.forEach((w) => {
+                        for (let i = 0; i < w.word.length; i++) {
+                            const char = w.word[i];
+                            let r = w.row,
+                                c = w.col;
+                            if (w.direction === "horizontal") c += i;
+                            else r += i;
+
+                            // Kiểm tra xem ô này đã hiện chưa?
+                            // 1. Hiện do máy đã mở global chữ này (state.revealedLetters)
+                            // 2. Hiện do ô này thuộc về một từ người chơi đã giải (visibleCells)
+                            const isVisible = state.revealedLetters.has(char) || visibleCells.has(`${r}-${c}`);
+
+                            // Chỉ thêm vào danh sách nếu ô này VẪN CÒN ẨN
+                            if (!isVisible) {
+                                candidates.add(char);
+                            }
+                        }
+                    });
+
+                    // --- BƯỚC 3: KIỂM TRA AN TOÀN (GIỮ NGUYÊN LOGIC CŨ) ---
+                    const safeCandidates = Array.from(candidates).filter((charToTest) => {
+                        // Giả lập: Mở chữ này ra thì có từ nào hoàn thành 100% không?
+                        for (const wordData of unsolvedWords) {
+                            let isWordFullyVisible = true;
+
+                            for (let i = 0; i < wordData.word.length; i++) {
+                                const letter = wordData.word[i];
+                                let r = wordData.row,
+                                    c = wordData.col;
+                                if (wordData.direction === "horizontal") c += i;
+                                else r += i;
+
+                                // Một ô được coi là SẼ HIỆN trong tương lai giả định nếu:
+                                // 1. Nó là chữ đang test
+                                // 2. Nó đã được máy mở trước đó
+                                // 3. Nó là ô đã giải của người chơi
+                                const isCellVisibleFuture =
+                                    letter === charToTest ||
+                                    state.revealedLetters.has(letter) ||
+                                    visibleCells.has(`${r}-${c}`);
+
+                                if (!isCellVisibleFuture) {
+                                    isWordFullyVisible = false;
+                                    break;
+                                }
+                            }
+
+                            // Nếu từ này bị hoàn thành -> Nguy hiểm -> Loại
+                            if (isWordFullyVisible) return false;
+                        }
+                        return true;
+                    });
+
+                    if (safeCandidates.length === 0) return null;
+
+                    // --- BƯỚC 4 & 5: CHIẾN THUẬT CHỌN LỰA (GIỮ NGUYÊN 5 TIÊU CHÍ CỦA BẠN) ---
+
+                    const cellOccupancy = {};
+                    state.words.forEach((w) => {
+                        for (let i = 0; i < w.word.length; i++) {
+                            let r = w.row,
+                                c = w.col;
+                            if (w.direction === "horizontal") c += i;
+                            else r += i;
+                            cellOccupancy[`${r}-${c}`] = (cellOccupancy[`${r}-${c}`] || 0) + 1;
+                        }
+                    });
+
+                    const candidateDetails = safeCandidates.map((char) => {
+                        let frequency = 0;
+                        let intersectionCount = 0;
+                        let wordsWithChar = new Set();
+
+                        unsolvedWords.forEach((w) => {
+                            if (w.word.includes(char)) {
+                                wordsWithChar.add(w.id);
+                                for (let i = 0; i < w.word.length; i++) {
+                                    if (w.word[i] === char) {
+                                        frequency++;
+                                        let r = w.row,
+                                            c = w.col;
+                                        if (w.direction === "horizontal") c += i;
+                                        else r += i;
+                                        if (cellOccupancy[`${r}-${c}`] > 1) {
+                                            intersectionCount++;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        const wordCount = wordsWithChar.size;
+                        const nonIntersectionCount = frequency - intersectionCount;
+
+                        return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
+                    });
+
+                    candidateDetails.sort((a, b) => {
+                        // 1. Xuất hiện >=2 từ, không giao nhau
+                        const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
+                        const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
+                        if (a_P1 && !b_P1) return -1;
+                        if (!a_P1 && b_P1) return 1;
+
+                        // 2. Chỉ nằm ở điểm giao nhau
+                        const a_P2 = a.nonIntersectionCount === 0 && a.intersectionCount > 0;
+                        const b_P2 = b.nonIntersectionCount === 0 && b.intersectionCount > 0;
+                        if (a_P2 && !b_P2) return -1;
+                        if (!a_P2 && b_P2) return 1;
+
+                        // 3. Frequency cao nhất
+                        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
+
+                        // 4. Chỉ có ở 1 từ duy nhất
+                        const a_P4 = a.wordCount === 1;
+                        const b_P4 = b.wordCount === 1;
+                        if (a_P4 && !b_P4) return -1;
+                        if (!a_P4 && b_P4) return 1;
+
+                        return 0;
+                    });
+
+                    return candidateDetails[0].char;
+                };
+                const performAutoReveal = async () => {
+                    // Chỉ chạy trong giai đoạn reveal và game chưa kết thúc
+                    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
+
+                    // Lấy chữ cái an toàn tiếp theo
+                    const letterToReveal = selectNextLetterToReveal();
+
+                    // === TRƯỜNG HỢP: KHÔNG CÒN CHỮ NÀO AN TOÀN ===
+                    // (Nghĩa là mở bất kỳ chữ nào nữa cũng sẽ làm hoàn thành ít nhất 1 từ)
+                    if (!letterToReveal) {
+                        // Lấy tất cả các từ chưa giải
+                        const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+
+                        if (unsolvedWords.length > 0) {
+                            // Chuyển sang chế độ người chơi
+                            state.gamePhase = "playing";
+                            state.playableWordIds.clear();
+
+                            // MỞ KHÓA TẤT CẢ CÁC TỪ CÒN LẠI
+                            // Để người chơi tự tay điền nốt ký tự cuối cùng
+                            unsolvedWords.forEach((w) => state.playableWordIds.add(w.id));
+
+                            showToast("Đến lượt bạn! Hãy hoàn thành các từ còn lại.", "info", 3000);
+                            clueText.textContent = "Thử thách: Điền các ký tự cuối cùng!";
+
+                            deselectWord();
+                            saveGameState();
+                        } else {
+                            // Trường hợp hiếm: Đã giải hết sạch (thường triggerWin sẽ bắt trước đó)
+                            triggerWinAnimation();
+                        }
+                        return; // Dừng việc tự động tiết lộ
                     }
-                }
-            }
-        });
-        return { char, frequency, intersections, autoCompletesWord };
-    });
 
-    // Chỉ lấy những chữ cái "an toàn" (không hoàn thành từ)
-    const safeLetters = letterDetails.filter(l => !l.autoCompletesWord);
+                    // === TRƯỜNG HỢP: VẪN CÒN CHỮ AN TOÀN ===
+                    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
 
-    // Nếu không còn chữ cái an toàn nào, trả về null để báo hiệu chuyển giai đoạn
-    if (safeLetters.length === 0) {
-        return null;
-    }
+                    // Delay nhẹ để tạo nhịp điệu
+                    await delay(1000);
 
-    // Áp dụng các quy tắc ưu tiên trên danh sách chữ cái an toàn
-    const nonIntersecting = safeLetters.filter((l) => l.intersections === 0);
-    const intersecting = safeLetters.filter((l) => l.intersections > 0);
+                    // Thực hiện mở chữ cái
+                    // Hàm revealLetterOnGrid này sẽ tự lo việc hiển thị và kiểm tra hoàn thành (nếu có)
+                    // Nhưng nhờ logic "Simulated" ở trên, xác suất nó tự hoàn thành từ là 0%.
+                    revealLetterOnGrid(letterToReveal);
 
-    const multiFreqNonIntersect = nonIntersecting.filter((l) => l.frequency > 1);
-    if (multiFreqNonIntersect.length > 0) {
-        multiFreqNonIntersect.sort((a, b) => b.frequency - a.frequency);
-        return multiFreqNonIntersect[0].char;
-    }
+                    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 1500);
+                };
 
-    if (intersecting.length > 0) {
-        intersecting.sort((a, b) => b.intersections - a.intersections);
-        return intersecting[0].char;
-    }
-
-    const singleFreqNonIntersect = nonIntersecting.filter((l) => l.frequency === 1);
-    if (singleFreqNonIntersect.length > 0) {
-        return singleFreqNonIntersect[0].char;
-    }
-
-    // Fallback: Nếu không có quy tắc nào khớp, trả về chữ cái an toàn đầu tiên
-    return safeLetters[0].char;
-};              
-// HÀM MỚI: Thực thi toàn bộ quá trình tiết lộ tự động
-const performAutoReveal = async () => {
-    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
-
-    const letterToReveal = selectNextLetterToReveal();
-
-    // ★★★ LOGIC MỚI KHI HẾT CHỮ CÁI "AN TOÀN" ★★★
-    if (!letterToReveal) {
-        // Lấy danh sách các từ chưa giải
-        const unsolvedWords = state.words.filter(w => !state.solvedWords.has(w.id));
-        
-        // Tìm những từ chỉ còn thiếu 1 chữ cái
-        const wordsToComplete = unsolvedWords.filter(word => {
-            let missingCount = 0;
-            for (const char of word.word) {
-                if (!state.revealedLetters.has(char)) {
-                    missingCount++;
-                }
-            }
-            return missingCount === 1;
-        });
-
-        if (wordsToComplete.length > 0) {
-            // Chuyển sang chế độ chơi và cho phép người dùng chọn các từ này
-            showToast("Hoàn thành nốt các từ còn lại!", "info");
-            state.gamePhase = "playing";
-            state.playableWordIds.clear();
-            wordsToComplete.forEach(w => state.playableWordIds.add(w.id));
-            clueText.textContent = "Chọn một từ được đánh số để hoàn thành!";
-            deselectWord(); // Cập nhật lại UI để hiển thị các số
-            saveGameState();
-        } else {
-            // Trường hợp đặc biệt: không có từ nào để hoàn thành -> game kết thúc
-             if (state.solvedWords.size === state.words.length) {
-                triggerWinAnimation();
-            } else {
-                 clueText.textContent = "Không thể tự động tiết lộ thêm!";
-            }
-        }
-        return; // Dừng quá trình tiết lộ
-    }
-
-    // Logic cũ giữ nguyên nếu vẫn còn chữ cái để tiết lộ
-    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
-    await delay(1500);
-
-    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 2000);
-    await delay(500);
-
-    revealLetterOnGrid(letterToReveal);
-};
-                
                 const loadGameState = () => {
                     const savedState = localStorage.getItem(`slam-gamestate-${state.currentPuzzleId}`);
                     if (!savedState) return;
@@ -2358,7 +2928,9 @@ const performAutoReveal = async () => {
                         if (isNaN(wordId)) return;
 
                         const wordData = state.words.find((w) => w.id === wordId);
-                        const firstCell = gridContainer.querySelector(`.cell:has([data-row="${wordData.row}"][data-col="${wordData.col}"])`);
+                        const firstCell = gridContainer.querySelector(
+                            `.cell:has([data-row="${wordData.row}"][data-col="${wordData.col}"])`
+                        );
 
                         if (firstCell && wordData) {
                             const gap = parseInt(getComputedStyle(gridContainer).gap) || 2;
@@ -2546,11 +3118,23 @@ const performAutoReveal = async () => {
                 };
 
                 // Thay thế TOÀN BỘ hàm cũ bằng hàm async mới này
+                // TÌM VÀ SỬA HÀM handleIncorrectGuess
                 const handleIncorrectGuess = async (wordData) => {
-                    updateScore(-2);
-                    showToast(`Không chính xác!`, "error", 1500);
+                    // --- LOGIC TÍNH ĐIỂM MỚI (SAI) ---
+                    let penalty = 0;
+                    if (wordData) {
+                        // Lấy số nguyên làm tròn lên của (độ dài / 2)
+                        penalty = Math.ceil(wordData.word.length / 2);
+                    } else {
+                        penalty = 2; // Mặc định nếu không tìm thấy dữ liệu từ (ít khi xảy ra)
+                    }
+
+                    updateScore(-penalty);
+                    showToast(`Không chính xác! Trừ ${penalty} điểm`, "error", 1500);
+                    // ----------------------------------
 
                     if (wordData) {
+                        // ... (Giữ nguyên phần code xử lý hiệu ứng domino bên dưới không đổi) ...
                         const playableCells = [];
                         for (let i = 0; i < wordData.word.length; i++) {
                             let r = wordData.row,
@@ -2561,9 +3145,8 @@ const performAutoReveal = async () => {
                             if (playable) playableCells.push(playable);
                         }
 
-                        const dominoDelay = 50; // Tốc độ của hiệu ứng domino
-
-                        // Bắt đầu chạy hiệu ứng domino
+                        // ... (Giữ nguyên phần animation domino) ...
+                        const dominoDelay = 50;
                         playableCells.forEach((p, i) => {
                             if (!p.classList.contains("is-solved")) {
                                 setTimeout(() => {
@@ -2571,16 +3154,14 @@ const performAutoReveal = async () => {
                                     p.querySelector(".cell-front").textContent = "";
                                     p.classList.add("anim-incorrect");
                                     p.classList.add("is-locked");
-                                }, i * dominoDelay); // Mỗi ô sẽ bắt đầu animation sau ô trước đó 50ms
+                                }, i * dominoDelay);
                             }
                         });
-
-                        // Đợi cho hiệu ứng chạy xong trước khi reset trạng thái
-                        const totalAnimationTime = (playableCells.length - 1) * dominoDelay + 400; // Tổng thời gian anim
-                        await delay(totalAnimationTime); // Dùng await để "chờ"
+                        const totalAnimationTime = (playableCells.length - 1) * dominoDelay + 400;
+                        await delay(totalAnimationTime);
                     }
 
-                    // Reset trạng thái game sau khi animation đã kết thúc
+                    // ... (Giữ nguyên phần reset trạng thái) ...
                     state.gamePhase = "reveal";
                     state.playableWordIds.clear();
                     document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
@@ -2588,101 +3169,120 @@ const performAutoReveal = async () => {
                     saveGameState();
                     performAutoReveal();
                 };
+
                 const handleWordTimeout = () => {
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     showToast("Hết giờ!", "error");
                     handleIncorrectGuess(wordData);
                 };
-const checkSelectedWord = async () => {
-    const timeLeft = state.wordTimeLeft;
-    stopWordTimer();
-    const wordData = state.words.find((w) => w.id === state.selectedWordId);
-    if (!wordData) return;
+                const checkSelectedWord = async () => {
+                    const timeLeft = state.wordTimeLeft;
+                    stopWordTimer();
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) return;
 
-    let userInput = "";
-    for (let i = 0; i < wordData.word.length; i++) {
-        let r = wordData.row, c = wordData.col;
-        if (wordData.direction === "horizontal") c += i;
-        else r += i;
-        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-        if (playable) {
-            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
-        }
-    }
-
-    if (userInput === wordData.word) {
-        // ★★★ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ★★★
-        const allSolvedInTurn = new Set([wordData.id]); // Dùng Set để tránh trùng lặp
-
-        // Kiểm tra các từ giao nhau có được hoàn thành ké không
-        for (let i = 0; i < wordData.word.length; i++) {
-            let r = wordData.row, c = wordData.col;
-            if (wordData.direction === "horizontal") c += i;
-            else r += i;
-
-            const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-            const wordIdsInCell = Object.keys(cell.dataset)
-                .filter(k => k.startsWith("word_"))
-                .map(k => parseInt(k.replace("word_", "")));
-            
-            for (const otherId of wordIdsInCell) {
-                if (otherId !== wordData.id && !state.solvedWords.has(otherId)) {
-                    const otherWordData = state.words.find(w => w.id === otherId);
-                    if (otherWordData) {
-                        let otherWordFromGrid = "";
-                        let isComplete = true;
-                        for (let j = 0; j < otherWordData.word.length; j++) {
-                            let r2 = otherWordData.row, c2 = otherWordData.col;
-                            if (otherWordData.direction === "horizontal") c2 += j;
-                            else r2 += j;
-                            const otherCell = gridContainer.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
-                            const text = otherCell?.querySelector(".cell-front").textContent.trim().toUpperCase();
-                            if (!text) {
-                                isComplete = false;
-                                break;
-                            }
-                            otherWordFromGrid += text;
-                        }
-                        if (isComplete && otherWordFromGrid === otherWordData.word) {
-                            allSolvedInTurn.add(otherId);
+                    let userInput = "";
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        if (playable) {
+                            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
                         }
                     }
-                }
-            }
-        }
-        
-        // Tính tổng điểm cho tất cả các từ giải được trong lượt này
-        let turnScore = 0;
-        allSolvedInTurn.forEach(id => {
-            const solvedWordData = state.words.find(w => w.id === id);
-            turnScore += (id === wordData.id ? timeLeft : 15) + solvedWordData.word.length; // Thưởng thêm cho từ phụ
-        });
 
-        updateScore(turnScore);
-        showToast(`+${turnScore} điểm! Giải được ${allSolvedInTurn.size} từ!`, "success", 2000);
+                    if (userInput === wordData.word) {
+                        // ★★★ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ★★★
+                        const allSolvedInTurn = new Set([wordData.id]); // Dùng Set để tránh trùng lặp
 
-        // Chạy hiệu ứng cho TẤT CẢ các từ đã giải CÙNG LÚC
-        await Promise.all(Array.from(allSolvedInTurn).map(id => animateWordSolved(id)));
+                        // Kiểm tra các từ giao nhau có được hoàn thành ké không
+                        for (let i = 0; i < wordData.word.length; i++) {
+                            let r = wordData.row,
+                                c = wordData.col;
+                            if (wordData.direction === "horizontal") c += i;
+                            else r += i;
 
-        // Cập nhật trạng thái game sau khi hiệu ứng kết thúc
-        allSolvedInTurn.forEach(id => state.solvedWords.add(id));
-        updateStats();
+                            const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                            const wordIdsInCell = Object.keys(cell.dataset)
+                                .filter((k) => k.startsWith("word_"))
+                                .map((k) => parseInt(k.replace("word_", "")));
 
-        if (state.solvedWords.size === state.words.length) {
-            triggerWinAnimation();
-        } else {
-            state.gamePhase = "reveal";
-            state.playableWordIds.clear();
-            deselectWord();
-            performAutoReveal();
-        }
-        saveGameState();
-        // ★★★ KẾT THÚC LOGIC MỚI ★★★
-    } else {
-        handleIncorrectGuess(wordData);
-    }
-};
-                
+                            for (const otherId of wordIdsInCell) {
+                                if (otherId !== wordData.id && !state.solvedWords.has(otherId)) {
+                                    const otherWordData = state.words.find((w) => w.id === otherId);
+                                    if (otherWordData) {
+                                        let otherWordFromGrid = "";
+                                        let isComplete = true;
+                                        for (let j = 0; j < otherWordData.word.length; j++) {
+                                            let r2 = otherWordData.row,
+                                                c2 = otherWordData.col;
+                                            if (otherWordData.direction === "horizontal") c2 += j;
+                                            else r2 += j;
+                                            const otherCell = gridContainer.querySelector(
+                                                `[data-row="${r2}"][data-col="${c2}"]`
+                                            );
+                                            const text = otherCell
+                                                ?.querySelector(".cell-front")
+                                                .textContent.trim()
+                                                .toUpperCase();
+                                            if (!text) {
+                                                isComplete = false;
+                                                break;
+                                            }
+                                            otherWordFromGrid += text;
+                                        }
+                                        if (isComplete && otherWordFromGrid === otherWordData.word) {
+                                            allSolvedInTurn.add(otherId);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Tính tổng điểm cho tất cả các từ giải được trong lượt này
+                        let turnScore = 0;
+                        allSolvedInTurn.forEach((id) => {
+                            const w = state.words.find((word) => word.id === id);
+                            if (w) {
+                                for (let i = 0; i < w.word.length; i++) {
+                                    let r = w.row,
+                                        c = w.col;
+                                    if (w.direction === "horizontal") c += i;
+                                    else r += i;
+                                    const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                    if (cell) {
+                                        cell.classList.add("selected-word"); // Gán class này để opacity = 1
+                                    }
+                                }
+                            }
+                        });
+                        updateScore(turnScore);
+                        showToast(`+${turnScore} điểm! Giải được ${allSolvedInTurn.size} từ!`, "success", 2000);
+
+                        // Chạy hiệu ứng cho TẤT CẢ các từ đã giải CÙNG LÚC
+                        await Promise.all(Array.from(allSolvedInTurn).map((id) => animateWordSolved(id)));
+
+                        // Cập nhật trạng thái game sau khi hiệu ứng kết thúc
+                        allSolvedInTurn.forEach((id) => state.solvedWords.add(id));
+                        updateStats();
+
+                        if (state.solvedWords.size === state.words.length) {
+                            triggerWinAnimation();
+                        } else {
+                            state.gamePhase = "reveal";
+                            state.playableWordIds.clear();
+                            deselectWord();
+                            performAutoReveal();
+                        }
+                        saveGameState();
+                        // ★★★ KẾT THÚC LOGIC MỚI ★★★
+                    } else {
+                        handleIncorrectGuess(wordData);
+                    }
+                };
+
                 const hideNumberLabel = (label) => {
                     if (!label) return;
                     const wordData = state.words.find((w) => w.id == label.dataset.wordId);
@@ -2712,13 +3312,17 @@ const checkSelectedWord = async () => {
                     state.selectedWordId = null;
                     state.currentInputCell = null;
                     document.getElementById("grid-wrapper").classList.remove("selection-active");
-                    document.querySelectorAll(".playable.selected-word").forEach((el) => el.classList.remove("selected-word"));
+                    document
+                        .querySelectorAll(".playable.selected-word")
+                        .forEach((el) => el.classList.remove("selected-word"));
 
                     // --- BẮT ĐẦU THAY ĐỔI LOGIC ---
                     // Logic mới sẽ không ẩn tất cả các nhãn một cách mù quáng.
                     // Thay vào đó, nó sẽ lặp qua tất cả các nhãn và quyết định trạng thái của từng cái.
 
-                    const shouldShowNumbers = !state.isGameFinished && ((state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive);
+                    const shouldShowNumbers =
+                        !state.isGameFinished &&
+                        ((state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive);
                     document.querySelectorAll(".word-number-label").forEach((label) => {
                         const wordId = parseInt(label.dataset.wordId);
                         // Một từ được coi là "có thể chơi" nếu nó nằm trong danh sách playableWordIds
@@ -2756,7 +3360,8 @@ const checkSelectedWord = async () => {
                         const wordIds = Object.keys(clickedCell.dataset)
                             .filter((k) => k.startsWith("word_"))
                             .map((k) => parseInt(k.replace("word_", "")));
-                        if (wordIds.includes(state.selectedWordId) && !clickedCell.classList.contains("is-solved")) state.currentInputCell = clickedCell;
+                        if (wordIds.includes(state.selectedWordId) && !clickedCell.classList.contains("is-solved"))
+                            state.currentInputCell = clickedCell;
                         return;
                     }
                     if (state.gamePhase !== "playing" || state.playableWordIds.size === 0) return;
@@ -2764,7 +3369,9 @@ const checkSelectedWord = async () => {
                         .filter((k) => k.startsWith("word_"))
                         .map((k) => parseInt(k.replace("word_", "")));
                     if (wordIds.length === 0) return;
-                    const selectableUnsolvedIds = wordIds.filter((id) => !state.solvedWords.has(id) && state.playableWordIds.has(id));
+                    const selectableUnsolvedIds = wordIds.filter(
+                        (id) => !state.solvedWords.has(id) && state.playableWordIds.has(id)
+                    );
                     if (selectableUnsolvedIds.length === 0) {
                         showToast("Chỉ có thể chọn các từ được đánh số.", "error", 2000);
                         return;
@@ -2775,7 +3382,9 @@ const checkSelectedWord = async () => {
                     updateSelectionAndFocus();
                 };
                 const updateSelectionAndFocus = () => {
-                    document.querySelectorAll(".playable.selected-word").forEach((el) => el.classList.remove("selected-word"));
+                    document
+                        .querySelectorAll(".playable.selected-word")
+                        .forEach((el) => el.classList.remove("selected-word"));
                     document.getElementById("grid-wrapper").classList.remove("selection-active");
                     document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
 
@@ -2788,7 +3397,9 @@ const checkSelectedWord = async () => {
                     if (!state.slamModeActive) clueText.textContent = `${wordData.id + 1}. ${wordData.clue}`;
                     let firstEmptyCell = null;
 
-                    const firstCell = gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
+                    const firstCell = gridContainer.querySelector(
+                        `[data-row="${wordData.row}"][data-col="${wordData.col}"]`
+                    );
                     let lastCell = null;
 
                     for (let i = 0; i < wordData.word.length; i++) {
@@ -2820,7 +3431,9 @@ const checkSelectedWord = async () => {
                         gridContainer.style.transformOrigin = `${centerX}px ${centerY}px`;
                         gridContainer.classList.add("word-zoomed");
                     }
-                    state.currentInputCell = firstEmptyCell || gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
+                    state.currentInputCell =
+                        firstEmptyCell ||
+                        gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
                     keyboardWrapper.classList.add("visible");
                     startWordTimer();
                 };
@@ -2888,7 +3501,8 @@ const checkSelectedWord = async () => {
                                 const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
 
                                 if (playable && !playable.classList.contains("is-solved")) {
-                                    playable.querySelector(".cell-front").innerHTML = `<span class="letter-pop-in">${letter}</span>`;
+                                    playable.querySelector(".cell-front").innerHTML =
+                                        `<span class="letter-pop-in">${letter}</span>`;
                                     playable.classList.remove("is-locked", "anim-incorrect");
                                     playable.classList.add("is-solved");
                                 }
@@ -2922,7 +3536,9 @@ const checkSelectedWord = async () => {
                             else r += i;
 
                             const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                            const cellText = cell ? cell.querySelector(".cell-front").textContent.trim().toUpperCase() : "";
+                            const cellText = cell
+                                ? cell.querySelector(".cell-front").textContent.trim().toUpperCase()
+                                : "";
 
                             // Nếu có bất kỳ ô nào trống, từ đó chưa thể hoàn thành
                             if (cellText === "") {
@@ -2980,7 +3596,10 @@ const checkSelectedWord = async () => {
                         const currentCellPlayable = state.currentInputCell;
 
                         // Xóa ký tự trong ô hiện tại nếu nó có chữ
-                        if (!currentCellPlayable.classList.contains("is-solved") && currentCellFront.textContent.trim() !== "") {
+                        if (
+                            !currentCellPlayable.classList.contains("is-solved") &&
+                            currentCellFront.textContent.trim() !== ""
+                        ) {
                             currentCellFront.textContent = "";
                             currentCellPlayable.classList.remove("anim-typing"); // Trả ô về màu vàng
                             return;
@@ -2993,7 +3612,9 @@ const checkSelectedWord = async () => {
                             const { row, col } = cellToTest.dataset;
                             const prevRow = parseInt(row) - (wordData.direction === "vertical" ? 1 : 0);
                             const prevCol = parseInt(col) - (wordData.direction === "horizontal" ? 1 : 0);
-                            const prevCell = gridContainer.querySelector(`[data-row="${prevRow}"][data-col="${prevCol}"]`);
+                            const prevCell = gridContainer.querySelector(
+                                `[data-row="${prevRow}"][data-col="${prevCol}"]`
+                            );
                             if (prevCell && prevCell.classList.contains("selected-word")) {
                                 cellToTest = prevCell;
                                 if (!cellToTest.classList.contains("is-solved")) {
@@ -3025,7 +3646,9 @@ const checkSelectedWord = async () => {
                             const { row, col } = tempCell.dataset;
                             const nextRow = parseInt(row) + (wordData.direction === "vertical" ? 1 : 0);
                             const nextCol = parseInt(col) + (wordData.direction === "horizontal" ? 1 : 0);
-                            const potentialNext = gridContainer.querySelector(`[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                            const potentialNext = gridContainer.querySelector(
+                                `[data-row="${nextRow}"][data-col="${nextCol}"]`
+                            );
                             if (potentialNext && potentialNext.classList.contains("selected-word")) {
                                 if (!potentialNext.classList.contains("is-solved")) {
                                     nextEmptyCell = potentialNext;
@@ -3051,7 +3674,9 @@ const checkSelectedWord = async () => {
                             const { row, col } = tempCell.dataset;
                             const nextRow = parseInt(row) + (wordData.direction === "vertical" ? 1 : 0);
                             const nextCol = parseInt(col) + (wordData.direction === "horizontal" ? 1 : 0);
-                            const potentialNext = gridContainer.querySelector(`[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                            const potentialNext = gridContainer.querySelector(
+                                `[data-row="${nextRow}"][data-col="${nextCol}"]`
+                            );
                             if (potentialNext && potentialNext.classList.contains("selected-word")) {
                                 nextFocusCell = potentialNext; // Di chuyển dù ô tiếp theo đã được giải
                                 break;
@@ -3090,7 +3715,8 @@ const checkSelectedWord = async () => {
                     });
                     document.querySelectorAll(".word-number-label").forEach((l) => {
                         const wordId = parseInt(l.dataset.wordId);
-                        if (state.playableWordIds.has(wordId) && !state.solvedWords.has(wordId)) l.classList.add("visible");
+                        if (state.playableWordIds.has(wordId) && !state.solvedWords.has(wordId))
+                            l.classList.add("visible");
                     });
                     deselectWord();
                     slamModal.classList.remove("visible");
@@ -3099,9 +3725,7 @@ const checkSelectedWord = async () => {
                     showToast("SLAM MODE ACTIVATED!", "error");
                     saveGameState();
                 });
-                pages.game.addEventListener("click", (e) => {
-                    if (state.selectedWordId !== null && !e.target.closest("#grid-wrapper") && !e.target.closest(".game-hud")) deselectWord();
-                });
+
                 virtualKeyboard.addEventListener("click", (e) => {
                     if (e.target.matches(".key")) {
                         handleKeyPress(e.target.dataset.key);
@@ -3110,6 +3734,30 @@ const checkSelectedWord = async () => {
                 gridContainer.addEventListener("click", (e) => {
                     const playable = e.target.closest(".playable");
                     if (playable) handleCellClick(playable);
+                });
+                numberOverlay.addEventListener("click", (e) => {
+                    const label = e.target.closest(".word-number-label");
+                    if (!label) return;
+
+                    // Lấy ID từ số được bấm
+                    const wordId = parseInt(label.dataset.wordId);
+
+                    // Kiểm tra các điều kiện để được chọn (giống logic click ô chữ)
+                    // 1. Phải đang ở giai đoạn chơi hoặc SLAM
+                    if (state.gamePhase !== "playing" && !state.slamModeActive) return;
+
+                    // 2. Từ này phải nằm trong danh sách được phép chơi
+                    if (!state.playableWordIds.has(wordId) && !state.slamModeActive) {
+                        showToast("Từ này chưa được mở khóa!", "error");
+                        return;
+                    }
+
+                    // 3. Từ này chưa được giải
+                    if (state.solvedWords.has(wordId)) return;
+
+                    // Thực hiện chọn từ
+                    state.selectedWordId = wordId;
+                    updateSelectionAndFocus();
                 });
                 window.addEventListener("resize", () => {
                     if (state.currentPage === "game") {
@@ -3121,15 +3769,34 @@ const checkSelectedWord = async () => {
                     if (state.currentPage === "game") saveGameState();
                 });
 
-                const initGame = (puzzleId) => {
-                    const puzzle = getPuzzles()[puzzleId];
+                const initGame = (data) => {
+                    let puzzleId, source;
+
+                    // Hỗ trợ cả cách gọi cũ (chỉ string ID) và cách gọi mới (object)
+                    if (typeof data === "object" && data !== null) {
+                        puzzleId = data.id;
+                        source = data.source;
+                    } else {
+                        puzzleId = data;
+                        source = "local";
+                    }
+
+                    let puzzle;
+                    if (source === "server") {
+                        puzzle = state.serverPuzzles[puzzleId];
+                    } else {
+                        puzzle = getPuzzles()[puzzleId];
+                    }
+
                     if (!puzzle) {
                         showToast("Lỗi: Không tìm thấy bộ đề.", "error");
                         switchView("lobby");
                         return;
                     }
+
                     state.currentPuzzleId = puzzleId;
-                    state.words = puzzle.arrangedWords;
+                    // Nếu đề server có arrangedWords thì dùng, nếu không thì fallback về words (nhưng thường đề game phải có arranged)
+                    state.words = puzzle.arrangedWords || puzzle.words;
                     state.isGameFinished = false;
                     state.solvedWords.clear();
                     state.revealedLetters.clear();
