@@ -314,7 +314,7 @@
          
          const ITEM_CONFIG = {
              weapon: { name: 'Vũ Khí Gai', baseRespawn: 10000, type: 'neutral', desc: 'Nhận một lớp gai tồn tại trong 5s. Va chạm với đối thủ sẽ gây sát thương và phá vỡ gai. Gai cũng sẽ vỡ khi chặn các sát thương khác.', stats: { 'Thời gian': '5s', 'Hiệu ứng': '1 lần tấn công/phòng thủ' } }, 
-             health: { name: 'Hồi Máu', baseRespawn: 10000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
+             //health: { name: 'Hồi Máu', baseRespawn: 10000, type: 'neutral', desc: 'Hồi lại 1 mạng nếu chưa đầy máu.', stats: { 'Hồi phục': '+1 Mạng' } }, 
              bomb: { name: 'Bom', baseRespawn: 5000, type: 'debuff', desc: 'Đặt một quả bom trên bản đồ. Đối thủ của người nhặt sẽ bị mất mạng nếu chạm phải.', stats: {} },
              shield: { name: 'Khiên', baseRespawn: 10000, type: 'neutral', desc: 'Nhận 1 lớp khiên chặn đòn tấn công hoặc hiệu ứng bất lợi tiếp theo.', stats: { 'Hiệu ứng': 'Chặn 1 đòn' } }, 
              reflectiveCloak: { name: 'Áo Choàng Phản', baseRespawn: 15000, type: 'buff', desc: 'Tồn tại 10s hoặc đến khi bị tấn công, sẽ phản lại sát thương cho đối thủ.', stats: { 'Thời gian': '10s', 'Hiệu ứng': '1 lần phản đòn'} },
@@ -604,63 +604,84 @@
          }
          
          class PlayerController {
-             constructor(name, color, initialBall) { this.name = name; this.color = color; this.lives = 5; this.balls = [initialBall]; this.hasSpikeWallImmunity = false; this.armor = []; this.invincibleUntil = null; this.sizeEffect = null; this.speedMultiplier = 1.0; this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null, snare: null }; this.cannotEatUntil = null; this.snaredUntil = null; this.score = 0;this.hasThieuThanBuff = false;      // Đã nhặt vật phẩm Thiêu Thân chưa?
-                 this.isThieuThanActive = false;     
-              this.hasPoisonBuffUntil = null; // Thời gian hiệu lực của buff độc
-         this.poisonHits = 0;           // Số lần đã chạm vào đối thủ
-         this.isPoisonedUntil = null;   // Thời gian người chơi bị dính độc
-             }
+             constructor(name, color, initialBall) { 
+        this.name = name; 
+        this.color = color; 
+        // this.lives = 5; // FIX: Bỏ dòng này hoặc để nó không dùng đến nữa
+        this.balls = [initialBall]; 
+        this.hasSpikeWallImmunity = false; 
+        this.armor = []; 
+        this.invincibleUntil = null; 
+        this.sizeEffect = null; 
+        this.speedMultiplier = 1.0; 
+        this.effectTimeouts = { size: null, speed: null, shield: null, invincible: null, cannotEat: null, reflectiveCloak: null, weapon: null, snare: null, superSpike: null }; // Thêm superSpike vào đây cho chắc
+        this.cannotEatUntil = null; 
+        this.snaredUntil = null; 
+        this.score = 0;
+        this.hasThieuThanBuff = false;
+        this.isThieuThanActive = false;     
+        this.hasPoisonBuffUntil = null; 
+        this.poisonHits = 0;           
+        this.isPoisonedUntil = null;   
+    }
              
-             takeDamage(ball, attacker = null, isReflectedDamage = false) {
-                 const now = Date.now();
-                 if (this.invincibleUntil && now < this.invincibleUntil) return false;
-         
-                 const realArmorIndex = this.armor.findIndex(type => type !== 'weapon');
-         
-         if (realArmorIndex > -1) {
-         // Gỡ bỏ loại giáp đã tìm thấy
-         const armorType = this.armor.splice(realArmorIndex, 1)[0]; 
-         if (armorType === 'shield') {
-         const shieldData = items['shield'];
-         if (shieldData) {
-             shieldData.cooldownEndTime = Date.now() + shieldData.currentRespawn;
-             itemSpawnTimeouts.push(setTimeout(() => spawnItem('shield'), shieldData.currentRespawn));
-         }
-         }
-         if (armorType === 'reflectiveCloak') {
-         clearTimeout(this.effectTimeouts.reflectiveCloak);
-         }
-         triggerEffect(ball.x, ball.y, ITEM_COLORS[armorType] || this.color, { count: 25, speed: 5 });
-         
-         if (!isReflectedDamage && (armorType === 'reflectiveCloak') && attacker && attacker.balls.length > 0) {
-         attacker.takeDamage(attacker.balls[0], this, true);
-         }
-         updateLivesUI();
-         return false;
-         }
-         
-                // Logic mới
-         this.lives--; 
-         this.invincibleUntil = now + 2000; 
-         updateLivesUI();
-         
-         // Cộng điểm cho người tấn công
-         if (attacker) {
-         attacker.score++;
-         updateScoreUI();
-         if (attacker.score >= 10) {
-         endGame(false, attacker); // Thắng ngay khi đủ 5 điểm
-         return true;
-         }
-         }
-         
-         if (this.lives <= 0) { 
-         triggerDeath(this); 
-         } else { 
-         pauseGameForEffect({ duration: 1200, shake: 5 }); 
-         } 
-         return true;
-                 } 
+            takeDamage(ball, attacker = null, isReflectedDamage = false) {
+        const now = Date.now();
+        if (this.invincibleUntil && now < this.invincibleUntil) return false;
+
+        // Ưu tiên trừ giáp trước
+        const realArmorIndex = this.armor.findIndex(type => type !== 'weapon' && type !== 'superSpike'); // Giữ lại vũ khí, chỉ trừ các loại giáp phòng thủ
+
+        if (realArmorIndex > -1) {
+            // Gỡ bỏ loại giáp đã tìm thấy (Cơ chế: Giáp chặn ghi điểm)
+            const armorType = this.armor.splice(realArmorIndex, 1)[0]; 
+            if (armorType === 'shield') {
+                const shieldData = items['shield'];
+                if (shieldData) {
+                    shieldData.cooldownEndTime = Date.now() + shieldData.currentRespawn;
+                    itemSpawnTimeouts.push(setTimeout(() => spawnItem('shield'), shieldData.currentRespawn));
+                }
+            }
+            if (armorType === 'reflectiveCloak') {
+                clearTimeout(this.effectTimeouts.reflectiveCloak);
+                // Hồi chiêu cho áo choàng
+                const itemData = items['reflectiveCloak'];
+                if (itemData) {
+                     itemData.cooldownEndTime = Date.now() + itemData.currentRespawn;
+                     itemSpawnTimeouts.push(setTimeout(() => spawnItem('reflectiveCloak'), itemData.currentRespawn));
+                }
+            }
+            triggerEffect(ball.x, ball.y, ITEM_COLORS[armorType] || this.color, { count: 25, speed: 5 });
+
+            if (!isReflectedDamage && (armorType === 'reflectiveCloak') && attacker && attacker.balls.length > 0) {
+                attacker.takeDamage(attacker.balls[0], this, true);
+            }
+            updateLivesUI();
+            return false; // Có giáp -> Không bị ghi điểm
+        }
+
+        // Nếu không có giáp: Bị dính đòn
+        this.invincibleUntil = now + 2000; 
+        
+        // FIX: Xử lý ghi điểm
+        if (attacker) {
+            // Kiểm tra thời gian để nhân đôi điểm (30s cuối)
+            const remainingTime = Math.max(0, gameEndTime - Date.now());
+            const pointsToAdd = remainingTime <= 30000 ? 2 : 1; // FIX: x2 điểm ở 30s cuối
+            
+            attacker.score += pointsToAdd;
+            updateScoreUI();
+            
+            // FIX: Bỏ check thắng sớm (attacker.score >= 10)
+        }
+
+        // Hiệu ứng khi bị đánh trúng (nhưng không chết)
+        triggerEffect(ball.x, ball.y, this.color, { count: 30, speed: 6 });
+        pauseGameForEffect({ duration: 500, shake: 5 }); 
+        
+        // FIX: Bỏ triggerDeath vì không còn mạng để hết
+        return true;
+    } 
              
              addBall() {
                  if (this.balls.length >= 3) return;
@@ -794,32 +815,29 @@
          };
          
          function updateLivesUI() {
-             if (!players[0] || !players[1]) return;
-             const p1LivesDiv = document.getElementById('player1-lives');
-             const p2LivesDiv = document.getElementById('player2-lives');
-             
-             const renderLives = (container, player, colorClass) => {
-                 container.innerHTML = '';
-                 // Render hearts
-                 for (let i = 0; i < 5; i++) {
-                     if (i < player.lives) {
-                         container.innerHTML += `<div class="w-4 h-4 ${colorClass} rounded-full"></div>`;
-                     } else {
-                         container.innerHTML += `<div class="w-4 h-4 bg-gray-700 rounded-full"></div>`;
-                     }
-                 }
-                 // Render armor icons
-                 const armorContainer = document.createElement('div');
-                 armorContainer.className = 'flex items-center space-x-1 ml-2';
-                 player.armor.forEach(armorType => {
-                      armorContainer.innerHTML += `<div class="w-4 h-4">${ICONS[armorType].replace('h-8 w-8', 'h-4 w-4')}</div>`;
-                 });
-                 container.appendChild(armorContainer);
-             };
-         
-             renderLives(p1LivesDiv, players[0], 'bg-blue-500');
-             renderLives(p2LivesDiv, players[1], 'bg-red-500');
-         }
+    if (!players[0] || !players[1]) return;
+    const p1LivesDiv = document.getElementById('player1-lives');
+    const p2LivesDiv = document.getElementById('player2-lives');
+    
+    const renderLives = (container, player, colorClass) => {
+        container.innerHTML = '';
+        // FIX: Bỏ vòng lặp vẽ trái tim (lives)
+        
+        // Chỉ vẽ icon Giáp
+        const armorContainer = document.createElement('div');
+        armorContainer.className = 'flex items-center space-x-1 ml-0'; // Sửa ml-2 thành ml-0
+        player.armor.forEach(armorType => {
+             // Chỉ hiện các icon không phải vũ khí tấn công (để coi như lớp phòng thủ)
+             if(armorType !== 'weapon' && armorType !== 'superSpike') {
+                 armorContainer.innerHTML += `<div class="w-5 h-5 bg-gray-800 rounded-full p-0.5 border border-gray-600">${ICONS[armorType].replace('h-8 w-8', 'h-full w-full')}</div>`;
+             }
+        });
+        container.appendChild(armorContainer);
+    };
+
+    renderLives(p1LivesDiv, players[0], 'bg-blue-500');
+    renderLives(p2LivesDiv, players[1], 'bg-red-500');
+}
          function updateScoreUI() {
          if (!players[0] || !players[1]) return;
          const p1ScoreDiv = document.getElementById('player1-score');
@@ -862,7 +880,7 @@
          const getAllPlayerBalls = () => players.flatMap(p => p.balls);
          
          function handleDiagonalWallCollision(ball) { if (!activeDiagonalWall) return; const p1 = activeDiagonalWall.p1; const p2 = activeDiagonalWall.p2; const p1_to_player = { x: ball.x - p1.x, y: ball.y - p1.y }; const p1_to_p2 = { x: p2.x - p1.x, y: p2.y - p1.y }; const len_p1_p2_sq = p1_to_p2.x * p1_to_p2.x + p1_to_p2.y * p1_to_p2.y; const dot = p1_to_player.x * p1_to_p2.x + p1_to_player.y * p1_to_p2.y; const t = Math.max(0, Math.min(1, dot / len_p1_p2_sq)); const closestPoint = { x: p1.x + t * p1_to_p2.x, y: p1.y + t * p1_to_p2.y }; const distSq = (ball.x - closestPoint.x)**2 + (ball.y - closestPoint.y)**2; if (distSq < ball.radius**2) { const dist = Math.sqrt(distSq); const overlap = ball.radius - dist; if (dist > 0) { ball.x += overlap * (ball.x - closestPoint.x) / dist; ball.y += overlap * (ball.y - closestPoint.y) / dist; } const v = { x: ball.dx, y: ball.dy }; const n = { ...activeDiagonalWall.normal }; const side_check = (ball.x - p1.x) * n.y - (ball.y - p1.y) * n.x; if (side_check > 0) { n.x *= -1; n.y *= -1; } const dot_v_n = v.x * n.x + v.y * n.y; ball.dx = v.x - 2 * dot_v_n * n.x; ball.dy = v.y - 2 * dot_v_n * n.y; activeDiagonalWall.hits--; triggerEffect(closestPoint.x, closestPoint.y, ITEM_COLORS.diagonalWall, { count: 10, speed: 2 }); if (activeDiagonalWall.hits <= 0) { triggerEffect(closestPoint.x, closestPoint.y, ITEM_COLORS.diagonalWall, { count: 30, speed: 5 }); activeDiagonalWall = null; } } }
-         function handleWallCollisions(ball) { const now = Date.now(); let bounced = false; if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) { ball.dx = -ball.dx; bounced = true; } if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) { ball.dy = -ball.dy; bounced = true; } ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x)); ball.y = Math.max(ball.radius, Math.min(canvas.height - ball.radius, ball.y)); if (activeSpikeWall && bounced) { const sideHit = (ball.x - ball.radius <= 1 && activeSpikeWall.side === 'left') || (ball.x + ball.radius >= canvas.width - 1 && activeSpikeWall.side === 'right') || (ball.y - ball.radius <= 1 && activeSpikeWall.side === 'top') || (ball.y + ball.radius >= canvas.height - 1 && activeSpikeWall.side === 'bottom'); if (sideHit) { if (ball.controller !== activeSpikeWall.owner) { ball.controller.takeDamage(ball); triggerEffect(ball.x, ball.y, ITEM_COLORS.wallSpikes, { count: 20, speed: 5 }); activeSpikeWall = null; updatePlayerStatusUI(); } } } }
+         function handleWallCollisions(ball) { const now = Date.now(); let bounced = false; if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) { ball.dx = -ball.dx; bounced = true; } if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) { ball.dy = -ball.dy; bounced = true; } ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x)); ball.y = Math.max(ball.radius, Math.min(canvas.height - ball.radius, ball.y)); if (activeSpikeWall && bounced) { const sideHit = (ball.x - ball.radius <= 1 && activeSpikeWall.side === 'left') || (ball.x + ball.radius >= canvas.width - 1 && activeSpikeWall.side === 'right') || (ball.y - ball.radius <= 1 && activeSpikeWall.side === 'top') || (ball.y + ball.radius >= canvas.height - 1 && activeSpikeWall.side === 'bottom'); if (sideHit) { if (ball.controller !== activeSpikeWall.owner) { ball.controller.takeDamage(ball, activeSpikeWall.owner);triggerEffect(ball.x, ball.y, ITEM_COLORS.wallSpikes, { count: 20, speed: 5 }); activeSpikeWall = null; updatePlayerStatusUI(); } } } }
           function deactivateThieuThan(player) {
              if (!player.hasThieuThanBuff) return; // Thoát nếu chưa nhặt buff
          
@@ -1250,8 +1268,9 @@
              p1Div.innerHTML = p1Html;
              p2Div.innerHTML = p2Html;
          }
-         function calculateCurrentMultiplier(remainingTime) { const stage2Start = 45000; const stage3Start = 15000; const stage4Start = 5000; if (remainingTime > stage2Start) { const progress = (TOTAL_GAME_TIME - remainingTime) / (TOTAL_GAME_TIME - stage2Start); return 1 + progress; } else if (remainingTime > stage3Start) { const progress = (stage2Start - remainingTime) / (stage2Start - stage3Start); return 2 + progress; } else if (remainingTime > stage4Start) { const progress = (stage3Start - remainingTime) / (stage3Start - stage4Start); return 3 + progress; } else { return 4; } }
-         
+function calculateCurrentMultiplier(remainingTime) { 
+    return 1; // FIX: Tốc độ luôn cố định là 1.5, không tăng dần
+}         
          function drawTimer() { const remaining = Math.max(0, gameEndTime - Date.now()); const remainingPercent = remaining / TOTAL_GAME_TIME; if (remaining > 0) { let color = 'rgba(255, 255, 255, 0.08)'; if(remaining <= 5000) color = 'rgba(239, 68, 68, 0.2)'; else if(remaining <= 15000) color = 'rgba(239, 68, 68, 0.15)'; else if(remaining <= 45000) color = 'rgba(239, 68, 68, 0.1)'; ctx.fillStyle = color; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#2d3748'; const wipeHeight = canvas.height * (1 - remainingPercent); ctx.fillRect(0, 0, canvas.width, wipeHeight); } const seconds = Math.ceil(remaining / 1000); ctx.font = `bold ${canvas.width / 4}px Arial`; ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(seconds, canvas.width / 2, canvas.height / 2); }
          function drawSpikeWall() { if (!activeSpikeWall) return; ctx.fillStyle = ITEM_COLORS.wallSpikes; const spikeSize = canvas.width / 40; const numSpikes = Math.floor(canvas.width / spikeSize); for (let i = 0; i < numSpikes; i++) { const pos = i * spikeSize + spikeSize / 2; ctx.beginPath(); if (activeSpikeWall.side === 'top') { ctx.moveTo(pos - spikeSize / 2, 0); ctx.lineTo(pos, spikeSize); ctx.lineTo(pos + spikeSize / 2, 0); } else if (activeSpikeWall.side === 'bottom') { ctx.moveTo(pos - spikeSize / 2, canvas.height); ctx.lineTo(pos, canvas.height - spikeSize); ctx.lineTo(pos + spikeSize / 2, canvas.height); } else if (activeSpikeWall.side === 'left') { ctx.moveTo(0, pos - spikeSize / 2); ctx.lineTo(spikeSize, pos); ctx.lineTo(0, pos + spikeSize / 2); } else if (activeSpikeWall.side === 'right') { ctx.moveTo(canvas.width, pos - spikeSize / 2); ctx.lineTo(canvas.width - spikeSize, pos); ctx.lineTo(canvas.width, pos + spikeSize / 2); } ctx.fill(); } }
          
@@ -1274,39 +1293,58 @@
                  if (activeLaser && Date.now() > activeLaser.endTime) activeLaser = null;
              }
              if(activeMissile) { activeMissile.draw(); activeMissile.update(); }
-         if(activeDart) {
-         activeDart.draw();
-         if (activeDart.update()) { // update() trả về true nếu hết hạn
-             activeDart = null;
-         } else {
-             const opponent = players.find(p => p !== activeDart.owner);
-             if (opponent) {
-                 for (const ball of opponent.balls) {
-                     if (Math.hypot(activeDart.x - ball.x, activeDart.y - ball.y) < activeDart.radius + ball.radius) {
-                         // Phi tiêu xuyên giáp, không bị phản, nên ta trừ máu trực tiếp
-                         opponent.lives--;
-                         opponent.invincibleUntil = Date.now() + 2000;
-                         if (activeDart.owner) activeDart.owner.score++;
-                         updateLivesUI();
-                         updateScoreUI();
-                         triggerEffect(activeDart.x, activeDart.y, ITEM_COLORS.dart, { count: 20, speed: 4 });
-                         if (opponent.lives <= 0) endGame(false, activeDart.owner);
-                         activeDart = null; // Xóa phi tiêu khi trúng
-                         break;
-                     }
-                 }
-             }
-         }
-         }
+         // TÌM ĐOẠN LOGIC DART TRONG gameLoop VÀ SỬA:
+if(activeDart) {
+    activeDart.draw();
+    if (activeDart.update()) { 
+        activeDart = null;
+    } else {
+        const opponent = players.find(p => p !== activeDart.owner);
+        if (opponent) {
+            for (const ball of opponent.balls) {
+                if (Math.hypot(activeDart.x - ball.x, activeDart.y - ball.y) < activeDart.radius + ball.radius) {
+                    // FIX: Phi tiêu xuyên giáp -> Ghi điểm trực tiếp
+                    // opponent.lives--; // BỎ
+                    
+                    // Logic ghi điểm
+                    const remainingTime = Math.max(0, gameEndTime - Date.now());
+                    const points = remainingTime <= 30000 ? 2 : 1;
+                    if (activeDart.owner) activeDart.owner.score += points;
+                    
+                    opponent.invincibleUntil = Date.now() + 2000;
+                    
+                    updateScoreUI(); // Cập nhật điểm
+                    
+                    triggerEffect(activeDart.x, activeDart.y, ITEM_COLORS.dart, { count: 20, speed: 4 });
+                    // if (opponent.lives <= 0) endGame(false, activeDart.owner); // BỎ
+                    activeDart = null; 
+                    break;
+                }
+            }
+        }
+    }
+}
          
-         // Xử lý hiệu ứng độc (Poison) hết hạn
-         players.forEach(player => {
-         if (player.isPoisonedUntil && Date.now() >= player.isPoisonedUntil) {
-             player.takeDamage(player.balls[0]); // Trừ 1 mạng
-             player.isPoisonedUntil = null;
-             triggerEffect(player.balls[0].x, player.balls[0].y, ITEM_COLORS.poison, { count: 30, speed: 3 });
-         }
-         });
+         // TÌM ĐOẠN XỬ LÝ POISON TRONG gameLoop:
+// Xử lý hiệu ứng độc (Poison) hết hạn
+players.forEach(player => {
+    if (player.isPoisonedUntil && Date.now() >= player.isPoisonedUntil) {
+        // player.takeDamage(player.balls[0]); // BỎ DÒNG CŨ NÀY ĐI VÌ NÓ SẼ TÍNH DAMAGE THƯỜNG
+        
+        // FIX: Xử lý riêng cho độc nổ: Đối thủ (người đầu độc) được điểm
+        const opponent = players.find(p => p !== player);
+        if (opponent) {
+             const remainingTime = Math.max(0, gameEndTime - Date.now());
+             const points = remainingTime <= 30000 ? 2 : 1;
+             opponent.score += points;
+             updateScoreUI();
+        }
+
+        player.isPoisonedUntil = null;
+        triggerEffect(player.balls[0].x, player.balls[0].y, ITEM_COLORS.poison, { count: 30, speed: 3 });
+        pauseGameForEffect({ duration: 300, shake: 3 });
+    }
+});
              // LOGIC KÍCH HOẠT VÀ DI CHUYỂN CỦA THIÊU THÂN
              players.forEach(player => {
                  const hasWeapon = player.armor.includes('weapon');
@@ -1395,68 +1433,58 @@
              Object.values(itemDisappearTimeouts).forEach(clearTimeout);
          }
          
-         // Hàm endGame đã được cập nhật
-         function endGame(isTimeUp = false, winnerPlayer = null) {
-         requestWakeLock();
-         stopGame();
-         gameOverScreen.classList.remove('hidden'); 
-         document.getElementById('top-ui').classList.add('invisible');
-         document.getElementById('bottom-ui').classList.add('invisible');
-         
-         let winner = ''; 
-         const p1 = players.find(p => p.name === 'Người chơi 1'); 
-         const p2 = players.find(p => p.name === 'Người chơi 2'); 
-         const p1Lives = p1 ? Math.max(0, p1.lives) : 0; 
-         const p2Lives = p2 ? Math.max(0, p2.lives) : 0;
-         const p1Score = p1 ? p1.score : 0;
-         const p2Score = p2 ? p2.score : 0;
-         
-         // Ưu tiên 1: Người thắng được xác định trước (do đủ 5 điểm hoặc hạ hết mạng đối thủ)
-         if (winnerPlayer) {
-          winner = winnerPlayer.name === 'Người chơi 1' ? 'p1' : 'p2';
-         } 
-         // Ưu tiên 2: Hết giờ thì xét điểm trước, sau đó tới mạng
-         else if (isTimeUp) { 
-         if (p1Score > p2Score) {
-             winner = 'p1';
-         } else if (p2Score > p1Score) {
-             winner = 'p2';
-         } else { // Nếu điểm bằng nhau, xét mạng
-             if (p1Lives > p2Lives) winner = 'p1'; 
-             else if (p2Lives > p1Lives) winner = 'p2'; 
-             else winner = 'draw'; // Bằng cả điểm và mạng thì hòa
-         }
-         }
-         
-         winnerText.className = 'text-4xl font-bold mb-4';
-         if (winner === 'p1') { 
-         winnerText.textContent = `Người chơi 1 chiến thắng!`; 
-         winnerText.classList.add('text-blue-500'); 
-         } else if (winner === 'p2') { 
-         winnerText.textContent = `Người chơi 2 chiến thắng!`; 
-         winnerText.classList.add('text-red-500'); 
-         } else { 
-         winnerText.textContent = `Hòa!`; 
-         }
-         
-         // Cập nhật bảng kết quả để hiển thị cả điểm và mạng
-         const resultsDiv = document.getElementById('results-details');
-         resultsDiv.innerHTML = `
-         <div class="flex justify-around items-center text-center">
-             <div class="p-4 bg-gray-800 rounded-lg w-2/5">
-                 <p class="font-bold text-blue-500">Người chơi 1</p>
-                 <p>Điểm: <span class="font-bold text-2xl">${p1Score}</span></p>
-                 <p class="text-sm">Mạng còn lại: <span class="font-bold">${p1Lives}</span></p>
-             </div>
-             <div class="text-2xl font-bold px-2">VS</div>
-             <div class="p-4 bg-gray-800 rounded-lg w-2/5">
-                 <p class="font-bold text-red-500">Người chơi 2</p>
-                 <p>Điểm: <span class="font-bold text-2xl">${p2Score}</span></p>
-                 <p class="text-sm">Mạng còn lại: <span class="font-bold">${p2Lives}</span></p>
-             </div>
-         </div>
-         `;
-         }
+        // TÌM HÀM NÀY VÀ THAY THẾ TOÀN BỘ BẰNG:
+function endGame(isTimeUp = false, winnerPlayer = null) {
+    requestWakeLock();
+    stopGame();
+    gameOverScreen.classList.remove('hidden'); 
+    document.getElementById('top-ui').classList.add('invisible');
+    document.getElementById('bottom-ui').classList.add('invisible');
+    
+    let winner = ''; 
+    const p1 = players.find(p => p.name === 'Người chơi 1'); 
+    const p2 = players.find(p => p.name === 'Người chơi 2'); 
+    
+    const p1Score = p1 ? p1.score : 0;
+    const p2Score = p2 ? p2.score : 0;
+    
+    // FIX: Logic xác định thắng thua chỉ dựa vào điểm số khi hết giờ
+    if (p1Score > p2Score) {
+        winner = 'p1';
+    } else if (p2Score > p1Score) {
+        winner = 'p2';
+    } else { 
+        winner = 'draw'; 
+    }
+    
+    winnerText.className = 'text-4xl font-bold mb-4';
+    if (winner === 'p1') { 
+        winnerText.textContent = `Người chơi 1 chiến thắng!`; 
+        winnerText.classList.add('text-blue-500'); 
+    } else if (winner === 'p2') { 
+        winnerText.textContent = `Người chơi 2 chiến thắng!`; 
+        winnerText.classList.add('text-red-500'); 
+    } else { 
+        winnerText.textContent = `Hòa!`; 
+    }
+    
+    // FIX: Cập nhật bảng kết quả bỏ phần hiển thị mạng
+    const resultsDiv = document.getElementById('results-details');
+    resultsDiv.innerHTML = `
+    <div class="flex justify-around items-center text-center">
+        <div class="p-4 bg-gray-800 rounded-lg w-2/5">
+            <p class="font-bold text-blue-500">Người chơi 1</p>
+            <p>Điểm: <span class="font-bold text-4xl">${p1Score}</span></p>
+        </div>
+        <div class="text-2xl font-bold px-2">VS</div>
+        <div class="p-4 bg-gray-800 rounded-lg w-2/5">
+            <p class="font-bold text-red-500">Người chơi 2</p>
+            <p>Điểm: <span class="font-bold text-4xl">${p2Score}</span></p>
+        </div>
+    </div>
+    
+    `;
+}
          
          function init() {
          requestWakeLock();
@@ -1677,26 +1705,18 @@
          }
          
          function finalizeSelectionsAndStart() {
-             banPickScreen.classList.add('hidden');
-             const allItems = Object.keys(ITEM_CONFIG);
-             const banned = [...banPickState.p1Bans, ...banPickState.p2Bans];
-             const picked = [...banPickState.p1Picks, ...banPickState.p2Picks];
-             let availableItems = allItems.filter(type => !banned.includes(type) && !picked.includes(type) && ITEM_CONFIG[type].type !== 'neutral');
-             
-             let commonItems = [];
-             while(commonItems.length < 2 && availableItems.length > 0) {
-                 const randomIndex = Math.floor(Math.random() * availableItems.length);
-                 commonItems.push(availableItems.splice(randomIndex, 1)[0]);
-             }
-             
-             const activeItemTypes = {};
-             ['health', 'weapon', 'shield'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
-             banPickState.p1Picks.forEach(type => activeItemTypes[type] = { owner: 'p1' });
-             banPickState.p2Picks.forEach(type => activeItemTypes[type] = { owner: 'p2' });
-             commonItems.forEach(type => activeItemTypes[type] = { owner: 'neutral' });
-             
-             startCountdown(activeItemTypes);
-         }
+    banPickScreen.classList.add('hidden');
+    // FIX: Bỏ logic chọn random commonItems
+    
+    const activeItemTypes = {};
+    // FIX: Chỉ giữ lại weapon và shield làm mặc định, BỎ 'health'
+    ['weapon', 'shield'].forEach(type => activeItemTypes[type] = { owner: 'neutral' });
+    
+    banPickState.p1Picks.forEach(type => activeItemTypes[type] = { owner: 'p1' });
+    banPickState.p2Picks.forEach(type => activeItemTypes[type] = { owner: 'p2' });
+    
+    startCountdown(activeItemTypes);
+}
          
          function startCountdown(activeItemTypes) {
              const countdownScreen = document.getElementById('countdown-screen');
