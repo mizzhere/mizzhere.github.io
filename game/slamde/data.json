@@ -1,1 +1,73 @@
-[]
+[
+  {
+    "id": "server_1768493309101_855",
+    "title": "a",
+    "highScore": 0,
+    "arrangedWords": [
+      {
+        "id": 0,
+        "word": "TUONGTAN",
+        "clue": "Biết rõ đến mức không còn gì để biết về 1 vấn đề",
+        "direction": "horizontal",
+        "row": 7,
+        "col": 0
+      },
+      {
+        "id": 1,
+        "word": "KHUATTAT",
+        "clue": "Hành động không ngay thẳng, lén lút",
+        "direction": "vertical",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 2,
+        "word": "NHANNHIN",
+        "clue": "Tính cách chấp nhận và chịu đựng",
+        "direction": "vertical",
+        "row": 0,
+        "col": 7
+      },
+      {
+        "id": 3,
+        "word": "NUCNO",
+        "clue": "Khóc to và muốn giãi bày",
+        "direction": "vertical",
+        "row": 3,
+        "col": 2
+      },
+      {
+        "id": 4,
+        "word": "KHOALUAN",
+        "clue": "nghiên cứu và bàn luận sâu",
+        "direction": "horizontal",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 5,
+        "word": "TACTHANH",
+        "clue": "Mong ước thành đôi từ 2 bên gia đình",
+        "direction": "horizontal",
+        "row": 5,
+        "col": 0
+      },
+      {
+        "id": 6,
+        "word": "ANNINH",
+        "clue": "Về việc đảm bảo an toàn ở 1 khu vực nào đó",
+        "direction": "horizontal",
+        "row": 3,
+        "col": 0
+      },
+      {
+        "id": 7,
+        "word": "ANSI",
+        "clue": "Người bí ẩn chỉ nghe thấy tên chứ chưa thấy bao giờ",
+        "direction": "vertical",
+        "row": 0,
+        "col": 3
+      }
+    ]
+  }
+]
