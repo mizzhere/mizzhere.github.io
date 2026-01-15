@@ -1733,11 +1733,21 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>`;
                     } else {
-                        // VỚI ĐỀ SERVER: Thêm nút Sửa (màu cam) và nút Copy (màu xám)
-                        actionBtnHtml = `
+                        // --- LOGIC MỚI: KIỂM TRA QUYỀN SỬA ---
+                        const ghConfig = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
+                        const canEdit = ghConfig.token && ghConfig.owner && ghConfig.repo;
+
+                        let editButton = "";
+                        if (canEdit) {
+                            editButton = `
             <button class="action-btn edit-puzzle-btn" data-id="${id}" data-source="server" title="Sửa trên Server" style="background: linear-gradient(145deg, #f57c00, #e65100); border-color: #ff9800;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            </button>
+            </button>`;
+                        }
+                        // -------------------------------------
+
+                        actionBtnHtml = `
+            ${editButton}
             <button class="action-btn copy-puzzle-btn" data-id="${id}" title="Sao chép về máy" style="background: #546e7a; border-color: #78909c;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             </button>`;
@@ -1755,69 +1765,119 @@
         </div>`;
                     puzzleListContainer.appendChild(card);
                 };
-                // --- TÌM VÀ THAY THẾ puzzleListContainer.addEventListener ---
+                // --- TÌM VÀ THAY THẾ TOÀN BỘ puzzleListContainer.addEventListener ---
                 puzzleListContainer.addEventListener("click", (e) => {
                     const playBtn = e.target.closest(".play-puzzle-btn");
                     const editBtn = e.target.closest(".edit-puzzle-btn");
                     const copyBtn = e.target.closest(".copy-puzzle-btn");
 
                     if (playBtn) {
-                        const source = playBtn.dataset.source; // 'local' hoặc 'server'
+                        const source = playBtn.dataset.source;
                         switchView("game", { id: playBtn.dataset.id, source: source });
                     }
+
+                    // --- LOGIC SỬA MỚI ---
                     if (editBtn) {
-                        switchView("creation", editBtn.dataset.id);
+                        const source = editBtn.dataset.source;
+                        if (source === "server") {
+                            const serverId = editBtn.dataset.id;
+                            const puzzleData = state.serverPuzzles[serverId];
+                            if (puzzleData) {
+                                // 1. Set ID đang sửa
+                                state.editingServerId = serverId;
+                                state.currentPuzzleId = null; // Reset Local ID
+
+                                // 2. Chuyển sang màn hình tạo (không truyền ID để tránh initCreation tìm trong LocalStorage)
+                                switchView("creation");
+
+                                // 3. Load dữ liệu vào (Phải làm SAU khi switchView để DOM tồn tại)
+                                setTimeout(() => {
+                                    puzzleTitleInput.value = puzzleData.title;
+                                    state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
+                                        ...w,
+                                        id: i,
+                                    }));
+                                    renderWordForms(); // Render lại list từ
+
+                                    // Cập nhật nút bấm thành Cập nhật
+                                    const upBtn = document.getElementById("upload-github-btn");
+                                    if (upBtn) {
+                                        upBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                            Cập Nhật
+                        `;
+                                        upBtn.style.background = "linear-gradient(145deg, #f57c00, #e65100)";
+                                        upBtn.style.borderColor = "#ff9800";
+                                    }
+                                    showToast(`Đang sửa đề Online: ${puzzleData.title}`, "info");
+                                }, 50);
+                            }
+                        } else {
+                            // Sửa đề Local (giữ nguyên logic cũ)
+                            state.editingServerId = null;
+                            switchView("creation", editBtn.dataset.id);
+                        }
                     }
-                    // Chức năng sao chép đề Server về Local để sửa
+                    // ---------------------
+
                     if (copyBtn) {
                         const serverId = copyBtn.dataset.id;
                         const puzzleData = state.serverPuzzles[serverId];
                         if (puzzleData) {
-                            puzzleTitleInput.value = puzzleData.title + " (Copy)";
-                            // Chuyển format server sang format state
-                            state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
-                                ...w,
-                                id: i,
-                            }));
-                            state.currentPuzzleId = null; // Tạo ID mới khi lưu
+                            // Copy thì coi như tạo mới Local, reset server ID
+                            state.editingServerId = null;
+                            state.currentPuzzleId = null;
+
                             switchView("creation");
-                            showToast("Đã sao chép đề. Hãy lưu lại!", "success");
+
+                            setTimeout(() => {
+                                puzzleTitleInput.value = puzzleData.title + " (Copy)";
+                                state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
+                                    ...w,
+                                    id: i,
+                                }));
+                                renderWordForms();
+                                showToast("Đã sao chép đề. Hãy lưu lại!", "success");
+                            }, 50);
                         }
                     }
                 });
-
+                // --- TÌM VÀ THAY THẾ HÀM initCreation ---
                 const initCreation = (puzzleId = null) => {
-                    // Reset trạng thái server edit nếu không phải do bấm nút Sửa Server gọi
-                    // (Logic ở Lobby đã set editingServerId trước khi gọi switchView, nên ở đây ta chỉ reset UI nếu id truyền vào khác null hoặc undefined)
+                    // Nếu có puzzleId (tức là sửa Local) HOẶC puzzleId là null (Tạo mới)
+                    // Thì ta cần reset giao diện nút Upload về mặc định
+                    // TRỪ KHI: state.editingServerId đang có giá trị (do logic ở Lobby vừa set xong)
 
-                    if (puzzleId === null && state.editingServerId === null) {
-                        // Trường hợp bấm nút "Tạo mới" thuần túy
-                        document.getElementById("upload-github-btn").innerHTML = `Upload`;
-                        document.getElementById("upload-github-btn").style.background =
-                            "linear-gradient(145deg, #7b1fa2, #4a148c)";
+                    if (state.editingServerId) {
+                        // Đang sửa Server -> Không làm gì cả, để logic ở Lobby tự xử lý dữ liệu
+                        state.currentPuzzleId = null;
+                        switchCreationTab("words");
+                        deletePuzzleBtn.style.display = "none";
+                        return;
                     }
 
-                    // Nếu đang Edit Server (đã set ở Lobby), giữ nguyên editingServerId
-                    // Nếu vào đây để Sửa Local hoặc Tạo Mới Local, thì reset editingServerId
-                    if (puzzleId || (puzzleId === null && !state.editingServerId)) {
-                        if (puzzleId) state.editingServerId = null; // Nếu có ID Local -> Reset ID Server
-                    }
-
+                    // Các trường hợp còn lại: Tạo mới hoặc Sửa Local
                     state.currentPuzzleId = puzzleId;
-                    switchCreationTab("words");
+                    switchCreationTab("words"); // Luôn bắt đầu ở tab nhập từ
                     let wordsToRender = [];
                     puzzleTitleInput.value = "";
-                    deletePuzzleBtn.style.display = "none";
+
+                    // Reset nút Upload về trạng thái mặc định (Màu tím)
+                    const upBtn = document.getElementById("upload-github-btn");
+                    if (upBtn) {
+                        upBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload`;
+                        upBtn.style.background = "linear-gradient(145deg, #7b1fa2, #4a148c)";
+                        upBtn.style.borderColor = "#ba68c8";
+                    }
 
                     if (puzzleId) {
+                        // Sửa Local
                         const puzzle = getPuzzles()[puzzleId];
                         if (puzzle) {
                             puzzleTitleInput.value = puzzle.title;
-                            // Nếu đã có arrangedWords, load lại dữ liệu vị trí
                             if (puzzle.arrangedWords) {
                                 wordsToRender = puzzle.arrangedWords.map((w, i) => ({ ...w, id: i }));
                             } else {
-                                // Dữ liệu cũ chưa có arrangedWords
                                 wordsToRender = puzzle.words.map((w, i) => ({
                                     ...w,
                                     id: i,
@@ -1832,7 +1892,8 @@
                             state.currentPuzzleId = null;
                         }
                     } else {
-                        // Thêm từ mẫu
+                        // Tạo Mới Hoàn Toàn
+                        deletePuzzleBtn.style.display = "none";
                         wordsToRender = [
                             {
                                 id: 0,
@@ -1842,14 +1903,7 @@
                                 row: null,
                                 col: null,
                             },
-                            {
-                                id: 1,
-                                word: "HANOI",
-                                clue: "Thủ đô",
-                                direction: "horizontal",
-                                row: null,
-                                col: null,
-                            },
+                            { id: 1, word: "HANOI", clue: "Thủ đô", direction: "horizontal", row: null, col: null },
                         ];
                     }
                     state.words = wordsToRender;
