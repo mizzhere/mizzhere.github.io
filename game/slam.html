@@ -3246,6 +3246,10 @@
                         allSolvedInTurn.forEach((id) => {
                             const w = state.words.find((word) => word.id === id);
                             if (w) {
+                                // --- DÒNG CẦN THÊM VÀO ---
+                                turnScore += w.word.length; // Cộng điểm bằng độ dài từ
+                                // --------------------------
+
                                 for (let i = 0; i < w.word.length; i++) {
                                     let r = w.row,
                                         c = w.col;
@@ -3253,7 +3257,7 @@
                                     else r += i;
                                     const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
                                     if (cell) {
-                                        cell.classList.add("selected-word"); // Gán class này để opacity = 1
+                                        cell.classList.add("selected-word");
                                     }
                                 }
                             }
