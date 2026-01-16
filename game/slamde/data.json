@@ -69,5 +69,92 @@
         "col": 3
       }
     ]
+  },
+  {
+    "id": "server_1768529082610_789",
+    "title": "hkk",
+    "highScore": 0,
+    "arrangedWords": [
+      {
+        "id": 0,
+        "word": "THANHMINH",
+        "clue": "Tết đầu năm, còn gọi là ngày Tảo mộ",
+        "direction": "vertical",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 1,
+        "word": "THUONGTRUONG",
+        "clue": "Trao đổi kinh doanh nhẹ nhàng",
+        "direction": "horizontal",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 2,
+        "word": "NHONGNHEO",
+        "clue": "Mè nheo dễ thương",
+        "direction": "vertical",
+        "row": 0,
+        "col": 4
+      },
+      {
+        "id": 3,
+        "word": "HUONGLO",
+        "clue": "Đường ở làng, xã",
+        "direction": "horizontal",
+        "row": 8,
+        "col": 2
+      },
+      {
+        "id": 4,
+        "word": "TUNGDUONG",
+        "clue": "Cây Phi lao",
+        "direction": "vertical",
+        "row": 0,
+        "col": 6
+      },
+      {
+        "id": 5,
+        "word": "UONGPHI",
+        "clue": "Bỏ đi một cách đáng tiếc",
+        "direction": "vertical",
+        "row": 0,
+        "col": 2
+      },
+      {
+        "id": 6,
+        "word": "NHONNHOT",
+        "clue": "Sắc mặt kém, yếu",
+        "direction": "horizontal",
+        "row": 2,
+        "col": 2
+      },
+      {
+        "id": 7,
+        "word": "GIATHUYET",
+        "clue": "Những suy đoán không thực tế trong khoa học",
+        "direction": "vertical",
+        "row": 0,
+        "col": 11
+      },
+      {
+        "id": 8,
+        "word": "HANHUYEN",
+        "clue": "Tâm sự sâu sắc, tình cảm",
+        "direction": "horizontal",
+        "row": 5,
+        "col": 2
+      },
+      {
+        "id": 9,
+        "word": "TRANAN",
+        "clue": "Làm cho yên lòng, hết hoang mang lo sợ",
+        "direction": "vertical",
+        "row": 2,
+        "col": 9
+      }
+    ]
   }
 ]
