@@ -3268,7 +3268,7 @@
                             if (!cell.classList.contains("is-solved")) {
                                 // Xóa chữ ngay lập tức, bất chấp animation gõ đang chạy
                                 cell.querySelector(".cell-front").textContent = "";
-                                cell.classList.remove("anim-typing", "selected-word"); // Xóa class gõ
+                                cell.classList.remove("anim-typing"); // Xóa class gõ
                             }
                         });
 
@@ -3294,6 +3294,7 @@
                     saveGameState();
                     performAutoReveal();
                 };
+
                 const handleWordTimeout = () => {
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     showToast("Hết giờ!", "error");
@@ -3885,27 +3886,17 @@
                 const handleKeyPress = (key) => {
                     if (state.slamModeActive) {
                         if (key === "Enter") {
-                            const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
-                            // Kiểm tra class thay vì kiểm tra text để chính xác hơn
-                            if (enterBtn && enterBtn.classList.contains("action-cancel")) {
-                                deselectWord(); // Hủy chọn
-                            } else if (state.selectedWordId !== null) {
-                                checkSelectedWord();
-                            }
+                            if (state.selectedWordId !== null) checkSelectedWord();
                         } else handleWordInput(key);
                         return;
                     }
                     if (state.gamePhase === "playing") {
                         if (key === "Enter") {
-                            const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
-                            if (enterBtn && enterBtn.classList.contains("action-cancel")) {
-                                deselectWord(); // Hủy chọn
-                            } else if (state.selectedWordId !== null) {
-                                checkSelectedWord();
-                            }
+                            if (state.selectedWordId !== null) checkSelectedWord();
                         } else handleWordInput(key);
                     }
                 };
+
                 slamBtn.addEventListener("click", () => {
                     if (!state.slamModeActive) slamModal.classList.add("visible");
                 });
