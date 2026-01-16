@@ -1284,6 +1284,77 @@
         </div>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
+                let wakeLock = null;
+                const requestWakeLock = async () => {
+                    if ("wakeLock" in navigator) {
+                        try {
+                            wakeLock = await navigator.wakeLock.request("screen");
+                            // console.log("Screen Wake Lock active");
+                        } catch (err) {
+                            console.error(`Wake Lock error: ${err.name}, ${err.message}`);
+                        }
+                    }
+                };
+                // Yêu cầu giữ sáng ngay khi vào trang và khi quay lại tab
+                requestWakeLock();
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "visible") {
+                        requestWakeLock();
+                    }
+                });
+                // 1. Đẩy state ảo
+                history.pushState(null, null, location.href);
+
+                // 2. Bắt sự kiện Back
+                window.addEventListener('popstate', (event) => {
+                    // Đẩy lại state ngay lập tức để giữ chân
+                    history.pushState(null, null, location.href);
+
+                    const modal = document.getElementById('confirm-modal');
+                    const title = document.getElementById('confirm-title');
+                    const text = document.getElementById('confirm-text');
+                    const okBtn = document.getElementById('confirm-ok-btn');
+                    const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+                    if (modal) {
+                        // Xác định ngữ cảnh để hiện thông báo phù hợp
+                        let dialogTitle = "Thoát Game?";
+                        let dialogText = "Bạn có muốn rời khỏi trang web này không?";
+                        let confirmAction = () => history.go(-2); // Mặc định là thoát trang web
+
+                        if (state.currentPage === 'game') {
+                            dialogTitle = "Thoát Màn Chơi?";
+                            dialogText = "Tiến trình sẽ được lưu. Bạn muốn quay về sảnh chờ?";
+                            confirmAction = () => switchView('lobby'); // Trong game thì về sảnh
+                        } else if (state.currentPage === 'creation') {
+                            dialogTitle = "Hủy Soạn Thảo?";
+                            dialogText = "Dữ liệu bộ đề chưa lưu sẽ bị mất. Bạn chắc chắn muốn về sảnh?";
+                            confirmAction = () => switchView('lobby'); // Đang soạn thì về sảnh
+                        }
+
+                        // Cập nhật nội dung Modal
+                        title.textContent = dialogTitle;
+                        text.textContent = dialogText;
+                        modal.classList.add('visible');
+
+                        // Clone nút để reset sự kiện cũ
+                        const newOkBtn = okBtn.cloneNode(true);
+                        const newCancelBtn = cancelBtn.cloneNode(true);
+                        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+                        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+                        // Xử lý Đồng ý
+                        newOkBtn.addEventListener('click', () => {
+                            modal.classList.remove('visible');
+                            confirmAction(); 
+                        });
+
+                        // Xử lý Hủy
+                        newCancelBtn.addEventListener('click', () => {
+                            modal.classList.remove('visible');
+                        });
+                    }
+                });
                 let state = {
                     currentPage: "lobby",
                     words: [],
@@ -2548,25 +2619,63 @@
 
                 // TÌM VÀ THAY THẾ TOÀN BỘ KHỐI NÀY
                 savePuzzleBtn.addEventListener("click", () => {
-                    updateStateFromForms();
+                    updateStateFromForms(); // Cập nhật dữ liệu từ ô nhập liệu vào biến state
+
+                    // 1. Kiểm tra tên bộ đề
                     const title = puzzleTitleInput.value.trim();
                     if (!title) {
                         showToast("Vui lòng nhập tên bộ đề.", "error");
                         return;
                     }
+
+                    // 2. KIỂM TRA TỪNG TỪ: Có từ mà không có gợi ý (hoặc ngược lại)
+                    // Đây là đoạn logic mới bạn yêu cầu
+                    for (let i = 0; i < state.words.length; i++) {
+                        const w = state.words[i];
+                        const hasWord = w.word && w.word.trim().length > 0;
+                        const hasClue = w.clue && w.clue.trim().length > 0;
+
+                        // Trường hợp: Đã nhập Từ nhưng quên Gợi ý
+                        if (hasWord && !hasClue) {
+                            showToast(`Lỗi ở từ #${i + 1} ("${w.word}"): Thiếu gợi ý!`, "error");
+                            switchCreationTab("words"); // Tự động chuyển về tab nhập liệu để user sửa
+                            
+                            // Highlight ô bị lỗi (tùy chọn)
+                            const errorInput = document.querySelector(`.word-card[data-id="${w.id}"] .clue-input`);
+                            if(errorInput) errorInput.focus();
+                            
+                            return; // Dừng lưu ngay lập tức
+                        }
+
+                        // Trường hợp: Đã nhập Gợi ý nhưng quên nhập Từ
+                        if (!hasWord && hasClue) {
+                            showToast(`Lỗi ở từ #${i + 1}: Có gợi ý nhưng chưa nhập từ!`, "error");
+                            switchCreationTab("words");
+                            const errorInput = document.querySelector(`.word-card[data-id="${w.id}"] .word-input`);
+                            if(errorInput) errorInput.focus();
+                            return;
+                        }
+                    }
+
+                    // 3. Lọc ra các từ hợp lệ (đầy đủ cả từ và gợi ý)
                     const validWords = state.words.filter((w) => w.word && w.clue);
+
+                    // 4. Kiểm tra số lượng từ tối thiểu
                     if (validWords.length < 2) {
-                        showToast("Cần ít nhất 2 từ hợp lệ.", "error");
+                        showToast("Cần ít nhất 2 từ hoàn chỉnh (có đủ Từ và Gợi ý).", "error");
                         switchCreationTab("words");
                         return;
                     }
 
+                    // 5. Kiểm tra xem tất cả từ đã được xếp vào lưới chưa
                     const unplacedWords = validWords.filter((w) => !w.hasOwnProperty("row") || w.row === null);
                     if (unplacedWords.length > 0) {
                         showToast(`Còn ${unplacedWords.length} từ chưa được xếp vào lưới!`, "error");
-                        switchCreationTab("arrange");
+                        switchCreationTab("arrange"); // Tự động chuyển sang tab xếp lưới
                         return;
                     }
+
+                    // --- NẾU TẤT CẢ OK THÌ TIẾN HÀNH LƯU ---
 
                     // Chuẩn hóa tọa độ để lưới bắt đầu từ 0,0
                     let minRow = Infinity,
@@ -2590,13 +2699,13 @@
                         words: arrangedWords.map(({ word, clue }) => ({
                             word,
                             clue,
-                        })), // Chỉ lưu word, clue cho gọn
+                        })), // Chỉ lưu word, clue cho gọn trong danh sách preview
                         arrangedWords: arrangedWords, // Lưu toàn bộ dữ liệu đã xếp
                         lastModified: Date.now(),
                     };
                     savePuzzles(puzzles);
                     localStorage.removeItem(`slam-gamestate-${puzzleId}`);
-                    showToast("Đã lưu bộ đề!", "success");
+                    showToast("Đã lưu bộ đề thành công!", "success");
                     switchView("lobby");
                 });
                 deletePuzzleBtn.addEventListener("click", async () => {
