@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <title>SLAM Grand Final</title>
+        <title>SLAMizz</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -389,6 +389,25 @@
                     background: var(--incorrect-color); /* Nền màu xám đậm */
                 }
             }
+            /* --- CSS MỚI CHO HIỆU ỨNG XÓA CHỮ (BACKSPACE) --- */
+            @keyframes zoom-out-delete {
+                from {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                to {
+                    transform: scale(0.4);
+                    opacity: 0;
+                }
+            }
+
+            /* Class áp dụng khi xóa */
+            .playable.anim-delete .cell-front {
+                animation: zoom-out-delete 0.15s ease-in forwards;
+                /* Giữ màu chữ hiện tại để nó mờ dần chứ không mất màu đột ngột */
+                color: var(--dark-blue);
+                box-shadow: inset 0 0 0 1px var(--secondary-accent);
+            }
 
             /* Class áp dụng khi người dùng trả lời sai */
             .playable.is-locked .cell-front {
@@ -572,6 +591,10 @@
                 flex-grow: 1;
                 cursor: pointer;
                 transition: all 0.1s ease;
+                flex-grow: 1;
+                flex-basis: 0; /* Bắt buộc chiều rộng cơ sở là 0, bỏ qua độ dài chữ */
+                min-width: 0; /* Cho phép nút co nhỏ tối đa nếu cần */
+                padding: 0; /* Xóa padding thừa để tránh vỡ layout trên màn hình nhỏ */
             }
             .key:active:not(:disabled) {
                 background: #3f51b5;
@@ -587,6 +610,12 @@
                 background: linear-gradient(145deg, var(--primary-accent), #ffb300);
                 box-shadow: 0 3px #ff8f00;
                 color: var(--dark-blue);
+            }
+
+            .key.enter.action-cancel {
+                background: #546e7a !important; /* Màu xám xanh */
+                box-shadow: 0 3px #263238 !important; /* Bóng đổ màu tối để giữ độ cao nút */
+                color: white !important;
             }
             .key:disabled {
                 background: var(--incorrect-color);
@@ -965,7 +994,7 @@
                     position: relative;
                 "
             >
-                <h1 class="page-title" style="margin-bottom: 0">SLAM PUZZLE</h1>
+                <h1 class="page-title" style="margin-bottom: 0">SLAMizz</h1>
                 <button
                     id="open-settings-btn"
                     class="action-btn icon-btn"
@@ -1150,6 +1179,7 @@
                 <div id="game-stats">
                     <div id="score-display">0</div>
                     <div id="words-solved-stat">0/0</div>
+                    <div id="turn-display" style="color: var(--primary-accent)">Lượt 1</div>
                     <div id="timer" class="w-1/3">00:00</div>
                     <div id="word-timer">00:30</div>
                 </div>
@@ -1267,6 +1297,7 @@
                     startTime: 0,
                     elapsedSeconds: 0,
                     totalScore: 0,
+                    turnCount: 1,
                     currentInputCell: null,
                     slamModeActive: false,
                     gamePhase: "reveal",
@@ -1725,18 +1756,39 @@
                             ? `<span style="background:#4caf50; font-size:0.7rem; padding:2px 6px; border-radius:4px; color:white; margin-left: 10px;">ONLINE</span>`
                             : "";
 
-                    let actionBtnHtml = "";
+                    // Kiểm tra xem có save game không
+                    const saveState = localStorage.getItem(`slam-gamestate-${id}`);
 
+                    // Tạo HTML cho các nút chơi
+                    let playButtonsHtml = "";
+                    if (saveState) {
+                        // Nếu có save: Hiển thị nút Continue (Xanh lá) và New Game (Xanh dương/Icon reload)
+                        playButtonsHtml = `
+            <button class="action-btn continue-puzzle-btn" data-id="${id}" data-source="${source}" title="Chơi tiếp" style="background: linear-gradient(145deg, #66bb6a, #43a047); border-color: #81c784;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+            <button class="action-btn new-game-btn" data-id="${id}" data-source="${source}" title="Chơi mới (Xóa save cũ)" style="background: linear-gradient(145deg, #42a5f5, #1e88e5); border-color: #64b5f6;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.3"/></svg>
+            </button>
+        `;
+                    } else {
+                        // Nếu không có save: Chỉ hiển thị nút Chơi mới (Play)
+                        playButtonsHtml = `
+            <button class="action-btn new-game-btn primary" data-id="${id}" data-source="${source}" title="Bắt đầu chơi">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+        `;
+                    }
+
+                    let actionBtnHtml = "";
                     if (source === "local") {
                         actionBtnHtml = `
             <button class="action-btn edit-puzzle-btn" data-id="${id}" data-source="local" title="Sửa Local">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>`;
                     } else {
-                        // --- LOGIC MỚI: KIỂM TRA QUYỀN SỬA ---
                         const ghConfig = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
                         const canEdit = ghConfig.token && ghConfig.owner && ghConfig.repo;
-
                         let editButton = "";
                         if (canEdit) {
                             editButton = `
@@ -1744,8 +1796,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             </button>`;
                         }
-                        // -------------------------------------
-
                         actionBtnHtml = `
             ${editButton}
             <button class="action-btn copy-puzzle-btn" data-id="${id}" title="Sao chép về máy" style="background: #546e7a; border-color: #78909c;">
@@ -1758,54 +1808,69 @@
         <p class="puzzle-card-meta">${puzzle.words ? puzzle.words.length : puzzle.arrangedWords ? puzzle.arrangedWords.length : 0} từ</p>
         <p class="puzzle-card-meta" style="color: var(--primary-accent); font-weight: 700;">Điểm cao: ${puzzle.highScore || 0}</p>
         <div class="puzzle-card-actions">
-            <button class="action-btn primary play-puzzle-btn" data-id="${id}" data-source="${source}" title="Chơi">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            </button>
+            ${playButtonsHtml}
             ${actionBtnHtml}
         </div>`;
                     puzzleListContainer.appendChild(card);
                 };
+
                 // --- TÌM VÀ THAY THẾ TOÀN BỘ puzzleListContainer.addEventListener ---
-                puzzleListContainer.addEventListener("click", (e) => {
-                    const playBtn = e.target.closest(".play-puzzle-btn");
+                puzzleListContainer.addEventListener("click", async (e) => {
+                    const continueBtn = e.target.closest(".continue-puzzle-btn");
+                    const newGameBtn = e.target.closest(".new-game-btn");
                     const editBtn = e.target.closest(".edit-puzzle-btn");
                     const copyBtn = e.target.closest(".copy-puzzle-btn");
 
-                    if (playBtn) {
-                        const source = playBtn.dataset.source;
-                        switchView("game", { id: playBtn.dataset.id, source: source });
+                    // Logic Chơi Tiếp
+                    if (continueBtn) {
+                        const source = continueBtn.dataset.source;
+                        // Chuyển view, initGame sẽ tự động load save nếu có
+                        switchView("game", { id: continueBtn.dataset.id, source: source });
                     }
 
-                    // --- LOGIC SỬA MỚI ---
+                    // Logic Chơi Mới
+                    if (newGameBtn) {
+                        const id = newGameBtn.dataset.id;
+                        const source = newGameBtn.dataset.source;
+
+                        // Kiểm tra nếu có save cũ thì hỏi xác nhận (nếu cần), hoặc xóa luôn
+                        if (localStorage.getItem(`slam-gamestate-${id}`)) {
+                            const confirmNew = await showConfirmation(
+                                "Chơi mới?",
+                                "Tiến trình cũ sẽ bị xóa. Bạn có chắc chắn?"
+                            );
+                            if (!confirmNew) return;
+                            // Xóa save cũ
+                            localStorage.removeItem(`slam-gamestate-${id}`);
+                        }
+
+                        // Chuyển view
+                        switchView("game", { id: id, source: source });
+                    }
+
+                    // ... (Giữ nguyên phần logic Edit và Copy cũ) ...
                     if (editBtn) {
                         const source = editBtn.dataset.source;
                         if (source === "server") {
                             const serverId = editBtn.dataset.id;
                             const puzzleData = state.serverPuzzles[serverId];
                             if (puzzleData) {
-                                // 1. Set ID đang sửa
                                 state.editingServerId = serverId;
-                                state.currentPuzzleId = null; // Reset Local ID
-
-                                // 2. Chuyển sang màn hình tạo (không truyền ID để tránh initCreation tìm trong LocalStorage)
+                                state.currentPuzzleId = null;
                                 switchView("creation");
-
-                                // 3. Load dữ liệu vào (Phải làm SAU khi switchView để DOM tồn tại)
                                 setTimeout(() => {
                                     puzzleTitleInput.value = puzzleData.title;
                                     state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
                                         ...w,
                                         id: i,
                                     }));
-                                    renderWordForms(); // Render lại list từ
-
-                                    // Cập nhật nút bấm thành Cập nhật
+                                    renderWordForms();
                                     const upBtn = document.getElementById("upload-github-btn");
                                     if (upBtn) {
                                         upBtn.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                            Cập Nhật
-                        `;
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Cập Nhật
+        `;
                                         upBtn.style.background = "linear-gradient(145deg, #f57c00, #e65100)";
                                         upBtn.style.borderColor = "#ff9800";
                                     }
@@ -1813,23 +1878,18 @@
                                 }, 50);
                             }
                         } else {
-                            // Sửa đề Local (giữ nguyên logic cũ)
                             state.editingServerId = null;
                             switchView("creation", editBtn.dataset.id);
                         }
                     }
-                    // ---------------------
 
                     if (copyBtn) {
                         const serverId = copyBtn.dataset.id;
                         const puzzleData = state.serverPuzzles[serverId];
                         if (puzzleData) {
-                            // Copy thì coi như tạo mới Local, reset server ID
                             state.editingServerId = null;
                             state.currentPuzzleId = null;
-
                             switchView("creation");
-
                             setTimeout(() => {
                                 puzzleTitleInput.value = puzzleData.title + " (Copy)";
                                 state.words = (puzzleData.arrangedWords || puzzleData.words).map((w, i) => ({
@@ -1842,6 +1902,7 @@
                         }
                     }
                 });
+
                 // --- TÌM VÀ THAY THẾ HÀM initCreation ---
                 const initCreation = (puzzleId = null) => {
                     // Nếu có puzzleId (tức là sửa Local) HOẶC puzzleId là null (Tạo mới)
@@ -2636,11 +2697,10 @@
                         gridContent: gridContent,
                         slamModeActive: state.slamModeActive,
                         disabledLetters: Array.from(state.disabledLetters),
-                        // --- BẮT ĐẦU THÊM CODE MỚI ---
+                        turnCount: state.turnCount,
                         gamePhase: state.gamePhase, // Lưu lại giai đoạn hiện tại của game
                         playableWordIds: Array.from(state.playableWordIds), // Lưu lại danh sách các từ có thể chơi
                         selectedWordId: state.selectedWordId,
-                        // --- KẾT THÚC THÊM CODE MỚI ---
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
@@ -2767,8 +2827,9 @@
                         return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
                     });
 
+                    // --- TÌM ĐOẠN candidateDetails.sort TRONG HÀM selectNextLetterToReveal VÀ THAY THẾ ---
                     candidateDetails.sort((a, b) => {
-                        // 1. Xuất hiện >=2 từ, không giao nhau
+                        // 1. Xuất hiện >=2 từ, không giao nhau (Ưu tiên cao nhất)
                         const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
                         const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
                         if (a_P1 && !b_P1) return -1;
@@ -2780,18 +2841,17 @@
                         if (a_P2 && !b_P2) return -1;
                         if (!a_P2 && b_P2) return 1;
 
-                        // 3. Frequency cao nhất
-                        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
-
-                        // 4. Chỉ có ở 1 từ duy nhất
+                        // 3. Chỉ có ở 1 từ duy nhất (Đẩy lên trước Frequency)
                         const a_P4 = a.wordCount === 1;
                         const b_P4 = b.wordCount === 1;
                         if (a_P4 && !b_P4) return -1;
                         if (!a_P4 && b_P4) return 1;
 
+                        // 4. Frequency cao nhất (Đã chuyển xuống cuối cùng theo yêu cầu)
+                        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
+
                         return 0;
                     });
-
                     return candidateDetails[0].char;
                 };
                 const performAutoReveal = async () => {
@@ -2810,6 +2870,8 @@
                         if (unsolvedWords.length > 0) {
                             // Chuyển sang chế độ người chơi
                             state.gamePhase = "playing";
+                            state.turnCount++; // Tăng số lượt
+                            document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`; // Cập nhật UI
                             state.playableWordIds.clear();
 
                             // MỞ KHÓA TẤT CẢ CÁC TỪ CÒN LẠI
@@ -2852,6 +2914,8 @@
                             showToast("Bắt đầu màn chơi mới!", "info");
                             return false;
                         }
+                        state.turnCount = gameState.turnCount || 0; // <--- THÊM DÒNG NÀY
+                        document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`; // <--- CẬP NHẬT UI
                         state.solvedWords = new Set(gameState.solvedWords || []);
                         state.revealedLetters = new Set(gameState.revealedLetters || []);
                         state.elapsedSeconds = gameState.elapsedSeconds || 0;
@@ -3171,24 +3235,24 @@
                     }, 2000);
                 };
 
-                // Thay thế TOÀN BỘ hàm cũ bằng hàm async mới này
-                // TÌM VÀ SỬA HÀM handleIncorrectGuess
                 const handleIncorrectGuess = async (wordData) => {
-                    // --- LOGIC TÍNH ĐIỂM MỚI (SAI) ---
+                    // ★ FIX BUG: Ngắt kết nối Input ngay lập tức
+                    const lockedWordId = state.selectedWordId; // Lưu lại ID để xử lý
+                    state.selectedWordId = null; // Ngắt kết nối bàn phím ngay lập tức
+                    state.currentInputCell = null;
+                    stopWordTimer();
+
+                    // --- LOGIC TÍNH ĐIỂM (GIỮ NGUYÊN) ---
                     let penalty = 0;
                     if (wordData) {
-                        // Lấy số nguyên làm tròn lên của (độ dài / 2)
                         penalty = Math.ceil(wordData.word.length / 2);
                     } else {
-                        penalty = 2; // Mặc định nếu không tìm thấy dữ liệu từ (ít khi xảy ra)
+                        penalty = 2;
                     }
-
                     updateScore(-penalty);
                     showToast(`Không chính xác! Trừ ${penalty} điểm`, "error", 1500);
-                    // ----------------------------------
 
                     if (wordData) {
-                        // ... (Giữ nguyên phần code xử lý hiệu ứng domino bên dưới không đổi) ...
                         const playableCells = [];
                         for (let i = 0; i < wordData.word.length; i++) {
                             let r = wordData.row,
@@ -3199,15 +3263,22 @@
                             if (playable) playableCells.push(playable);
                         }
 
-                        // ... (Giữ nguyên phần animation domino) ...
+                        // ★ FIX BUG: Xóa sạch nội dung text ngay lập tức để tránh ký tự vừa gõ bị sót lại
+                        playableCells.forEach((cell) => {
+                            if (!cell.classList.contains("is-solved")) {
+                                // Xóa chữ ngay lập tức, bất chấp animation gõ đang chạy
+                                cell.querySelector(".cell-front").textContent = "";
+                                cell.classList.remove("anim-typing", "selected-word"); // Xóa class gõ
+                            }
+                        });
+
+                        // Animation khóa ô (Domino)
                         const dominoDelay = 50;
                         playableCells.forEach((p, i) => {
                             if (!p.classList.contains("is-solved")) {
                                 setTimeout(() => {
-                                    p.classList.remove("anim-typing");
-                                    p.querySelector(".cell-front").textContent = "";
-                                    p.classList.add("anim-incorrect");
-                                    p.classList.add("is-locked");
+                                    p.classList.add("anim-incorrect"); // Rung lắc
+                                    p.classList.add("is-locked"); // Đổi màu xám
                                 }, i * dominoDelay);
                             }
                         });
@@ -3215,15 +3286,14 @@
                         await delay(totalAnimationTime);
                     }
 
-                    // ... (Giữ nguyên phần reset trạng thái) ...
+                    // Reset trạng thái
                     state.gamePhase = "reveal";
                     state.playableWordIds.clear();
                     document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
-                    deselectWord();
+                    deselectWord(); // Đảm bảo UI bàn phím đóng lại
                     saveGameState();
                     performAutoReveal();
                 };
-
                 const handleWordTimeout = () => {
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     showToast("Hết giờ!", "error");
@@ -3494,6 +3564,7 @@
                         gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
                     keyboardWrapper.classList.add("visible");
                     startWordTimer();
+                    updateEnterButtonState();
                 };
 
                 const updateKeyboardState = () => {
@@ -3541,11 +3612,57 @@
                         )
                         .join("");
                 };
-                // THAY THẾ TOÀN BỘ hàm revealLetterOnGrid CŨ bằng phiên bản HOÀN CHỈNH này
+                // --- CẬP NHẬT HÀM: TRẠNG THÁI NÚT ENTER (FIX LỖI KÍCH THƯỚC) ---
+                const updateEnterButtonState = () => {
+                    const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
+                    if (!enterBtn) return;
+
+                    // Nếu không có từ nào được chọn
+                    if (state.selectedWordId === null) {
+                        enterBtn.textContent = "ENTER";
+                        enterBtn.classList.remove("action-cancel");
+                        return;
+                    }
+
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) return;
+
+                    let isFull = true;
+                    // Kiểm tra xem tất cả các ô của từ đã được điền chưa
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+
+                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        const text = cell ? cell.querySelector(".cell-front").textContent.trim() : "";
+                        if (!text) {
+                            isFull = false;
+                            break;
+                        }
+                    }
+
+                    // Xóa sạch các style inline cũ (nếu có) để dùng class CSS
+                    enterBtn.style.background = "";
+                    enterBtn.style.color = "";
+                    enterBtn.style.boxShadow = "";
+
+                    if (isFull) {
+                        enterBtn.textContent = "ENTER";
+                        // Bỏ class hủy -> Trở về class .enter gốc (màu vàng)
+                        enterBtn.classList.remove("action-cancel");
+                    } else {
+                        enterBtn.textContent = "HỦY"; // Hoặc "BỎ QUA"
+                        // Thêm class hủy -> Ghi đè thành màu xám nhưng giữ nguyên kích thước
+                        enterBtn.classList.add("action-cancel");
+                    }
+                };
                 const revealLetterOnGrid = async (letter) => {
                     state.revealedLetters.add(letter.toUpperCase());
-
                     state.playableWordIds.clear();
+
+                    let lettersToDeduct = 0; // Biến đếm số lượng ký tự MỚI được hiện ra
 
                     state.words.forEach((wordData) => {
                         let containsLetter = false;
@@ -3559,6 +3676,12 @@
                                 const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
 
                                 if (playable && !playable.classList.contains("is-solved")) {
+                                    // Kiểm tra xem ô này đã có chữ chưa, nếu chưa thì mới tính là "hiện mới" để trừ điểm
+                                    const currentContent = playable.querySelector(".cell-front").textContent.trim();
+                                    if (!currentContent) {
+                                        lettersToDeduct++;
+                                    }
+
                                     playable.querySelector(".cell-front").innerHTML =
                                         `<span class="letter-pop-in">${letter}</span>`;
                                     playable.classList.remove("is-locked", "anim-incorrect");
@@ -3572,33 +3695,30 @@
                         }
                     });
 
-                    // --- LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
-                    // --- LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
-                    const newlyCompletedWords = [];
-                    // Quét qua tất cả các từ có liên quan đến chữ cái vừa được tiết lộ
-                    state.playableWordIds.forEach((wordId) => {
-                        // Bỏ qua nếu từ này đã được giải trước đó
-                        if (state.solvedWords.has(wordId)) return;
+                    // --- LOGIC TRỪ ĐIỂM ---
+                    if (lettersToDeduct > 0) {
+                        updateScore(-lettersToDeduct); // Trừ số điểm tương ứng
+                        // Có thể hiện toast thông báo hoặc không, tùy ý
+                        // showToast(`Trừ ${lettersToDeduct} điểm (gợi ý)`, "info", 1000);
+                    }
 
+                    const newlyCompletedWords = [];
+                    state.playableWordIds.forEach((wordId) => {
+                        if (state.solvedWords.has(wordId)) return;
                         const wordData = state.words.find((w) => w.id === wordId);
                         if (!wordData) return;
 
-                        let currentGridWord = ""; // Chuỗi để xây dựng từ hiện tại trên lưới
+                        let currentGridWord = "";
                         let isCompleteOnGrid = true;
-
-                        // Lặp qua độ dài của từ để đọc từng ô chữ trên lưới
                         for (let i = 0; i < wordData.word.length; i++) {
                             let r = wordData.row,
                                 c = wordData.col;
                             if (wordData.direction === "horizontal") c += i;
                             else r += i;
-
                             const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
                             const cellText = cell
                                 ? cell.querySelector(".cell-front").textContent.trim().toUpperCase()
                                 : "";
-
-                            // Nếu có bất kỳ ô nào trống, từ đó chưa thể hoàn thành
                             if (cellText === "") {
                                 isCompleteOnGrid = false;
                                 break;
@@ -3606,22 +3726,17 @@
                             currentGridWord += cellText;
                         }
 
-                        // Nếu từ trên lưới đã đầy đủ VÀ khớp với đáp án, thêm nó vào danh sách tự động hoàn thành
                         if (isCompleteOnGrid && currentGridWord === wordData.word) {
                             newlyCompletedWords.push(wordId);
                         }
                     });
-                    if (newlyCompletedWords.length > 0) {
-                        // ★★★ GỌI HIỆU ỨNG MỚI Ở ĐÂY ★★★
-                        // Chạy song song hiệu ứng cho tất cả các từ được hoàn thành cùng lúc
-                        await Promise.all(newlyCompletedWords.map((id) => animateWordSolved(id)));
 
-                        // Sau khi hiệu ứng kết thúc, cập nhật trạng thái game
+                    if (newlyCompletedWords.length > 0) {
+                        await Promise.all(newlyCompletedWords.map((id) => animateWordSolved(id)));
                         newlyCompletedWords.forEach((wordId) => {
                             state.solvedWords.add(wordId);
                             state.playableWordIds.delete(wordId);
                         });
-
                         showToast(`Đã tự động hoàn thành ${newlyCompletedWords.length} từ!`, "success");
                         updateStats();
                         saveGameState();
@@ -3630,7 +3745,6 @@
                             triggerWinAnimation();
                             return;
                         } else {
-                            // Tiếp tục vòng lặp tiết lộ
                             setTimeout(() => {
                                 performAutoReveal();
                             }, 500);
@@ -3638,34 +3752,53 @@
                         }
                     }
 
-                    // Logic này chỉ chạy khi KHÔNG có từ nào được tự động hoàn thành
                     state.gamePhase = "playing";
+                    state.turnCount++; // Tăng số lượt
+                    document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`; // Cập nhật UI
                     deselectWord();
                     saveGameState();
                 };
+
                 const handleWordInput = (key) => {
-                    if (!state.currentInputCell || (key.length > 1 && key !== "Backspace" && key !== "Enter")) return;
+                    if (state.selectedWordId === null || !state.currentInputCell) return;
+
+                    // ★ FIX BUG RACE CONDITION 2: Chặn nhập nếu ô hiện tại đang bị khóa (do hết giờ/trả lời sai)
+                    if (state.currentInputCell.classList.contains("is-locked")) return;
+
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     if (!wordData) return;
 
                     // --- LOGIC XỬ LÝ NÚT XÓA (BACKSPACE) ---
                     if (key === "Backspace") {
-                        const currentCellFront = state.currentInputCell.querySelector(".cell-front");
                         const currentCellPlayable = state.currentInputCell;
+                        const currentCellFront = currentCellPlayable.querySelector(".cell-front");
 
-                        // Xóa ký tự trong ô hiện tại nếu nó có chữ
+                        // Hàm trợ giúp để chạy animation xóa
+                        const animateDelete = (cell, frontElement) => {
+                            cell.classList.remove("anim-typing"); // Xóa class gõ nếu có
+                            cell.classList.add("anim-delete"); // Thêm class xóa
+
+                            // Đợi animation chạy xong (150ms) rồi mới xóa chữ
+                            setTimeout(() => {
+                                frontElement.textContent = "";
+                                cell.classList.remove("anim-delete");
+                            }, 150);
+                        };
+
+                        // TRƯỜNG HỢP 1: Xóa ký tự trong ô hiện tại nếu nó có chữ
                         if (
                             !currentCellPlayable.classList.contains("is-solved") &&
                             currentCellFront.textContent.trim() !== ""
                         ) {
-                            currentCellFront.textContent = "";
-                            currentCellPlayable.classList.remove("anim-typing"); // Trả ô về màu vàng
+                            animateDelete(currentCellPlayable, currentCellFront);
                             return;
                         }
 
-                        // Nếu ô hiện tại trống, di chuyển đến ô trước đó và xóa
+                        // TRƯỜNG HỢP 2: Nếu ô hiện tại trống, di chuyển lùi lại ô trước đó và xóa
                         let targetCellToDelete = null;
                         let cellToTest = currentCellPlayable;
+
+                        // Tìm ô hợp lệ trước đó
                         for (let i = 0; i < wordData.word.length; i++) {
                             const { row, col } = cellToTest.dataset;
                             const prevRow = parseInt(row) - (wordData.direction === "vertical" ? 1 : 0);
@@ -3673,25 +3806,27 @@
                             const prevCell = gridContainer.querySelector(
                                 `[data-row="${prevRow}"][data-col="${prevCol}"]`
                             );
+
                             if (prevCell && prevCell.classList.contains("selected-word")) {
                                 cellToTest = prevCell;
+                                // Chỉ xóa nếu ô đó chưa được giải (không phải ô màu trắng)
                                 if (!cellToTest.classList.contains("is-solved")) {
                                     targetCellToDelete = cellToTest;
                                     break;
                                 }
                             } else {
-                                break;
+                                break; // Hết phạm vi từ
                             }
                         }
 
                         if (targetCellToDelete) {
                             state.currentInputCell = targetCellToDelete;
-                            state.currentInputCell.querySelector(".cell-front").textContent = "";
-                            state.currentInputCell.classList.remove("anim-typing"); // Trả ô về màu vàng
+                            const targetFront = state.currentInputCell.querySelector(".cell-front");
+                            animateDelete(state.currentInputCell, targetFront);
                         }
+                        setTimeout(() => updateEnterButtonState(), 160); // Đợi animation xóa xong chút rồi cập nhật
                         return;
                     }
-
                     // --- LOGIC XỬ LÝ NHẬP CHỮ ---
                     let cellToWriteIn = state.currentInputCell;
 
@@ -3743,23 +3878,34 @@
                             }
                         }
                         state.currentInputCell = nextFocusCell || cellToWriteIn;
+                        updateEnterButtonState();
                     }
                 };
                 saveGameState();
                 const handleKeyPress = (key) => {
                     if (state.slamModeActive) {
                         if (key === "Enter") {
-                            if (state.selectedWordId !== null) checkSelectedWord();
+                            const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
+                            // Kiểm tra class thay vì kiểm tra text để chính xác hơn
+                            if (enterBtn && enterBtn.classList.contains("action-cancel")) {
+                                deselectWord(); // Hủy chọn
+                            } else if (state.selectedWordId !== null) {
+                                checkSelectedWord();
+                            }
                         } else handleWordInput(key);
                         return;
                     }
                     if (state.gamePhase === "playing") {
                         if (key === "Enter") {
-                            if (state.selectedWordId !== null) checkSelectedWord();
+                            const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
+                            if (enterBtn && enterBtn.classList.contains("action-cancel")) {
+                                deselectWord(); // Hủy chọn
+                            } else if (state.selectedWordId !== null) {
+                                checkSelectedWord();
+                            }
                         } else handleWordInput(key);
                     }
                 };
-
                 slamBtn.addEventListener("click", () => {
                     if (!state.slamModeActive) slamModal.classList.add("visible");
                 });
@@ -3853,7 +3999,8 @@
                     }
 
                     state.currentPuzzleId = puzzleId;
-                    // Nếu đề server có arrangedWords thì dùng, nếu không thì fallback về words (nhưng thường đề game phải có arranged)
+                    state.turnCount = 0; // <--- THÊM DÒNG NÀY
+                    document.getElementById("turn-display").textContent = `Lượt 1`; // <--- CẬP NHẬT UI
                     state.words = puzzle.arrangedWords || puzzle.words;
                     state.isGameFinished = false;
                     state.solvedWords.clear();
