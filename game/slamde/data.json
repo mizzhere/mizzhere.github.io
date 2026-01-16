@@ -156,5 +156,84 @@
         "col": 9
       }
     ]
+  },
+  {
+    "id": "server_1768532406898_42",
+    "title": "Đề 11 ô",
+    "highScore": 0,
+    "arrangedWords": [
+      {
+        "id": 0,
+        "word": "NHUANNHUYEN",
+        "clue": "Đã quen tới mức quen thuộc",
+        "direction": "horizontal",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 1,
+        "word": "NHAPNHANG",
+        "clue": "Không rõ ràng, mập mờ",
+        "direction": "vertical",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 2,
+        "word": "NHANGCUOI",
+        "clue": "Nhảm nhí, vu vơ, không đâu vào đâu",
+        "direction": "vertical",
+        "row": 0,
+        "col": 10
+      },
+      {
+        "id": 3,
+        "word": "GIUONGTHO",
+        "clue": "Bàn thờ tổ tiên cao và rộng",
+        "direction": "horizontal",
+        "row": 8,
+        "col": 0
+      },
+      {
+        "id": 4,
+        "word": "ANHEMTHUCBA",
+        "clue": "Anh em con chú con bác",
+        "direction": "horizontal",
+        "row": 2,
+        "col": 0
+      },
+      {
+        "id": 5,
+        "word": "HANKHAU",
+        "clue": "Bít lại, đắp lại chỗ đê bị vỡ sụt",
+        "direction": "vertical",
+        "row": 2,
+        "col": 2
+      },
+      {
+        "id": 6,
+        "word": "CHAOMAO",
+        "clue": "Con chim nào được chim vành khuyên chào bác?",
+        "direction": "vertical",
+        "row": 2,
+        "col": 8
+      },
+      {
+        "id": 7,
+        "word": "THANMAU",
+        "clue": "Mẹ đẻ, gọi kiểu trang trọng thời xưa",
+        "direction": "horizontal",
+        "row": 6,
+        "col": 4
+      },
+      {
+        "id": 8,
+        "word": "NANGMUA",
+        "clue": "Cách nói văn chương về gian truân trong cuộc sống",
+        "direction": "horizontal",
+        "row": 4,
+        "col": 2
+      }
+    ]
   }
 ]
