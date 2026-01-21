@@ -978,6 +978,56 @@
             .placement-preview.invalid .preview-letter {
                 background-color: var(--danger-color);
             }
+            /* --- CSS CHO CHẾ ĐỘ THỬ THÁCH MỞ CHỮ --- */
+#reveal-challenge-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    animation: fadeInDown 0.3s forwards;
+}
+#reveal-challenge-container.visible {
+    display: flex;
+}
+.challenge-question {
+    font-size: 1rem;
+    color: var(--primary-accent);
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--light-text);
+}
+.challenge-input-box {
+    width: 60px;
+    height: 60px;
+    background: white;
+    color: var(--dark-blue);
+    font-size: 2rem;
+    font-weight: 900;
+    text-align: center;
+    border: 3px solid var(--secondary-accent);
+    border-radius: 12px;
+    outline: none;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.challenge-input-box:focus {
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 15px var(--primary-accent);
+}
+.challenge-feedback {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    height: 1.2rem;
+    font-weight: 700;
+}
+.challenge-feedback.correct { color: var(--success-color); }
+.challenge-feedback.incorrect { color: var(--danger-color); }
         </style>
     </head>
     <body>
@@ -1183,21 +1233,7 @@
                     <div id="timer" class="w-1/3">00:00</div>
                     <div id="word-timer">00:30</div>
                 </div>
-                <button id="edit-puzzle-btn" class="action-btn icon-btn" title="Sửa bộ đề">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-                        <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
-                    </svg>
-                </button>
+              
             </div>
 
             <!-- KHỐI GAME-AREA ĐÃ ĐƯỢC SỬA ĐỔI: Thêm nút SLAM vào đây -->
@@ -1214,6 +1250,11 @@
 
             <!-- KHỐI GAME-HUD ĐÃ ĐƯỢC SỬA ĐỔI: Xóa nút SLAM khỏi đây -->
             <div id="game-hud" class="game-hud">
+                <div id="reveal-challenge-container">
+        <div id="challenge-question" class="challenge-question">Câu hỏi sẽ hiện ở đây...</div>
+        <input type="text" id="challenge-input" class="challenge-input-box" maxlength="1" readonly>
+        <div id="challenge-feedback" class="challenge-feedback"></div>
+    </div>
                 <div id="keyboard-wrapper" class="keyboard-wrapper">
                     <div id="clue-area">
                         <div id="clue-text">Chọn một ô để bắt đầu!</div>
@@ -1254,6 +1295,10 @@
         <div class="modal-overlay" id="settings-modal">
             <div class="modal-content" style="text-align: left; max-width: 500px">
                 <h2 style="text-align: center">Kết Nối GitHub</h2>
+                <div class="form-group-material" style="display: flex; align-items: center; margin-bottom: 20px; margin-top: 10px;">
+    <input type="checkbox" id="setting-manual-reveal" style="width: 20px; height: 20px; margin-right: 10px;">
+    <label for="setting-manual-reveal" style="position: static; font-size: 1rem; color: white;">Bật Logic Puzzle (Mở khóa thủ công)</label>
+</div>
                 <p style="font-size: 0.9rem; color: var(--light-text); text-align: center; margin-bottom: 20px">
                     Token được lưu trên trình duyệt của bạn. <br />
                     Dùng để tải đề lên file dữ liệu chung.
@@ -1378,7 +1423,12 @@
                     isGameFinished: false,
                     serverPuzzles: {},
                     editingServerId: null,
-                };
+                failedRevealLetters: new Set(), // Danh sách chữ cái trả lời sai logic
+    challengeModeActive: false,     // Trạng thái đang trả lời câu hỏi logic
+    currentChallengeTarget: null,   // Chữ cái đáp án của câu hỏi hiện tại
+    manualRevealEnabled: false,     // Cài đặt bật/tắt tính năng
+    isProcessingChallenge: false,
+};
                 let editorState = {
                     isDragging: false,
                     draggedWordId: null,
@@ -1425,7 +1475,11 @@
                 const slamConfirmBtn = document.getElementById("slam-confirm-btn");
                 const slamCancelBtn = document.getElementById("slam-cancel-btn");
                 const confirmModal = document.getElementById("confirm-modal");
-
+                const revealChallengeContainer = document.getElementById("reveal-challenge-container");
+const challengeQuestionText = document.getElementById("challenge-question");
+const challengeInput = document.getElementById("challenge-input");
+const challengeFeedback = document.getElementById("challenge-feedback");
+const settingManualReveal = document.getElementById("setting-manual-reveal");
                 const getPuzzles = () => {
                     try {
                         const p = localStorage.getItem("slam-puzzles-list");
@@ -1456,13 +1510,19 @@
                 const ghPathInput = document.getElementById("gh-path");
                 // Load settings khi mở modal
                 openSettingsBtn.addEventListener("click", () => {
-                    const config = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
-                    ghTokenInput.value = config.token || "";
-                    ghOwnerInput.value = config.owner || "";
-                    ghRepoInput.value = config.repo || "";
-                    ghPathInput.value = config.path || "slamde/data.json";
-                    settingsModal.classList.add("visible");
-                });
+    const config = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
+    ghTokenInput.value = config.token || "";
+    ghOwnerInput.value = config.owner || "";
+    ghRepoInput.value = config.repo || "";
+    ghPathInput.value = config.path || "slamde/data.json";
+    
+    // --- LOAD SETTING LOGIC PUZZLE ---
+    const manualReveal = localStorage.getItem("slam-setting-manual-reveal") === "true";
+    settingManualReveal.checked = manualReveal;
+    state.manualRevealEnabled = manualReveal;
+    
+    settingsModal.classList.add("visible");
+});
 
                 closeSettingsBtn.addEventListener("click", () => settingsModal.classList.remove("visible"));
 
@@ -1474,9 +1534,14 @@
                         path: ghPathInput.value.trim(),
                     };
                     localStorage.setItem("slam-github-config", JSON.stringify(config));
-                    showToast("Đã lưu cấu hình GitHub!", "success");
-                    settingsModal.classList.remove("visible");
-                });
+                    // --- LƯU SETTING LOGIC PUZZLE ---
+    const isManual = settingManualReveal.checked;
+    localStorage.setItem("slam-setting-manual-reveal", isManual);
+    state.manualRevealEnabled = isManual;
+
+    showToast("Đã lưu cấu hình!", "success");
+    settingsModal.classList.remove("visible");
+});
 
                 // --- TÌM VÀ THAY THẾ sự kiện uploadGithubBtn.addEventListener ---
                 uploadGithubBtn.addEventListener("click", async () => {
@@ -2723,9 +2788,7 @@
 
                 backToLobbyBtn.addEventListener("click", () => switchView("lobby"));
                 backToLobbyBtnGame.addEventListener("click", () => switchView("lobby"));
-                editPuzzleBtn.addEventListener("click", () => {
-                    if (state.currentPuzzleId) switchView("creation", state.currentPuzzleId);
-                });
+                
 
                 const animateWordSolved = async (wordId) => {
                     const wordData = state.words.find((w) => w.id === wordId);
@@ -2813,206 +2876,270 @@
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
-                // TÌM VÀ THAY THẾ TOÀN BỘ HÀM selectNextLetterToReveal BẰNG CODE NÀY
-                const selectNextLetterToReveal = () => {
-                    // 1. Lấy danh sách các từ chưa giải quyết xong
-                    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
-                    if (unsolvedWords.length === 0) return null;
+              const selectNextLetterToReveal = () => {
+    // 1. Lấy danh sách các từ chưa giải quyết xong
+    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+    if (unsolvedWords.length === 0) return null;
 
-                    // --- BƯỚC 1: XÁC ĐỊNH CÁC Ô ĐÃ SÁNG ĐÈN (VISIBILITY MAP) ---
-                    // Tập hợp tọa độ các ô đã hiện chữ (do người chơi giải được từ chứa ô đó)
-                    const visibleCells = new Set();
-                    state.solvedWords.forEach((id) => {
-                        const w = state.words.find((word) => word.id === id);
-                        if (w) {
-                            for (let i = 0; i < w.word.length; i++) {
-                                let r = w.row,
-                                    c = w.col;
-                                if (w.direction === "horizontal") c += i;
-                                else r += i;
-                                visibleCells.add(`${r}-${c}`);
-                            }
+    // --- BƯỚC 1: XÁC ĐỊNH CÁC Ô ĐÃ SÁNG ĐÈN (VISIBILITY MAP) ---
+    // Tập hợp tọa độ các ô đã hiện chữ (do người chơi giải được từ chứa ô đó hoặc đã được tiết lộ trước đó)
+    const visibleCells = new Set();
+    state.solvedWords.forEach((id) => {
+        const w = state.words.find((word) => word.id === id);
+        if (w) {
+            for (let i = 0; i < w.word.length; i++) {
+                let r = w.row,
+                    c = w.col;
+                if (w.direction === "horizontal") c += i;
+                else r += i;
+                visibleCells.add(`${r}-${c}`);
+            }
+        }
+    });
+
+    // --- BƯỚC 2: TÌM ỨNG VIÊN (CÓ LOGIC LOẠI TRỪ FAIL) ---
+    // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
+    const candidates = new Set();
+    unsolvedWords.forEach((w) => {
+        for (let i = 0; i < w.word.length; i++) {
+            const char = w.word[i];
+            
+            // ★ QUAN TRỌNG: Bỏ qua chữ cái này nếu người chơi từng trả lời sai câu hỏi logic về nó
+            if (state.failedRevealLetters.has(char)) continue; 
+
+            let r = w.row,
+                c = w.col;
+            if (w.direction === "horizontal") c += i;
+            else r += i;
+
+            // Kiểm tra xem ô này đã hiện chưa?
+            // 1. Hiện do máy đã mở global chữ này (state.revealedLetters)
+            // 2. Hiện do ô này thuộc về một từ người chơi đã giải (visibleCells)
+            const isVisible = state.revealedLetters.has(char) || visibleCells.has(`${r}-${c}`);
+
+            // Chỉ thêm vào danh sách nếu ô này VẪN CÒN ẨN
+            if (!isVisible) {
+                candidates.add(char);
+            }
+        }
+    });
+
+    // --- BƯỚC 3: KIỂM TRA AN TOÀN (GIỮ NGUYÊN LOGIC CŨ) ---
+    const safeCandidates = Array.from(candidates).filter((charToTest) => {
+        // Giả lập: Mở chữ này ra thì có từ nào hoàn thành 100% không?
+        for (const wordData of unsolvedWords) {
+            let isWordFullyVisible = true;
+
+            for (let i = 0; i < wordData.word.length; i++) {
+                const letter = wordData.word[i];
+                let r = wordData.row,
+                    c = wordData.col;
+                if (wordData.direction === "horizontal") c += i;
+                else r += i;
+
+                // Một ô được coi là SẼ HIỆN trong tương lai giả định nếu:
+                // 1. Nó là chữ đang test
+                // 2. Nó đã được máy mở trước đó
+                // 3. Nó là ô đã giải của người chơi
+                const isCellVisibleFuture =
+                    letter === charToTest ||
+                    state.revealedLetters.has(letter) ||
+                    visibleCells.has(`${r}-${c}`);
+
+                if (!isCellVisibleFuture) {
+                    isWordFullyVisible = false;
+                    break;
+                }
+            }
+
+            // Nếu từ này bị hoàn thành -> Nguy hiểm -> Loại
+            if (isWordFullyVisible) return false;
+        }
+        return true;
+    });
+
+    if (safeCandidates.length === 0) return null;
+
+    // --- BƯỚC 4 & 5: CHIẾN THUẬT CHỌN LỰA ---
+
+    // Tính toán tần suất xuất hiện của ô (để biết giao điểm)
+    const cellOccupancy = {};
+    state.words.forEach((w) => {
+        for (let i = 0; i < w.word.length; i++) {
+            let r = w.row,
+                c = w.col;
+            if (w.direction === "horizontal") c += i;
+            else r += i;
+            cellOccupancy[`${r}-${c}`] = (cellOccupancy[`${r}-${c}`] || 0) + 1;
+        }
+    });
+
+    const candidateDetails = safeCandidates.map((char) => {
+        let frequency = 0;
+        let intersectionCount = 0;
+        let wordsWithChar = new Set();
+
+        unsolvedWords.forEach((w) => {
+            if (w.word.includes(char)) {
+                wordsWithChar.add(w.id);
+                for (let i = 0; i < w.word.length; i++) {
+                    if (w.word[i] === char) {
+                        frequency++;
+                        let r = w.row,
+                            c = w.col;
+                        if (w.direction === "horizontal") c += i;
+                        else r += i;
+                        if (cellOccupancy[`${r}-${c}`] > 1) {
+                            intersectionCount++;
                         }
-                    });
-
-                    // --- BƯỚC 2: TÌM ỨNG VIÊN (SỬA LỖI TẠI ĐÂY) ---
-                    // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
-                    const candidates = new Set();
-                    unsolvedWords.forEach((w) => {
-                        for (let i = 0; i < w.word.length; i++) {
-                            const char = w.word[i];
-                            let r = w.row,
-                                c = w.col;
-                            if (w.direction === "horizontal") c += i;
-                            else r += i;
-
-                            // Kiểm tra xem ô này đã hiện chưa?
-                            // 1. Hiện do máy đã mở global chữ này (state.revealedLetters)
-                            // 2. Hiện do ô này thuộc về một từ người chơi đã giải (visibleCells)
-                            const isVisible = state.revealedLetters.has(char) || visibleCells.has(`${r}-${c}`);
-
-                            // Chỉ thêm vào danh sách nếu ô này VẪN CÒN ẨN
-                            if (!isVisible) {
-                                candidates.add(char);
-                            }
-                        }
-                    });
-
-                    // --- BƯỚC 3: KIỂM TRA AN TOÀN (GIỮ NGUYÊN LOGIC CŨ) ---
-                    const safeCandidates = Array.from(candidates).filter((charToTest) => {
-                        // Giả lập: Mở chữ này ra thì có từ nào hoàn thành 100% không?
-                        for (const wordData of unsolvedWords) {
-                            let isWordFullyVisible = true;
-
-                            for (let i = 0; i < wordData.word.length; i++) {
-                                const letter = wordData.word[i];
-                                let r = wordData.row,
-                                    c = wordData.col;
-                                if (wordData.direction === "horizontal") c += i;
-                                else r += i;
-
-                                // Một ô được coi là SẼ HIỆN trong tương lai giả định nếu:
-                                // 1. Nó là chữ đang test
-                                // 2. Nó đã được máy mở trước đó
-                                // 3. Nó là ô đã giải của người chơi
-                                const isCellVisibleFuture =
-                                    letter === charToTest ||
-                                    state.revealedLetters.has(letter) ||
-                                    visibleCells.has(`${r}-${c}`);
-
-                                if (!isCellVisibleFuture) {
-                                    isWordFullyVisible = false;
-                                    break;
-                                }
-                            }
-
-                            // Nếu từ này bị hoàn thành -> Nguy hiểm -> Loại
-                            if (isWordFullyVisible) return false;
-                        }
-                        return true;
-                    });
-
-                    if (safeCandidates.length === 0) return null;
-
-                    // --- BƯỚC 4 & 5: CHIẾN THUẬT CHỌN LỰA (GIỮ NGUYÊN 5 TIÊU CHÍ CỦA BẠN) ---
-
-                    const cellOccupancy = {};
-                    state.words.forEach((w) => {
-                        for (let i = 0; i < w.word.length; i++) {
-                            let r = w.row,
-                                c = w.col;
-                            if (w.direction === "horizontal") c += i;
-                            else r += i;
-                            cellOccupancy[`${r}-${c}`] = (cellOccupancy[`${r}-${c}`] || 0) + 1;
-                        }
-                    });
-
-                    const candidateDetails = safeCandidates.map((char) => {
-                        let frequency = 0;
-                        let intersectionCount = 0;
-                        let wordsWithChar = new Set();
-
-                        unsolvedWords.forEach((w) => {
-                            if (w.word.includes(char)) {
-                                wordsWithChar.add(w.id);
-                                for (let i = 0; i < w.word.length; i++) {
-                                    if (w.word[i] === char) {
-                                        frequency++;
-                                        let r = w.row,
-                                            c = w.col;
-                                        if (w.direction === "horizontal") c += i;
-                                        else r += i;
-                                        if (cellOccupancy[`${r}-${c}`] > 1) {
-                                            intersectionCount++;
-                                        }
-                                    }
-                                }
-                            }
-                        });
-
-                        const wordCount = wordsWithChar.size;
-                        const nonIntersectionCount = frequency - intersectionCount;
-
-                        return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
-                    });
-
-                    // --- TÌM ĐOẠN candidateDetails.sort TRONG HÀM selectNextLetterToReveal VÀ THAY THẾ ---
-                    candidateDetails.sort((a, b) => {
-                        // 1. Xuất hiện >=2 từ, không giao nhau (Ưu tiên cao nhất)
-                        const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
-                        const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
-                        if (a_P1 && !b_P1) return -1;
-                        if (!a_P1 && b_P1) return 1;
-
-                        // 2. Chỉ nằm ở điểm giao nhau
-                        const a_P2 = a.nonIntersectionCount === 0 && a.intersectionCount > 0;
-                        const b_P2 = b.nonIntersectionCount === 0 && b.intersectionCount > 0;
-                        if (a_P2 && !b_P2) return -1;
-                        if (!a_P2 && b_P2) return 1;
-
-                        // 3. Chỉ có ở 1 từ duy nhất (Đẩy lên trước Frequency)
-                        const a_P4 = a.wordCount === 1;
-                        const b_P4 = b.wordCount === 1;
-                        if (a_P4 && !b_P4) return -1;
-                        if (!a_P4 && b_P4) return 1;
-
-                        // 4. Frequency cao nhất (Đã chuyển xuống cuối cùng theo yêu cầu)
-                        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
-
-                        return 0;
-                    });
-                    return candidateDetails[0].char;
-                };
-                const performAutoReveal = async () => {
-                    // Chỉ chạy trong giai đoạn reveal và game chưa kết thúc
-                    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
-
-                    // Lấy chữ cái an toàn tiếp theo
-                    const letterToReveal = selectNextLetterToReveal();
-
-                    // === TRƯỜNG HỢP: KHÔNG CÒN CHỮ NÀO AN TOÀN ===
-                    // (Nghĩa là mở bất kỳ chữ nào nữa cũng sẽ làm hoàn thành ít nhất 1 từ)
-                    if (!letterToReveal) {
-                        // Lấy tất cả các từ chưa giải
-                        const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
-
-                        if (unsolvedWords.length > 0) {
-                            // Chuyển sang chế độ người chơi
-                            state.gamePhase = "playing";
-                            state.turnCount++; // Tăng số lượt
-                            document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`; // Cập nhật UI
-                            state.playableWordIds.clear();
-
-                            // MỞ KHÓA TẤT CẢ CÁC TỪ CÒN LẠI
-                            // Để người chơi tự tay điền nốt ký tự cuối cùng
-                            unsolvedWords.forEach((w) => state.playableWordIds.add(w.id));
-
-                            showToast("Đến lượt bạn! Hãy hoàn thành các từ còn lại.", "info", 3000);
-                            clueText.textContent = "Thử thách: Điền các ký tự cuối cùng!";
-
-                            deselectWord();
-                            saveGameState();
-                        } else {
-                            // Trường hợp hiếm: Đã giải hết sạch (thường triggerWin sẽ bắt trước đó)
-                            triggerWinAnimation();
-                        }
-                        return; // Dừng việc tự động tiết lộ
                     }
+                }
+            }
+        });
 
-                    // === TRƯỜNG HỢP: VẪN CÒN CHỮ AN TOÀN ===
-                    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
+        const wordCount = wordsWithChar.size;
+        const nonIntersectionCount = frequency - intersectionCount;
 
-                    // Delay nhẹ để tạo nhịp điệu
-                    await delay(1000);
+        return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
+    });
 
-                    // Thực hiện mở chữ cái
-                    // Hàm revealLetterOnGrid này sẽ tự lo việc hiển thị và kiểm tra hoàn thành (nếu có)
-                    // Nhưng nhờ logic "Simulated" ở trên, xác suất nó tự hoàn thành từ là 0%.
-                    revealLetterOnGrid(letterToReveal);
+    candidateDetails.sort((a, b) => {
+        // 1. Xuất hiện >=2 từ, không giao nhau (Ưu tiên cao nhất)
+        const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
+        const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
+        if (a_P1 && !b_P1) return -1;
+        if (!a_P1 && b_P1) return 1;
 
-                    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 1500);
-                };
+        // 2. Chỉ nằm ở điểm giao nhau
+        const a_P2 = a.nonIntersectionCount === 0 && a.intersectionCount > 0;
+        const b_P2 = b.nonIntersectionCount === 0 && b.intersectionCount > 0;
+        if (a_P2 && !b_P2) return -1;
+        if (!a_P2 && b_P2) return 1;
 
+        // 3. Chỉ có ở 1 từ duy nhất (Đẩy lên trước Frequency)
+        const a_P4 = a.wordCount === 1;
+        const b_P4 = b.wordCount === 1;
+        if (a_P4 && !b_P4) return -1;
+        if (!a_P4 && b_P4) return 1;
+
+        // 4. Frequency cao nhất (Đã chuyển xuống cuối cùng theo yêu cầu)
+        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
+
+        return 0;
+    });
+
+    return candidateDetails[0].char;
+};
+                
+                const alphabet = "AĂÂBCDĐEÊGHIKLMNOÔƠPQRSTUƯVXY"; // Bảng chữ cái tiếng Việt mở rộng (tùy chỉnh nếu muốn dùng bảng English)
+const alphabetSimple = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Dùng bảng này cho chuẩn logic quốc tế và khớp với bàn phím
+
+const generateLogicQuestion = (targetChar) => {
+    targetChar = targetChar.toUpperCase();
+    const targetIndex = alphabetSimple.indexOf(targetChar);
+    if (targetIndex === -1) return null; // Ký tự không nằm trong bảng chữ cái (ví dụ số)
+
+    const type = Math.random() > 0.5 ? "shift" : "middle";
+    
+    // Dạng 1: Dịch chuyển (Thứ n sau/trước X)
+    if (type === "shift") {
+        const direction = Math.random() > 0.5 ? 1 : -1; // 1: Xuôi (Sau), -1: Ngược (Trước)
+        const offset = Math.floor(Math.random() * 5) + 1; // 1 đến 5
+        
+        // Tính chữ cái mốc (Start Char)
+        // Target = Start + offset * dir => Start = Target - offset * dir
+        let startIndex = (targetIndex - (offset * direction)) % alphabetSimple.length;
+        if (startIndex < 0) startIndex += alphabetSimple.length;
+        
+        const startChar = alphabetSimple[startIndex];
+        const dirText = direction === 1 ? "theo chiều xuôi" : "theo chiều ngược";
+        const afterText = direction === 1 ? "sau" : "trước"; // Dùng từ ngữ phù hợp
+        
+        return {
+            text: `Chữ cái nào nằm ở thứ ${offset} ${afterText} chữ "${startChar}" ${dirText} của bảng chữ cái (English)?`,
+            answer: targetChar
+        };
+    } 
+    // Dạng 2: Ở giữa
+    else {
+        // Tìm A và B sao cho Target ở giữa. Target = (A + B) / 2
+        // A = Target - distance, B = Target + distance
+        // Cần đảm bảo A và B nằm trong giới hạn 0-25
+        
+        const maxDist = Math.min(targetIndex, 25 - targetIndex);
+        if (maxDist < 1) {
+            // Nếu là A hoặc Z thì không có ở giữa, fallback về dạng shift
+            return generateLogicQuestion(targetChar); 
+        }
+        
+        const distance = Math.floor(Math.random() * maxDist) + 1;
+        const charA = alphabetSimple[targetIndex - distance];
+        const charB = alphabetSimple[targetIndex + distance];
+        
+        return {
+            text: `Chữ cái nào nằm ở chính giữa chữ "${charA}" và chữ "${charB}" trong bảng chữ cái?`,
+            answer: targetChar
+        };
+    }
+};
+              const performAutoReveal = async () => {
+    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
+
+    const letterToReveal = selectNextLetterToReveal();
+
+    // Nếu không còn chữ nào an toàn hoặc hết chữ để chọn
+    if (!letterToReveal) {
+        const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+        if (unsolvedWords.length > 0) {
+            state.gamePhase = "playing";
+            state.turnCount++;
+            document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`;
+            state.playableWordIds.clear();
+            unsolvedWords.forEach((w) => state.playableWordIds.add(w.id));
+            
+            showToast("Đến lượt bạn! Hãy hoàn thành các từ còn lại.", "info", 3000);
+            clueText.textContent = "Thử thách: Điền các ký tự cuối cùng!";
+            deselectWord();
+            saveGameState();
+        } else {
+            triggerWinAnimation();
+        }
+        return;
+    }
+
+    // --- LOGIC MỚI: KIỂM TRA CHẾ ĐỘ THỦ CÔNG ---
+    if (state.manualRevealEnabled) {
+        const questionData = generateLogicQuestion(letterToReveal);
+        if (questionData) {
+            // Kích hoạt UI Challenge
+            state.challengeModeActive = true;
+            state.currentChallengeTarget = letterToReveal;
+            state.isProcessingChallenge = false; // Reset cờ mỗi khi bắt đầu câu hỏi mới
+            
+            // Hiển thị UI
+            revealChallengeContainer.classList.add("visible");
+            challengeQuestionText.textContent = questionData.text;
+            challengeInput.value = "";
+            challengeFeedback.textContent = "";
+            challengeFeedback.className = "challenge-feedback";
+            
+            // Hiện bàn phím ảo
+            keyboardWrapper.classList.add("visible");
+            clueText.textContent = "Giải câu đố logic để mở chữ cái!";
+            
+            updateEnterButtonState(); // <--- THÊM DÒNG NÀY ĐỂ ĐỔI NÚT THÀNH "GỬI" NGAY
+            
+            return; 
+        }
+    }
+    // ------------------------------------------
+
+    // Nếu không bật chế độ thủ công hoặc không tạo được câu hỏi
+    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
+    await delay(1000);
+    revealLetterOnGrid(letterToReveal);
+    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 1500);
+};
                 const loadGameState = () => {
                     const savedState = localStorage.getItem(`slam-gamestate-${state.currentPuzzleId}`);
                     if (!savedState) return;
@@ -3722,52 +3849,56 @@
                         )
                         .join("");
                 };
-                // --- CẬP NHẬT HÀM: TRẠNG THÁI NÚT ENTER (FIX LỖI KÍCH THƯỚC) ---
-                const updateEnterButtonState = () => {
-                    const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
-                    if (!enterBtn) return;
+                // --- CẬP NHẬT: ĐỔI TEXT NÚT ENTER THÀNH GỬI KHI Ở CHẾ ĐỘ CHALLENGE ---
+const updateEnterButtonState = () => {
+    const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
+    if (!enterBtn) return;
 
-                    // Nếu không có từ nào được chọn
-                    if (state.selectedWordId === null) {
-                        enterBtn.textContent = "ENTER";
-                        enterBtn.classList.remove("action-cancel");
-                        return;
-                    }
+    // 1. Ưu tiên kiểm tra chế độ Challenge trước
+    if (state.challengeModeActive) {
+        enterBtn.textContent = "GỬI";
+        enterBtn.classList.remove("action-cancel");
+        // Có thể thêm style màu xanh lá hoặc khác biệt nếu muốn
+        return;
+    }
 
-                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
-                    if (!wordData) return;
+    // 2. Các logic cũ cho chế độ chơi thường
+    if (state.selectedWordId === null) {
+        enterBtn.textContent = "ENTER";
+        enterBtn.classList.remove("action-cancel");
+        return;
+    }
 
-                    let isFull = true;
-                    // Kiểm tra xem tất cả các ô của từ đã được điền chưa
-                    for (let i = 0; i < wordData.word.length; i++) {
-                        let r = wordData.row,
-                            c = wordData.col;
-                        if (wordData.direction === "horizontal") c += i;
-                        else r += i;
+    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+    if (!wordData) return;
 
-                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                        const text = cell ? cell.querySelector(".cell-front").textContent.trim() : "";
-                        if (!text) {
-                            isFull = false;
-                            break;
-                        }
-                    }
+    let isFull = true;
+    for (let i = 0; i < wordData.word.length; i++) {
+        let r = wordData.row,
+            c = wordData.col;
+        if (wordData.direction === "horizontal") c += i;
+        else r += i;
 
-                    // Xóa sạch các style inline cũ (nếu có) để dùng class CSS
-                    enterBtn.style.background = "";
-                    enterBtn.style.color = "";
-                    enterBtn.style.boxShadow = "";
+        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+        const text = cell ? cell.querySelector(".cell-front").textContent.trim() : "";
+        if (!text) {
+            isFull = false;
+            break;
+        }
+    }
 
-                    if (isFull) {
-                        enterBtn.textContent = "ENTER";
-                        // Bỏ class hủy -> Trở về class .enter gốc (màu vàng)
-                        enterBtn.classList.remove("action-cancel");
-                    } else {
-                        enterBtn.textContent = "HỦY"; // Hoặc "BỎ QUA"
-                        // Thêm class hủy -> Ghi đè thành màu xám nhưng giữ nguyên kích thước
-                        enterBtn.classList.add("action-cancel");
-                    }
-                };
+    enterBtn.style.background = "";
+    enterBtn.style.color = "";
+    enterBtn.style.boxShadow = "";
+
+    if (isFull) {
+        enterBtn.textContent = "ENTER";
+        enterBtn.classList.remove("action-cancel");
+    } else {
+        enterBtn.textContent = "HỦY";
+        enterBtn.classList.add("action-cancel");
+    }
+};
                 const revealLetterOnGrid = async (letter) => {
                     state.revealedLetters.add(letter.toUpperCase());
                     state.playableWordIds.clear();
@@ -3993,19 +4124,92 @@
                 };
                 saveGameState();
                 const handleKeyPress = (key) => {
-                    if (state.slamModeActive) {
-                        if (key === "Enter") {
-                            if (state.selectedWordId !== null) checkSelectedWord();
-                        } else handleWordInput(key);
-                        return;
-                    }
-                    if (state.gamePhase === "playing") {
-                        if (key === "Enter") {
-                            if (state.selectedWordId !== null) checkSelectedWord();
-                        } else handleWordInput(key);
-                    }
-                };
+    // 1. NẾU ĐANG Ở CHẾ ĐỘ LOGIC CHALLENGE
+    if (state.challengeModeActive) {
+        if (key === "Backspace") {
+             challengeInput.value = "";
+        } else if (key === "Enter") {
+             submitChallengeAnswer(); // Hàm này giờ đã có chống spam
+        } else if (key.length === 1 && /^[a-zA-Z]$/.test(key)) {
+             challengeInput.value = key.toUpperCase();
+        }
+        return; 
+    }
 
+    // ... Code cũ giữ nguyên ...
+    if (state.slamModeActive) {
+        if (key === "Enter") {
+            if (state.selectedWordId !== null) checkSelectedWord();
+        } else handleWordInput(key);
+        return;
+    }
+    if (state.gamePhase === "playing") {
+        if (key === "Enter") {
+            if (state.selectedWordId !== null) checkSelectedWord();
+        } else handleWordInput(key);
+    }
+};
+const submitChallengeAnswer = async () => {
+    // 1. CHỐNG SPAM: Nếu đang xử lý rồi thì chặn luôn
+    if (state.isProcessingChallenge) return;
+    
+    const input = challengeInput.value.trim().toUpperCase();
+    if (!input) return; // Không làm gì nếu chưa nhập
+    
+    // Khóa ngay lập tức để không bấm được lần 2
+    state.isProcessingChallenge = true; 
+    
+    const target = state.currentChallengeTarget;
+    
+    // Tạm ẩn bàn phím ngay lập tức để cảm giác phản hồi nhanh
+    keyboardWrapper.classList.remove("visible"); 
+
+    if (input === target) {
+        // --- TRƯỜNG HỢP ĐÚNG ---
+        challengeInput.style.borderColor = "var(--success-color)";
+        challengeFeedback.textContent = "Chính xác!";
+        challengeFeedback.classList.add("correct");
+        
+        await delay(800);
+        
+        // Dọn dẹp UI
+        state.challengeModeActive = false; // Tắt chế độ
+        revealChallengeContainer.classList.remove("visible");
+        challengeInput.style.borderColor = ""; 
+        updateEnterButtonState(); // Reset nút về mặc định
+        
+        // Thực hiện mở chữ
+        revealLetterOnGrid(target);
+        showToast(`Mở khóa chữ: ${target}`, "success");
+    } else {
+        // --- TRƯỜNG HỢP SAI (Đã sửa: Không hiện đáp án, Không báo chữ bị cấm) ---
+        challengeInput.style.borderColor = "var(--danger-color)";
+        
+        // Chỉ báo sai chung chung
+        challengeFeedback.textContent = "Sai rồi!"; 
+        challengeFeedback.classList.add("incorrect");
+        
+        await delay(1500);
+        
+        // Logic xử lý sai
+        state.challengeModeActive = false; // Tắt chế độ
+        state.failedRevealLetters.add(target); // Thêm vào danh sách đen ngầm
+        
+        // Dọn dẹp UI
+        revealChallengeContainer.classList.remove("visible");
+        challengeInput.style.borderColor = "";
+        updateEnterButtonState(); // Reset nút về mặc định
+        
+        // Thông báo ẩn danh
+        showToast("Bạn đã bỏ lỡ cơ hội mở chữ cái này.", "error");
+        
+        // Gọi lại để máy chọn chữ khác (Vì chữ cũ đã bị ban)
+        performAutoReveal();
+    }
+    
+    state.currentChallengeTarget = null;
+    state.isProcessingChallenge = false; // Mở khóa cho lượt sau (dù logic sẽ chuyển sang phase khác)
+};
                 slamBtn.addEventListener("click", () => {
                     if (!state.slamModeActive) slamModal.classList.add("visible");
                 });
@@ -4112,6 +4316,12 @@
                     state.gamePhase = "reveal";
                     state.elapsedSeconds = 0;
                     state.totalScore = 0;
+                    state.failedRevealLetters = new Set(); // Reset danh sách fail
+    state.manualRevealEnabled = localStorage.getItem("slam-setting-manual-reveal") === "true"; // Load setting
+    state.challengeModeActive = false;
+    
+    // Ẩn UI challenge nếu đang hiện
+    revealChallengeContainer.classList.remove("visible");
                     updateScore(0);
                     createGameGrid();
                     loadGameState(); // Tải trạng thái game trước
