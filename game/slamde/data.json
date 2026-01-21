@@ -235,5 +235,84 @@
         "col": 2
       }
     ]
+  },
+  {
+    "id": "server_1768967196246_549",
+    "title": "nhanh",
+    "highScore": 0,
+    "arrangedWords": [
+      {
+        "id": 0,
+        "word": "PHANGPHAT",
+        "clue": "Mô tả mùi hương toả ra nhẹ nhàng",
+        "direction": "horizontal",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 1,
+        "word": "PHONGSINH",
+        "clue": "Hành động thả động vật bị nhốt trở lại môi trường tự nhiên",
+        "direction": "vertical",
+        "row": 0,
+        "col": 0
+      },
+      {
+        "id": 2,
+        "word": "THIENTHAN",
+        "clue": "Sinh vật thiêng liêng, do Chúa tạo ra",
+        "direction": "vertical",
+        "row": 0,
+        "col": 8
+      },
+      {
+        "id": 3,
+        "word": "HOANGTHAN",
+        "clue": "Người có quan hệ gần gũi với dòng tộc nhà vua",
+        "direction": "horizontal",
+        "row": 8,
+        "col": 0
+      },
+      {
+        "id": 4,
+        "word": "ANNGHIA",
+        "clue": "Có tình nghĩa với nhau, ơn sâu đậm",
+        "direction": "vertical",
+        "row": 0,
+        "col": 2
+      },
+      {
+        "id": 5,
+        "word": "GANGTAY",
+        "clue": "Thước đo bằng bộ phận cơ thể",
+        "direction": "vertical",
+        "row": 0,
+        "col": 4
+      },
+      {
+        "id": 6,
+        "word": "HATNHAN",
+        "clue": "Phần trung tâm của nguyên tử",
+        "direction": "horizontal",
+        "row": 4,
+        "col": 2
+      },
+      {
+        "id": 7,
+        "word": "AUYEM",
+        "clue": "Biểu lộ tình cảm bằng hành động nhẹ nhàng thân mật",
+        "direction": "horizontal",
+        "row": 6,
+        "col": 2
+      },
+      {
+        "id": 8,
+        "word": "NANNI",
+        "clue": "Xin xỏ, cố gắng tới cùng khẩn thiết",
+        "direction": "horizontal",
+        "row": 2,
+        "col": 4
+      }
+    ]
   }
 ]
