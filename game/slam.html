@@ -3816,13 +3816,6 @@ const generateLogicQuestion = (targetChar) => {
                         // Quy tắc 1 (Vĩnh viễn): Vô hiệu hóa các phím bấm sai HOẶC các phím đã được tiết lộ thành công.
                         let isDisabled = state.disabledLetters.has(keyUpper) || state.revealedLetters.has(keyUpper);
 
-                        // Quy tắc 2 (Tạm thời): CHỈ trong giai đoạn "tiết lộ", vô hiệu hóa thêm các nguyên âm.
-                        if (state.gamePhase === "reveal") {
-                            if (vowels.includes(keyUpper)) {
-                                isDisabled = true;
-                            }
-                        }
-
                         // Áp dụng trạng thái cuối cùng cho nút
                         keyEl.disabled = isDisabled;
 
