@@ -1389,6 +1389,26 @@
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 // --- HÀM TIỆN ÍCH TIẾNG VIỆT ---
+                // --- HÀM MỚI: TRẢ VỀ KHÔNG DẤU CHO CÁC Ô ĐÃ GIẢI ---
+                const revertTonesOnSolvedCells = (wordData) => {
+                    if (!wordData) return;
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
+
+                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+
+                        // Chỉ xử lý các ô ĐÃ GIẢI (màu trắng, tự động hiện...)
+                        if (cell && cell.classList.contains("is-solved")) {
+                            const cellFront = cell.querySelector(".cell-front");
+                            const currentText = cellFront.textContent.trim();
+                            // Đưa về dạng không dấu
+                            cellFront.textContent = removeVietnameseTones(currentText);
+                        }
+                    }
+                };
                 const removeVietnameseTones = (str) => {
                     str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
                     str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
@@ -3635,12 +3655,15 @@
                 };
 
                 const handleIncorrectGuess = async (wordData) => {
-                    // ★ FIX BUG: Ngắt kết nối Input ngay lập tức
-                    const lockedWordId = state.selectedWordId; // Lưu lại ID để xử lý
-                    state.selectedWordId = null; // Ngắt kết nối bàn phím ngay lập tức
+                    // ★ LOGIC MỚI: Dọn dẹp dấu thanh trên các ô đã giải (ô màu trắng)
+                    if (state.vietnameseKeyboardEnabled) {
+                        revertTonesOnSolvedCells(wordData);
+                    }
+
+                    const lockedWordId = state.selectedWordId;
+                    state.selectedWordId = null;
                     state.currentInputCell = null;
                     stopWordTimer();
-
                     // --- LOGIC TÍNH ĐIỂM (GIỮ NGUYÊN) ---
                     let penalty = 0;
                     if (wordData) {
@@ -3852,7 +3875,14 @@
                     }
                 };
 
+                // --- TÌM VÀ THAY THẾ HÀM deselectWord ---
                 const deselectWord = () => {
+                    // ★ LOGIC MỚI: Trước khi bỏ chọn, hãy dọn dẹp dấu thanh trên các ô đã giải
+                    if (state.selectedWordId !== null && state.vietnameseKeyboardEnabled) {
+                        const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                        revertTonesOnSolvedCells(wordData);
+                    }
+
                     updateKeyboardState();
                     repositionNumberLabels();
                     gridContainer.classList.remove("word-zoomed");
@@ -3866,44 +3896,31 @@
                         .querySelectorAll(".playable.selected-word")
                         .forEach((el) => el.classList.remove("selected-word"));
 
-                    // --- BẮT ĐẦU THAY ĐỔI LOGIC ---
-                    // Logic mới sẽ không ẩn tất cả các nhãn một cách mù quáng.
-                    // Thay vào đó, nó sẽ lặp qua tất cả các nhãn và quyết định trạng thái của từng cái.
-
                     const shouldShowNumbers =
                         !state.isGameFinished &&
                         ((state.gamePhase === "playing" && state.playableWordIds.size > 0) || state.slamModeActive);
                     document.querySelectorAll(".word-number-label").forEach((label) => {
                         const wordId = parseInt(label.dataset.wordId);
-                        // Một từ được coi là "có thể chơi" nếu nó nằm trong danh sách playableWordIds
-                        // hoặc khi đang ở chế độ SLAM (vì tất cả các từ chưa giải đều có thể chơi)
                         const isPlayable = state.playableWordIds.has(wordId);
 
-                        // Hiển thị nhãn nếu: (chế độ chơi VÀ từ đó có thể chơi)
                         if (shouldShowNumbers && isPlayable) {
-                            // Đảm bảo nó được hiển thị và không có class animation đang ẩn nó đi
                             label.classList.remove("hiding-right", "hiding-down");
                             label.classList.add("visible");
                         } else {
-                            // Ẩn nhãn trong tất cả các trường hợp khác (ví dụ: đang ở chế độ tiết lộ, hoặc từ này không thể chơi)
-                            // Chỉ gọi hàm ẩn nếu nó đang thực sự hiển thị để tránh các animation không cần thiết
                             if (label.classList.contains("visible")) {
                                 hideNumberLabel(label);
                             }
                         }
                     });
 
-                    // Trong hàm deselectWord()
-                    keyboardWrapper.classList.remove("visible"); // Luôn ẩn bàn phím khi không chọn từ nào
+                    keyboardWrapper.classList.remove("visible");
                     if (state.gamePhase === "playing") {
                         if (state.playableWordIds.size > 0 && !state.slamModeActive) {
                             clueText.textContent = "Chọn một từ được đánh số để giải!";
                         }
                     } else if (state.gamePhase === "reveal") {
-                        // Có thể để trống hoặc hiển thị một thông báo chờ
                         clueText.textContent = "Chuẩn bị lượt tiếp theo...";
                     }
-                    // --- KẾT THÚC THAY ĐỔI LOGIC ---
                 };
                 // --- THAY THẾ HÀM handleCellClick ---
                 const handleCellClick = (clickedCell) => {
@@ -4070,30 +4087,63 @@
                     startWordTimer();
                     updateEnterButtonState();
                 };
-                // --- THAY THẾ HÀM updateKeyboardState ---
+                // --- TÌM VÀ THAY THẾ HÀM updateKeyboardState ---
                 const updateKeyboardState = () => {
-                    // 1. Xác định xem có đang ở chế độ Sửa Dấu Đặc Biệt không
                     let allowedChars = null;
-                    let baseCharForTone = null; // Ký tự gốc để tính dấu (VD: A)
+                    let toneBase = null; // Ký tự dùng để tính dấu (Ă, Â, E, Ê...)
 
                     if (state.editingSpecificCell && state.vietnameseKeyboardEnabled) {
                         const cellText = state.editingSpecificCell.querySelector(".cell-front").textContent.trim();
-                        baseCharForTone = removeVietnameseTones(cellText); // Lấy A từ Á
 
+                        // 1. Xác định ASCII Base (để biết lọc phím chữ cái nào: A, Ă, Â)
+                        const asciiBase = removeVietnameseTones(cellText);
+
+                        // 2. Xác định Tone Base (để hiển thị dấu cho đúng: Ă -> Ắ)
+                        // Chúng ta cần tìm xem ký tự hiện tại thuộc "họ" nào
+                        const vowelFamilies = [
+                            ["A", "Á", "À", "Ả", "Ã", "Ạ"],
+                            ["Ă", "Ắ", "Ằ", "Ẳ", "Ẵ", "Ặ"],
+                            ["Â", "Ấ", "Ầ", "Ẩ", "Ẫ", "Ậ"],
+                            ["E", "É", "È", "Ẻ", "Ẽ", "Ẹ"],
+                            ["Ê", "Ế", "Ề", "Ể", "Ễ", "Ệ"],
+                            ["I", "Í", "Ì", "Ỉ", "Ĩ", "Ị"],
+                            ["O", "Ó", "Ò", "Ỏ", "Õ", "Ọ"],
+                            ["Ô", "Ố", "Ồ", "Ổ", "Ỗ", "Ộ"],
+                            ["Ơ", "Ớ", "Ờ", "Ở", "Ỡ", "Ợ"],
+                            ["U", "Ú", "Ù", "Ủ", "Ũ", "Ụ"],
+                            ["Ư", "Ứ", "Ừ", "Ử", "Ữ", "Ự"],
+                            ["Y", "Ý", "Ỳ", "Ỷ", "Ỹ", "Ỵ"],
+                            ["D", "Đ"],
+                        ];
+
+                        // Mặc định toneBase là chính nó
+                        toneBase = cellText;
+
+                        // Tìm xem nó thuộc họ nào thì lấy gốc của họ đó (index 0)
+                        for (const family of vowelFamilies) {
+                            if (family.includes(cellText)) {
+                                toneBase = family[0]; // VD: Nếu là 'Ắ' thì toneBase là 'Ă'
+                                break;
+                            }
+                        }
+
+                        // Logic lọc phím chữ cái (giữ nguyên logic cũ dựa trên asciiBase)
                         const variantMap = {
                             A: ["A", "Ă", "Â"],
                             E: ["E", "Ê"],
                             O: ["O", "Ô", "Ơ"],
                             U: ["U", "Ư"],
                             D: ["D", "Đ"],
+                            I: ["I"],
+                            Y: ["Y"],
                         };
 
                         allowedChars = new Set(["TONE_ACUTE", "TONE_GRAVE", "TONE_HOOK", "TONE_TILDE", "TONE_DOT"]);
 
-                        if (variantMap[baseCharForTone]) {
-                            variantMap[baseCharForTone].forEach((c) => allowedChars.add(c));
+                        if (variantMap[asciiBase]) {
+                            variantMap[asciiBase].forEach((c) => allowedChars.add(c));
                         } else {
-                            allowedChars.add(baseCharForTone);
+                            allowedChars.add(asciiBase);
                         }
                     }
 
@@ -4101,32 +4151,27 @@
                         const keyRaw = keyEl.dataset.key;
                         const keyUpper = keyRaw.toUpperCase();
 
-                        // --- LOGIC MỚI: CẬP NHẬT HIỂN THỊ PHÍM DẤU ---
+                        // ★ SỬA LOGIC HIỂN THỊ DẤU: Dùng toneBase thay vì baseChar cũ
                         if (keyRaw.startsWith("TONE_")) {
-                            if (baseCharForTone) {
-                                // Nếu đang sửa chữ, hiển thị kết quả (VD: Á)
+                            if (toneBase) {
                                 const toneType = keyRaw.replace("TONE_", "");
-                                // Tính toán xem A + Sắc ra chữ gì
-                                const previewChar = addToneToChar(baseCharForTone, toneType);
+                                // Tính toán: Ă + Sắc = Ắ
+                                const previewChar = addToneToChar(toneBase, toneType);
                                 keyEl.textContent = previewChar;
-                                // Tô màu nhẹ để biết đây là phím dấu
                                 keyEl.style.color = "var(--primary-accent)";
+                                keyEl.style.fontWeight = "900";
                             } else {
-                                // Nếu không, trả về ký tự mặc định (´, `, ?...)
-                                keyEl.textContent = keyEl.dataset.defaultLabel;
+                                keyEl.textContent = keyEl.dataset.defaultLabel || "";
                                 keyEl.style.color = "white";
+                                keyEl.style.fontWeight = "normal";
                             }
                         }
-                        // ---------------------------------------------
 
                         if (keyRaw === "Enter" || keyRaw === "Backspace") return;
 
                         let isDisabled = false;
-
                         if (state.editingSpecificCell) {
-                            if (allowedChars && !allowedChars.has(keyRaw)) {
-                                isDisabled = true;
-                            }
+                            if (allowedChars && !allowedChars.has(keyRaw)) isDisabled = true;
                         } else {
                             isDisabled = state.disabledLetters.has(keyUpper) || state.revealedLetters.has(keyUpper);
                         }
@@ -4520,6 +4565,7 @@
                                     [{ transform: "scale(1)" }, { transform: "scale(1.2)" }, { transform: "scale(1)" }],
                                     { duration: 150 }
                                 );
+                                updateKeyboardState();
                             }
                         }
                         return; // Kết thúc, không chạy logic bên dưới
