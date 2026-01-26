@@ -979,55 +979,96 @@
                 background-color: var(--danger-color);
             }
             /* --- CSS CHO CHẾ ĐỘ THỬ THÁCH MỞ CHỮ --- */
-#reveal-challenge-container {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 10px;
-    animation: fadeInDown 0.3s forwards;
-}
-#reveal-challenge-container.visible {
-    display: flex;
-}
-.challenge-question {
-    font-size: 1rem;
-    color: var(--primary-accent);
-    text-align: center;
-    margin-bottom: 10px;
-    font-weight: 700;
-    line-height: 1.4;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--light-text);
-}
-.challenge-input-box {
-    width: 60px;
-    height: 60px;
-    background: white;
-    color: var(--dark-blue);
-    font-size: 2rem;
-    font-weight: 900;
-    text-align: center;
-    border: 3px solid var(--secondary-accent);
-    border-radius: 12px;
-    outline: none;
-    text-transform: uppercase;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.challenge-input-box:focus {
-    border-color: var(--primary-accent);
-    box-shadow: 0 0 15px var(--primary-accent);
-}
-.challenge-feedback {
-    margin-top: 5px;
-    font-size: 0.9rem;
-    height: 1.2rem;
-    font-weight: 700;
-}
-.challenge-feedback.correct { color: var(--success-color); }
-.challenge-feedback.incorrect { color: var(--danger-color); }
+            #reveal-challenge-container {
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                margin-bottom: 10px;
+                animation: fadeInDown 0.3s forwards;
+            }
+            #reveal-challenge-container.visible {
+                display: flex;
+            }
+            .challenge-question {
+                font-size: 1rem;
+                color: var(--primary-accent);
+                text-align: center;
+                margin-bottom: 10px;
+                font-weight: 700;
+                line-height: 1.4;
+                background: rgba(0, 0, 0, 0.4);
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid var(--light-text);
+            }
+            .challenge-input-box {
+                width: 60px;
+                height: 60px;
+                background: white;
+                color: var(--dark-blue);
+                font-size: 2rem;
+                font-weight: 900;
+                text-align: center;
+                border: 3px solid var(--secondary-accent);
+                border-radius: 12px;
+                outline: none;
+                text-transform: uppercase;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+            .challenge-input-box:focus {
+                border-color: var(--primary-accent);
+                box-shadow: 0 0 15px var(--primary-accent);
+            }
+            .challenge-feedback {
+                margin-top: 5px;
+                font-size: 0.9rem;
+                height: 1.2rem;
+                font-weight: 700;
+            }
+            .challenge-feedback.correct {
+                color: var(--success-color);
+            }
+            .challenge-feedback.incorrect {
+                color: var(--danger-color);
+            }
+            /* --- CSS MỚI CHO CHẾ ĐỘ SỬA NGUYÊN ÂM --- */
+
+            /* Mới: Thêm .selected-word vào chuỗi selector */
+            .playable.selected-word.is-solved.editable-vowel {
+                cursor: pointer;
+                box-shadow: inset 0 0 0 2px var(--secondary-accent);
+            }
+
+            .playable.selected-word.is-solved.editable-vowel .cell-front {
+                animation: vowel-pulse 2s infinite;
+            }
+
+            @keyframes vowel-pulse {
+                0% {
+                    background-color: white;
+                }
+                50% {
+                    background-color: #70ffa2;
+                } /* Xanh rất nhạt */
+                100% {
+                    background-color: white;
+                }
+            }
+
+            /* Trạng thái ĐANG ĐƯỢC CHỌN để sửa dấu (Specific Edit Mode) */
+            .playable.specific-editing {
+                z-index: 100;
+                transform: scale(1.15);
+                box-shadow: 0 0 15px var(--primary-accent) !important;
+                border: 2px solid var(--primary-accent);
+            }
+
+            .playable.specific-editing .cell-front {
+                background: white;
+                color: var(--dark-blue);
+                animation: none; /* Tắt nhấp nháy */
+            }
         </style>
     </head>
     <body>
@@ -1230,10 +1271,9 @@
                     <div id="score-display">0</div>
                     <div id="words-solved-stat">0/0</div>
                     <div id="turn-display" style="color: var(--primary-accent)">Lượt 1</div>
-                    <div id="timer" class="w-1/3">00:00</div>
+                    <div style="display: none" id="timer" class="w-1/3">00:00</div>
                     <div id="word-timer">00:30</div>
                 </div>
-              
             </div>
 
             <!-- KHỐI GAME-AREA ĐÃ ĐƯỢC SỬA ĐỔI: Thêm nút SLAM vào đây -->
@@ -1251,10 +1291,10 @@
             <!-- KHỐI GAME-HUD ĐÃ ĐƯỢC SỬA ĐỔI: Xóa nút SLAM khỏi đây -->
             <div id="game-hud" class="game-hud">
                 <div id="reveal-challenge-container">
-        <div id="challenge-question" class="challenge-question">Câu hỏi sẽ hiện ở đây...</div>
-        <input type="text" id="challenge-input" class="challenge-input-box" maxlength="1" readonly>
-        <div id="challenge-feedback" class="challenge-feedback"></div>
-    </div>
+                    <div id="challenge-question" class="challenge-question">Câu hỏi sẽ hiện ở đây...</div>
+                    <input type="text" id="challenge-input" class="challenge-input-box" maxlength="1" readonly />
+                    <div id="challenge-feedback" class="challenge-feedback"></div>
+                </div>
                 <div id="keyboard-wrapper" class="keyboard-wrapper">
                     <div id="clue-area">
                         <div id="clue-text">Chọn một ô để bắt đầu!</div>
@@ -1295,10 +1335,29 @@
         <div class="modal-overlay" id="settings-modal">
             <div class="modal-content" style="text-align: left; max-width: 500px">
                 <h2 style="text-align: center">Kết Nối GitHub</h2>
-                <div class="form-group-material" style="display: flex; align-items: center; margin-bottom: 20px; margin-top: 10px;">
-    <input type="checkbox" id="setting-manual-reveal" style="width: 20px; height: 20px; margin-right: 10px;">
-    <label for="setting-manual-reveal" style="position: static; font-size: 1rem; color: white;">Bật Logic Puzzle (Mở khóa thủ công)</label>
-</div>
+                <div
+                    class="form-group-material"
+                    style="display: flex; align-items: center; margin-bottom: 20px; margin-top: 10px"
+                >
+                    <input
+                        type="checkbox"
+                        id="setting-manual-reveal"
+                        style="width: 20px; height: 20px; margin-right: 10px"
+                    />
+                    <label for="setting-manual-reveal" style="position: static; font-size: 1rem; color: white"
+                        >Bật Logic Puzzle (Mở khóa thủ công)</label
+                    >
+                </div>
+                <div class="form-group-material" style="display: flex; align-items: center; margin-bottom: 20px">
+                    <input
+                        type="checkbox"
+                        id="setting-vietnamese-keyboard"
+                        style="width: 20px; height: 20px; margin-right: 10px"
+                    />
+                    <label for="setting-vietnamese-keyboard" style="position: static; font-size: 1rem; color: white"
+                        >Bàn phím Tiếng Việt (Beta)</label
+                    >
+                </div>
                 <p style="font-size: 0.9rem; color: var(--light-text); text-align: center; margin-bottom: 20px">
                     Token được lưu trên trình duyệt của bạn. <br />
                     Dùng để tải đề lên file dữ liệu chung.
@@ -1329,6 +1388,69 @@
         </div>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
+                // --- HÀM TIỆN ÍCH TIẾNG VIỆT ---
+                const removeVietnameseTones = (str) => {
+                    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+                    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+                    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+                    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+                    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+                    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+                    str = str.replace(/đ/g, "d");
+                    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+                    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+                    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+                    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+                    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+                    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+                    str = str.replace(/Đ/g, "D");
+                    return str;
+                };
+
+                // --- HÀM XỬ LÝ DẤU THÔNG MINH (SỬA LỖI Ắ, Ớ, Ứ...) ---
+                const addToneToChar = (char, tone) => {
+                    // Bản đồ định nghĩa các họ nguyên âm và các biến thể dấu của chúng
+                    // Thứ tự: [Không dấu, Sắc, Huyền, Hỏi, Ngã, Nặng]
+                    const vowelMap = {
+                        A: ["A", "Á", "À", "Ả", "Ã", "Ạ"],
+                        Ă: ["Ă", "Ắ", "Ằ", "Ẳ", "Ẵ", "Ặ"],
+                        Â: ["Â", "Ấ", "Ầ", "Ẩ", "Ẫ", "Ậ"],
+                        E: ["E", "É", "È", "Ẻ", "Ẽ", "Ẹ"],
+                        Ê: ["Ê", "Ế", "Ề", "Ể", "Ễ", "Ệ"],
+                        I: ["I", "Í", "Ì", "Ỉ", "Ĩ", "Ị"],
+                        O: ["O", "Ó", "Ò", "Ỏ", "Õ", "Ọ"],
+                        Ô: ["Ô", "Ố", "Ồ", "Ổ", "Ỗ", "Ộ"],
+                        Ơ: ["Ơ", "Ớ", "Ờ", "Ở", "Ỡ", "Ợ"],
+                        U: ["U", "Ú", "Ù", "Ủ", "Ũ", "Ụ"],
+                        Ư: ["Ư", "Ứ", "Ừ", "Ử", "Ữ", "Ự"],
+                        Y: ["Y", "Ý", "Ỳ", "Ỷ", "Ỹ", "Ỵ"],
+                    };
+
+                    // Mapping từ tên key sang index trong mảng vowelMap
+                    const toneIndexMap = {
+                        ACUTE: 1, // Sắc
+                        GRAVE: 2, // Huyền
+                        HOOK: 3, // Hỏi
+                        TILDE: 4, // Ngã
+                        DOT: 5, // Nặng
+                    };
+
+                    const targetIndex = toneIndexMap[tone];
+                    if (targetIndex === undefined) return char; // Nếu tone không hợp lệ
+
+                    // Duyệt qua từng họ nguyên âm
+                    for (const base in vowelMap) {
+                        const variants = vowelMap[base];
+                        // Nếu ký tự hiện tại (char) nằm trong họ này (Ví dụ: char là 'Ă' nằm trong họ 'Ă')
+                        if (variants.includes(char)) {
+                            // Trả về ký tự có dấu tương ứng trong cùng họ đó (Ví dụ: index 1 của họ 'Ă' là 'Ắ')
+                            return variants[targetIndex];
+                        }
+                    }
+
+                    // Nếu không phải nguyên âm (B, C, D...) thì trả về như cũ
+                    return char;
+                };
                 let wakeLock = null;
                 const requestWakeLock = async () => {
                     if ("wakeLock" in navigator) {
@@ -1351,15 +1473,15 @@
                 history.pushState(null, null, location.href);
 
                 // 2. Bắt sự kiện Back
-                window.addEventListener('popstate', (event) => {
+                window.addEventListener("popstate", (event) => {
                     // Đẩy lại state ngay lập tức để giữ chân
                     history.pushState(null, null, location.href);
 
-                    const modal = document.getElementById('confirm-modal');
-                    const title = document.getElementById('confirm-title');
-                    const text = document.getElementById('confirm-text');
-                    const okBtn = document.getElementById('confirm-ok-btn');
-                    const cancelBtn = document.getElementById('confirm-cancel-btn');
+                    const modal = document.getElementById("confirm-modal");
+                    const title = document.getElementById("confirm-title");
+                    const text = document.getElementById("confirm-text");
+                    const okBtn = document.getElementById("confirm-ok-btn");
+                    const cancelBtn = document.getElementById("confirm-cancel-btn");
 
                     if (modal) {
                         // Xác định ngữ cảnh để hiện thông báo phù hợp
@@ -1367,20 +1489,20 @@
                         let dialogText = "Bạn có muốn rời khỏi trang web này không?";
                         let confirmAction = () => history.go(-2); // Mặc định là thoát trang web
 
-                        if (state.currentPage === 'game') {
+                        if (state.currentPage === "game") {
                             dialogTitle = "Thoát Màn Chơi?";
                             dialogText = "Tiến trình sẽ được lưu. Bạn muốn quay về sảnh chờ?";
-                            confirmAction = () => switchView('lobby'); // Trong game thì về sảnh
-                        } else if (state.currentPage === 'creation') {
+                            confirmAction = () => switchView("lobby"); // Trong game thì về sảnh
+                        } else if (state.currentPage === "creation") {
                             dialogTitle = "Hủy Soạn Thảo?";
                             dialogText = "Dữ liệu bộ đề chưa lưu sẽ bị mất. Bạn chắc chắn muốn về sảnh?";
-                            confirmAction = () => switchView('lobby'); // Đang soạn thì về sảnh
+                            confirmAction = () => switchView("lobby"); // Đang soạn thì về sảnh
                         }
 
                         // Cập nhật nội dung Modal
                         title.textContent = dialogTitle;
                         text.textContent = dialogText;
-                        modal.classList.add('visible');
+                        modal.classList.add("visible");
 
                         // Clone nút để reset sự kiện cũ
                         const newOkBtn = okBtn.cloneNode(true);
@@ -1389,14 +1511,14 @@
                         cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
                         // Xử lý Đồng ý
-                        newOkBtn.addEventListener('click', () => {
-                            modal.classList.remove('visible');
-                            confirmAction(); 
+                        newOkBtn.addEventListener("click", () => {
+                            modal.classList.remove("visible");
+                            confirmAction();
                         });
 
                         // Xử lý Hủy
-                        newCancelBtn.addEventListener('click', () => {
-                            modal.classList.remove('visible');
+                        newCancelBtn.addEventListener("click", () => {
+                            modal.classList.remove("visible");
                         });
                     }
                 });
@@ -1423,12 +1545,16 @@
                     isGameFinished: false,
                     serverPuzzles: {},
                     editingServerId: null,
-                failedRevealLetters: new Set(), // Danh sách chữ cái trả lời sai logic
-    challengeModeActive: false,     // Trạng thái đang trả lời câu hỏi logic
-    currentChallengeTarget: null,   // Chữ cái đáp án của câu hỏi hiện tại
-    manualRevealEnabled: false,     // Cài đặt bật/tắt tính năng
-    isProcessingChallenge: false,
-};
+
+                    failedRevealLetters: new Set(), // Danh sách chữ cái trả lời sai logic
+                    challengeModeActive: false, // Trạng thái đang trả lời câu hỏi logic
+                    currentChallengeTarget: null, // Chữ cái đáp án của câu hỏi hiện tại
+                    manualRevealEnabled: false, // Cài đặt bật/tắt tính năng
+                    vietnameseKeyboardEnabled: false,
+                    isProcessingChallenge: false,
+                    editingSpecificCell: null,
+                    isCheckingAnswer: false,
+                };
                 let editorState = {
                     isDragging: false,
                     draggedWordId: null,
@@ -1451,6 +1577,7 @@
                     creation: document.getElementById("creation-page"),
                     game: document.getElementById("game-page"),
                 };
+                const settingVietnameseKeyboard = document.getElementById("setting-vietnamese-keyboard");
                 const puzzleListContainer = document.getElementById("puzzle-list");
                 const puzzleTitleInput = document.getElementById("puzzle-title-input");
                 const gameArea = document.querySelector(".game-area");
@@ -1476,10 +1603,10 @@
                 const slamCancelBtn = document.getElementById("slam-cancel-btn");
                 const confirmModal = document.getElementById("confirm-modal");
                 const revealChallengeContainer = document.getElementById("reveal-challenge-container");
-const challengeQuestionText = document.getElementById("challenge-question");
-const challengeInput = document.getElementById("challenge-input");
-const challengeFeedback = document.getElementById("challenge-feedback");
-const settingManualReveal = document.getElementById("setting-manual-reveal");
+                const challengeQuestionText = document.getElementById("challenge-question");
+                const challengeInput = document.getElementById("challenge-input");
+                const challengeFeedback = document.getElementById("challenge-feedback");
+                const settingManualReveal = document.getElementById("setting-manual-reveal");
                 const getPuzzles = () => {
                     try {
                         const p = localStorage.getItem("slam-puzzles-list");
@@ -1510,19 +1637,23 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                 const ghPathInput = document.getElementById("gh-path");
                 // Load settings khi mở modal
                 openSettingsBtn.addEventListener("click", () => {
-    const config = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
-    ghTokenInput.value = config.token || "";
-    ghOwnerInput.value = config.owner || "";
-    ghRepoInput.value = config.repo || "";
-    ghPathInput.value = config.path || "slamde/data.json";
-    
-    // --- LOAD SETTING LOGIC PUZZLE ---
-    const manualReveal = localStorage.getItem("slam-setting-manual-reveal") === "true";
-    settingManualReveal.checked = manualReveal;
-    state.manualRevealEnabled = manualReveal;
-    
-    settingsModal.classList.add("visible");
-});
+                    const config = JSON.parse(localStorage.getItem("slam-github-config") || "{}");
+                    ghTokenInput.value = config.token || "";
+                    ghOwnerInput.value = config.owner || "";
+                    ghRepoInput.value = config.repo || "";
+                    ghPathInput.value = config.path || "slamde/data.json";
+
+                    // --- LOAD SETTING LOGIC PUZZLE ---
+                    const manualReveal = localStorage.getItem("slam-setting-manual-reveal") === "true";
+                    settingManualReveal.checked = manualReveal;
+                    state.manualRevealEnabled = manualReveal;
+
+                    const vnKeyboard = localStorage.getItem("slam-setting-vietnamese-keyboard") === "true";
+                    settingVietnameseKeyboard.checked = vnKeyboard;
+                    state.vietnameseKeyboardEnabled = vnKeyboard;
+
+                    settingsModal.classList.add("visible");
+                });
 
                 closeSettingsBtn.addEventListener("click", () => settingsModal.classList.remove("visible"));
 
@@ -1535,14 +1666,23 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                     };
                     localStorage.setItem("slam-github-config", JSON.stringify(config));
                     // --- LƯU SETTING LOGIC PUZZLE ---
-    const isManual = settingManualReveal.checked;
-    localStorage.setItem("slam-setting-manual-reveal", isManual);
-    state.manualRevealEnabled = isManual;
+                    const isManual = settingManualReveal.checked;
+                    localStorage.setItem("slam-setting-manual-reveal", isManual);
+                    state.manualRevealEnabled = isManual;
 
-    showToast("Đã lưu cấu hình!", "success");
-    settingsModal.classList.remove("visible");
-});
+                    const isVnKeyboard = settingVietnameseKeyboard.checked;
+                    localStorage.setItem("slam-setting-vietnamese-keyboard", isVnKeyboard);
+                    state.vietnameseKeyboardEnabled = isVnKeyboard;
 
+                    // Nếu đang trong game, cần render lại bàn phím ngay lập tức
+                    if (state.currentPage === "game") {
+                        createVirtualKeyboard();
+                        updateKeyboardState();
+                    }
+
+                    showToast("Đã lưu cấu hình!", "success");
+                    settingsModal.classList.remove("visible");
+                });
                 // --- TÌM VÀ THAY THẾ sự kiện uploadGithubBtn.addEventListener ---
                 uploadGithubBtn.addEventListener("click", async () => {
                     updateStateFromForms();
@@ -2704,11 +2844,11 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                         if (hasWord && !hasClue) {
                             showToast(`Lỗi ở từ #${i + 1} ("${w.word}"): Thiếu gợi ý!`, "error");
                             switchCreationTab("words"); // Tự động chuyển về tab nhập liệu để user sửa
-                            
+
                             // Highlight ô bị lỗi (tùy chọn)
                             const errorInput = document.querySelector(`.word-card[data-id="${w.id}"] .clue-input`);
-                            if(errorInput) errorInput.focus();
-                            
+                            if (errorInput) errorInput.focus();
+
                             return; // Dừng lưu ngay lập tức
                         }
 
@@ -2717,7 +2857,7 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                             showToast(`Lỗi ở từ #${i + 1}: Có gợi ý nhưng chưa nhập từ!`, "error");
                             switchCreationTab("words");
                             const errorInput = document.querySelector(`.word-card[data-id="${w.id}"] .word-input`);
-                            if(errorInput) errorInput.focus();
+                            if (errorInput) errorInput.focus();
                             return;
                         }
                     }
@@ -2788,7 +2928,6 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
 
                 backToLobbyBtn.addEventListener("click", () => switchView("lobby"));
                 backToLobbyBtnGame.addEventListener("click", () => switchView("lobby"));
-                
 
                 const animateWordSolved = async (wordId) => {
                     const wordData = state.words.find((w) => w.id === wordId);
@@ -2806,11 +2945,9 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
 
                     const dominoDelay = 60;
                     const animationDuration = 250;
-                    // Giảm thời gian chờ cho hiệu ứng tự động để game trôi chảy hơn
-                    const holdDuration = 400;
-                    const letterRevealDelay = 40;
+                    const holdDuration = 800; // Tăng thời gian chờ để người chơi kịp nhìn thấy chữ có dấu
 
-                    // GIAI ĐOẠN 1: Domino màu cam và hiện chữ
+                    // GIAI ĐOẠN 1: MÀU CAM - HIỆN CHỮ GỐC (CÓ DẤU)
                     const phase1Promises = playableCells.map((cell, i) => {
                         return new Promise((resolve) => {
                             setTimeout(() => {
@@ -2818,39 +2955,53 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                                 cell.classList.add("anim-correct-phase1");
 
                                 const cellFront = cell.querySelector(".cell-front");
+                                // Luôn hiển thị chữ gốc (có dấu) ở giai đoạn này
                                 cellFront.innerHTML = `<span class="letter-reveal-anim">${wordData.word[i]}</span>`;
 
-                                setTimeout(resolve, animationDuration + letterRevealDelay);
+                                setTimeout(resolve, animationDuration + 40);
                             }, i * dominoDelay);
                         });
                     });
                     await Promise.all(phase1Promises);
                     await delay(holdDuration);
 
-                    // GIAI ĐOẠN 2: Domino màu trắng (trạng thái đã giải)
+                    // GIAI ĐOẠN 2: MÀU TRẮNG - VỀ CHỮ KHÔNG DẤU (NẾU BẬT CHẾ ĐỘ TV)
                     const phase2Promises = playableCells.map((cell, i) => {
                         return new Promise((resolve) => {
                             setTimeout(() => {
                                 cell.classList.remove("anim-correct-phase1");
                                 cell.classList.add("anim-correct-phase2");
                                 const cellFront = cell.querySelector(".cell-front");
-                                if (!cellFront.textContent.trim()) {
-                                    cellFront.textContent = wordData.word[i];
+
+                                // --- LOGIC MỚI: CHUYỂN VỀ KHÔNG DẤU ---
+                                let finalChar = wordData.word[i];
+                                if (state.vietnameseKeyboardEnabled) {
+                                    finalChar = removeVietnameseTones(finalChar);
                                 }
+
+                                cellFront.textContent = finalChar;
+
                                 setTimeout(resolve, animationDuration);
                             }, i * dominoDelay);
                         });
                     });
                     await Promise.all(phase2Promises);
 
-                    // Dọn dẹp cuối cùng: Gán class is-solved
-                    playableCells.forEach((cell) => {
+                    // Dọn dẹp
+                    playableCells.forEach((cell, i) => {
                         cell.classList.remove("anim-correct-phase2");
                         cell.classList.add("is-solved");
+
+                        // Đảm bảo trạng thái cuối cùng là không dấu
                         const cellFront = cell.querySelector(".cell-front");
-                        cellFront.textContent = cellFront.textContent.trim();
+                        let finalChar = wordData.word[i];
+                        if (state.vietnameseKeyboardEnabled) {
+                            finalChar = removeVietnameseTones(finalChar);
+                        }
+                        cellFront.textContent = finalChar;
                     });
                 };
+
                 const saveGameState = () => {
                     if (state.isGameFinished) return;
                     if (!state.currentPuzzleId) return;
@@ -2876,270 +3027,270 @@ const settingManualReveal = document.getElementById("setting-manual-reveal");
                     };
                     localStorage.setItem(`slam-gamestate-${state.currentPuzzleId}`, JSON.stringify(gameState));
                 };
-              const selectNextLetterToReveal = () => {
-    // 1. Lấy danh sách các từ chưa giải quyết xong
-    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
-    if (unsolvedWords.length === 0) return null;
+                const selectNextLetterToReveal = () => {
+                    // 1. Lấy danh sách các từ chưa giải quyết xong
+                    const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+                    if (unsolvedWords.length === 0) return null;
 
-    // --- BƯỚC 1: XÁC ĐỊNH CÁC Ô ĐÃ SÁNG ĐÈN (VISIBILITY MAP) ---
-    // Tập hợp tọa độ các ô đã hiện chữ (do người chơi giải được từ chứa ô đó hoặc đã được tiết lộ trước đó)
-    const visibleCells = new Set();
-    state.solvedWords.forEach((id) => {
-        const w = state.words.find((word) => word.id === id);
-        if (w) {
-            for (let i = 0; i < w.word.length; i++) {
-                let r = w.row,
-                    c = w.col;
-                if (w.direction === "horizontal") c += i;
-                else r += i;
-                visibleCells.add(`${r}-${c}`);
-            }
-        }
-    });
+                    // --- BƯỚC 1: XÁC ĐỊNH CÁC Ô ĐÃ SÁNG ĐÈN (VISIBILITY MAP) ---
+                    // Tập hợp tọa độ các ô đã hiện chữ (do người chơi giải được từ chứa ô đó hoặc đã được tiết lộ trước đó)
+                    const visibleCells = new Set();
+                    state.solvedWords.forEach((id) => {
+                        const w = state.words.find((word) => word.id === id);
+                        if (w) {
+                            for (let i = 0; i < w.word.length; i++) {
+                                let r = w.row,
+                                    c = w.col;
+                                if (w.direction === "horizontal") c += i;
+                                else r += i;
+                                visibleCells.add(`${r}-${c}`);
+                            }
+                        }
+                    });
 
-    // --- BƯỚC 2: TÌM ỨNG VIÊN (CÓ LOGIC LOẠI TRỪ FAIL) ---
-    // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
-    const candidates = new Set();
-    unsolvedWords.forEach((w) => {
-        for (let i = 0; i < w.word.length; i++) {
-            const char = w.word[i];
-            
-            // ★ QUAN TRỌNG: Bỏ qua chữ cái này nếu người chơi từng trả lời sai câu hỏi logic về nó
-            if (state.failedRevealLetters.has(char)) continue; 
+                    // --- BƯỚC 2: TÌM ỨNG VIÊN (CÓ LOGIC LOẠI TRỪ FAIL) ---
+                    // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
+                    const candidates = new Set();
+                    unsolvedWords.forEach((w) => {
+                        for (let i = 0; i < w.word.length; i++) {
+                            const char = w.word[i];
 
-            let r = w.row,
-                c = w.col;
-            if (w.direction === "horizontal") c += i;
-            else r += i;
+                            // ★ QUAN TRỌNG: Bỏ qua chữ cái này nếu người chơi từng trả lời sai câu hỏi logic về nó
+                            if (state.failedRevealLetters.has(char)) continue;
 
-            // Kiểm tra xem ô này đã hiện chưa?
-            // 1. Hiện do máy đã mở global chữ này (state.revealedLetters)
-            // 2. Hiện do ô này thuộc về một từ người chơi đã giải (visibleCells)
-            const isVisible = state.revealedLetters.has(char) || visibleCells.has(`${r}-${c}`);
+                            let r = w.row,
+                                c = w.col;
+                            if (w.direction === "horizontal") c += i;
+                            else r += i;
 
-            // Chỉ thêm vào danh sách nếu ô này VẪN CÒN ẨN
-            if (!isVisible) {
-                candidates.add(char);
-            }
-        }
-    });
+                            // Kiểm tra xem ô này đã hiện chưa?
+                            // 1. Hiện do máy đã mở global chữ này (state.revealedLetters)
+                            // 2. Hiện do ô này thuộc về một từ người chơi đã giải (visibleCells)
+                            const isVisible = state.revealedLetters.has(char) || visibleCells.has(`${r}-${c}`);
 
-    // --- BƯỚC 3: KIỂM TRA AN TOÀN (GIỮ NGUYÊN LOGIC CŨ) ---
-    const safeCandidates = Array.from(candidates).filter((charToTest) => {
-        // Giả lập: Mở chữ này ra thì có từ nào hoàn thành 100% không?
-        for (const wordData of unsolvedWords) {
-            let isWordFullyVisible = true;
+                            // Chỉ thêm vào danh sách nếu ô này VẪN CÒN ẨN
+                            if (!isVisible) {
+                                candidates.add(char);
+                            }
+                        }
+                    });
 
-            for (let i = 0; i < wordData.word.length; i++) {
-                const letter = wordData.word[i];
-                let r = wordData.row,
-                    c = wordData.col;
-                if (wordData.direction === "horizontal") c += i;
-                else r += i;
+                    // --- BƯỚC 3: KIỂM TRA AN TOÀN (GIỮ NGUYÊN LOGIC CŨ) ---
+                    const safeCandidates = Array.from(candidates).filter((charToTest) => {
+                        // Giả lập: Mở chữ này ra thì có từ nào hoàn thành 100% không?
+                        for (const wordData of unsolvedWords) {
+                            let isWordFullyVisible = true;
 
-                // Một ô được coi là SẼ HIỆN trong tương lai giả định nếu:
-                // 1. Nó là chữ đang test
-                // 2. Nó đã được máy mở trước đó
-                // 3. Nó là ô đã giải của người chơi
-                const isCellVisibleFuture =
-                    letter === charToTest ||
-                    state.revealedLetters.has(letter) ||
-                    visibleCells.has(`${r}-${c}`);
+                            for (let i = 0; i < wordData.word.length; i++) {
+                                const letter = wordData.word[i];
+                                let r = wordData.row,
+                                    c = wordData.col;
+                                if (wordData.direction === "horizontal") c += i;
+                                else r += i;
 
-                if (!isCellVisibleFuture) {
-                    isWordFullyVisible = false;
-                    break;
-                }
-            }
+                                // Một ô được coi là SẼ HIỆN trong tương lai giả định nếu:
+                                // 1. Nó là chữ đang test
+                                // 2. Nó đã được máy mở trước đó
+                                // 3. Nó là ô đã giải của người chơi
+                                const isCellVisibleFuture =
+                                    letter === charToTest ||
+                                    state.revealedLetters.has(letter) ||
+                                    visibleCells.has(`${r}-${c}`);
 
-            // Nếu từ này bị hoàn thành -> Nguy hiểm -> Loại
-            if (isWordFullyVisible) return false;
-        }
-        return true;
-    });
+                                if (!isCellVisibleFuture) {
+                                    isWordFullyVisible = false;
+                                    break;
+                                }
+                            }
 
-    if (safeCandidates.length === 0) return null;
+                            // Nếu từ này bị hoàn thành -> Nguy hiểm -> Loại
+                            if (isWordFullyVisible) return false;
+                        }
+                        return true;
+                    });
 
-    // --- BƯỚC 4 & 5: CHIẾN THUẬT CHỌN LỰA ---
+                    if (safeCandidates.length === 0) return null;
 
-    // Tính toán tần suất xuất hiện của ô (để biết giao điểm)
-    const cellOccupancy = {};
-    state.words.forEach((w) => {
-        for (let i = 0; i < w.word.length; i++) {
-            let r = w.row,
-                c = w.col;
-            if (w.direction === "horizontal") c += i;
-            else r += i;
-            cellOccupancy[`${r}-${c}`] = (cellOccupancy[`${r}-${c}`] || 0) + 1;
-        }
-    });
+                    // --- BƯỚC 4 & 5: CHIẾN THUẬT CHỌN LỰA ---
 
-    const candidateDetails = safeCandidates.map((char) => {
-        let frequency = 0;
-        let intersectionCount = 0;
-        let wordsWithChar = new Set();
+                    // Tính toán tần suất xuất hiện của ô (để biết giao điểm)
+                    const cellOccupancy = {};
+                    state.words.forEach((w) => {
+                        for (let i = 0; i < w.word.length; i++) {
+                            let r = w.row,
+                                c = w.col;
+                            if (w.direction === "horizontal") c += i;
+                            else r += i;
+                            cellOccupancy[`${r}-${c}`] = (cellOccupancy[`${r}-${c}`] || 0) + 1;
+                        }
+                    });
 
-        unsolvedWords.forEach((w) => {
-            if (w.word.includes(char)) {
-                wordsWithChar.add(w.id);
-                for (let i = 0; i < w.word.length; i++) {
-                    if (w.word[i] === char) {
-                        frequency++;
-                        let r = w.row,
-                            c = w.col;
-                        if (w.direction === "horizontal") c += i;
-                        else r += i;
-                        if (cellOccupancy[`${r}-${c}`] > 1) {
-                            intersectionCount++;
+                    const candidateDetails = safeCandidates.map((char) => {
+                        let frequency = 0;
+                        let intersectionCount = 0;
+                        let wordsWithChar = new Set();
+
+                        unsolvedWords.forEach((w) => {
+                            if (w.word.includes(char)) {
+                                wordsWithChar.add(w.id);
+                                for (let i = 0; i < w.word.length; i++) {
+                                    if (w.word[i] === char) {
+                                        frequency++;
+                                        let r = w.row,
+                                            c = w.col;
+                                        if (w.direction === "horizontal") c += i;
+                                        else r += i;
+                                        if (cellOccupancy[`${r}-${c}`] > 1) {
+                                            intersectionCount++;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        const wordCount = wordsWithChar.size;
+                        const nonIntersectionCount = frequency - intersectionCount;
+
+                        return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
+                    });
+
+                    candidateDetails.sort((a, b) => {
+                        // 1. Xuất hiện >=2 từ, không giao nhau (Ưu tiên cao nhất)
+                        const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
+                        const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
+                        if (a_P1 && !b_P1) return -1;
+                        if (!a_P1 && b_P1) return 1;
+
+                        // 2. Chỉ nằm ở điểm giao nhau
+                        const a_P2 = a.nonIntersectionCount === 0 && a.intersectionCount > 0;
+                        const b_P2 = b.nonIntersectionCount === 0 && b.intersectionCount > 0;
+                        if (a_P2 && !b_P2) return -1;
+                        if (!a_P2 && b_P2) return 1;
+
+                        // 3. Chỉ có ở 1 từ duy nhất (Đẩy lên trước Frequency)
+                        const a_P4 = a.wordCount === 1;
+                        const b_P4 = b.wordCount === 1;
+                        if (a_P4 && !b_P4) return -1;
+                        if (!a_P4 && b_P4) return 1;
+
+                        // 4. Frequency cao nhất (Đã chuyển xuống cuối cùng theo yêu cầu)
+                        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
+
+                        return 0;
+                    });
+
+                    return candidateDetails[0].char;
+                };
+
+                const alphabet = "AĂÂBCDĐEÊGHIKLMNOÔƠPQRSTUƯVXY"; // Bảng chữ cái tiếng Việt mở rộng (tùy chỉnh nếu muốn dùng bảng English)
+                const alphabetSimple = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Dùng bảng này cho chuẩn logic quốc tế và khớp với bàn phím
+
+                const generateLogicQuestion = (targetChar) => {
+                    targetChar = targetChar.toUpperCase();
+                    const targetIndex = alphabetSimple.indexOf(targetChar);
+                    if (targetIndex === -1) return null; // Ký tự không nằm trong bảng chữ cái (ví dụ số)
+
+                    const type = Math.random() > 0.5 ? "shift" : "middle";
+
+                    // Dạng 1: Dịch chuyển (Thứ n sau/trước X)
+                    if (type === "shift") {
+                        const direction = Math.random() > 0.5 ? 1 : -1; // 1: Xuôi (Sau), -1: Ngược (Trước)
+                        const offset = Math.floor(Math.random() * 5) + 1; // 1 đến 5
+
+                        // Tính chữ cái mốc (Start Char)
+                        // Target = Start + offset * dir => Start = Target - offset * dir
+                        let startIndex = (targetIndex - offset * direction) % alphabetSimple.length;
+                        if (startIndex < 0) startIndex += alphabetSimple.length;
+
+                        const startChar = alphabetSimple[startIndex];
+                        const dirText = direction === 1 ? "theo chiều xuôi" : "theo chiều ngược";
+                        const afterText = direction === 1 ? "sau" : "trước"; // Dùng từ ngữ phù hợp
+
+                        return {
+                            text: `Chữ cái nào nằm ở thứ ${offset} ${afterText} chữ "${startChar}" ${dirText} của bảng chữ cái (English)?`,
+                            answer: targetChar,
+                        };
+                    }
+                    // Dạng 2: Ở giữa
+                    else {
+                        // Tìm A và B sao cho Target ở giữa. Target = (A + B) / 2
+                        // A = Target - distance, B = Target + distance
+                        // Cần đảm bảo A và B nằm trong giới hạn 0-25
+
+                        const maxDist = Math.min(targetIndex, 25 - targetIndex);
+                        if (maxDist < 1) {
+                            // Nếu là A hoặc Z thì không có ở giữa, fallback về dạng shift
+                            return generateLogicQuestion(targetChar);
+                        }
+
+                        const distance = Math.floor(Math.random() * maxDist) + 1;
+                        const charA = alphabetSimple[targetIndex - distance];
+                        const charB = alphabetSimple[targetIndex + distance];
+
+                        return {
+                            text: `Chữ cái nào nằm ở chính giữa chữ "${charA}" và chữ "${charB}" trong bảng chữ cái?`,
+                            answer: targetChar,
+                        };
+                    }
+                };
+                const performAutoReveal = async () => {
+                    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
+
+                    const letterToReveal = selectNextLetterToReveal();
+
+                    // Nếu không còn chữ nào an toàn hoặc hết chữ để chọn
+                    if (!letterToReveal) {
+                        const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
+                        if (unsolvedWords.length > 0) {
+                            state.gamePhase = "playing";
+                            state.turnCount++;
+                            document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`;
+                            state.playableWordIds.clear();
+                            unsolvedWords.forEach((w) => state.playableWordIds.add(w.id));
+
+                            showToast("Đến lượt bạn! Hãy hoàn thành các từ còn lại.", "info", 3000);
+                            clueText.textContent = "Thử thách: Điền các ký tự cuối cùng!";
+                            deselectWord();
+                            saveGameState();
+                        } else {
+                            triggerWinAnimation();
+                        }
+                        return;
+                    }
+
+                    // --- LOGIC MỚI: KIỂM TRA CHẾ ĐỘ THỦ CÔNG ---
+                    if (state.manualRevealEnabled) {
+                        const questionData = generateLogicQuestion(letterToReveal);
+                        if (questionData) {
+                            // Kích hoạt UI Challenge
+                            state.challengeModeActive = true;
+                            state.currentChallengeTarget = letterToReveal;
+                            state.isProcessingChallenge = false; // Reset cờ mỗi khi bắt đầu câu hỏi mới
+
+                            // Hiển thị UI
+                            revealChallengeContainer.classList.add("visible");
+                            challengeQuestionText.textContent = questionData.text;
+                            challengeInput.value = "";
+                            challengeFeedback.textContent = "";
+                            challengeFeedback.className = "challenge-feedback";
+
+                            // Hiện bàn phím ảo
+                            keyboardWrapper.classList.add("visible");
+                            clueText.textContent = "Giải câu đố logic để mở chữ cái!";
+
+                            updateEnterButtonState(); // <--- THÊM DÒNG NÀY ĐỂ ĐỔI NÚT THÀNH "GỬI" NGAY
+
+                            return;
                         }
                     }
-                }
-            }
-        });
+                    // ------------------------------------------
 
-        const wordCount = wordsWithChar.size;
-        const nonIntersectionCount = frequency - intersectionCount;
+                    // Nếu không bật chế độ thủ công hoặc không tạo được câu hỏi
 
-        return { char, frequency, wordCount, intersectionCount, nonIntersectionCount };
-    });
-
-    candidateDetails.sort((a, b) => {
-        // 1. Xuất hiện >=2 từ, không giao nhau (Ưu tiên cao nhất)
-        const a_P1 = a.wordCount >= 2 && a.intersectionCount === 0;
-        const b_P1 = b.wordCount >= 2 && b.intersectionCount === 0;
-        if (a_P1 && !b_P1) return -1;
-        if (!a_P1 && b_P1) return 1;
-
-        // 2. Chỉ nằm ở điểm giao nhau
-        const a_P2 = a.nonIntersectionCount === 0 && a.intersectionCount > 0;
-        const b_P2 = b.nonIntersectionCount === 0 && b.intersectionCount > 0;
-        if (a_P2 && !b_P2) return -1;
-        if (!a_P2 && b_P2) return 1;
-
-        // 3. Chỉ có ở 1 từ duy nhất (Đẩy lên trước Frequency)
-        const a_P4 = a.wordCount === 1;
-        const b_P4 = b.wordCount === 1;
-        if (a_P4 && !b_P4) return -1;
-        if (!a_P4 && b_P4) return 1;
-
-        // 4. Frequency cao nhất (Đã chuyển xuống cuối cùng theo yêu cầu)
-        if (b.frequency !== a.frequency) return b.frequency - a.frequency;
-
-        return 0;
-    });
-
-    return candidateDetails[0].char;
-};
-                
-                const alphabet = "AĂÂBCDĐEÊGHIKLMNOÔƠPQRSTUƯVXY"; // Bảng chữ cái tiếng Việt mở rộng (tùy chỉnh nếu muốn dùng bảng English)
-const alphabetSimple = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Dùng bảng này cho chuẩn logic quốc tế và khớp với bàn phím
-
-const generateLogicQuestion = (targetChar) => {
-    targetChar = targetChar.toUpperCase();
-    const targetIndex = alphabetSimple.indexOf(targetChar);
-    if (targetIndex === -1) return null; // Ký tự không nằm trong bảng chữ cái (ví dụ số)
-
-    const type = Math.random() > 0.5 ? "shift" : "middle";
-    
-    // Dạng 1: Dịch chuyển (Thứ n sau/trước X)
-    if (type === "shift") {
-        const direction = Math.random() > 0.5 ? 1 : -1; // 1: Xuôi (Sau), -1: Ngược (Trước)
-        const offset = Math.floor(Math.random() * 5) + 1; // 1 đến 5
-        
-        // Tính chữ cái mốc (Start Char)
-        // Target = Start + offset * dir => Start = Target - offset * dir
-        let startIndex = (targetIndex - (offset * direction)) % alphabetSimple.length;
-        if (startIndex < 0) startIndex += alphabetSimple.length;
-        
-        const startChar = alphabetSimple[startIndex];
-        const dirText = direction === 1 ? "theo chiều xuôi" : "theo chiều ngược";
-        const afterText = direction === 1 ? "sau" : "trước"; // Dùng từ ngữ phù hợp
-        
-        return {
-            text: `Chữ cái nào nằm ở thứ ${offset} ${afterText} chữ "${startChar}" ${dirText} của bảng chữ cái (English)?`,
-            answer: targetChar
-        };
-    } 
-    // Dạng 2: Ở giữa
-    else {
-        // Tìm A và B sao cho Target ở giữa. Target = (A + B) / 2
-        // A = Target - distance, B = Target + distance
-        // Cần đảm bảo A và B nằm trong giới hạn 0-25
-        
-        const maxDist = Math.min(targetIndex, 25 - targetIndex);
-        if (maxDist < 1) {
-            // Nếu là A hoặc Z thì không có ở giữa, fallback về dạng shift
-            return generateLogicQuestion(targetChar); 
-        }
-        
-        const distance = Math.floor(Math.random() * maxDist) + 1;
-        const charA = alphabetSimple[targetIndex - distance];
-        const charB = alphabetSimple[targetIndex + distance];
-        
-        return {
-            text: `Chữ cái nào nằm ở chính giữa chữ "${charA}" và chữ "${charB}" trong bảng chữ cái?`,
-            answer: targetChar
-        };
-    }
-};
-              const performAutoReveal = async () => {
-    if (state.gamePhase !== "reveal" || state.isGameFinished) return;
-
-    const letterToReveal = selectNextLetterToReveal();
-
-    // Nếu không còn chữ nào an toàn hoặc hết chữ để chọn
-    if (!letterToReveal) {
-        const unsolvedWords = state.words.filter((w) => !state.solvedWords.has(w.id));
-        if (unsolvedWords.length > 0) {
-            state.gamePhase = "playing";
-            state.turnCount++;
-            document.getElementById("turn-display").textContent = `Lượt ${state.turnCount}`;
-            state.playableWordIds.clear();
-            unsolvedWords.forEach((w) => state.playableWordIds.add(w.id));
-            
-            showToast("Đến lượt bạn! Hãy hoàn thành các từ còn lại.", "info", 3000);
-            clueText.textContent = "Thử thách: Điền các ký tự cuối cùng!";
-            deselectWord();
-            saveGameState();
-        } else {
-            triggerWinAnimation();
-        }
-        return;
-    }
-
-    // --- LOGIC MỚI: KIỂM TRA CHẾ ĐỘ THỦ CÔNG ---
-    if (state.manualRevealEnabled) {
-        const questionData = generateLogicQuestion(letterToReveal);
-        if (questionData) {
-            // Kích hoạt UI Challenge
-            state.challengeModeActive = true;
-            state.currentChallengeTarget = letterToReveal;
-            state.isProcessingChallenge = false; // Reset cờ mỗi khi bắt đầu câu hỏi mới
-            
-            // Hiển thị UI
-            revealChallengeContainer.classList.add("visible");
-            challengeQuestionText.textContent = questionData.text;
-            challengeInput.value = "";
-            challengeFeedback.textContent = "";
-            challengeFeedback.className = "challenge-feedback";
-            
-            // Hiện bàn phím ảo
-            keyboardWrapper.classList.add("visible");
-            clueText.textContent = "Giải câu đố logic để mở chữ cái!";
-            
-            updateEnterButtonState(); // <--- THÊM DÒNG NÀY ĐỂ ĐỔI NÚT THÀNH "GỬI" NGAY
-            
-            return; 
-        }
-    }
-    // ------------------------------------------
-
-    // Nếu không bật chế độ thủ công hoặc không tạo được câu hỏi
-    clueText.textContent = `Tiết lộ chữ cái tiếp theo...`;
-    await delay(1000);
-    revealLetterOnGrid(letterToReveal);
-    showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 1500);
-};
+                    await delay(1000);
+                    revealLetterOnGrid(letterToReveal);
+                    //showToast(`Tiết lộ chữ: ${letterToReveal}`, "info", 1500);
+                };
                 const loadGameState = () => {
                     const savedState = localStorage.getItem(`slam-gamestate-${state.currentPuzzleId}`);
                     if (!savedState) return;
@@ -3192,6 +3343,13 @@ const generateLogicQuestion = (targetChar) => {
                                         // Thêm class 'is-solved' để nó có màu trắng
                                         if (cell) {
                                             cell.classList.add("is-solved");
+                                            // Đảm bảo hiển thị không dấu nếu load lại
+                                            if (state.vietnameseKeyboardEnabled) {
+                                                cell.querySelector(".cell-front").textContent =
+                                                    removeVietnameseTones(letter);
+                                            } else {
+                                                cell.querySelector(".cell-front").textContent = letter;
+                                            }
                                         }
                                     }
                                 }
@@ -3399,10 +3557,15 @@ const generateLogicQuestion = (targetChar) => {
                         let c = word.col;
                         for (let i = 0; i < word.word.length; i++) {
                             const key = `${r}-${c}`;
-                            const char = word.word[i].toUpperCase();
+                            const originalChar = word.word[i].toUpperCase();
+                            // Nếu bật chế độ TV, chữ hiển thị trên lưới (khi chưa giải hoặc đã giải xong) là chữ không dấu
+                            const displayChar = state.vietnameseKeyboardEnabled
+                                ? removeVietnameseTones(originalChar)
+                                : originalChar;
+
                             if (!grid.has(key))
                                 grid.set(key, {
-                                    letter: char,
+                                    letter: displayChar, // Dùng displayChar để render HTML
                                     wordIds: new Set(),
                                 });
                             grid.get(key).wordIds.add(word.id);
@@ -3532,122 +3695,144 @@ const generateLogicQuestion = (targetChar) => {
                 };
 
                 const handleWordTimeout = () => {
+                    if (state.isCheckingAnswer) return; // Nếu đang check rồi thì thôi
+                    state.isCheckingAnswer = true;
+
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     showToast("Hết giờ!", "error");
-                    handleIncorrectGuess(wordData);
+
+                    handleIncorrectGuess(wordData).then(() => {
+                        state.isCheckingAnswer = false;
+                    });
                 };
+                // --- TÌM VÀ THAY THẾ TOÀN BỘ HÀM checkSelectedWord ---
                 const checkSelectedWord = async () => {
-                    const timeLeft = state.wordTimeLeft;
-                    stopWordTimer();
-                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
-                    if (!wordData) return;
+                    keyboardWrapper.classList.remove("visible");
+                    // 1. CHỐNG SPAM: Nếu đang kiểm tra rồi thì dừng lại ngay
+                    if (state.isCheckingAnswer) return;
 
-                    let userInput = "";
-                    for (let i = 0; i < wordData.word.length; i++) {
-                        let r = wordData.row,
-                            c = wordData.col;
-                        if (wordData.direction === "horizontal") c += i;
-                        else r += i;
-                        const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                        if (playable) {
-                            userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
+                    // 2. Khóa chức năng kiểm tra
+                    state.isCheckingAnswer = true;
+
+                    try {
+                        const timeLeft = state.wordTimeLeft;
+                        stopWordTimer();
+                        const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                        if (!wordData) {
+                            state.isCheckingAnswer = false; // Mở khóa nếu lỗi
+                            return;
                         }
-                    }
 
-                    if (userInput === wordData.word) {
-                        // ★★★ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ★★★
-                        const allSolvedInTurn = new Set([wordData.id]); // Dùng Set để tránh trùng lặp
-
-                        // Kiểm tra các từ giao nhau có được hoàn thành ké không
+                        let userInput = "";
                         for (let i = 0; i < wordData.word.length; i++) {
                             let r = wordData.row,
                                 c = wordData.col;
                             if (wordData.direction === "horizontal") c += i;
                             else r += i;
+                            const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                            if (playable) {
+                                userInput += playable.querySelector(".cell-front").textContent.trim().toUpperCase();
+                            }
+                        }
 
-                            const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                            const wordIdsInCell = Object.keys(cell.dataset)
-                                .filter((k) => k.startsWith("word_"))
-                                .map((k) => parseInt(k.replace("word_", "")));
+                        if (userInput === wordData.word) {
+                            document
+                                .querySelectorAll(".editable-vowel")
+                                .forEach((el) => el.classList.remove("editable-vowel"));
 
-                            for (const otherId of wordIdsInCell) {
-                                if (otherId !== wordData.id && !state.solvedWords.has(otherId)) {
-                                    const otherWordData = state.words.find((w) => w.id === otherId);
-                                    if (otherWordData) {
-                                        let otherWordFromGrid = "";
-                                        let isComplete = true;
-                                        for (let j = 0; j < otherWordData.word.length; j++) {
-                                            let r2 = otherWordData.row,
-                                                c2 = otherWordData.col;
-                                            if (otherWordData.direction === "horizontal") c2 += j;
-                                            else r2 += j;
-                                            const otherCell = gridContainer.querySelector(
-                                                `[data-row="${r2}"][data-col="${c2}"]`
-                                            );
-                                            const text = otherCell
-                                                ?.querySelector(".cell-front")
-                                                .textContent.trim()
-                                                .toUpperCase();
-                                            if (!text) {
-                                                isComplete = false;
-                                                break;
+                            const allSolvedInTurn = new Set([wordData.id]);
+
+                            // Kiểm tra các từ giao nhau
+                            for (let i = 0; i < wordData.word.length; i++) {
+                                let r = wordData.row,
+                                    c = wordData.col;
+                                if (wordData.direction === "horizontal") c += i;
+                                else r += i;
+
+                                const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                const wordIdsInCell = Object.keys(cell.dataset)
+                                    .filter((k) => k.startsWith("word_"))
+                                    .map((k) => parseInt(k.replace("word_", "")));
+
+                                for (const otherId of wordIdsInCell) {
+                                    if (otherId !== wordData.id && !state.solvedWords.has(otherId)) {
+                                        const otherWordData = state.words.find((w) => w.id === otherId);
+                                        if (otherWordData) {
+                                            let otherWordFromGrid = "";
+                                            let isComplete = true;
+                                            for (let j = 0; j < otherWordData.word.length; j++) {
+                                                let r2 = otherWordData.row,
+                                                    c2 = otherWordData.col;
+                                                if (otherWordData.direction === "horizontal") c2 += j;
+                                                else r2 += j;
+                                                const otherCell = gridContainer.querySelector(
+                                                    `[data-row="${r2}"][data-col="${c2}"]`
+                                                );
+                                                const text = otherCell
+                                                    ?.querySelector(".cell-front")
+                                                    .textContent.trim()
+                                                    .toUpperCase();
+                                                if (!text) {
+                                                    isComplete = false;
+                                                    break;
+                                                }
+                                                otherWordFromGrid += text;
                                             }
-                                            otherWordFromGrid += text;
-                                        }
-                                        if (isComplete && otherWordFromGrid === otherWordData.word) {
-                                            allSolvedInTurn.add(otherId);
+                                            if (isComplete && otherWordFromGrid === otherWordData.word) {
+                                                allSolvedInTurn.add(otherId);
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        // Tính tổng điểm cho tất cả các từ giải được trong lượt này
-                        let turnScore = 0;
-                        allSolvedInTurn.forEach((id) => {
-                            const w = state.words.find((word) => word.id === id);
-                            if (w) {
-                                // --- DÒNG CẦN THÊM VÀO ---
-                                turnScore += w.word.length; // Cộng điểm bằng độ dài từ
-                                // --------------------------
-
-                                for (let i = 0; i < w.word.length; i++) {
-                                    let r = w.row,
-                                        c = w.col;
-                                    if (w.direction === "horizontal") c += i;
-                                    else r += i;
-                                    const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                                    if (cell) {
-                                        cell.classList.add("selected-word");
+                            // Tính điểm
+                            let turnScore = 0;
+                            allSolvedInTurn.forEach((id) => {
+                                const w = state.words.find((word) => word.id === id);
+                                if (w) {
+                                    turnScore += w.word.length;
+                                    for (let i = 0; i < w.word.length; i++) {
+                                        let r = w.row,
+                                            c = w.col;
+                                        if (w.direction === "horizontal") c += i;
+                                        else r += i;
+                                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                                        if (cell) {
+                                            cell.classList.add("selected-word");
+                                        }
                                     }
                                 }
+                            });
+                            updateScore(turnScore);
+                            showToast(`+${turnScore} điểm! Giải được ${allSolvedInTurn.size} từ!`, "success", 2000);
+
+                            // Chạy hiệu ứng
+                            await Promise.all(Array.from(allSolvedInTurn).map((id) => animateWordSolved(id)));
+
+                            allSolvedInTurn.forEach((id) => state.solvedWords.add(id));
+                            updateStats();
+
+                            if (state.solvedWords.size === state.words.length) {
+                                triggerWinAnimation();
+                            } else {
+                                state.gamePhase = "reveal";
+                                state.playableWordIds.clear();
+                                deselectWord();
+                                performAutoReveal();
                             }
-                        });
-                        updateScore(turnScore);
-                        showToast(`+${turnScore} điểm! Giải được ${allSolvedInTurn.size} từ!`, "success", 2000);
-
-                        // Chạy hiệu ứng cho TẤT CẢ các từ đã giải CÙNG LÚC
-                        await Promise.all(Array.from(allSolvedInTurn).map((id) => animateWordSolved(id)));
-
-                        // Cập nhật trạng thái game sau khi hiệu ứng kết thúc
-                        allSolvedInTurn.forEach((id) => state.solvedWords.add(id));
-                        updateStats();
-
-                        if (state.solvedWords.size === state.words.length) {
-                            triggerWinAnimation();
+                            saveGameState();
                         } else {
-                            state.gamePhase = "reveal";
-                            state.playableWordIds.clear();
-                            deselectWord();
-                            performAutoReveal();
+                            // Nếu sai, chờ chạy xong hiệu ứng rung lắc rồi mới mở khóa
+                            await handleIncorrectGuess(wordData);
                         }
-                        saveGameState();
-                        // ★★★ KẾT THÚC LOGIC MỚI ★★★
-                    } else {
-                        handleIncorrectGuess(wordData);
+                    } catch (e) {
+                        console.error(e);
+                    } finally {
+                        // 3. Mở khóa sau khi hoàn tất mọi thứ (dù đúng hay sai)
+                        state.isCheckingAnswer = false;
                     }
                 };
-
                 const hideNumberLabel = (label) => {
                     if (!label) return;
                     const wordData = state.words.find((w) => w.id == label.dataset.wordId);
@@ -3720,15 +3905,42 @@ const generateLogicQuestion = (targetChar) => {
                     }
                     // --- KẾT THÚC THAY ĐỔI LOGIC ---
                 };
+                // --- THAY THẾ HÀM handleCellClick ---
                 const handleCellClick = (clickedCell) => {
+                    // 1. Nếu bấm ra ngoài ô đang sửa dấu -> Thoát chế độ sửa
+                    if (state.editingSpecificCell && state.editingSpecificCell !== clickedCell) {
+                        exitVowelEditMode();
+                    }
+
+                    // 2. Logic mới: Bấm vào ô đã giải nhưng là nguyên âm (editable-vowel)
+                    if (clickedCell.classList.contains("editable-vowel")) {
+                        // Chỉ cho phép nếu ô này thuộc từ đang chọn (để tránh xung đột logic chọn từ)
+                        if (clickedCell.classList.contains("selected-word")) {
+                            if (state.editingSpecificCell === clickedCell) {
+                                // Bấm lại lần nữa -> Thoát
+                                exitVowelEditMode();
+                            } else {
+                                // Chưa sửa -> Vào chế độ sửa
+                                enterVowelEditMode(clickedCell);
+                            }
+                            return; // Dừng, không chạy logic chọn từ bên dưới
+                        }
+                    }
+
+                    // 3. Logic cũ (Chọn từ)
                     if (state.selectedWordId !== null) {
                         const wordIds = Object.keys(clickedCell.dataset)
                             .filter((k) => k.startsWith("word_"))
                             .map((k) => parseInt(k.replace("word_", "")));
-                        if (wordIds.includes(state.selectedWordId) && !clickedCell.classList.contains("is-solved"))
+
+                        // Nếu click vào ô thường (chưa giải) trong từ đang chọn -> Di chuyển con trỏ
+                        if (wordIds.includes(state.selectedWordId) && !clickedCell.classList.contains("is-solved")) {
                             state.currentInputCell = clickedCell;
+                        }
                         return;
                     }
+
+                    // (Phần còn lại giữ nguyên như cũ...)
                     if (state.gamePhase !== "playing" || state.playableWordIds.size === 0) return;
                     const wordIds = Object.keys(clickedCell.dataset)
                         .filter((k) => k.startsWith("word_"))
@@ -3746,26 +3958,71 @@ const generateLogicQuestion = (targetChar) => {
                     state.selectedWordId = targetId;
                     updateSelectionAndFocus();
                 };
+                // --- CÁC HÀM MỚI ---
+
+                const enterVowelEditMode = (cell) => {
+                    // Nếu đang sửa ô khác thì thoát ô đó trước
+                    if (state.editingSpecificCell && state.editingSpecificCell !== cell) {
+                        exitVowelEditMode();
+                    }
+
+                    state.editingSpecificCell = cell;
+                    cell.classList.add("specific-editing");
+
+                    // Cập nhật gợi ý
+                    clueText.textContent = "Chỉnh sửa dấu cho ký tự này...";
+
+                    // Cập nhật bàn phím (chỉ hiện các phím liên quan)
+                    updateKeyboardState();
+                    updateEnterButtonState(); // Đổi nút Enter thành Gửi/Hủy
+                };
+
+                const exitVowelEditMode = () => {
+                    if (!state.editingSpecificCell) return;
+
+                    state.editingSpecificCell.classList.remove("specific-editing");
+                    state.editingSpecificCell = null;
+
+                    // Khôi phục gợi ý cũ
+                    if (state.selectedWordId !== null) {
+                        const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                        if (wordData) clueText.textContent = `${wordData.id + 1}. ${wordData.clue}`;
+                    }
+
+                    // Khôi phục bàn phím đầy đủ
+                    updateKeyboardState();
+                    updateEnterButtonState();
+                };
+                // --- THAY THẾ TOÀN BỘ HÀM updateSelectionAndFocus BẰNG BẢN NÀY ---
                 const updateSelectionAndFocus = () => {
+                    // 1. Dọn dẹp cũ
                     document
                         .querySelectorAll(".playable.selected-word")
                         .forEach((el) => el.classList.remove("selected-word"));
+                    document.querySelectorAll(".editable-vowel").forEach((el) => el.classList.remove("editable-vowel")); // Xóa class này
                     document.getElementById("grid-wrapper").classList.remove("selection-active");
                     document.querySelectorAll(".word-number-label.visible").forEach((l) => hideNumberLabel(l));
+
+                    // Thoát chế độ sửa dấu nếu đang bật
+                    if (state.editingSpecificCell) exitVowelEditMode();
 
                     const wordData = state.words.find((w) => w.id === state.selectedWordId);
                     if (!wordData) {
                         deselectWord();
                         return;
                     }
+
                     document.getElementById("grid-wrapper").classList.add("selection-active");
                     if (!state.slamModeActive) clueText.textContent = `${wordData.id + 1}. ${wordData.clue}`;
-                    let firstEmptyCell = null;
 
+                    let firstEmptyCell = null;
                     const firstCell = gridContainer.querySelector(
                         `[data-row="${wordData.row}"][data-col="${wordData.col}"]`
                     );
                     let lastCell = null;
+
+                    // Danh sách nguyên âm cơ bản để kiểm tra
+                    const vowelsBase = ["A", "E", "I", "O", "U", "Y", "Ă", "Â", "Ê", "Ô", "Ơ", "Ư"];
 
                     for (let i = 0; i < wordData.word.length; i++) {
                         let r = wordData.row,
@@ -3777,25 +4034,35 @@ const generateLogicQuestion = (targetChar) => {
                         if (playable) {
                             playable.classList.add("selected-word");
                             playable.classList.remove("is-locked");
+
                             const cellText = playable.querySelector(".cell-front").textContent.trim();
-                            if (!firstEmptyCell && cellText === "" && !playable.classList.contains("is-solved")) {
+                            const isSolved = playable.classList.contains("is-solved");
+
+                            // ★ LOGIC MỚI: Nếu ô đã giải VÀ là nguyên âm VÀ đang bật chế độ Tiếng Việt
+                            // -> Thêm class editable-vowel để người dùng biết có thể bấm vào
+                            if (isSolved && state.vietnameseKeyboardEnabled) {
+                                // Lấy chữ cái gốc (không dấu) để check xem có phải nguyên âm không
+                                const baseChar = removeVietnameseTones(cellText || "");
+                                if (vowelsBase.includes(baseChar)) {
+                                    playable.classList.add("editable-vowel");
+                                }
+                            }
+
+                            if (!firstEmptyCell && cellText === "" && !isSolved) {
                                 firstEmptyCell = playable;
                             }
-                            if (i === wordData.word.length - 1) {
-                                // Lấy ô cuối cùng
-                                lastCell = playable;
-                            }
+                            if (i === wordData.word.length - 1) lastCell = playable;
                         }
                     }
 
-                    // Tính toán tọa độ trung tâm và áp dụng hiệu ứng phóng to
+                    // Zoom effect
                     if (firstCell && lastCell) {
                         const centerX = (firstCell.offsetLeft + lastCell.offsetLeft + lastCell.offsetWidth) / 2;
                         const centerY = (firstCell.offsetTop + lastCell.offsetTop + lastCell.offsetHeight) / 2;
-
                         gridContainer.style.transformOrigin = `${centerX}px ${centerY}px`;
                         gridContainer.classList.add("word-zoomed");
                     }
+
                     state.currentInputCell =
                         firstEmptyCell ||
                         gridContainer.querySelector(`[data-row="${wordData.row}"][data-col="${wordData.col}"]`);
@@ -3803,95 +4070,181 @@ const generateLogicQuestion = (targetChar) => {
                     startWordTimer();
                     updateEnterButtonState();
                 };
-
+                // --- THAY THẾ HÀM updateKeyboardState ---
                 const updateKeyboardState = () => {
-                    const vowels = ["U", "E", "O", "A", "I"];
+                    // 1. Xác định xem có đang ở chế độ Sửa Dấu Đặc Biệt không
+                    let allowedChars = null;
+                    let baseCharForTone = null; // Ký tự gốc để tính dấu (VD: A)
+
+                    if (state.editingSpecificCell && state.vietnameseKeyboardEnabled) {
+                        const cellText = state.editingSpecificCell.querySelector(".cell-front").textContent.trim();
+                        baseCharForTone = removeVietnameseTones(cellText); // Lấy A từ Á
+
+                        const variantMap = {
+                            A: ["A", "Ă", "Â"],
+                            E: ["E", "Ê"],
+                            O: ["O", "Ô", "Ơ"],
+                            U: ["U", "Ư"],
+                            D: ["D", "Đ"],
+                        };
+
+                        allowedChars = new Set(["TONE_ACUTE", "TONE_GRAVE", "TONE_HOOK", "TONE_TILDE", "TONE_DOT"]);
+
+                        if (variantMap[baseCharForTone]) {
+                            variantMap[baseCharForTone].forEach((c) => allowedChars.add(c));
+                        } else {
+                            allowedChars.add(baseCharForTone);
+                        }
+                    }
 
                     virtualKeyboard.querySelectorAll(".key").forEach((keyEl) => {
-                        const keyUpper = keyEl.dataset.key.toUpperCase();
-                        if (keyUpper.length > 1) return; // Bỏ qua các phím chức năng
+                        const keyRaw = keyEl.dataset.key;
+                        const keyUpper = keyRaw.toUpperCase();
 
-                        // --- BẮT ĐẦU LOGIC MỚI ---
+                        // --- LOGIC MỚI: CẬP NHẬT HIỂN THỊ PHÍM DẤU ---
+                        if (keyRaw.startsWith("TONE_")) {
+                            if (baseCharForTone) {
+                                // Nếu đang sửa chữ, hiển thị kết quả (VD: Á)
+                                const toneType = keyRaw.replace("TONE_", "");
+                                // Tính toán xem A + Sắc ra chữ gì
+                                const previewChar = addToneToChar(baseCharForTone, toneType);
+                                keyEl.textContent = previewChar;
+                                // Tô màu nhẹ để biết đây là phím dấu
+                                keyEl.style.color = "var(--primary-accent)";
+                            } else {
+                                // Nếu không, trả về ký tự mặc định (´, `, ?...)
+                                keyEl.textContent = keyEl.dataset.defaultLabel;
+                                keyEl.style.color = "white";
+                            }
+                        }
+                        // ---------------------------------------------
 
-                        // Quy tắc 1 (Vĩnh viễn): Vô hiệu hóa các phím bấm sai HOẶC các phím đã được tiết lộ thành công.
-                        let isDisabled = state.disabledLetters.has(keyUpper) || state.revealedLetters.has(keyUpper);
+                        if (keyRaw === "Enter" || keyRaw === "Backspace") return;
 
-                        // Áp dụng trạng thái cuối cùng cho nút
+                        let isDisabled = false;
+
+                        if (state.editingSpecificCell) {
+                            if (allowedChars && !allowedChars.has(keyRaw)) {
+                                isDisabled = true;
+                            }
+                        } else {
+                            isDisabled = state.disabledLetters.has(keyUpper) || state.revealedLetters.has(keyUpper);
+                        }
+
                         keyEl.disabled = isDisabled;
-
-                        // --- KẾT THÚC LOGIC MỚI ---
+                        keyEl.style.opacity = isDisabled ? "0.3" : "1";
                     });
                 };
+
                 const createVirtualKeyboard = () => {
-                    const keysLayout = [
-                        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-                        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-                        ["Backspace", "Z", "X", "C", "V", "B", "N", "M", "Enter"],
-                    ];
+                    let keysLayout;
+
+                    if (state.vietnameseKeyboardEnabled) {
+                        // Layout Tiếng Việt
+                        keysLayout = [
+                            ["TONE_ACUTE", "TONE_GRAVE", "TONE_HOOK", "TONE_TILDE", "TONE_DOT", "Ă", "Ơ", "Ư"],
+                            ["Q", "E", "Ê", "R", "T", "Y", "U", "I", "O", "Ô", "P"],
+                            ["A", "Â", "S", "D", "Đ", "G", "H", "K", "L"],
+                            ["Backspace", "X", "C", "V", "B", "N", "M", "Enter"],
+                        ];
+                    } else {
+                        // Layout Tiếng Anh
+                        keysLayout = [
+                            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+                            ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+                            ["Backspace", "Z", "X", "C", "V", "B", "N", "M", "Enter"],
+                        ];
+                    }
+
                     virtualKeyboard.innerHTML = keysLayout
                         .map(
                             (row) =>
                                 `<div class="keyboard-row">${row
                                     .map((key) => {
                                         let c = "key";
-                                        if (key.length > 1) c += " special";
+                                        let label = key;
+
+                                        // Xác định nhãn hiển thị cho phím dấu
+                                        if (key === "TONE_ACUTE") label = "´";
+                                        else if (key === "TONE_GRAVE") label = "\`";
+                                        else if (key === "TONE_HOOK") label = "?";
+                                        else if (key === "TONE_TILDE") label = "~";
+                                        else if (key === "TONE_DOT") label = ".";
+
+                                        if (key.startsWith("TONE_")) c += " tone-key";
+                                        if (key.length > 1 && !key.startsWith("TONE_")) c += " special";
                                         if (key === "Enter") c += " enter";
-                                        return `<button class="${c}" data-key="${key}">${key === "Backspace" ? "XÓA" : key === "Enter" ? "ENTER" : key}</button>`;
+
+                                        // ★ LƯU Ý: Thêm data-default-label để dùng cho việc reset sau này
+                                        return `<button class="${c}" data-key="${key}" data-default-label="${label}">
+                                ${key === "Backspace" ? "XÓA" : key === "Enter" ? "ENTER" : label}
+                            </button>`;
                                     })
                                     .join("")}</div>`
                         )
                         .join("");
                 };
                 // --- CẬP NHẬT: ĐỔI TEXT NÚT ENTER THÀNH GỬI KHI Ở CHẾ ĐỘ CHALLENGE ---
-const updateEnterButtonState = () => {
-    const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
-    if (!enterBtn) return;
+                const updateEnterButtonState = () => {
+                    const enterBtn = virtualKeyboard.querySelector('.key[data-key="Enter"]');
+                    if (!enterBtn) return;
 
-    // 1. Ưu tiên kiểm tra chế độ Challenge trước
-    if (state.challengeModeActive) {
-        enterBtn.textContent = "GỬI";
-        enterBtn.classList.remove("action-cancel");
-        // Có thể thêm style màu xanh lá hoặc khác biệt nếu muốn
-        return;
-    }
+                    // 1. Challenge Mode
+                    if (state.challengeModeActive) {
+                        enterBtn.textContent = "OK";
+                        enterBtn.classList.remove("action-cancel");
+                        return;
+                    }
 
-    // 2. Các logic cũ cho chế độ chơi thường
-    if (state.selectedWordId === null) {
-        enterBtn.textContent = "ENTER";
-        enterBtn.classList.remove("action-cancel");
-        return;
-    }
+                    // 2. ★ LOGIC MỚI: Specific Edit Mode
+                    if (state.editingSpecificCell) {
+                        enterBtn.textContent = "XONG"; // Hoặc "GỬI"
+                        enterBtn.classList.remove("action-cancel");
+                        // Style xanh lá để báo hiệu xác nhận
+                        enterBtn.style.background = "var(--success-color)";
+                        return;
+                    }
 
-    const wordData = state.words.find((w) => w.id === state.selectedWordId);
-    if (!wordData) return;
+                    // 3. Normal Mode (Reset style)
+                    enterBtn.style.background = "";
 
-    let isFull = true;
-    for (let i = 0; i < wordData.word.length; i++) {
-        let r = wordData.row,
-            c = wordData.col;
-        if (wordData.direction === "horizontal") c += i;
-        else r += i;
+                    // 2. Các logic cũ cho chế độ chơi thường
+                    if (state.selectedWordId === null) {
+                        enterBtn.textContent = "ENTER";
+                        enterBtn.classList.remove("action-cancel");
+                        return;
+                    }
 
-        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-        const text = cell ? cell.querySelector(".cell-front").textContent.trim() : "";
-        if (!text) {
-            isFull = false;
-            break;
-        }
-    }
+                    const wordData = state.words.find((w) => w.id === state.selectedWordId);
+                    if (!wordData) return;
 
-    enterBtn.style.background = "";
-    enterBtn.style.color = "";
-    enterBtn.style.boxShadow = "";
+                    let isFull = true;
+                    for (let i = 0; i < wordData.word.length; i++) {
+                        let r = wordData.row,
+                            c = wordData.col;
+                        if (wordData.direction === "horizontal") c += i;
+                        else r += i;
 
-    if (isFull) {
-        enterBtn.textContent = "ENTER";
-        enterBtn.classList.remove("action-cancel");
-    } else {
-        enterBtn.textContent = "HỦY";
-        enterBtn.classList.add("action-cancel");
-    }
-};
+                        const cell = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                        const text = cell ? cell.querySelector(".cell-front").textContent.trim() : "";
+                        if (!text) {
+                            isFull = false;
+                            break;
+                        }
+                    }
+
+                    enterBtn.style.background = "";
+                    enterBtn.style.color = "";
+                    enterBtn.style.boxShadow = "";
+
+                    if (isFull) {
+                        enterBtn.textContent = "ENTER";
+                        enterBtn.classList.remove("action-cancel");
+                    } else {
+                        enterBtn.textContent = "HỦY";
+                        enterBtn.classList.add("action-cancel");
+                    }
+                };
                 const revealLetterOnGrid = async (letter) => {
                     state.revealedLetters.add(letter.toUpperCase());
                     state.playableWordIds.clear();
@@ -3909,17 +4262,28 @@ const updateEnterButtonState = () => {
                                 else r += i;
                                 const playable = gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
 
+                                // Tìm đoạn: if (playable && !playable.classList.contains("is-solved")) { ... }
+
+                                // --- THAY THẾ BẰNG ---
                                 if (playable && !playable.classList.contains("is-solved")) {
-                                    // Kiểm tra xem ô này đã có chữ chưa, nếu chưa thì mới tính là "hiện mới" để trừ điểm
                                     const currentContent = playable.querySelector(".cell-front").textContent.trim();
                                     if (!currentContent) {
                                         lettersToDeduct++;
                                     }
 
+                                    let charToShow = letter;
+                                    // ★ LOGIC MỚI: Nếu bật tiếng Việt -> Hiển thị không dấu
+                                    if (state.vietnameseKeyboardEnabled) {
+                                        charToShow = removeVietnameseTones(letter);
+                                    }
+
                                     playable.querySelector(".cell-front").innerHTML =
-                                        `<span class="letter-pop-in">${letter}</span>`;
+                                        `<span class="letter-pop-in">${charToShow}</span>`;
                                     playable.classList.remove("is-locked", "anim-incorrect");
                                     playable.classList.add("is-solved");
+
+                                    // Lưu chữ gốc vào dataset để máy biết mà kiểm tra đúng sai ngầm
+                                    playable.dataset.realChar = letter;
                                 }
                             }
                         }
@@ -4117,92 +4481,215 @@ const updateEnterButtonState = () => {
                 };
                 saveGameState();
                 const handleKeyPress = (key) => {
-    // 1. NẾU ĐANG Ở CHẾ ĐỘ LOGIC CHALLENGE
-    if (state.challengeModeActive) {
-        if (key === "Backspace") {
-             challengeInput.value = "";
-        } else if (key === "Enter") {
-             submitChallengeAnswer(); // Hàm này giờ đã có chống spam
-        } else if (key.length === 1 && /^[a-zA-Z]$/.test(key)) {
-             challengeInput.value = key.toUpperCase();
-        }
-        return; 
-    }
+                    // 1. Logic Challenge (Giữ nguyên)
+                    if (state.challengeModeActive) {
+                        if (key === "Backspace") challengeInput.value = "";
+                        else if (key === "Enter") submitChallengeAnswer();
+                        else if (key.length === 1 && /^[a-zA-Z]$/.test(key)) challengeInput.value = key.toUpperCase();
+                        return;
+                    }
+                    if (state.editingSpecificCell) {
+                        const cellFront = state.editingSpecificCell.querySelector(".cell-front");
+                        const currentText = cellFront.textContent.trim();
 
-    // ... Code cũ giữ nguyên ...
-    if (state.slamModeActive) {
-        if (key === "Enter") {
-            if (state.selectedWordId !== null) checkSelectedWord();
-        } else handleWordInput(key);
-        return;
-    }
-    if (state.gamePhase === "playing") {
-        if (key === "Enter") {
-            if (state.selectedWordId !== null) checkSelectedWord();
-        } else handleWordInput(key);
-    }
-};
-const submitChallengeAnswer = async () => {
-    // 1. CHỐNG SPAM: Nếu đang xử lý rồi thì chặn luôn
-    if (state.isProcessingChallenge) return;
-    
-    const input = challengeInput.value.trim().toUpperCase();
-    if (!input) return; // Không làm gì nếu chưa nhập
-    
-    // Khóa ngay lập tức để không bấm được lần 2
-    state.isProcessingChallenge = true; 
-    
-    const target = state.currentChallengeTarget;
-    
-    // Tạm ẩn bàn phím ngay lập tức để cảm giác phản hồi nhanh
-    keyboardWrapper.classList.remove("visible"); 
+                        if (key === "Enter") {
+                            exitVowelEditMode(); // Bấm Enter/Gửi để thoát
+                        } else if (key === "Backspace") {
+                            // Nút xóa: Đưa về dạng không dấu ban đầu
+                            cellFront.textContent = removeVietnameseTones(currentText);
+                        } else if (key.startsWith("TONE_")) {
+                            // Nhập dấu: Gọi hàm xử lý dấu (reuse hàm cũ nhưng trỏ vào ô đang sửa)
+                            const toneType = key.replace("TONE_", "");
+                            const newChar = addToneToChar(currentText, toneType);
+                            if (newChar !== currentText) {
+                                cellFront.textContent = newChar;
+                                // Animation nhẹ
+                                cellFront.animate(
+                                    [{ transform: "scale(1)" }, { transform: "scale(1.2)" }, { transform: "scale(1)" }],
+                                    { duration: 150 }
+                                );
+                            }
+                        } else {
+                            // Nhập ký tự (A, Ă, Â...): Thay thế trực tiếp
+                            // Chỉ nhận nếu phím đó không bị disable (theo logic updateKeyboardState)
+                            const btn = virtualKeyboard.querySelector(`.key[data-key="${key}"]`);
+                            if (btn && !btn.disabled) {
+                                cellFront.textContent = key;
+                                // Animation nhẹ
+                                cellFront.animate(
+                                    [{ transform: "scale(1)" }, { transform: "scale(1.2)" }, { transform: "scale(1)" }],
+                                    { duration: 150 }
+                                );
+                            }
+                        }
+                        return; // Kết thúc, không chạy logic bên dưới
+                    }
+                    // 2. Xử lý nhập liệu Game
+                    const targetMode = state.slamModeActive || state.gamePhase === "playing";
+                    if (targetMode) {
+                        if (key === "Enter") {
+                            if (state.selectedWordId !== null) checkSelectedWord();
+                        } else if (key.startsWith("TONE_")) {
+                            // --- XỬ LÝ DẤU TIẾNG VIỆT ---
+                            handleToneInput(key);
+                        } else {
+                            handleWordInput(key);
+                        }
+                    }
+                };
 
-    if (input === target) {
-        // --- TRƯỜNG HỢP ĐÚNG ---
-        challengeInput.style.borderColor = "var(--success-color)";
-        challengeFeedback.textContent = "Chính xác!";
-        challengeFeedback.classList.add("correct");
-        
-        await delay(800);
-        
-        // Dọn dẹp UI
-        state.challengeModeActive = false; // Tắt chế độ
-        revealChallengeContainer.classList.remove("visible");
-        challengeInput.style.borderColor = ""; 
-        updateEnterButtonState(); // Reset nút về mặc định
-        
-        // Thực hiện mở chữ
-        revealLetterOnGrid(target);
-        showToast(`Mở khóa chữ: ${target}`, "success");
-    } else {
-        // --- TRƯỜNG HỢP SAI (Đã sửa: Không hiện đáp án, Không báo chữ bị cấm) ---
-        challengeInput.style.borderColor = "var(--danger-color)";
-        
-        // Chỉ báo sai chung chung
-        challengeFeedback.textContent = "Sai rồi!"; 
-        challengeFeedback.classList.add("incorrect");
-        
-        await delay(1500);
-        
-        // Logic xử lý sai
-        state.challengeModeActive = false; // Tắt chế độ
-        state.failedRevealLetters.add(target); // Thêm vào danh sách đen ngầm
-        
-        // Dọn dẹp UI
-        revealChallengeContainer.classList.remove("visible");
-        challengeInput.style.borderColor = "";
-        updateEnterButtonState(); // Reset nút về mặc định
-        
-        // Thông báo ẩn danh
-        showToast("Bạn đã bỏ lỡ cơ hội mở chữ cái này.", "error");
-        
-        // Gọi lại để máy chọn chữ khác (Vì chữ cũ đã bị ban)
-        performAutoReveal();
-    }
-    
-    state.currentChallengeTarget = null;
-    state.isProcessingChallenge = false; // Mở khóa cho lượt sau (dù logic sẽ chuyển sang phase khác)
-};
+                // --- TÌM VÀ THAY THẾ TOÀN BỘ HÀM handleToneInput BẰNG CODE NÀY ---
+                const handleToneInput = (toneKey) => {
+                    const wordId = state.selectedWordId;
+                    if (wordId === null) return;
+
+                    const wordData = state.words.find((w) => w.id === wordId);
+                    if (!wordData) return;
+
+                    // 1. Xác định vị trí Index hiện tại của con trỏ trong từ (0, 1, 2...)
+                    let currentIndex = -1;
+
+                    if (state.currentInputCell) {
+                        // Dùng toán học để tính index dựa trên tọa độ
+                        const currentR = parseInt(state.currentInputCell.dataset.row);
+                        const currentC = parseInt(state.currentInputCell.dataset.col);
+
+                        if (wordData.direction === "horizontal") {
+                            currentIndex = currentC - wordData.col;
+                        } else {
+                            currentIndex = currentR - wordData.row;
+                        }
+                    } else {
+                        // Nếu không có con trỏ (trường hợp đã điền kín từ), giả định đang đứng ở cuối từ
+                        currentIndex = wordData.word.length;
+                    }
+
+                    // Hàm tiện ích lấy ô tại index cụ thể
+                    const getCellAtIndex = (idx) => {
+                        if (idx < 0 || idx >= wordData.word.length) return null;
+                        let r = wordData.row;
+                        let c = wordData.col;
+                        if (wordData.direction === "horizontal") c += idx;
+                        else r += idx;
+                        return gridContainer.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                    };
+
+                    const toneType = toneKey.replace("TONE_", "");
+                    let targetCell = null;
+
+                    // 2. CHIẾN THUẬT TÌM MỤC TIÊU (ƯU TIÊN)
+
+                    // TRƯỜNG HỢP A: Kiểm tra chính ô đang đứng (nếu con trỏ không bị văng ra ngoài)
+                    // Dành cho trường hợp người chơi click trực tiếp vào chữ 'A' để sửa thành 'Á'
+                    if (currentIndex < wordData.word.length) {
+                        const cell = getCellAtIndex(currentIndex);
+                        if (cell && !cell.classList.contains("is-locked") && !cell.classList.contains("is-solved")) {
+                            const content = cell.querySelector(".cell-front").textContent.trim();
+                            // Thử bỏ dấu xem có thay đổi gì không? (Để biết đây có phải nguyên âm không)
+                            if (content && addToneToChar(content, toneType) !== content) {
+                                targetCell = cell;
+                            }
+                        }
+                    }
+
+                    // TRƯỜNG HỢP B: Nếu trường hợp A thất bại (ô hiện tại trống, hoặc là phụ âm, hoặc hết từ)
+                    // Thì lùi lại 1 ô (Backtrack). Đây là logic cho việc gõ xong tự nhảy nhưng muốn bỏ dấu lại.
+                    if (!targetCell) {
+                        const prevCell = getCellAtIndex(currentIndex - 1);
+                        if (
+                            prevCell &&
+                            !prevCell.classList.contains("is-locked") &&
+                            !prevCell.classList.contains("is-solved")
+                        ) {
+                            targetCell = prevCell;
+                        }
+                    }
+
+                    // 3. THỰC HIỆN BỎ DẤU
+                    if (targetCell) {
+                        const cellFront = targetCell.querySelector(".cell-front");
+                        const currentText = cellFront.textContent.trim();
+
+                        if (currentText) {
+                            const newChar = addToneToChar(currentText, toneType);
+                            if (newChar !== currentText) {
+                                cellFront.textContent = newChar;
+
+                                // Animation nảy lên
+                                cellFront.animate(
+                                    [
+                                        { transform: "scale(1)" },
+                                        { transform: "scale(1.3)", color: "#ffeb3b" }, // Highlight màu vàng chút
+                                        { transform: "scale(1)" },
+                                    ],
+                                    { duration: 200 }
+                                );
+                            }
+                        }
+                    }
+                };
+
+                const submitChallengeAnswer = async () => {
+                    // 1. CHỐNG SPAM: Nếu đang xử lý rồi thì chặn luôn
+                    if (state.isProcessingChallenge) return;
+
+                    const input = challengeInput.value.trim().toUpperCase();
+                    if (!input) return; // Không làm gì nếu chưa nhập
+
+                    // Khóa ngay lập tức để không bấm được lần 2
+                    state.isProcessingChallenge = true;
+
+                    const target = state.currentChallengeTarget;
+
+                    // Tạm ẩn bàn phím ngay lập tức để cảm giác phản hồi nhanh
+                    keyboardWrapper.classList.remove("visible");
+
+                    if (input === target) {
+                        // --- TRƯỜNG HỢP ĐÚNG ---
+                        challengeInput.style.borderColor = "var(--success-color)";
+                        challengeFeedback.textContent = "Chính xác!";
+                        challengeFeedback.classList.add("correct");
+
+                        await delay(800);
+
+                        // Dọn dẹp UI
+                        state.challengeModeActive = false; // Tắt chế độ
+                        revealChallengeContainer.classList.remove("visible");
+                        challengeInput.style.borderColor = "";
+                        updateEnterButtonState(); // Reset nút về mặc định
+
+                        // Thực hiện mở chữ
+                        revealLetterOnGrid(target);
+                        showToast(`Mở khóa chữ: ${target}`, "success");
+                    } else {
+                        // --- TRƯỜNG HỢP SAI (Đã sửa: Không hiện đáp án, Không báo chữ bị cấm) ---
+                        challengeInput.style.borderColor = "var(--danger-color)";
+
+                        // Chỉ báo sai chung chung
+                        challengeFeedback.textContent = "Sai rồi!";
+                        challengeFeedback.classList.add("incorrect");
+
+                        await delay(1500);
+
+                        // Logic xử lý sai
+                        state.challengeModeActive = false; // Tắt chế độ
+                        state.failedRevealLetters.add(target); // Thêm vào danh sách đen ngầm
+
+                        // Dọn dẹp UI
+                        revealChallengeContainer.classList.remove("visible");
+                        challengeInput.style.borderColor = "";
+                        updateEnterButtonState(); // Reset nút về mặc định
+
+                        // Thông báo ẩn danh
+                        showToast("Bạn đã bỏ lỡ cơ hội mở chữ cái này.", "error");
+
+                        // Gọi lại để máy chọn chữ khác (Vì chữ cũ đã bị ban)
+                        performAutoReveal();
+                    }
+
+                    state.currentChallengeTarget = null;
+                    state.isProcessingChallenge = false; // Mở khóa cho lượt sau (dù logic sẽ chuyển sang phase khác)
+                };
                 slamBtn.addEventListener("click", () => {
                     if (!state.slamModeActive) slamModal.classList.add("visible");
                 });
@@ -4310,11 +4797,14 @@ const submitChallengeAnswer = async () => {
                     state.elapsedSeconds = 0;
                     state.totalScore = 0;
                     state.failedRevealLetters = new Set(); // Reset danh sách fail
-    state.manualRevealEnabled = localStorage.getItem("slam-setting-manual-reveal") === "true"; // Load setting
-    state.challengeModeActive = false;
-    
-    // Ẩn UI challenge nếu đang hiện
-    revealChallengeContainer.classList.remove("visible");
+                    state.manualRevealEnabled = localStorage.getItem("slam-setting-manual-reveal") === "true"; // Load setting
+                    state.challengeModeActive = false;
+                    state.vietnameseKeyboardEnabled =
+                        localStorage.getItem("slam-setting-vietnamese-keyboard") === "true";
+                    createVirtualKeyboard(); // Vẽ lại bàn phím ngay khi vào game để khớp với cài đặt
+                    // ------------------------
+                    // Ẩn UI challenge nếu đang hiện
+                    revealChallengeContainer.classList.remove("visible");
                     updateScore(0);
                     createGameGrid();
                     loadGameState(); // Tải trạng thái game trước
