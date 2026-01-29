@@ -393,6 +393,45 @@ select:focus, button:focus {
 }
 /* === Công cụ cho nhà phát triển === */
 #rawDataOutput { max-height: 400px; }
+/* === CSS CHO DASHBOARD DẠNG TAB === */
+.dashboard-tab-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+.dashboard-tab-btn {
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* Đè lên border của nav */
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.dashboard-tab-btn:hover {
+    color: #2563eb;
+    background-color: #f1f5f9;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+.dashboard-tab-btn.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    background-color: white; /* Hoặc màu nền modal */
+}
+.dashboard-tab-content {
+    display: none; /* Ẩn mặc định */
+    animation: fadeIn 0.3s ease;
+}
+.dashboard-tab-content.active {
+    display: block; /* Hiện khi active */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
   </head>
   <body>
@@ -489,108 +528,88 @@ select:focus, button:focus {
     <div id="detailedStatsModalOverlay" class="modal-overlay">
       <div class="modal-content-wrapper">
    
-        <div id="detailedStatsContainer" class="detailed-stats-section">
-
-
-<div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold text-gray-800">Dashboard Phân tích</h2>
-    <button id="closeDetailedStatsButton" class="text-gray-400 hover:text-gray-600">×</button>
-</div>
-
-<!-- Lưới Thống kê Tổng quan -->
-<div class="stats-summary-grid mb-6">
-    <div><p>Tổng TC Chương trình</p><p id="statsTotalProgramCredits"></p></div>
-    <div><p>Tổng TC Hoàn thành</p><p id="statsTotalCompletedCredits"></p></div>
-    <div><p>Tỷ lệ Hoàn thành</p><p id="statsCompletionRate"></p></div>
-    <div><p>GPA Tích lũy</p><p id="statsOverallGPA"></p></div>
-</div>
-
-<!-- MỖI KHU VỰC SẼ ĐƯỢC BỌC TRONG 1 COLLAPSIBLE-SECTION -->
-<!-- Khu vực 1: Insights -->
-<div class="collapsible-section mb-4 border rounded-lg">
-    <div class="collapsible-header">
-        <h3 class="text-lg font-semibold text-gray-700">Các Điểm nhấn</h3>
-        <span class="collapsible-arrow">></span>
+   <div id="detailedStatsContainer" class="detailed-stats-section">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Thống kê học tập</h2>
+            <p class="text-sm text-gray-500">Tổng quan tình hình tích lũy tín chỉ và điểm số</p>
+        </div>
+        <button id="closeDetailedStatsButton" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
     </div>
-    <div class="collapsible-content">
-        <div id="insightsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-            <!-- Nội dung insight -->
+
+    <div class="stats-summary-grid mb-6">
+        <div><p>Tổng TC Chương trình</p><p id="statsTotalProgramCredits">--</p></div>
+        <div><p>Tổng TC Hoàn thành</p><p id="statsTotalCompletedCredits">--</p></div>
+        <div><p>Tỷ lệ Hoàn thành</p><p id="statsCompletionRate">--</p></div>
+        <div><p>GPA Tích lũy</p><p id="statsOverallGPA" class="text-blue-700">--</p></div>
+    </div>
+
+    <div class="dashboard-tab-nav">
+        <button class="dashboard-tab-btn active" onclick="switchDashboardTab('overview')">Tổng quan & Phân tích</button>
+        <button class="dashboard-tab-btn" onclick="switchDashboardTab('charts')">Biểu đồ trực quan</button>
+        <button class="dashboard-tab-btn" onclick="switchDashboardTab('details')">Bảng điểm chi tiết</button>
+    </div>
+
+  <div id="tab-overview" class="dashboard-tab-content active">
+        <div>
+            <h4 class="font-semibold text-gray-700 mb-3">Điểm nhấn (Insights)</h4>
+            <div id="insightsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
         </div>
     </div>
-</div>
 
-<!-- Khu vực 2: Phân phối điểm (Bộ lọc) -->
-<div class="collapsible-section mb-4 border rounded-lg">
-    <div class="collapsible-header">
-        <h3 class="text-lg font-semibold text-gray-700">Phân phối & Lọc theo Điểm</h3>
-        <span class="collapsible-arrow">></span>
-    </div>
-    <div class="collapsible-content">
-        <div class="p-4">
-            <ul id="statsGradeDistribution" class="grade-distribution-list">
-                <!-- Bộ lọc điểm sẽ được sinh ra ở đây -->
-            </ul>
-        </div>
-    </div>
-</div>
-
-<!-- Khu vực 3: Biểu đồ -->
-<div class="collapsible-section mb-4 border rounded-lg">
-    <div class="collapsible-header">
-        <h3 class="text-lg font-semibold text-gray-700">Trực quan hóa Dữ liệu</h3>
-        <span class="collapsible-arrow">></span>
-    </div>
-    <div class="collapsible-content">
-        <div id="chartsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
-            <div>
-                <h4 class="text-center font-medium text-gray-600 mb-2">Phân phối Tín chỉ theo Điểm</h4>
-                <div style="height: 300px; position: relative;"><canvas id="gradeCreditDistributionChart"></canvas></div>
-            </div>
-            <div>
+    <div id="tab-charts" class="dashboard-tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                 <h4 class="text-center font-medium text-gray-600 mb-2">GPA các Học kỳ</h4>
-                <div style="height: 300px; position: relative;"><canvas id="semesterGpaChart"></canvas></div>
+                <div style="height: 250px; position: relative;"><canvas id="semesterGpaChart"></canvas></div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <h4 class="text-center font-medium text-gray-600 mb-2">Phân phối Tín chỉ theo Điểm</h4>
+                <div style="height: 250px; position: relative;"><canvas id="gradeCreditDistributionChart"></canvas></div>
             </div>
         </div>
-        <div class="cumulative-gpa-chart-container p-4">
-            <h4 class="text-center font-medium text-gray-600 mb-2">Biến động GPA Tích lũy</h4>
-            <div style="height: 300px; position: relative;"><canvas id="cumulativeGpaChart"></canvas></div>
+        <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+            <h4 class="text-center font-medium text-gray-600 mb-2">Biến động GPA Tích lũy (Tiến độ)</h4>
+            <div style="height: 250px; position: relative;"><canvas id="cumulativeGpaChart"></canvas></div>
         </div>
     </div>
-</div>
+<div id="tab-details" class="dashboard-tab-content">
+        <div class="flex justify-between items-center mb-3">
+            <h4 class="font-semibold text-gray-700">Danh sách môn học chi tiết</h4>
+            <button id="clearGradeFilterButton" class="secondary-action-button hidden" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; width: auto;">
+                Bỏ lọc điểm
+            </button>
+        </div>
 
-<!-- Khu vực 4: Bảng chi tiết -->
-<div class="collapsible-section mb-4 border rounded-lg">
-    <div class="collapsible-header">
-        <h3 class="text-lg font-semibold text-gray-700">Bảng Chi tiết Điểm (Sắp xếp & Lọc)</h3>
-        <span class="collapsible-arrow">></span>
-    </div>
-    <div class="collapsible-content">
-        <div class="p-4">
-            <div class="flex justify-between items-center mb-2">
-                <button id="clearGradeFilterButton" class="secondary-action-button hidden" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; width: auto;">Bỏ lọc điểm</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="subject-details-table">
-                    <thead>
-                        <tr>
-                            <th>Tên Môn</th>
-                            <th data-sortable data-sort-key="credits">Số TC <span class="sort-arrow"></span></th>
-                            <th data-sortable data-sort-key="letterGrade">Điểm Chữ <span class="sort-arrow"></span></th>
-                            <th data-sortable data-sort-key="point">Điểm 4 <span class="sort-arrow"></span></th>
-                            <th data-sortable data-sort-key="deviation">Độ lệch GPA <span class="sort-arrow"></span></th>
-                        </tr>
-                    </thead>
-                    <tbody id="statsSubjectDetailsTableBody"></tbody>
-                </table>
-            </div>
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
+            <p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Lọc nhanh theo điểm số:</p>
+            <ul id="statsGradeDistribution" class="grade-distribution-list">
+                </ul>
+        </div>
+
+        <div class="overflow-x-auto border rounded-lg shadow-sm">
+            <table class="subject-details-table">
+                <thead>
+                    <tr>
+                        <th class="bg-gray-50">Tên Môn</th>
+                        <th class="bg-gray-50" data-sortable data-sort-key="credits">Số TC <span class="sort-arrow"></span></th>
+                        <th class="bg-gray-50" data-sortable data-sort-key="letterGrade">Điểm Chữ <span class="sort-arrow"></span></th>
+                        <th class="bg-gray-50" data-sortable data-sort-key="point">Điểm 4 <span class="sort-arrow"></span></th>
+                        <th class="bg-gray-50" data-sortable data-sort-key="deviation">Độ lệch <span class="sort-arrow"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="statsSubjectDetailsTableBody" class="bg-white"></tbody>
+            </table>
         </div>
     </div>
-</div>
 
-<div class="mt-8 text-center">
-     <button id="closeDetailedStatsButtonInternal" class="secondary-action-button w-auto mx-auto px-8">Đóng</button>
-</div>
+    <div class="mt-6 text-center pt-4 border-t border-gray-100">
+         <button id="closeDetailedStatsButtonInternal" class="secondary-action-button w-auto mx-auto px-6">Đóng</button>
     </div>
+</div>
     
 </div> <!-- [THÊM DÒNG NÀY] - để đóng .modal-content-wrapper -->
 </div> <!-- [THÊM DÒNG NÀY] - để đóng #detailedStatsModalOverlay -->
@@ -1552,7 +1571,25 @@ document.querySelectorAll('.subject-details-table th[data-sortable]').forEach(th
 });
 window.onscroll = function() { scrollToTopBtn.style.display = (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) ? "flex" : "none"; };
 scrollToTopBtn.addEventListener('click', () => { document.body.scrollTop = 0; document.documentElement.scrollTop = 0; });
+// --- HÀM XỬ LÝ CHUYỂN TAB DASHBOARD ---
+function switchDashboardTab(tabName) {
+    // 1. Xóa active ở tất cả các nút
+    document.querySelectorAll('.dashboard-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // 2. Ẩn tất cả nội dung tab
+    document.querySelectorAll('.dashboard-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
 
+    // 3. Kích hoạt nút được bấm (tìm theo text hoặc logic, ở đây ta dùng onclick trực tiếp gán class nên ta chỉ cần add active cho nút gọi hàm này)
+    // Tuy nhiên, vì dùng onclick inline, ta cần tìm nút tương ứng. Cách dễ nhất là:
+    const clickedBtn = event.currentTarget; // Lấy nút vừa bấm
+    clickedBtn.classList.add('active');
+
+    // 4. Hiện nội dung tab tương ứng
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+}
 // 10. KHỞI CHẠY ỨNG DỤNG
 // ========================
 populateSubjectsAndSemesters();
