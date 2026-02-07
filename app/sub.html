@@ -1213,7 +1213,80 @@
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
+    
+    /* --- NETFLIX STYLE PAUSE SCREEN --- */
+#pause-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+    z-index: 11; /* Nằm dưới nút Play giữa (z-index 15) nhưng trên video */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: clamp(30px, 5vw, 60px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
 
+/* Chỉ hiện khi Player có class .paused */
+#player-container.paused #pause-screen {
+    opacity: 1;
+}
+
+/* Ẩn Header cũ khi đang Pause để đỡ bị lặp thông tin (nếu muốn) */
+#player-container.paused #video-header-overlay {
+    opacity: 0;
+}
+
+.pause-content {
+    max-width: 40%; /* Giới hạn chiều rộng chữ như Netflix */
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+#player-container.paused .pause-content {
+    transform: translateY(0);
+}
+
+#pause-program-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+#pause-video-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin: 0 0 20px 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+#pause-description {
+    font-size: 1.1rem;
+    color: #ccc;
+    line-height: 1.6;
+    display: -webkit-box;
+    line-clamp: 4; /* Giới hạn 4 dòng mô tả */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Mobile: Ẩn bớt mô tả nếu màn hình nhỏ */
+@media (max-width: 768px) {
+    .pause-content { max-width: 80%; }
+    #pause-video-title { font-size: 1.8rem; }
+    #pause-description { font-size: 0.9rem; line-clamp: 3; }
+}
    /* ========================================= */
     /* 12. PLAYER CONTROLS & OVERLAYS            */
     /* ========================================= */
@@ -1866,7 +1939,13 @@
             <p id="video-title-display"></p>
         </div>
     </div>
-
+    <div id="pause-screen">
+    <div class="pause-content">
+        <div id="pause-program-name"></div>
+        <h1 id="pause-video-title"></h1>
+        <p id="pause-description"></p>
+    </div>
+</div>
     <div id="interaction-overlay">
         <div id="seek-backward-zone" style="flex: 1"></div>
         <div id="play-pause-zone" style="flex: 1"></div>
@@ -4389,7 +4468,10 @@ function openDetailModal(videoData, programEpisodes = null) {
 
                     videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
                     videoProgramDisplay.textContent = videoData.program || "";
-
+                    // Nạp dữ liệu cho màn hình Pause
+document.getElementById("pause-program-name").textContent = videoData.program || "";
+document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
+document.getElementById("pause-description").textContent = videoData.description || "";
                     updateProgressBarUI(0, 0);
                     
 
@@ -4494,7 +4576,7 @@ function openDetailModal(videoData, programEpisodes = null) {
         centerBtn.style.opacity = "0";
         centerBtn.style.pointerEvents = "none";
         playerContainer.classList.add("playing");
-
+        playerContainer.classList.remove("paused");
         // Update icon pause...
         playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
         if (centerIcon) centerIcon.setAttribute("d", pausePath);
@@ -4515,7 +4597,11 @@ function openDetailModal(videoData, programEpisodes = null) {
         centerBtn.style.pointerEvents = "auto";
 
         playerContainer.classList.remove("playing");
-
+        if (event.data === YT.PlayerState.PAUSED) {
+            playerContainer.classList.add("paused");
+        } else {
+            playerContainer.classList.remove("paused");
+        }
         playPauseBtn.querySelector("svg path").setAttribute("d", playPath);
         if (centerIcon) centerIcon.setAttribute("d", playPath);
 
