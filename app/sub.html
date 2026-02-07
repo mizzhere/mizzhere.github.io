@@ -2500,21 +2500,20 @@ const top6 = sortedByDate.slice(0, 6);
         if (menuId === "episodes-sidebar") document.getElementById("episodes-btn").classList.add("active");
     }
 }
-            /* --- HÀM HIỂN THỊ PORTAL THÔNG MINH (FIX TRÀN MÀN HÌNH) --- */
+            /* --- HÀM HIỂN THỊ PORTAL THÔNG MINH V3 (FIX 4 CHIỀU) --- */
 function showPortal(card, videoData, isProgramCard = false) {
     clearTimeout(hideTimeout);
     portal.classList.remove("hidden");
 
-    // 1. Lấy thông tin vị trí Card gốc
+    // 1. Lấy thông số vị trí & Kích thước
     const rect = card.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     
-    // Kích thước màn hình an toàn (trừ thanh cuộn)
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight;
 
-    // 2. Điền nội dung (Giữ nguyên logic cũ)
+    // 2. Điền nội dung (Giữ nguyên)
     if (isProgramCard) {
         portalTitle.textContent = videoData.program;
         const count = libraryData.filter((v) => v.program === videoData.program).length;
@@ -2527,15 +2526,11 @@ function showPortal(card, videoData, isProgramCard = false) {
     }
     portalImg.src = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
 
-    portalPlayBtn.onclick = () => {
-        launchPlayer(videoData);
-        hidePortal(true);
-    };
-
+    // Sự kiện click (Giữ nguyên)
+    portalPlayBtn.onclick = () => { launchPlayer(videoData); hidePortal(true); };
     portalInfoBtn.onclick = () => {
         if (videoData.program) {
-            const episodes = libraryData
-                .filter((v) => v.program === videoData.program)
+            const episodes = libraryData.filter((v) => v.program === videoData.program)
                 .sort((a, b) => getVideoTimestamp(a) - getVideoTimestamp(b));
             openDetailModal(videoData, episodes);
         } else {
@@ -2544,70 +2539,73 @@ function showPortal(card, videoData, isProgramCard = false) {
         hidePortal(true);
     };
 
-    // 3. [QUAN TRỌNG] TÍNH TOÁN VỊ TRÍ ĐỂ KHÔNG BỊ CẮT (SMART POSITIONING)
+    // 3. [XỬ LÝ VỊ TRÍ THÔNG MINH]
     
-    // Reset style để tính toán chuẩn
+    // Reset style
     portal.style.transition = "none";
     portal.classList.remove("visible");
-    portal.style.transformOrigin = "center center"; // Mặc định phóng to từ giữa
-
-    // Kích thước Portal dự kiến (bằng kích thước card gốc)
+    
+    // Kích thước gốc và sau khi phóng to (Scale 1.3)
     const portalWidth = rect.width;
     const portalHeight = rect.height;
-    
-    // Tỉ lệ phóng to (khớp với CSS .visible { transform: scale(1.3) })
     const scale = 1.3;
-    
-    // Kích thước thực tế sau khi phóng to
-    const expandedWidth = portalWidth * scale;
     const expandedHeight = portalHeight * scale;
 
-    // --- TÍNH TOÁN VỊ TRÍ LEFT (NGANG) ---
-    // Mặc định: Portal nằm trùng Card
+    // --- XỬ LÝ TRỤC NGANG (X) ---
     let finalLeft = rect.left + scrollLeft;
     let transformOriginX = "center";
-
-    // Kiểm tra tràn PHẢI: Nếu cạnh phải Portal > Chiều rộng màn hình
-    // (Tính từ tâm bung ra, cạnh phải sẽ dôi ra 1 đoạn)
-    const distToRight = viewportWidth - (rect.left + expandedWidth);
-    // Nếu khoảng trống bên phải < 20px (hoặc bị âm), ta cần xử lý
-    if (distToRight < 20) {
-        // Dịch Portal sang trái để vừa khít mép phải
-        // Công thức: Đặt mép phải Portal cách mép phải màn hình 20px
-        finalLeft = (viewportWidth + scrollLeft) - portalWidth - 20;
-        transformOriginX = "right"; // Đổi điểm neo sang phải để hiệu ứng phóng to mượt hơn
-    }
-
-    // Kiểm tra tràn TRÁI
-    if (rect.left < 20) {
+    
+    const distToRight = viewportWidth - (rect.left + (portalWidth * scale)); // Khoảng dư bên phải
+    
+    if (distToRight < 20) { // Nếu sát lề phải
+        finalLeft = (viewportWidth + scrollLeft) - portalWidth - 20; // Dính vào lề phải
+        transformOriginX = "right"; // Phóng to từ phải sang trái
+    } else if (rect.left < 20) { // Nếu sát lề trái
         finalLeft = scrollLeft + 20;
-        transformOriginX = "left";
+        transformOriginX = "left"; // Phóng to từ trái sang phải
     }
 
-    // --- TÍNH TOÁN VỊ TRÍ TOP (DỌC) ---
-    // Mặc định: Portal nằm trùng Card
+    // --- XỬ LÝ TRỤC DỌC (Y) - THEO YÊU CẦU CỦA BẠN ---
     let finalTop = rect.top + scrollTop;
     let transformOriginY = "center";
+
+    // Tính toán vị trí mép dưới của Portal sau khi phóng to
+    // (Lấy tâm card + một nửa chiều cao đã phóng to)
+    const centerY = rect.top + (rect.height / 2);
+    const predictedBottom = centerY + (expandedHeight / 2);
     
-    // Kiểm tra tràn DƯỚI (ít gặp nhưng vẫn nên fix)
-    const distToBottom = viewportHeight - (rect.top + expandedHeight);
-    if (distToBottom < 20) {
-         finalTop = (viewportHeight + scrollTop) - portalHeight - 50; // Trừ thêm chút bottom bar
-         transformOriginY = "bottom";
+    // Khoảng cách từ mép dưới Portal đến đáy màn hình
+    const distToBottom = viewportHeight - predictedBottom;
+
+    // NẾU BỊ CẮT DƯỚI (Khoảng dư < 50px chừa cho thanh player)
+    if (distToBottom < 50) {
+        // ==> LOGIC "CÒN ĐÁY THÌ HIỆN LÊN" (FLIP UP)
+        // Dời Portal lên vị trí sao cho đáy của nó nằm trong màn hình
+        // Công thức: Top = (Chiều cao màn hình + Scroll) - Chiều cao Portal - (Khoảng cách an toàn)
+        finalTop = (viewportHeight + scrollTop) - portalHeight - 60;
+        
+        // Đặt điểm neo ở ĐÁY (Bottom)
+        // Để khi phóng to, nó sẽ bung ngược lên trên -> Không bao giờ bị che mất
+        transformOriginY = "bottom";
+    } 
+    
+    // Kiểm tra thêm: Nếu sau khi đẩy lên mà lại bị cắt trên (ví dụ card quá to)
+    // thì ưu tiên hiển thị phần trên
+    if (finalTop < scrollTop + 60) {
+        // finalTop = scrollTop + 60;
+        // transformOriginY = "top";
     }
 
-    // Áp dụng vị trí đã tính toán
+    // 4. Áp dụng Style
     portal.style.width = `${portalWidth}px`;
     portal.style.height = `${portalHeight}px`;
     portal.style.top = `${finalTop}px`;
     portal.style.left = `${finalLeft}px`;
-    
-    // Set Transform Origin động để hướng phóng to hợp lý (tránh bị che)
     portal.style.transformOrigin = `${transformOriginX} ${transformOriginY}`;
 
     void portal.offsetWidth; // Trigger reflow
 
-    // 4. Hiển thị
+    // 5. Hiển thị
     portal.style.transition = "opacity 0.2s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27)";
     portal.classList.add("visible");
 }
