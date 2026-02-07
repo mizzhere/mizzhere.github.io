@@ -5288,46 +5288,7 @@ function setupSmartHoverScroll() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    // --- CẬP NHẬT PHẦN NÀY VÀO TRONG HÀM initSakuraEffect ---
-
-    // 3. Xử lý Nút Bật/Tắt (Icon Hoa)
-    const toggleBtn = document.getElementById('sakura-toggle-btn');
-    const toggleIcon = document.getElementById('sakura-icon');
-
-    // Hàm cập nhật giao diện nút bấm (Màu sắc & Hiệu ứng)
-    function updateToggleUI(isActive) {
-        if (!toggleIcon) return;
-        if (isActive) {
-            // Trạng thái BẬT: Màu hồng + Phát sáng
-            toggleIcon.className = "fa-solid fa-spa text-xl text-[#ff4d6d] drop-shadow-[0_0_8px_rgba(255,77,109,0.8)] transition-all duration-300 fa-spin-hover";
-            // Thêm chút animation xoay nhẹ cho vui mắt (optional)
-            toggleIcon.style.transform = "rotate(0deg)";
-        } else {
-            // Trạng thái TẮT: Màu xám + Mất bóng
-            toggleIcon.className = "fa-solid fa-spa text-xl text-slate-500 transition-all duration-300";
-            toggleIcon.style.filter = "none";
-            toggleIcon.style.transform = "rotate(-45deg)"; // Nghiêng nhẹ báo hiệu tắt
-        }
-    }
-
-    // Khởi tạo trạng thái ban đầu cho nút
-    updateToggleUI(state.isActive);
-
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            state.isActive = !state.isActive; // Đảo ngược trạng thái
-            localStorage.setItem('sakura_active', state.isActive);
-            
-            updateToggleUI(state.isActive); // Cập nhật màu icon
-
-            if (!state.isActive) {
-                ctx.clearRect(0, 0, state.width, state.height);
-            } else {
-                // Nếu bật lại thì gọi animate ngay để không bị delay
-                animate(); 
-            }
-        });
-    }
+    const toggleBtn = document.getElementById('sakura-toggle');
     
     // Cấu hình
     const config = {
@@ -5469,12 +5430,39 @@ function setupSmartHoverScroll() {
     });
 
     // 3. Nút Bật/Tắt
+   const toggleIcon = document.getElementById('sakura-icon');
+
+    // Hàm cập nhật giao diện nút bấm (Màu sắc & Hiệu ứng)
+    function updateToggleUI(isActive) {
+        if (!toggleIcon) return;
+        if (isActive) {
+            // Trạng thái BẬT: Màu hồng + Phát sáng
+            toggleIcon.className = "fa-solid fa-spa text-xl text-[#ff4d6d] drop-shadow-[0_0_8px_rgba(255,77,109,0.8)] transition-all duration-300 fa-spin-hover";
+            // Thêm chút animation xoay nhẹ cho vui mắt (optional)
+            toggleIcon.style.transform = "rotate(0deg)";
+        } else {
+            // Trạng thái TẮT: Màu xám + Mất bóng
+            toggleIcon.className = "fa-solid fa-spa text-xl text-slate-500 transition-all duration-300";
+            toggleIcon.style.filter = "none";
+            toggleIcon.style.transform = "rotate(-45deg)"; // Nghiêng nhẹ báo hiệu tắt
+        }
+    }
+
+    // Khởi tạo trạng thái ban đầu cho nút
+    updateToggleUI(state.isActive);
+
     if (toggleBtn) {
-        toggleBtn.addEventListener('change', (e) => {
-            state.isActive = e.target.checked;
+        toggleBtn.addEventListener('click', () => {
+            state.isActive = !state.isActive; // Đảo ngược trạng thái
             localStorage.setItem('sakura_active', state.isActive);
+            
+            updateToggleUI(state.isActive); // Cập nhật màu icon
+
             if (!state.isActive) {
                 ctx.clearRect(0, 0, state.width, state.height);
+            } else {
+                // Nếu bật lại thì gọi animate ngay để không bị delay
+                animate(); 
             }
         });
     }
