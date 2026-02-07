@@ -1700,6 +1700,9 @@
             <h1 id="main-title" onclick="location.reload()">MIZZSUB</h1>
 
             <div id="actions-container">
+                  <button id="sakura-toggle-btn" class="relative group focus:outline-none transition-transform hover:scale-110 mr-4" title="Bật/Tắt không khí Tết">
+    <i id="sakura-icon" class="fa-solid fa-spa text-xl text-[#ff4d6d] drop-shadow-[0_0_8px_rgba(255,77,109,0.8)] transition-all duration-300"></i>
+</button>
                 <div id="search-box-wrapper">
                     <button id="search-trigger-btn" title="Tìm kiếm">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -1717,12 +1720,7 @@
                     <button id="search-clear-btn">✕</button>
                     <div id="search-suggestions"></div> 
                 </div>
-                <div class="control-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px;">
-    <label style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-        <span>🌸 Hiệu ứng Tết</span>
-        <input type="checkbox" id="sakura-toggle" checked style="width: 20px; height: 20px; accent-color: #e50914; cursor: pointer;">
-    </label>
-</div>
+              
                 <button id="add-video-btn" title="Nhập link video">
                     <svg viewBox="0 0 24 24" width="28" height="28">
                         <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
@@ -5290,7 +5288,46 @@ function setupSmartHoverScroll() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    const toggleBtn = document.getElementById('sakura-toggle');
+    // --- CẬP NHẬT PHẦN NÀY VÀO TRONG HÀM initSakuraEffect ---
+
+    // 3. Xử lý Nút Bật/Tắt (Icon Hoa)
+    const toggleBtn = document.getElementById('sakura-toggle-btn');
+    const toggleIcon = document.getElementById('sakura-icon');
+
+    // Hàm cập nhật giao diện nút bấm (Màu sắc & Hiệu ứng)
+    function updateToggleUI(isActive) {
+        if (!toggleIcon) return;
+        if (isActive) {
+            // Trạng thái BẬT: Màu hồng + Phát sáng
+            toggleIcon.className = "fa-solid fa-spa text-xl text-[#ff4d6d] drop-shadow-[0_0_8px_rgba(255,77,109,0.8)] transition-all duration-300 fa-spin-hover";
+            // Thêm chút animation xoay nhẹ cho vui mắt (optional)
+            toggleIcon.style.transform = "rotate(0deg)";
+        } else {
+            // Trạng thái TẮT: Màu xám + Mất bóng
+            toggleIcon.className = "fa-solid fa-spa text-xl text-slate-500 transition-all duration-300";
+            toggleIcon.style.filter = "none";
+            toggleIcon.style.transform = "rotate(-45deg)"; // Nghiêng nhẹ báo hiệu tắt
+        }
+    }
+
+    // Khởi tạo trạng thái ban đầu cho nút
+    updateToggleUI(state.isActive);
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            state.isActive = !state.isActive; // Đảo ngược trạng thái
+            localStorage.setItem('sakura_active', state.isActive);
+            
+            updateToggleUI(state.isActive); // Cập nhật màu icon
+
+            if (!state.isActive) {
+                ctx.clearRect(0, 0, state.width, state.height);
+            } else {
+                // Nếu bật lại thì gọi animate ngay để không bị delay
+                animate(); 
+            }
+        });
+    }
     
     // Cấu hình
     const config = {
