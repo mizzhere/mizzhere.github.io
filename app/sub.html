@@ -1677,9 +1677,25 @@
 #main-title {
     transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
 }
+/* --- HIỆU ỨNG HOA ĐÀO TẾT --- */
+#sakura-canvas {
+    position: fixed; /* Luôn phủ kín màn hình dù cuộn */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Cho phép click xuyên qua hoa để bấm vào phim */
+    z-index: 2500; /* Cao hơn Header (1000) nhưng thấp hơn Player (3000) */
+}
+
+/* Đảm bảo Player luôn đè lên hoa */
+#player-container {
+    z-index: 3001 !important; 
+}
 </style>
     </head>
     <body>
+        <canvas id="sakura-canvas"></canvas>
         <header id="page-header">
             <h1 id="main-title" onclick="location.reload()">MIZZSUB</h1>
 
@@ -1701,7 +1717,12 @@
                     <button id="search-clear-btn">✕</button>
                     <div id="search-suggestions"></div> 
                 </div>
-
+                <div class="control-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px;">
+    <label style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+        <span>🌸 Hiệu ứng Tết</span>
+        <input type="checkbox" id="sakura-toggle" checked style="width: 20px; height: 20px; accent-color: #e50914; cursor: pointer;">
+    </label>
+</div>
                 <button id="add-video-btn" title="Nhập link video">
                     <svg viewBox="0 0 24 24" width="28" height="28">
                         <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
@@ -5261,6 +5282,172 @@ function setupSmartHoverScroll() {
         });
     }
 }
+/* ========================================= */
+/* LOGIC HIỆU ỨNG HOA ĐÀO (SAKURA)     */
+/* ========================================= */
+(function initSakuraEffect() {
+    const canvas = document.getElementById('sakura-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const toggleBtn = document.getElementById('sakura-toggle');
+    
+    // Cấu hình
+    const config = {
+        petalCount: 60,       // Số lượng hoa (đừng để nhiều quá sẽ rối mắt khi chọn phim)
+        gravity: 0.6,         // Tốc độ rơi
+        windDecay: 0.98,      // Độ trượt của gió
+        mouseInfluence: 0.05  // Độ mạnh của gió khi di chuột
+    };
+
+    const state = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        wind: 0,
+        mouseX: 0,
+        prevMouseX: 0,
+        isActive: true // Trạng thái bật/tắt
+    };
+
+    // Load trạng thái từ LocalStorage (để reload trang vẫn nhớ)
+    const savedState = localStorage.getItem('sakura_active');
+    if (savedState !== null) {
+        state.isActive = savedState === 'true';
+        if(toggleBtn) toggleBtn.checked = state.isActive;
+    }
+
+    // Class Cánh Hoa (Mang từ hoadao.html sang)
+    class Petal {
+        constructor() {
+            this.reset(true);
+        }
+
+        reset(initial = false) {
+            this.x = Math.random() * state.width;
+            this.y = initial ? Math.random() * state.height : -20;
+            this.size = Math.random() * 10 + 8; // Kích thước 8-18px
+            this.speedY = (Math.random() * 1.0 + 0.5) * config.gravity;
+            this.speedX = Math.random() * 1.0 - 0.5;
+            this.rotation = Math.random() * 360;
+            this.rotationSpeed = Math.random() * 2 - 1;
+            
+            // Màu sắc tối ưu cho nền Dark Mode (Hồng sáng, Cam đào)
+            const colors = [
+                '#ff9a9e', '#fad0c4', '#ffb7b2', '#ffdac1', '#ffffff'
+            ];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+            this.opacity = Math.random() * 0.5 + 0.4; // Độ trong suốt
+        }
+
+        draw() {
+            if (!state.isActive) return;
+            
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation * Math.PI / 180);
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = this.color;
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            // Vẽ hình dáng cánh hoa đào tròn trịa
+            ctx.bezierCurveTo(this.size / 2, this.size / 3, this.size / 2, this.size, 0, this.size);
+            ctx.bezierCurveTo(-this.size / 2, this.size, -this.size / 2, this.size / 3, 0, 0);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        update() {
+            if (!state.isActive) return;
+            this.y += this.speedY;
+            this.x += this.speedX + state.wind;
+            this.rotation += this.rotationSpeed;
+
+            // Nếu rơi ra ngoài màn hình thì reset lên trên
+            if (this.y > state.height + 20 || this.x > state.width + 20 || this.x < -20) {
+                this.reset();
+            }
+        }
+    }
+
+    let petals = [];
+    function createPetals() {
+        petals = [];
+        for (let i = 0; i < config.petalCount; i++) {
+            petals.push(new Petal());
+        }
+    }
+
+    // Vòng lặp Animation
+    function animate() {
+        if (!state.isActive) {
+            ctx.clearRect(0, 0, state.width, state.height);
+            requestAnimationFrame(animate);
+            return;
+        }
+
+        // Tự động tắt render nếu đang xem Player (để tiết kiệm GPU)
+        const playerWrapper = document.getElementById('player-wrapper');
+        if (playerWrapper && !playerWrapper.classList.contains('hidden')) {
+             ctx.clearRect(0, 0, state.width, state.height);
+             requestAnimationFrame(animate);
+             return;
+        }
+
+        ctx.clearRect(0, 0, state.width, state.height);
+        
+        // Xử lý gió giảm dần
+        state.wind *= config.windDecay;
+
+        petals.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // --- SỰ KIỆN ---
+    
+    // 1. Resize màn hình
+    window.addEventListener('resize', () => {
+        state.width = window.innerWidth;
+        state.height = window.innerHeight;
+        canvas.width = state.width;
+        canvas.height = state.height;
+    });
+
+    // 2. Tạo gió khi di chuột
+    window.addEventListener('mousemove', (e) => {
+        if (!state.isActive) return;
+        state.mouseX = e.clientX;
+        const deltaX = state.mouseX - state.prevMouseX;
+        
+        // Tính toán lực gió
+        state.wind += deltaX * config.mouseInfluence * 0.02;
+        // Giới hạn gió tối đa
+        state.wind = Math.max(-3, Math.min(3, state.wind));
+        
+        state.prevMouseX = state.mouseX;
+    });
+
+    // 3. Nút Bật/Tắt
+    if (toggleBtn) {
+        toggleBtn.addEventListener('change', (e) => {
+            state.isActive = e.target.checked;
+            localStorage.setItem('sakura_active', state.isActive);
+            if (!state.isActive) {
+                ctx.clearRect(0, 0, state.width, state.height);
+            }
+        });
+    }
+
+    // Khởi chạy
+    canvas.width = state.width;
+    canvas.height = state.height;
+    createPetals();
+    animate();
+})();
         </script>
         
         <script src="https://www.youtube.com/iframe_api"></script>
