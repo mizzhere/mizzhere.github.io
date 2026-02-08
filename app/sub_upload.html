@@ -527,12 +527,17 @@
                     <div class="control-box">
     <h4>Công cụ hàng loạt</h4>
     <div class="btn-grid">
-        <button class="editor-toolbar-btn" onclick="SubEditor.openFindReplace()">🔍 Tìm / Thay thế</button>
-        <button class="editor-toolbar-btn" onclick="SubEditor.openOffset()">⏱️ Offset (Dịch sub)</button>
-        <button class="editor-toolbar-btn" onclick="SubEditor.deleteSelectedRows()" style="grid-column: span 2; color: #d93025; border-color: #d93025;">
-                                🗑 Xóa các dòng đang chọn
-                            </button>
-    </div>
+    <button class="editor-toolbar-btn" onclick="SubEditor.openFindReplace()">🔍 Tìm / Thay thế</button>
+    <button class="editor-toolbar-btn" onclick="SubEditor.openOffset()">⏱️ Offset (Dịch sub)</button>
+    
+    <button class="editor-toolbar-btn" onclick="SubEditor.shiftTextDown()" title="Đẩy nội dung xuống dòng dưới">
+        ⬇️📝 Đẩy Text xuống
+    </button>
+
+    <button class="editor-toolbar-btn" onclick="SubEditor.deleteSelectedRows()" style="color: #d93025; border-color: #d93025;">
+        🗑 Xóa dòng chọn
+    </button>
+</div>
     <div style="margin-top:5px; font-size: 0.8rem; color:#555;">
         <ul>
             <li><b>Ctrl + Click số thứ tự:</b> Chọn nhiều dòng.</li>
@@ -2136,7 +2141,55 @@ const SubEditor = (() => {
 
         }, 100);
     }
+    // --- BƯỚC 1: Thêm hàm này vào bên trong SubEditor (trước câu lệnh return) ---
 
+    function shiftTextDown() {
+        if (currentData.length === 0) return;
+
+        // 1. Xác định vị trí bắt đầu (startIndex)
+        // Nếu có chọn dòng (bôi đen) -> Bắt đầu từ dòng cao nhất (số bé nhất) đang chọn
+        // Nếu không chọn gì -> Bắt đầu từ dòng số 0 (đầu file)
+        let startIndex = 0;
+        if (selectedIndices.size > 0) {
+            startIndex = Math.min(...Array.from(selectedIndices));
+        }
+
+        // 2. TẠO DÒNG MỚI Ở CUỐI (Logic bạn yêu cầu)
+        const lastItem = currentData[currentData.length - 1];
+        
+        // Thời gian mới: Bắt đầu sau dòng cuối 0.2s, kéo dài 2s (mặc định)
+        const newStart = lastItem ? lastItem.end + 0.2 : 0;
+        const newEnd = newStart + 2.0;
+
+        // Push dòng timeline mới vào mảng
+        currentData.push({
+            id: currentData.length + 1,
+            start: newStart,
+            end: newEnd,
+            text: "" // Tạm thời rỗng, vòng lặp dưới sẽ điền vào
+        });
+
+        // 3. VÒNG LẶP ĐẨY CHỮ (Duyệt ngược)
+        // i chạy từ dòng MỚI TẠO về đến ngay sau startIndex
+        for (let i = currentData.length - 1; i > startIndex; i--) {
+            currentData[i].text = currentData[i - 1].text;
+        }
+
+        // 4. Xóa nội dung ở dòng bắt đầu (vì nó đã đẩy xuống dưới)
+        currentData[startIndex].text = "";
+
+        // 5. Cập nhật lại giao diện
+        renderTable();
+        
+        // Scroll xuống cuối để thấy dòng mới tạo
+        setTimeout(() => {
+            const tbody = document.getElementById('subtitle-tbody');
+            if(tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({behavior: "smooth", block: "center"});
+        }, 100);
+
+        // Thông báo nhẹ
+        log("Đã đẩy nội dung xuống và tạo thêm dòng mới.");
+    }
     // --- CÁC CÔNG CỤ TOOLING (MỚI) ---
     function openFindReplace() {
         document.getElementById('find-replace-modal').style.display = 'flex';
@@ -2271,7 +2324,7 @@ const SubEditor = (() => {
         
         // Hàm của bạn (giữ nguyên logic)
         update, 
-        
+        shiftTextDown,
         // Các hàm nút bấm cũ (đã khôi phục)
         snapStart: () => {
             if (activeRowIndex <= 0 || activeRowIndex >= currentData.length) {
