@@ -3164,7 +3164,7 @@ function showPortal(card, videoData, isProgramCard = false) {
             let isHeroTransitioning = false;
             let totalHeroSlides = 0; // Tổng số slide (bao gồm clones)
 
-            function setupHeroSlider(videos) {
+         function setupHeroSlider(videos) {
                 const heroSection = document.getElementById("hero-section");
                 if (!heroSection || videos.length === 0) return;
 
@@ -3181,33 +3181,33 @@ function showPortal(card, videoData, isProgramCard = false) {
                 displayList.forEach((video, index) => {
                     const isActive = index === 1 ? "active" : "";
                         
-    // --- START LOGIC MỚI ---
-    // 1. Lấy dữ liệu Program
-    const progMeta = getProgramMeta(video.program);
-    
-    // 2. Ưu tiên ảnh bìa Program (nếu có), nếu không thì dùng thumb video
-    let thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
-    if (progMeta && progMeta.cover) {
-        thumbUrl = progMeta.cover;
-    }
+                    // --- START LOGIC MỚI ---
+                    // 1. Lấy dữ liệu Program
+                    const progMeta = getProgramMeta(video.program);
+                    
+                    // 2. Ưu tiên ảnh bìa Program (nếu có), nếu không thì dùng thumb video
+                    let thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
+                    if (progMeta && progMeta.cover) {
+                        thumbUrl = progMeta.cover;
+                    }
 
-    // 3. Xử lý Tiêu đề vs Logo
-    const badgeText = "Nổi bật";
-    
-    // Biến chứa HTML tiêu đề (Logo hoặc Text)
-    let titleHtml = "";
-    
-    if (progMeta && progMeta.logo) {
-        // Nếu có logo -> Dùng thẻ img
-        titleHtml = `<img src="${progMeta.logo}" class="hero-logo-img" alt="${video.program}">`;
-        
-        // Nếu muốn hiện thêm tên tập bên dưới logo (tuỳ chọn):
-        // titleHtml += `<h2 style="font-size: 1.2rem; margin-bottom: 15px; color:#ddd">${video.userTitle || video.title}</h2>`;
-    } else {
-        // Cũ: Dùng text
-        const pName = video.program ? `<div class="hero-program">${video.program}</div>` : "";
-        titleHtml = `${pName}<h1 class="hero-title">${video.userTitle || video.title}</h1>`;
-    }
+                    // 3. Xử lý Tiêu đề vs Logo
+                    const badgeText = "Nổi bật";
+                    
+                    // Biến chứa HTML tiêu đề (Logo hoặc Text)
+                    let titleHtml = "";
+                    
+                    if (progMeta && progMeta.logo) {
+                        // Nếu có logo -> Dùng thẻ img
+                        titleHtml = `<img src="${progMeta.logo}" class="hero-logo-img" alt="${video.program}">`;
+                        
+                        // Nếu muốn hiện thêm tên tập bên dưới logo (tuỳ chọn) thì mở comment dòng dưới:
+                        // titleHtml += `<h2 style="font-size: 1.2rem; margin-bottom: 15px; color:#ddd; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${video.userTitle || video.title}</h2>`;
+                    } else {
+                        // Cũ: Dùng text
+                        const pName = video.program ? `<div class="hero-program">${video.program}</div>` : "";
+                        titleHtml = `${pName}<h1 class="hero-title">${video.userTitle || video.title}</h1>`;
+                    }
                     
                     html += `
                         <div class="hero-slide ${isActive}" data-index="${index}">
@@ -3217,8 +3217,9 @@ function showPortal(card, videoData, isProgramCard = false) {
                             <div class="hero-overlay"></div>
                             <div class="hero-content">
                                 <span class="hero-badge">${badgeText}</span>
-                                ${programName}
-                                <h1 class="hero-title">${video.userTitle || video.title}</h1>
+                                
+                                ${titleHtml}
+
                                 <div class="hero-actions">
                                     <button class="hero-btn hero-btn-primary" onclick="launchPlayerByVideoId('${video.videoId}')">
                                         <svg viewBox="0 0 24 24" width="24" height="24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="currentColor"/></svg>
@@ -3259,8 +3260,8 @@ function showPortal(card, videoData, isProgramCard = false) {
 
                 heroSection.innerHTML = html;
                 const firstVideo = videos[0];
-    const firstThumb = (firstVideo.thumbnailUrl || firstVideo.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
-    applyThemeFromImage(firstThumb, document.getElementById("hero-section"));
+                const firstThumb = (firstVideo.thumbnailUrl || firstVideo.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
+                applyThemeFromImage(firstThumb, document.getElementById("hero-section"));
 
                 // Khởi động
                 startHeroTimer();
