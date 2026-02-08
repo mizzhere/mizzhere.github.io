@@ -2654,24 +2654,31 @@ const ProgramManager = (() => {
         input.value = ''; // Reset để chọn lại được file cũ
     }
 
-    async function processFiles(files, type) {
+  async function processFiles(files, type) {
         const btn = (type === 'logo' ? els.logoZone : els.coverZone).querySelector('button');
         showSpinner(btn, 'Đang upload...');
         
         try {
             for (let file of files) {
                 const ext = file.name.split('.').pop() || 'jpg';
-                const filename = `imgsubdata/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+                // Tên file tương đối (chưa có appPath)
+                const relativeFilename = `imgsubdata/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+                
                 const content = await toBase64(file);
 
-                // Upload lên GitHub
-                await ghAPI(filename, 'PUT', {
+                // Upload lên GitHub (Hàm ghAPI sẽ tự động thêm config.appPath vào trước relativeFilename)
+                await ghAPI(relativeFilename, 'PUT', {
                     message: `[ProgramManager] Upload img for ${currentProgram}`,
                     content: content
                 });
 
-                // Tạo Raw URL (Dùng jsDelivr hoặc raw.githubusercontent)
-                const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${filename}`;
+                // --- SỬA ĐOẠN NÀY: Tạo Raw URL chính xác ---
+                // Ghép appPath vào trước tên file để ra đường dẫn đầy đủ từ gốc Repo
+                const fullRepoPath = `${config.appPath || ''}${relativeFilename}`.replace(/\/\/+/g, '/');
+                
+                // Tạo URL trỏ vào đúng thư mục con
+                const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${fullRepoPath}`;
+                // ------------------------------------------
                 
                 if (type === 'logo') {
                     els.logoUrl.value = rawUrl;
@@ -2687,7 +2694,6 @@ const ProgramManager = (() => {
             hideSpinner(btn, '📂 Chọn ảnh');
         }
     }
-
     function renderPreview(type, url) {
         if (type === 'logo') {
             els.logoPreview.innerHTML = url ? `<img src="${url}">` : '<span style="color:#999;font-size:12px">Chưa có logo</span>';
