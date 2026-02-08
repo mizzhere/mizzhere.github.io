@@ -3187,9 +3187,7 @@ function showPortal(card, videoData, isProgramCard = false) {
                     
                     // 2. Ưu tiên ảnh bìa Program (nếu có), nếu không thì dùng thumb video
                     let thumbUrl = (video.thumbnailUrl || video.thumbnailUrl_auto).replace("hqdefault", "maxresdefault");
-                    if (progMeta && progMeta.cover) {
-                        thumbUrl = progMeta.cover;
-                    }
+                    
 
                     // 3. Xử lý Tiêu đề vs Logo
                     const badgeText = "Nổi bật";
@@ -3202,7 +3200,7 @@ function showPortal(card, videoData, isProgramCard = false) {
                         titleHtml = `<img src="${progMeta.logo}" class="hero-logo-img" alt="${video.program}">`;
                         
                         // Nếu muốn hiện thêm tên tập bên dưới logo (tuỳ chọn) thì mở comment dòng dưới:
-                        // titleHtml += `<h2 style="font-size: 1.2rem; margin-bottom: 15px; color:#ddd; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${video.userTitle || video.title}</h2>`;
+                        titleHtml += `<h2 style="font-size: 1.2rem; margin-bottom: 15px; color:#ddd; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${video.userTitle || video.title}</h2>`;
                     } else {
                         // Cũ: Dùng text
                         const pName = video.program ? `<div class="hero-program">${video.program}</div>` : "";
