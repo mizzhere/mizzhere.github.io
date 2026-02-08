@@ -347,8 +347,22 @@
     .time-input:focus { border-color: var(--accent-blue); background: white; }
     .time-input.error { border-color: var(--accent-red); background: #fff0f0; }
 
-    .text-input { width: 100%; padding: 8px; border: 1px solid transparent; border-radius: 4px; resize: none; overflow: hidden; font-family: inherit; line-height: 1.4; min-height: 38px; }
-    .text-input:focus { border-color: var(--accent-blue); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+/* Tìm và SỬA class này trong <style> */
+.text-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    resize: none; 
+    overflow: hidden;
+    font-family: inherit;
+    line-height: 1.4;
+    min-height: 38px;
+    
+    /* --- THÊM DÒNG NÀY (Quan trọng nhất) --- */
+    field-sizing: content; 
+    /* Thuộc tính mới của Chrome/Edge giúp textarea tự co giãn mà không cần JS */
+}    .text-input:focus { border-color: var(--accent-blue); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
     .sub-row.active { background-color: #e8f0fe; }
     .sub-row:hover { background-color: #f8f9fa; }
@@ -1942,13 +1956,34 @@ const SubEditor = (() => {
             `;
         }).join('');
         
-        document.querySelectorAll('.text-input').forEach(el => {
-            if(el.value.includes('\n')) el.style.height = el.scrollHeight + 'px';
-        });
+        
     }
    
+    // --- HÀM MỚI: Chỉ cập nhật value, không đụng vào cấu trúc HTML ---
+    function refreshUIValuesOnly() {
+        const rows = document.getElementById('subtitle-tbody').children;
+        for (let i = 0; i < currentData.length; i++) {
+            // Nếu số lượng dòng HTML ít hơn dữ liệu (trường hợp thêm dòng), bỏ qua hoặc xử lý riêng
+            if (!rows[i]) break; 
+
+            const row = rows[i];
+            const item = currentData[i];
+
+            // Update Time Start
+            const startInput = row.querySelector('.time-input.start');
+            if (startInput) startInput.value = secToSrt(item.start);
+
+            // Update Time End
+            const endInput = row.querySelector('.time-input.end');
+            if (endInput) endInput.value = secToSrt(item.end);
+
+            // Update Text (Nội dung)
+            const textInput = row.querySelector('.text-input');
+            if (textInput) textInput.value = item.text;
+        }
+    }
     // --- LOGIC SELECTION MỚI ---
-    // --- LOGIC SELECTION ĐÃ FIX (TOGGLE & RESET) ---
+   
     function handleRowHeaderClick(e, i) {
         if (e.ctrlKey) {
             e.preventDefault();
@@ -2143,54 +2178,62 @@ const SubEditor = (() => {
     }
     // --- BƯỚC 1: Thêm hàm này vào bên trong SubEditor (trước câu lệnh return) ---
 
-    function shiftTextDown() {
+  function shiftTextDown() {
         if (currentData.length === 0) return;
 
-        // 1. Xác định vị trí bắt đầu (startIndex)
-        // Nếu có chọn dòng (bôi đen) -> Bắt đầu từ dòng cao nhất (số bé nhất) đang chọn
-        // Nếu không chọn gì -> Bắt đầu từ dòng số 0 (đầu file)
         let startIndex = 0;
         if (selectedIndices.size > 0) {
             startIndex = Math.min(...Array.from(selectedIndices));
         }
 
-        // 2. TẠO DÒNG MỚI Ở CUỐI (Logic bạn yêu cầu)
+        // 1. Logic Data: Tạo dòng cuối
         const lastItem = currentData[currentData.length - 1];
-        
-        // Thời gian mới: Bắt đầu sau dòng cuối 0.2s, kéo dài 2s (mặc định)
         const newStart = lastItem ? lastItem.end + 0.2 : 0;
-        const newEnd = newStart + 2.0;
-
-        // Push dòng timeline mới vào mảng
         currentData.push({
             id: currentData.length + 1,
             start: newStart,
-            end: newEnd,
-            text: "" // Tạm thời rỗng, vòng lặp dưới sẽ điền vào
+            end: newStart + 2.0,
+            text: "" 
         });
 
-        // 3. VÒNG LẶP ĐẨY CHỮ (Duyệt ngược)
-        // i chạy từ dòng MỚI TẠO về đến ngay sau startIndex
+        // 2. Logic Data: Đẩy chữ xuống
         for (let i = currentData.length - 1; i > startIndex; i--) {
             currentData[i].text = currentData[i - 1].text;
         }
-
-        // 4. Xóa nội dung ở dòng bắt đầu (vì nó đã đẩy xuống dưới)
         currentData[startIndex].text = "";
 
-        // 5. Cập nhật lại giao diện
-        renderTable();
+        // 3. TỐI ƯU DOM: Chỉ thêm 1 dòng TR mới vào cuối bảng, không vẽ lại cả bảng
+        const tbody = document.getElementById('subtitle-tbody');
         
-        // Scroll xuống cuối để thấy dòng mới tạo
-        setTimeout(() => {
-            const tbody = document.getElementById('subtitle-tbody');
-            if(tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({behavior: "smooth", block: "center"});
-        }, 100);
+        // Tạo HTML cho dòng cuối cùng vừa thêm
+        const newIdx = currentData.length - 1;
+        const newItem = currentData[newIdx];
+        
+        // --- Copy logic tạo row từ renderTable (rút gọn) ---
+        const tr = document.createElement('tr');
+        tr.className = 'sub-row';
+        tr.id = `row-${newIdx}`;
+        tr.innerHTML = `
+            <td class="col-id" onclick="SubEditor.handleRowHeaderClick(event, ${newIdx})" style="cursor:pointer; text-align:center;">${newIdx + 1}</td>
+            <td class="col-time">
+                <div style="display:flex; align-items:center; gap:5px;flex-direction: column;">
+                    <input class="time-input start" value="${secToSrt(newItem.start)}" onchange="SubEditor.update(${newIdx},'start',this.value)" onkeydown="handleSmartTimeInput(event, this)" onclick="SubEditor.handleInputClick(event, ${newIdx}, 'start', this)"> 
+                    <span style="color:#aaa; font-size:12px;">➜</span>
+                    <input class="time-input end" value="${secToSrt(newItem.end)}" onchange="SubEditor.update(${newIdx},'end',this.value)" onkeydown="handleSmartTimeInput(event, this)" onclick="SubEditor.handleInputClick(event, ${newIdx}, 'end', this)">
+                </div>
+            </td>
+            <td><textarea class="text-input" rows="1" onchange="SubEditor.update(${newIdx},'text',this.value)"></textarea></td>
+            <td class="col-action"><button class="btn-icon" onclick="SubEditor.del(${newIdx})">🗑</button></td>
+        `;
+        tbody.appendChild(tr);
 
-        // Thông báo nhẹ
-        log("Đã đẩy nội dung xuống và tạo thêm dòng mới.");
+        // 4. GỌI HÀM CẬP NHẬT GIÁ TRỊ (Siêu nhanh)
+        refreshUIValuesOnly();
+
+        // Scroll xuống
+        tr.scrollIntoView({behavior: "smooth", block: "center"});
+        log("Đã đẩy nội dung xuống (Tối ưu).");
     }
-    // --- CÁC CÔNG CỤ TOOLING (MỚI) ---
     function openFindReplace() {
         document.getElementById('find-replace-modal').style.display = 'flex';
         document.getElementById('find-input').focus();
@@ -2230,29 +2273,65 @@ const SubEditor = (() => {
         renderTable();
         closeModal('time-offset-modal');
     }
-    // --- HÀM XÓA HÀNG LOẠT ---
-    function deleteSelectedRows() {
-        // 1. Kiểm tra xem có chọn dòng nào không
-        if (selectedIndices.size === 0) {
-            return alert("Vui lòng chọn ít nhất một dòng (Ctrl + Click vào số thứ tự) để xóa.");
-        }
+   function deleteSelectedRows() {
+        if (selectedIndices.size === 0) return alert("Chưa chọn dòng nào để xóa.");
+        if (!confirm(`Xóa ${selectedIndices.size} dòng đang chọn?`)) return;
 
-        // 2. Hỏi xác nhận
-        if (!confirm(`⚠️ CẢNH BÁO: Bạn có chắc muốn xóa vĩnh viễn ${selectedIndices.size} dòng đang chọn?`)) return;
+        // 1. Xác định các index cần xóa (Sắp xếp từ lớn -> bé để xóa mảng không bị lỗi index)
+        const indices = Array.from(selectedIndices).sort((a, b) => b - a);
 
-        // 3. Chuyển Set thành Mảng và Sắp xếp GIẢM DẦN (Quan trọng!)
-        // Phải xóa từ dưới lên (index lớn xóa trước) để không làm lệch index của các dòng bên trên
-        const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
-
-        // 4. Thực hiện xóa
-        indicesToDelete.forEach(idx => {
+        // 2. Xóa trong DOM và Data
+        indices.forEach(idx => {
+            // Xóa Data
             currentData.splice(idx, 1);
+            
+            // Xóa DOM (Tìm dòng có ID tương ứng)
+            // Lưu ý: ID của DOM hiện tại là row-0, row-1... 
+            // Cách nhanh nhất là lấy row tại vị trí idx trong tbody
+            const tbody = document.getElementById('subtitle-tbody');
+            if (tbody.children[idx]) {
+                tbody.children[idx].remove();
+            }
         });
 
-        // 5. Dọn dẹp và vẽ lại
-        selectedIndices.clear(); // Xóa xong thì reset lựa chọn
-        activeRowIndex = -1;     // Reset dòng active
-        renderTable();
+        // 3. Cập nhật lại Số thứ tự (ID) và ID của thẻ TR
+        // Vì ta đã xóa DOM, các dòng bên dưới sẽ bị sai số thứ tự
+        const rows = document.getElementById('subtitle-tbody').children;
+        Array.from(rows).forEach((row, newIndex) => {
+            // Cập nhật ID của TR để khớp logic lần sau
+            row.id = `row-${newIndex}`;
+            
+            // Cập nhật số hiển thị (Cột đầu tiên)
+            row.querySelector('.col-id').textContent = newIndex + 1;
+            
+            // Cập nhật lại onclick cho cột ID (để nó trỏ đúng index mới)
+            row.querySelector('.col-id').setAttribute('onclick', `SubEditor.handleRowHeaderClick(event, ${newIndex})`);
+
+            // Cập nhật nút xóa (để nó trỏ đúng index mới)
+            row.querySelector('.btn-icon').setAttribute('onclick', `SubEditor.del(${newIndex})`);
+
+            // Cập nhật các input (để onchange trỏ đúng index mới)
+            const inputs = row.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                // Cần update lại attribute onchange/onclick trong HTML string hoặc addEventListener lại
+                // Cách đơn giản nhất ở đây là gán lại onchange
+                if(input.classList.contains('start')) {
+                     input.setAttribute('onchange', `SubEditor.update(${newIndex},'start',this.value)`);
+                     input.setAttribute('onclick', `SubEditor.handleInputClick(event, ${newIndex}, 'start', this)`);
+                }
+                if(input.classList.contains('end')) {
+                     input.setAttribute('onchange', `SubEditor.update(${newIndex},'end',this.value)`);
+                     input.setAttribute('onclick', `SubEditor.handleInputClick(event, ${newIndex}, 'end', this)`);
+                }
+                if(input.classList.contains('text-input')) {
+                     input.setAttribute('onchange', `SubEditor.update(${newIndex},'text',this.value)`);
+                }
+            });
+        });
+
+        // 4. Dọn dẹp
+        selectedIndices.clear();
+        activeRowIndex = -1;
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
