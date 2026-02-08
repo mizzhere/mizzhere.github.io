@@ -1212,11 +1212,15 @@ function renderTagManagerLists() {
         container.innerHTML = '';
         tagsData[type].sort().forEach(tag => {
             const li = doc.createElement('li');
+            
+            // --- KIỂM TRA ĐOẠN NÀY CÓ TRONG CODE CHƯA ---
             let extraBtn = '';
             if (type === 'programs') {
                 extraBtn = `<button class="btn-neutral" style="margin-right:5px;" onclick="ProgramManager.open('${tag}')" title="Sửa thông tin, ảnh bìa">ℹ️ Info</button>`;
             }
-            li.innerHTML = `<span>${tag}</span><div class="tag-list-actions"><button class="edit-tag-btn" data-type="${type}" data-name="${tag}">✏️</button><button class="delete-tag-btn" data-type="${type}" data-name="${tag}">🗑️</button></div>`;
+            // ---------------------------------------------
+
+            li.innerHTML = `<span>${tag}</span><div class="tag-list-actions">${extraBtn}<button class="edit-tag-btn" data-type="${type}" data-name="${tag}">✏️</button><button class="delete-tag-btn" data-type="${type}" data-name="${tag}">🗑️</button></div>`;
             container.appendChild(li);
         });
     };
@@ -2732,29 +2736,35 @@ const ProgramManager = (() => {
         showSpinner(saveBtn, 'Đang lưu...');
 
         try {
-            // Cập nhật local
+            // Cập nhật vào biến bộ nhớ
             programsMetadata[currentProgram] = {
                 description: els.desc.value.trim(),
                 logo: els.logoUrl.value.trim(),
                 covers: tempCovers
             };
 
-            // Lưu lên GitHub (file programs.json)
-            const { data } = await ghAPI('programs.json');
+            // --- ĐOẠN SỬA LẠI: KIỂM TRA FILE TỒN TẠI KHÔNG ---
+            const res = await ghAPI('programs.json'); // Gọi API kiểm tra
+            
+            // Nếu res.notFound = true thì sha là null (tạo file mới)
+            // Nếu có file rồi thì lấy sha cũ để update
+            const currentSha = res.notFound ? null : res.data.sha; 
+
             await commitFile('programs.json', `Update info for ${currentProgram}`, 
                 toBase64Str(JSON.stringify(programsMetadata, null, 2)), 
-                data.sha
+                currentSha // Truyền sha (hoặc null) vào đây
             );
+            // ------------------------------------------------
 
             alert("Đã lưu thông tin chương trình!");
             close();
         } catch (err) {
             alert("Lỗi khi lưu: " + err.message);
+            console.error(err);
         } finally {
             hideSpinner(saveBtn, '💾 Lưu Thông Tin');
         }
     }
-
     return { initListeners, open, close, save, handleFileSelect, removeCover, renderPreview };
 })();
 
