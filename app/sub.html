@@ -2513,11 +2513,12 @@ function getProgramMeta(programName) {
             programsData = {};
         }
 
-        // ... (Giữ nguyên phần code xử lý Top 6 và Render bên dưới) ...
-        const sortedByDate = [...libraryData].sort((a, b) => {
-            return getVideoTimestamp(b) - getVideoTimestamp(a);
-        });
-        const top6 = sortedByDate.slice(0, 6); 
+        // Lọc bỏ Teaser trước khi sort
+const sortedByDate = libraryData
+    .filter(v => !v.genres || !v.genres.some(g => g.toUpperCase() === "TEASER"))
+    .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a));
+
+const top6 = sortedByDate.slice(0, 6);
 
         setupHeroSlider(top6);
         renderVideoRows(libraryData);
@@ -3684,17 +3685,12 @@ function setupEventListeners() {
             // Lấy tất cả video của chương trình đó
             const allVideos = libraryData.filter((v) => v.program === card.dataset.programName);
             
-            // [THAY ĐỔI 2] Tìm xem có Teaser không?
-            const teaserVideo = allVideos.find(v => v.genres && v.genres.some(g => g.toUpperCase() === "TEASER"));
+            // [FIX] Luôn lấy tập mới nhất, BỎ QUA Teaser
+const validVideos = allVideos
+    .filter(v => !v.genres || !v.genres.some(g => g.toUpperCase() === "TEASER"))
+    .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a));
 
-            if (teaserVideo) {
-                // Nếu có Teaser, dùng nó để phát trong Popup
-                videoData = teaserVideo;
-            } else {
-                // Nếu không, dùng tập mới nhất
-                allVideos.sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a));
-                videoData = allVideos[0];
-            }
+videoData = validVideos[0];
         }
         // TRƯỜNG HỢP 2: Hover vào Card Video lẻ
         else if (card.dataset.videoId) {
@@ -4031,6 +4027,7 @@ pBar.addEventListener("change", () => {
                 const isSearching = rawSearchTerm.length > 0;
 
                 const filteredData = libraryData.filter((video) => {
+                    if (video.genres && video.genres.some(g => g.toUpperCase() === "TEASER")) return false;
                     // 1. LOGIC TÌM KIẾM (Quét sạch mọi ngóc ngách dữ liệu)
                     let matchesSearch = true;
                     if (isSearching) {
@@ -4347,14 +4344,17 @@ function openDetailModal(videoData, programEpisodes = null) {
     seasonSelect.innerHTML = "";
     
     if (programEpisodes && programEpisodes.length > 0) {
-        modalEpisodeSection.classList.remove("hidden");
+    modalEpisodeSection.classList.remove("hidden");
 
-        const seasonsMap = {};
-        programEpisodes.forEach(ep => {
-            const s = ep.season || 1; 
-            if (!seasonsMap[s]) seasonsMap[s] = [];
-            seasonsMap[s].push(ep);
-        });
+    // [FIX] Lọc bỏ Teaser khỏi danh sách tập
+    const cleanEpisodes = programEpisodes.filter(v => !v.genres || !v.genres.some(g => g.toUpperCase() === "TEASER"));
+
+    const seasonsMap = {};
+    cleanEpisodes.forEach(ep => {
+        const s = ep.season || 1; 
+        if (!seasonsMap[s]) seasonsMap[s] = [];
+        seasonsMap[s].push(ep);
+    });
 
         const seasonKeys = Object.keys(seasonsMap).sort((a, b) => parseInt(a) - parseInt(b));
 
@@ -4497,10 +4497,13 @@ function openDetailModal(videoData, programEpisodes = null) {
     const singles = [];
 
     libraryData.forEach(v => {
-        if (currentProgramName && v.program === currentProgramName) return; // Bỏ qua chương trình hiện tại
-        if (v.videoId === currentData.videoId) return; // Bỏ qua video hiện tại
+    if (currentProgramName && v.program === currentProgramName) return; 
+    if (v.videoId === currentData.videoId) return; 
+    
+    // [FIX] Bỏ qua nếu là Teaser
+    if (v.genres && v.genres.some(g => g.toUpperCase() === "TEASER")) return;
 
-        if (v.program) {
+    if (v.program) {
             // Nếu là series, chỉ lấy 1 tập đại diện (tập mới nhất)
             if (!programRep[v.program] || (v.episode > programRep[v.program].episode)) {
                 programRep[v.program] = v;
@@ -5231,10 +5234,12 @@ function handleVideoEnd(isCreditTrigger = false) {
     if (!nextVideo) {
         isSuggestion = true; // Đánh dấu là gợi ý ngẫu nhiên
         
-        // Tìm video khác cùng thể loại hoặc ngẫu nhiên (trừ video đang xem)
-        const candidates = libraryData.filter(
-            (v) => v.videoId !== currentVideoData.videoId && v.program !== currentVideoData.program
-        );
+        // Tìm video khác cùng thể loại hoặc ngẫu nhiên (trừ video đang xem và trừ Teaser)
+const candidates = libraryData.filter(
+    (v) => v.videoId !== currentVideoData.videoId && 
+           v.program !== currentVideoData.program &&
+           (!v.genres || !v.genres.some(g => g.toUpperCase() === "TEASER"))
+);
         
         if (candidates.length > 0) {
             // Lấy ngẫu nhiên 1 cái
