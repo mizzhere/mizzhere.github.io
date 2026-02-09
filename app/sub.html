@@ -2132,14 +2132,147 @@
                 </div>
             </div>
         </div>
-<!-- START DEBUG CONSOLE -->
-<div id="debug-console" style="
-    position: fixed; top: 0; left: 0; width: 100%; height: 150px; 
-    background: rgba(0,0,0,0.8); color: #0f0; font-family: monospace; 
-    font-size: 10px; overflow-y: scroll; z-index: 99999; pointer-events: none;
-    border-bottom: 1px solid #fff; padding: 5px;">
-    DEBUG LOG READY...
+<!-- START DEBUG CONSOLE (UPGRADED) -->
+<style>
+    #debug-console {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 200px; /* Cao hơn chút để dễ nhìn */
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 11px;
+        overflow-y: scroll;
+        z-index: 99999;
+        pointer-events: none; /* Để click xuyên qua */
+        border-bottom: 2px solid #555;
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    /* Cho phép click vào debug để cuộn hoặc copy */
+    #debug-console:hover {
+        pointer-events: auto;
+        background: rgba(0, 0, 0, 0.95);
+    }
+    .log-line {
+        border-bottom: 1px solid #222;
+        padding: 2px 0;
+        word-wrap: break-word;
+        white-space: pre-wrap; /* Giữ format xuống dòng */
+    }
+    .log-time { color: #888; margin-right: 5px; }
+    .log-type-INFO { color: #4caf50; } /* Xanh lá */
+    .log-type-WARN { color: #ff9800; } /* Cam */
+    .log-type-ERROR { color: #ff5252; background: rgba(255, 82, 82, 0.1); } /* Đỏ */
+    .log-type-OBJ { color: #2196f3; } /* Xanh dương cho Object */
+</style>
+
+<div id="debug-console">
+    <div class="log-line" style="color: yellow;">--- DEBUG CONSOLE READY (F12 MODE) ---</div>
 </div>
+
+<script>
+    (function() {
+        const debugBox = document.getElementById('debug-console');
+
+        // Hàm format thời gian
+        function getTime() {
+            const d = new Date();
+            return d.toTimeString().split(' ')[0] + '.' + String(d.getMilliseconds()).padStart(3, '0');
+        }
+
+        // Hàm biến mọi thứ thành string (kể cả Object/Array)
+        function formatArgs(args) {
+            return args.map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg, null, 2);
+                    } catch (e) {
+                        return '[Circular Object]';
+                    }
+                }
+                return String(arg);
+            }).join(' ');
+        }
+
+        // Hàm in chính ra màn hình
+        function logToScreen(msg, type = 'INFO') {
+            const line = document.createElement('div');
+            line.className = `log-line log-type-${type}`;
+            
+            // Format HTML: [TIME] [TYPE] Message
+            line.innerHTML = `<span class="log-time">[${getTime()}]</span><span class="log-type-${type}">[${type}]</span> ${msg}`;
+            
+            debugBox.appendChild(line);
+            // Tự động cuộn xuống dưới cùng
+            debugBox.scrollTop = debugBox.scrollHeight;
+        }
+
+        // 1. Ghi đè console.log
+        const oldLog = console.log;
+        console.log = function(...args) {
+            oldLog.apply(console, args);
+            logToScreen(formatArgs(args), 'INFO');
+        };
+
+        // 2. Ghi đè console.warn
+        const oldWarn = console.warn;
+        console.warn = function(...args) {
+            oldWarn.apply(console, args);
+            logToScreen(formatArgs(args), 'WARN');
+        };
+
+        // 3. Ghi đè console.error
+        const oldError = console.error;
+        console.error = function(...args) {
+            oldError.apply(console, args);
+            logToScreen(formatArgs(args), 'ERROR');
+        };
+
+        // 4. Bắt lỗi Global (Code JS lỗi cú pháp, runtime)
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errorMsg = `${message}\nAt: ${source}:${lineno}:${colno}`;
+            logToScreen(errorMsg, 'ERROR');
+            return false;
+        };
+
+        // 5. Bắt lỗi Promise (Fetch API lỗi, Async/Await lỗi) - QUAN TRỌNG
+        window.addEventListener('unhandledrejection', function(event) {
+            logToScreen(`UNHANDLED PROMISE: ${event.reason}`, 'ERROR');
+        });
+
+        // 6. Bắt lỗi tải tài nguyên (Ảnh 404, Script lỗi link)
+        window.addEventListener('error', function(e) {
+            // Lỗi resource không nổi bọt lên window.onerror, phải bắt ở phase capture
+            if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+                const url = e.target.src || e.target.href;
+                logToScreen(`RESOURCE LOAD FAILED: ${url}`, 'ERROR');
+            }
+        }, true);
+
+    })();
+
+    // Hàm debug trạng thái Youtube Player (giữ nguyên logic cũ nhưng dùng log mới)
+    function debugPlayerState(eventCode) {
+        let state = "UNKNOWN";
+        if (typeof YT !== 'undefined') {
+            switch(eventCode) {
+                case YT.PlayerState.UNSTARTED: state = "UNSTARTED (-1)"; break;
+                case YT.PlayerState.ENDED: state = "ENDED (0)"; break;
+                case YT.PlayerState.PLAYING: state = "PLAYING (1)"; break;
+                case YT.PlayerState.PAUSED: state = "PAUSED (2)"; break;
+                case YT.PlayerState.BUFFERING: state = "BUFFERING (3)"; break;
+                case YT.PlayerState.CUED: state = "CUED (5)"; break;
+            }
+        }
+        console.log(`[PlayerState] Changed to: ${state}`);
+    }
+</script>
+<!-- END DEBUG CONSOLE (UPGRADED) -->
 
 <script>
     // 1. Ghi đè console.log để hiện lên màn hình
