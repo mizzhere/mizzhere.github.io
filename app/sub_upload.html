@@ -2653,47 +2653,102 @@ const ProgramManager = (() => {
         if (input.files.length > 0) processFiles(input.files, type);
         input.value = ''; // Reset để chọn lại được file cũ
     }
+// --- [MỚI] Hàm chuyển đổi ảnh sang WebP ---
+    function imageToWebP(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    // Chuyển sang webp với chất lượng 0.8 (80%)
+                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                    // Lấy phần base64 sau dấu phẩy
+                    resolve(dataUrl.split(',')[1]); 
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
 
+    // --- [MỚI] Hàm tạo tên file an toàn từ tên Show ---
+    function sanitizeName(name) {
+        return name.toLowerCase()
+            .replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/g, "a")
+            .replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/g, "e")
+            .replace(/i|í|ì|ỉ|ĩ|ị/g, "i")
+            .replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/g, "o")
+            .replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/g, "u")
+            .replace(/ý|ỳ|ỷ|ỹ|ỵ/g, "y")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]/g, "-") // Thay ký tự đặc biệt bằng gạch ngang
+            .replace(/-+/g, "-")        // Xóa gạch ngang thừa
+            .replace(/^-|-$/g, "");     // Cắt gạch ngang đầu cuối
+    }
   async function processFiles(files, type) {
+        if (!currentProgram) return alert("Vui lòng chọn hoặc tạo chương trình trước.");
+
         const btn = (type === 'logo' ? els.logoZone : els.coverZone).querySelector('button');
-        showSpinner(btn, 'Đang upload...');
+        const originalText = btn.innerText;
+        showSpinner(btn, 'Đang xử lý & Upload...');
         
         try {
-            for (let file of files) {
-                const ext = file.name.split('.').pop() || 'jpg';
-                // Tên file tương đối (chưa có appPath)
-                const relativeFilename = `imgsubdata/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
-                
-                const content = await toBase64(file);
+            // Tạo slug an toàn từ tên chương trình (VD: "Rap Việt Mùa 3" -> "rap-viet-mua-3")
+            const safeProgramName = sanitizeName(currentProgram);
 
-                // Upload lên GitHub (Hàm ghAPI sẽ tự động thêm config.appPath vào trước relativeFilename)
+            for (let file of files) {
+                // 1. Chuyển đổi ảnh sang WebP (Base64)
+                const content = await imageToWebP(file);
+                
+                let relativeFilename;
+
+                // 2. Logic đặt tên file
+                if (type === 'logo') {
+                    // LOGO: Tên cố định để đè file cũ
+                    // Ví dụ: imgsubdata/rap-viet-mua-3-logo.webp
+                    relativeFilename = `imgsubdata/${safeProgramName}-logo.webp`;
+                } else {
+                    // COVER: Tên + Timestamp để không trùng (giữ nhiều ảnh cover)
+                    // Ví dụ: imgsubdata/rap-viet-mua-3-cover-171542345.webp
+                    relativeFilename = `imgsubdata/${safeProgramName}-cover-${Date.now()}.webp`;
+                }
+
+                // 3. Upload lên GitHub
                 await ghAPI(relativeFilename, 'PUT', {
-                    message: `[ProgramManager] Upload img for ${currentProgram}`,
+                    message: `[ProgramManager] Update ${type} for ${currentProgram}`,
                     content: content
                 });
 
-                // --- SỬA ĐOẠN NÀY: Tạo Raw URL chính xác ---
-                // Ghép appPath vào trước tên file để ra đường dẫn đầy đủ từ gốc Repo
+                // 4. Tạo URL hiển thị (Raw URL)
                 const fullRepoPath = `${config.appPath || ''}${relativeFilename}`.replace(/\/\/+/g, '/');
-                
-                // Tạo URL trỏ vào đúng thư mục con
                 const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${fullRepoPath}`;
-                // ------------------------------------------
                 
+                // 5. Cập nhật giao diện
                 if (type === 'logo') {
-                    els.logoUrl.value = rawUrl;
-                    renderPreview('logo', rawUrl);
+                    // Thêm tham số ?t=... để ép trình duyệt load lại ảnh mới thay vì cache cũ
+                    const noCacheUrl = rawUrl + `?t=${Date.now()}`;
+                    els.logoUrl.value = rawUrl; // Lưu URL gốc vào data
+                    renderPreview('logo', noCacheUrl); // Hiển thị URL có no-cache
                 } else {
                     tempCovers.push(rawUrl);
                     renderCovers();
                 }
             }
         } catch (err) {
-            alert("Lỗi upload ảnh: " + err.message);
+            console.error(err);
+            alert("Lỗi xử lý ảnh: " + err.message);
         } finally {
-            hideSpinner(btn, '📂 Chọn ảnh');
+            hideSpinner(btn, originalText);
         }
     }
+    
     function renderPreview(type, url) {
         if (type === 'logo') {
             els.logoPreview.innerHTML = url ? `<img src="${url}">` : '<span style="color:#999;font-size:12px">Chưa có logo</span>';
