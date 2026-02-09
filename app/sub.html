@@ -1036,7 +1036,7 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(1.4);
+        transform: translate(-50%, -50%) scale(1);
         width: 100%;
         height: 100%;
         pointer-events: none;
@@ -2942,123 +2942,118 @@ function showPortal(card, videoData, isProgramCard = false) {
                 if (v.uploadDate_auto) return new Date(v.uploadDate_auto).getTime();
                 return 0;
             };
+function renderVideoRows(videoArray) {
+    libraryContainer.innerHTML = ""; // Reset
 
-            /* --- LOGIC RENDER MỚI: CHUẨN SERIES (GOM GỌN) --- */
-            function renderVideoRows(videoArray) {
-                libraryContainer.innerHTML = ""; // Reset
+    // [THAY ĐỔI 1] Lọc bỏ Teaser khỏi danh sách hiển thị
+    // Teaser chỉ dùng cho Hero (banner) và Popup, không hiện ở list
+    const displayVideos = videoArray.filter(v => {
+        if (!v.genres) return true;
+        return !v.genres.some(g => g.toUpperCase() === "TEASER");
+    });
 
-                // [THÊM LOGIC RENDER HÀNG CONTINUE WATCHING]
-                const history = getWatchHistory();
-                // Lấy danh sách ID các video đang xem dở (chưa finish)
-                const continueList = Object.values(history)
-                    .filter((item) => !item.isFinished && item.percent > 0.01)
-                    .sort((a, b) => b.lastUpdated - a.lastUpdated); // Mới xem nhất xếp trước
+    // [LOGIC CŨ GIỮ NGUYÊN] RENDER HÀNG CONTINUE WATCHING
+    const history = getWatchHistory();
+    const continueList = Object.values(history)
+        .filter((item) => !item.isFinished && item.percent > 0.01)
+        .sort((a, b) => b.lastUpdated - a.lastUpdated);
 
-                if (continueList.length > 0) {
-                    // Map từ history item sang video object đầy đủ
-                    const continueVideos = [];
-                    continueList.forEach((h) => {
-                        const vid = videoArray.find((v) => v.videoId === h.videoId);
-                        if (vid) continueVideos.push(vid);
-                    });
+    if (continueList.length > 0) {
+        const continueVideos = [];
+        continueList.forEach((h) => {
+            // Tìm trong videoArray gốc để vẫn xem tiếp được nếu lỡ đó là teaser
+            const vid = videoArray.find((v) => v.videoId === h.videoId); 
+            if (vid) continueVideos.push(vid);
+        });
 
-                    if (continueVideos.length > 0) {
-                        // Tạo hàng "Xem tiếp"
-                        const cards = continueVideos.map((v) => createVideoCardHtml(v));
-                        createCarouselSection("👀 Xem tiếp", cards);
-                    }
-                }
+        if (continueVideos.length > 0) {
+            const cards = continueVideos.map((v) => createVideoCardHtml(v));
+            createCarouselSection("👀 Xem tiếp", cards);
+        }
+    }
 
-                if (!videoArray || videoArray.length === 0) {
-                    libraryContainer.innerHTML = `<p style="text-align: center; margin-top: 50px; color: #777;">Chưa có nội dung.</p>`;
-                    return;
-                }
+    if (!displayVideos || displayVideos.length === 0) {
+        libraryContainer.innerHTML = `<p style="text-align: center; margin-top: 50px; color: #777;">Chưa có nội dung.</p>`;
+        return;
+    }
 
-                // --- BƯỚC 1: PHÂN LOẠI DỮ LIỆU ---
-                const programsMap = {}; // Chứa các Series (có tên program)
-                const participantsMap = {}; // Chứa Idol
-                const genresMap = {}; // Chứa Thể loại
-                const singles = []; // Video lẻ (không thuộc program nào)
+    // --- BƯỚC 1: PHÂN LOẠI DỮ LIỆU (Dùng displayVideos thay vì videoArray) ---
+    const programsMap = {}; 
+    const participantsMap = {}; 
+    const genresMap = {}; 
+    const singles = []; 
 
-                videoArray.forEach((video) => {
-                    // 1. Gom Program
-                    if (video.program) {
-                        if (!programsMap[video.program]) programsMap[video.program] = [];
-                        programsMap[video.program].push(video);
-                    } else {
-                        singles.push(video);
-                    }
+    displayVideos.forEach((video) => {
+        // 1. Gom Program
+        if (video.program) {
+            if (!programsMap[video.program]) programsMap[video.program] = [];
+            programsMap[video.program].push(video);
+        } else {
+            singles.push(video);
+        }
 
-                    // 2. Gom Participants
-                    if (video.participants && Array.isArray(video.participants)) {
-                        video.participants.forEach((person) => {
-                            if (!participantsMap[person]) participantsMap[person] = [];
-                            participantsMap[person].push(video);
-                        });
-                    }
+        // 2. Gom Participants
+        if (video.participants && Array.isArray(video.participants)) {
+            video.participants.forEach((person) => {
+                if (!participantsMap[person]) participantsMap[person] = [];
+                participantsMap[person].push(video);
+            });
+        }
 
-                    // 3. Gom Genre
-                    if (video.genres && Array.isArray(video.genres)) {
-                        video.genres.forEach((g) => {
-                            if (!genresMap[g]) genresMap[g] = [];
-                            genresMap[g].push(video);
-                        });
-                    }
-                });
+        // 3. Gom Genre
+        if (video.genres && Array.isArray(video.genres)) {
+            video.genres.forEach((g) => {
+                if (!genresMap[g]) genresMap[g] = [];
+                genresMap[g].push(video);
+            });
+        }
+    });
 
-                // --- BƯỚC 2: RENDER GIAO DIỆN ---
+    // --- BƯỚC 2: RENDER GIAO DIỆN ---
 
-                // 1. HÀNG: MỚI PHÁT HÀNH (Video lẻ hoặc tập mới nhất)
-                const latestVideos = [...videoArray]
-                    .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a))
-                    .slice(0, 10);
-                // Ở hàng này vẫn hiện video lẻ để người dùng biết có cái mới
-                createCarouselSection(
-                    "🔥 Mới phát hành",
-                    latestVideos.map((v) => createVideoCardHtml(v))
-                );
+    // 1. HÀNG: MỚI PHÁT HÀNH
+    const latestVideos = [...displayVideos]
+        .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a))
+        .slice(0, 10);
+    
+    createCarouselSection(
+        "🔥 Mới phát hành",
+        latestVideos.map((v) => createVideoCardHtml(v))
+    );
 
-                // 2. [QUAN TRỌNG] HÀNG: SERIES & CHƯƠNG TRÌNH (GOM GỌN)
-                // Thay vì tạo mỗi program 1 hàng, ta tạo 1 hàng chứa TẤT CẢ program
-                const programCardsHtml = [];
-                Object.keys(programsMap).forEach((progName) => {
-                    const videos = programsMap[progName];
-                    // Chỉ coi là Series nếu có >= 2 tập HOẶC có tên program rõ ràng
-                    if (videos.length >= 1) {
-                        // Gọi hàm tạo Card Series (đã thêm ở trên)
-                        programCardsHtml.push(createProgramCardHtml(progName, videos));
-                    }
-                });
+    // 2. HÀNG: SERIES & CHƯƠNG TRÌNH
+    const programCardsHtml = [];
+    Object.keys(programsMap).forEach((progName) => {
+        const videos = programsMap[progName];
+        if (videos.length >= 1) {
+            programCardsHtml.push(createProgramCardHtml(progName, videos));
+        }
+    });
 
-                if (programCardsHtml.length > 0) {
-                    createCarouselSection("📺 Series & Chương trình", programCardsHtml);
-                }
+    if (programCardsHtml.length > 0) {
+        createCarouselSection("📺 Series & Chương trình", programCardsHtml);
+    }
 
-                // 3. HÀNG: IDOL / DIỄN VIÊN (Vẫn hiện video lẻ để chọn xem ngay)
-                Object.keys(participantsMap).forEach((person) => {
-                    const videos = participantsMap[person];
-                    if (videos.length >= 2) {
-                        const uniqueVideos = [...new Set(videos)];
-                        // Logic: Nếu muốn hiện Card Series trong hàng Idol thì dùng createProgramCardHtml
-                        // Nhưng thường user muốn xem Idol diễn tập nào, nên để Video Card là hợp lý
-                        const cards = uniqueVideos.map((v) => createVideoCardHtml(v));
-                        createCarouselSection(`Tuyển tập ${person}`, cards);
-                    }
-                });
+    // 3. HÀNG: IDOL / DIỄN VIÊN
+    Object.keys(participantsMap).forEach((person) => {
+        const videos = participantsMap[person];
+        if (videos.length >= 2) {
+            const uniqueVideos = [...new Set(videos)];
+            const cards = uniqueVideos.map((v) => createVideoCardHtml(v));
+            createCarouselSection(`Tuyển tập ${person}`, cards);
+        }
+    });
 
-                // 4. HÀNG: THỂ LOẠI
-                Object.keys(genresMap).forEach((genre) => {
-                    if (programsMap[genre] || participantsMap[genre]) return; // Tránh trùng
-                    const videos = genresMap[genre];
-                    if (videos.length >= 2) {
-                        const cards = videos.map((v) => createVideoCardHtml(v));
-                        createCarouselSection(`Thể loại: ${genre}`, cards);
-                    }
-                });
-            }
-
-            /* --- HÀM TẠO CAROUSEL CÓ MŨI TÊN --- */
-            /* --- HÀM TẠO CAROUSEL VỚI MŨI TÊN THÔNG MINH --- */
+    // 4. HÀNG: THỂ LOẠI
+    Object.keys(genresMap).forEach((genre) => {
+        if (programsMap[genre] || participantsMap[genre]) return;
+        const videos = genresMap[genre];
+        if (videos.length >= 2) {
+            const cards = videos.map((v) => createVideoCardHtml(v));
+            createCarouselSection(`Thể loại: ${genre}`, cards);
+        }
+    });
+}
             function createCarouselSection(title, cardsHtmlArray) {
                 if (cardsHtmlArray.length === 0) return;
                 const section = document.createElement("section");
@@ -3664,38 +3659,54 @@ function setupEventListeners() {
         }, { passive: false });
     }
 
-    // --- 6. PORTAL HOVER EVENTS ---
     libraryContainer.addEventListener("mouseover", (e) => {
-        const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 1024;
-        if (!isDesktop) return;
+    // Check thiết bị
+    const isDesktop =
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 1024;
+    if (!isDesktop) return;
 
-        const card = e.target.closest(".video-card");
-        if (!card) return;
+    const card = e.target.closest(".video-card");
+    if (!card) return;
 
-        clearTimeout(hideTimeout);
-        if (currentHoveredCard === card) return;
-        clearTimeout(hoverTimeout);
+    clearTimeout(hideTimeout);
+    if (currentHoveredCard === card) return;
+    clearTimeout(hoverTimeout);
 
-        hoverTimeout = setTimeout(() => {
-            currentHoveredCard = card;
-            let videoData;
-            let isProgramCard = false;
+    hoverTimeout = setTimeout(() => {
+        currentHoveredCard = card;
+        let videoData;
+        let isProgramCard = false; 
 
-            if (card.dataset.programName) {
-                isProgramCard = true;
-                const videos = libraryData.filter((v) => v.program === card.dataset.programName)
-                                          .sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a)); 
-                videoData = videos[0];
-            } else if (card.dataset.videoId) {
-                isProgramCard = false;
-                videoData = libraryData.find((v) => v.videoId === card.dataset.videoId);
+        // TRƯỜNG HỢP 1: Hover vào Card Chương trình (Series)
+        if (card.dataset.programName) {
+            isProgramCard = true; 
+            
+            // Lấy tất cả video của chương trình đó
+            const allVideos = libraryData.filter((v) => v.program === card.dataset.programName);
+            
+            // [THAY ĐỔI 2] Tìm xem có Teaser không?
+            const teaserVideo = allVideos.find(v => v.genres && v.genres.some(g => g.toUpperCase() === "TEASER"));
+
+            if (teaserVideo) {
+                // Nếu có Teaser, dùng nó để phát trong Popup
+                videoData = teaserVideo;
+            } else {
+                // Nếu không, dùng tập mới nhất
+                allVideos.sort((a, b) => getVideoTimestamp(b) - getVideoTimestamp(a));
+                videoData = allVideos[0];
             }
+        }
+        // TRƯỜNG HỢP 2: Hover vào Card Video lẻ
+        else if (card.dataset.videoId) {
+            isProgramCard = false;
+            videoData = libraryData.find((v) => v.videoId === card.dataset.videoId);
+        }
 
-            if (videoData) {
-                showPortal(card, videoData, isProgramCard);
-            }
-        }, 200);
-    });
+        if (videoData) {
+            showPortal(card, videoData, isProgramCard);
+        }
+    }, 200);
+});
 
     libraryContainer.addEventListener("mouseout", (e) => {
         const card = e.target.closest(".video-card");
