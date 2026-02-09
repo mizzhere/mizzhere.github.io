@@ -4649,117 +4649,123 @@ function openDetailModal(videoData, programEpisodes = null) {
                 }
             }
 
-            async function launchPlayer(videoData, preloadedSubtitles = null) {
-                return new Promise((resolve) => {
-                    if (!videoData || !videoData.videoId) return;
-                    isUpNextTriggered = false; 
-        isEnding = false;
-        lastSubtitleEnd = 0; // Reset tạm, sẽ được cập nhật khi load sub
-                    // [FIX] KIỂM TRA AN TOÀN: Nếu player chưa sẵn sàng thì tạo lại
-                    if (!player || typeof player.loadVideoById !== "function") {
-                        console.log("Player chưa sẵn sàng, đang khởi tạo lại...");
-                        player = new YT.Player("youtube-player", {
-                            videoId: videoData.videoId,
-                            playerVars: {
-                                autoplay: 1,
-                                playsinline: 1,
-                                rel: 0,
-                                modestbranding: 1,
-                                controls: 0,
-                                showinfo: 0,
-                                cc_load_policy: 0,
-                                iv_load_policy: 3,
-                                disablekb: 1,
-                            },
-                            events: {
-                                onReady: (event) => {
-                                    event.target.playVideo();
-                                    onPlayerReady(event); // Gọi lại các logic setup
-                                    resolve(); // Xong việc
-                                },
-                                onStateChange: onPlayerStateChange,
-                            },
-                        });
-                        // Sau khi new Player thì code dưới chạy tiếp sẽ cập nhật UI
-                    }
-
-                    currentVideoData = videoData;
-                    const hasEpisodes = libraryData.some(
-                        (v) => v.program === videoData.program && v.videoId !== videoData.videoId
-                    );
-                    if (hasEpisodes || (videoData.program && videoData.episode)) {
-                        episodesBtn.classList.remove("hidden");
-                    } else {
-                        episodesBtn.classList.add("hidden");
-                    }
-                    isEnding = false;
-                    hideUpNextOverlay();
-
-                    subtitles = preloadedSubtitles || [];
-                    subtitleDisplay.innerHTML = "";
-
-                    // --- RESET UI TRƯỚC KHI PHÁT ---
-                    playerWrapper.classList.remove("hidden");
-
-                    const spinner = document.getElementById("loading-spinner");
-                    spinner.style.display = "block";
-
-                    const iframe = document.getElementById("youtube-player");
-                    iframe.classList.remove("ready");
-
-                    const centerBtn = document.getElementById("center-play-pause-btn");
-                    centerBtn.style.opacity = "0";
-                    centerBtn.style.pointerEvents = "none";
-
-                    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
-                    videoProgramDisplay.textContent = videoData.program || "";
-                    // Nạp dữ liệu cho màn hình Pause
-document.getElementById("pause-program-name").textContent = videoData.program || "";
-document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
-document.getElementById("pause-description").textContent = videoData.description || "";
-                    updateProgressBarUI(0, 0);
-                    
-
-                    renderBookmarksOverlay(videoData.bookmarks || []);
-                    const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-        const playerContainer = document.getElementById("player-container");
+           // --- SỬA LẠI HÀM NÀY ---
+async function launchPlayer(videoData, preloadedSubtitles = null) {
+    return new Promise((resolve) => {
+        if (!videoData || !videoData.videoId) return;
         
-        // Reset về đỏ trước khi load màu mới
-        resetLocalTheme(playerContainer);
+        // Reset các cờ trạng thái
+        isUpNextTriggered = false;
+        isEnding = false;
+        lastSubtitleEnd = 0;
 
-        if (thumbUrl) {
-            applyThemeFromImage(
-                thumbUrl.replace("hqdefault", "maxresdefault"), 
-                playerContainer
-            );
+        // Lưu data hiện tại
+        currentVideoData = videoData;
+
+        // 1. XỬ LÝ GIAO DIỆN TRƯỚC (Synchronous)
+        // Hiện nút list tập nếu có
+        const hasEpisodes = libraryData.some(v => v.program === videoData.program && v.videoId !== videoData.videoId);
+        if (hasEpisodes || (videoData.program && videoData.episode)) {
+            episodesBtn.classList.remove("hidden");
+        } else {
+            episodesBtn.classList.add("hidden");
         }
-                    enterCinematicMode().then(() => {
-                        if (videoData.subtitleUrl) {
-                            loadRemoteSubtitle(videoData.subtitleUrl);
-                        } else if (subtitles.length > 0) {
-                            startSubtitleSync();
-                        }
+        
+        hideUpNextOverlay();
+        
+        // Load sub nếu có sẵn
+        subtitles = preloadedSubtitles || [];
+        subtitleDisplay.innerHTML = "";
 
-                        // [FIX] Chỉ gọi loadVideoById nếu player ĐÃ TỒN TẠI (tránh lỗi undefined)
-                        if (player && typeof player.loadVideoById === "function") {
-                            // [SỬA ĐOẠN NÀY]
-                            // 1. Lấy thời gian đã lưu
-                            const savedTime = getSavedTime(videoData.videoId);
+        // Reset UI Player
+        playerWrapper.classList.remove("hidden");
+        document.getElementById("loading-spinner").style.display = "block"; // Hiện loading
+        document.getElementById("center-play-pause-btn").style.opacity = "0"; // Ẩn nút play giữa tạm
+        
+        // Cập nhật thông tin text
+        videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
+        videoProgramDisplay.textContent = videoData.program || "";
+        document.getElementById("pause-program-name").textContent = videoData.program || "";
+        document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
+        document.getElementById("pause-description").textContent = videoData.description || "";
+        
+        updateProgressBarUI(0, 0);
+        renderBookmarksOverlay(videoData.bookmarks || []);
 
-                            // 2. Nếu có savedTime > 0, thông báo nhỏ (tùy chọn) hoặc cứ thế phát
-                            if (savedTime > 0) {
-                                console.log(`Tiếp tục phát từ: ${savedTime}`);
-                            }
+        // Xử lý màu nền (Thumbnail theme)
+        const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+        const pContainer = document.getElementById("player-container");
+        resetLocalTheme(pContainer);
+        if (thumbUrl) {
+            applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"), pContainer);
+        }
 
-                            // 3. Load video tại giây thứ savedTime
-                            player.loadVideoById(videoData.videoId, savedTime);
+        // --- 2. GỌI CINEMATIC (NHƯNG KHÔNG CHỜ - FIRE AND FORGET) ---
+        // Để không làm mất "User Gesture Token"
+        enterCinematicMode().catch(e => console.log("Cinematic error:", e));
 
-                            resolve();
-                        }
-                    });
-                });
+        // --- 3. XỬ LÝ PLAYER (QUAN TRỌNG NHẤT) ---
+        // Kiểm tra player
+        if (!player || typeof player.loadVideoById !== "function") {
+            // Nếu chưa có player, tạo mới và play ngay trong onReady
+            console.log("Player chưa sẵn sàng, tạo mới...");
+            player = new YT.Player("youtube-player", {
+                videoId: videoData.videoId,
+                playerVars: {
+                    autoplay: 1,      // Cố gắng autoplay
+                    playsinline: 1,   // Bắt buộc cho iOS
+                    controls: 0,
+                    showinfo: 0,
+                    rel: 0,
+                    modestbranding: 1,
+                    iv_load_policy: 3,
+                    fs: 0,            // Tắt fullscreen native
+                    disablekb: 1
+                },
+                events: {
+                    onReady: (event) => {
+                        // iOS Fix: Mute trước khi play thì tỉ lệ thành công cao hơn
+                        // event.target.mute(); 
+                        event.target.playVideo();
+                        onPlayerReady(event);
+                        resolve();
+                    },
+                    onStateChange: onPlayerStateChange,
+                    onError: (e) => console.error("YT Error:", e.data)
+                },
+            });
+        } else {
+            // Nếu player đã có, LOAD NGAY LẬP TỨC (Không await gì cả)
+            console.log("Player có sẵn, load ngay video:", videoData.videoId);
+            
+            // Lấy thời gian đã xem
+            const savedTime = getSavedTime(videoData.videoId);
+            
+            // Load Subtitle từ xa (chạy song song)
+            if (videoData.subtitleUrl) {
+                loadRemoteSubtitle(videoData.subtitleUrl);
+            } else if (subtitles.length > 0) {
+                startSubtitleSync();
             }
 
+            // Gọi lệnh Load
+            player.loadVideoById({
+                videoId: videoData.videoId,
+                startSeconds: savedTime
+            });
+            
+            // [MOBILE FIX] Một số trình duyệt cần gọi thêm playVideo sau khi load
+            // setTimeout nhỏ để đảm bảo loadVideoById đã được xử lý
+            /* setTimeout(() => {
+                if(player.getPlayerState() !== YT.PlayerState.PLAYING) {
+                    player.playVideo();
+                }
+            }, 100); */
+
+            resolve();
+        }
+    });
+}
             async function enterCinematicMode() {
                 try {
                     if (playerContainer.requestFullscreen) await playerContainer.requestFullscreen();
@@ -4796,72 +4802,84 @@ document.getElementById("pause-description").textContent = videoData.description
                 event.target.unloadModule("captions");
             }
 
-           function onPlayerStateChange(event) {
-            if(typeof debugPlayerState === 'function') debugPlayerState(event.data);
-    const centerBtn = doc.getElementById("center-play-pause-btn");
-    const centerIcon = doc.getElementById("center-play-pause-icon");
+    function onPlayerStateChange(event) {
+    const state = event.data;
+    const centerBtn = document.getElementById("center-play-pause-btn");
     const spinner = document.getElementById("loading-spinner");
     const iframe = document.getElementById("youtube-player");
+    const playerContainer = document.getElementById("player-container");
 
-    // Icon SVG Paths
-    const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
-    const pausePath = "M14,19H18V5H14M6,19H10V5H6V19Z";
+    console.log("Player State:", state); // Để debug xem trên điện thoại ra gì
 
-    if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.UNSTARTED) {
+    // --- XỬ LÝ CÁC TRẠNG THÁI ---
+
+    // 1. UNSTARTED (-1) hoặc BUFFERING (3)
+    if (state === YT.PlayerState.BUFFERING || state === YT.PlayerState.UNSTARTED) {
         spinner.style.display = "block"; 
         centerBtn.style.opacity = "0";
         centerBtn.style.pointerEvents = "none";
-        
-        // [MỚI] ẨN THANH CONTROL KHI ĐANG LOAD
         hideControls(); 
     }
-    // 2. PLAYING
-    else if (event.data === YT.PlayerState.PLAYING) {
+    // 2. PLAYING (1) - ĐÃ CHẠY THÀNH CÔNG
+    else if (state === YT.PlayerState.PLAYING) {
         spinner.style.display = "none"; 
         iframe.classList.add("ready"); 
-        centerBtn.style.opacity = "0";
+        centerBtn.style.opacity = "0"; 
         centerBtn.style.pointerEvents = "none";
+        
         playerContainer.classList.add("playing");
         playerContainer.classList.remove("paused");
-        // Update icon pause...
-        playPauseBtn.querySelector("svg path").setAttribute("d", pausePath);
-        if (centerIcon) centerIcon.setAttribute("d", pausePath);
-
-        startSyncing();
         
+        // Update Icon Pause
+        document.getElementById("play-pause-btn").querySelector("svg path").setAttribute("d", "M14,19H18V5H14M6,19H10V5H6V19Z");
+        
+        startSyncing();
         if (!isUpNextTriggered) hideUpNextOverlay();
-
-        // [MỚI - QUAN TRỌNG] ĐÃ XÓA DÒNG: showControlsAndSetHideTimeout();
-        // Để khi video tự chạy hoặc tua xong, thanh control KHÔNG tự hiện lên.
-        // Chỉ hiện khi di chuột (do sự kiện pointermove quản lý).
     }
-    // 3. PAUSED / ENDED
+    // 3. CUED (5) - ĐÃ LOAD XONG NHƯNG CHỜ LỆNH
+    else if (state === YT.PlayerState.CUED) {
+        // [QUAN TRỌNG] Đây là lúc Mobile dừng lại ở số 5
+        console.log("Video đã Cued (5). Đang thử ép chạy...");
+        spinner.style.display = "none"; // Tắt spinner đi
+        
+        // Thử ép chạy lần nữa
+        event.target.playVideo();
+        
+        // NẾU VẪN KHÔNG CHẠY ĐƯỢC:
+        // Hiện nút Play to ở giữa để người dùng bấm thủ công
+        centerBtn.style.opacity = "1";
+        centerBtn.style.pointerEvents = "auto";
+        // Đổi icon thành Play
+        document.getElementById("center-play-pause-icon").setAttribute("d", "M8,5.14V19.14L19,12.14L8,5.14Z");
+    }
+    // 4. PAUSED (2) hoặc ENDED (0)
     else {
-        spinner.style.display = "none"; 
-
+        spinner.style.display = "none";
         centerBtn.style.opacity = "1";
         centerBtn.style.pointerEvents = "auto";
 
         playerContainer.classList.remove("playing");
-        if (event.data === YT.PlayerState.PAUSED) {
+        if (state === YT.PlayerState.PAUSED) {
             playerContainer.classList.add("paused");
         } else {
             playerContainer.classList.remove("paused");
         }
-        playPauseBtn.querySelector("svg path").setAttribute("d", playPath);
-        if (centerIcon) centerIcon.setAttribute("d", playPath);
+        
+        // Update Icon Play
+        const playPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
+        document.getElementById("play-pause-btn").querySelector("svg path").setAttribute("d", playPath);
+        document.getElementById("center-play-pause-icon").setAttribute("d", playPath);
 
         stopSyncing();
-        clearTimeout(controlsTimeout);
-        playerContainer.classList.add("controls-active");
-        playerContainer.classList.remove("no-cursor");
-    }
-
-    if (event.data === YT.PlayerState.ENDED && !isEnding) {
-        handleVideoEnd(false); // Video hết hẳn -> Force đếm ngược 5s
+        showControlsAndSetHideTimeout();
+        
+        if (state === YT.PlayerState.ENDED && !isEnding) {
+            handleVideoEnd(false); 
+        }
     }
 }
-            // Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
+
+// Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
             function updateQualityBadge() {
                 // Các giá trị trả về: 'highres', 'hd1080', 'hd720', 'large', 'medium', 'small'
                 const quality = player.getPlaybackQuality();
