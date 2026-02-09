@@ -4740,23 +4740,29 @@ document.getElementById("pause-description").textContent = videoData.description
                             startSubtitleSync();
                         }
 
-                        // [FIX] Chỉ gọi loadVideoById nếu player ĐÃ TỒN TẠI (tránh lỗi undefined)
                         if (player && typeof player.loadVideoById === "function") {
-                            // [SỬA ĐOẠN NÀY]
-                            // 1. Lấy thời gian đã lưu
-                            const savedTime = getSavedTime(videoData.videoId);
+            const savedTime = getSavedTime(videoData.videoId);
+            console.log("Mobile Debug: Gọi loadVideoById NGAY LẬP TỨC");
+            
+            // Lệnh này phải chạy đồng bộ với sự kiện click
+            player.loadVideoById({
+                videoId: videoData.videoId,
+                startSeconds: savedTime
+            });
+            
+            // Mobile đôi khi cần thêm lệnh này để chắc chắn
+            player.playVideo(); 
+        }
 
-                            // 2. Nếu có savedTime > 0, thông báo nhỏ (tùy chọn) hoặc cứ thế phát
-                            if (savedTime > 0) {
-                                console.log(`Tiếp tục phát từ: ${savedTime}`);
-                            }
+        // 3. Xoay màn hình chạy riêng (Fire and Forget - Kệ nó)
+        // Không dùng .then() bao bọc đoạn load video nữa
+        enterCinematicMode().catch(err => {
+            console.log("Lỗi xoay màn hình (không quan trọng):", err);
+        });
 
-                            // 3. Load video tại giây thứ savedTime
-                            player.loadVideoById(videoData.videoId, savedTime);
-
-                            resolve();
-                        }
-                    });
+        resolve();
+        // ----------------------------------------
+    });
                 });
             }
 
