@@ -2654,6 +2654,16 @@ const ProgramManager = (() => {
         input.value = ''; // Reset để chọn lại được file cũ
     }
 // --- [MỚI] Hàm chuyển đổi ảnh sang WebP ---
+    function sanitizeName(name) {
+        return name.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Bỏ dấu tiếng Việt
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]/g, "-") // Ký tự lạ thành gạch ngang
+            .replace(/-+/g, "-")        // Xóa gạch ngang thừa
+            .replace(/^-|-$/g, "");     // Cắt gạch đầu đuôi
+    }
+
+    // --- 2. Hàm chuyển đổi ảnh sang WebP (Dùng Canvas) ---
     function imageToWebP(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -2667,10 +2677,8 @@ const ProgramManager = (() => {
                     canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
-                    // Chuyển sang webp với chất lượng 0.8 (80%)
-                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
-                    // Lấy phần base64 sau dấu phẩy
-                    resolve(dataUrl.split(',')[1]); 
+                    // Xuất ra WebP chất lượng 80%
+                    resolve(canvas.toDataURL('image/webp', 0.8).split(',')[1]); 
                 };
                 img.onerror = (err) => reject(err);
             };
@@ -2678,64 +2686,60 @@ const ProgramManager = (() => {
         });
     }
 
-    // --- [MỚI] Hàm tạo tên file an toàn từ tên Show ---
-    function sanitizeName(name) {
-        return name.toLowerCase()
-            .replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/g, "a")
-            .replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/g, "e")
-            .replace(/i|í|ì|ỉ|ĩ|ị/g, "i")
-            .replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/g, "o")
-            .replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/g, "u")
-            .replace(/ý|ỳ|ỷ|ỹ|ỵ/g, "y")
-            .replace(/đ/g, "d")
-            .replace(/[^a-z0-9]/g, "-") // Thay ký tự đặc biệt bằng gạch ngang
-            .replace(/-+/g, "-")        // Xóa gạch ngang thừa
-            .replace(/^-|-$/g, "");     // Cắt gạch ngang đầu cuối
-    }
-  async function processFiles(files, type) {
-        if (!currentProgram) return alert("Vui lòng chọn hoặc tạo chương trình trước.");
-
-        const btn = (type === 'logo' ? els.logoZone : els.coverZone).querySelector('button');
-        const originalText = btn.innerText;
-        showSpinner(btn, 'Đang xử lý & Upload...');
+    // --- 3. Hàm xử lý file chính (Logic mới) ---
+    async function processFiles(files, type) {
+        if (!currentProgram) return alert("Vui lòng nhập tên chương trình trước khi chọn ảnh.");
         
+        // Lấy nút button để hiện loading
+        const btn = (type === 'logo' ? els.logoZone : els.coverZone).querySelector('button');
+        const originalText = btn.innerText; // Lưu lại text cũ của nút
+        showSpinner(btn, 'Đang xử lý...');
+
         try {
-            // Tạo slug an toàn từ tên chương trình (VD: "Rap Việt Mùa 3" -> "rap-viet-mua-3")
-            const safeProgramName = sanitizeName(currentProgram);
+            const safeName = sanitizeName(currentProgram); // Tên sạch (vd: rap-viet)
 
             for (let file of files) {
-                // 1. Chuyển đổi ảnh sang WebP (Base64)
-                const content = await imageToWebP(file);
-                
-                let relativeFilename;
+                let content;
 
-                // 2. Logic đặt tên file
-                if (type === 'logo') {
-                    // LOGO: Tên cố định để đè file cũ
-                    // Ví dụ: imgsubdata/rap-viet-mua-3-logo.webp
-                    relativeFilename = `imgsubdata/${safeProgramName}-logo.webp`;
+                // --- KIỂM TRA ĐỊNH DẠNG ---
+                if (file.type === 'image/webp') {
+                    // Nếu là WebP rồi thì lấy luôn nội dung gốc (không cần nén lại)
+                    console.log("File là WebP, giữ nguyên.");
+                    content = await toBase64(file); 
                 } else {
-                    // COVER: Tên + Timestamp để không trùng (giữ nhiều ảnh cover)
-                    // Ví dụ: imgsubdata/rap-viet-mua-3-cover-171542345.webp
-                    relativeFilename = `imgsubdata/${safeProgramName}-cover-${Date.now()}.webp`;
+                    // Nếu là JPG/PNG... thì chuyển đổi
+                    console.log("File khác, đang chuyển sang WebP...");
+                    content = await imageToWebP(file);
                 }
 
-                // 3. Upload lên GitHub
-                await ghAPI(relativeFilename, 'PUT', {
-                    message: `[ProgramManager] Update ${type} for ${currentProgram}`,
+                // --- ĐẶT TÊN FILE (Luôn đuôi .webp) ---
+                let filename;
+                if (type === 'logo') {
+                    // Logo: Tên cố định để đè file cũ
+                    filename = `imgsubdata/${safeName}-logo.webp`;
+                } else {
+                    // Cover: Tên ngẫu nhiên theo thời gian
+                    filename = `imgsubdata/${safeName}-cover-${Date.now()}.webp`;
+                }
+
+                // --- UPLOAD LÊN GITHUB ---
+                // Gọi hàm ghAPI (đã có sẵn ở scope ngoài)
+                // Lưu ý: ghAPI tự thêm appPath vào trước filename
+                await ghAPI(filename, 'PUT', {
+                    message: `[ProgramManager] Update ${type} for ${safeName}`,
                     content: content
                 });
 
-                // 4. Tạo URL hiển thị (Raw URL)
-                const fullRepoPath = `${config.appPath || ''}${relativeFilename}`.replace(/\/\/+/g, '/');
-                const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${fullRepoPath}`;
-                
-                // 5. Cập nhật giao diện
+                // --- TẠO URL ĐỂ HIỂN THỊ ---
+                // Tạo đường dẫn raw thủ công để xem trước
+                const fullPath = `${config.appPath || ''}${filename}`.replace(/\/\/+/g, '/');
+                const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${fullPath}`;
+
                 if (type === 'logo') {
-                    // Thêm tham số ?t=... để ép trình duyệt load lại ảnh mới thay vì cache cũ
+                    // Thêm ?t=... để trình duyệt không cache ảnh cũ vừa bị đè
                     const noCacheUrl = rawUrl + `?t=${Date.now()}`;
-                    els.logoUrl.value = rawUrl; // Lưu URL gốc vào data
-                    renderPreview('logo', noCacheUrl); // Hiển thị URL có no-cache
+                    els.logoUrl.value = rawUrl; // Lưu URL sạch vào input
+                    renderPreview('logo', noCacheUrl); // Hiển thị URL no-cache
                 } else {
                     tempCovers.push(rawUrl);
                     renderCovers();
@@ -2743,12 +2747,13 @@ const ProgramManager = (() => {
             }
         } catch (err) {
             console.error(err);
-            alert("Lỗi xử lý ảnh: " + err.message);
+            alert("Lỗi upload: " + err.message);
         } finally {
-            hideSpinner(btn, originalText);
+            hideSpinner(btn, originalText); // Trả lại nút bấm
         }
     }
-    
+
+ 
     function renderPreview(type, url) {
         if (type === 'logo') {
             els.logoPreview.innerHTML = url ? `<img src="${url}">` : '<span style="color:#999;font-size:12px">Chưa có logo</span>';
