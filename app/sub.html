@@ -4803,7 +4803,6 @@ function openDetailModal(videoData, programEpisodes = null) {
                                 cc_load_policy: 0,
                                 iv_load_policy: 3,
                                 disablekb: 1,
-                                fs: 0,
                             },
                             events: {
                                 onReady: (event) => {
@@ -4995,9 +4994,7 @@ document.getElementById("pause-description").textContent = videoData.description
         handleVideoEnd(false); // Video hết hẳn -> Force đếm ngược 5s
     }
 }
-            
-
-// Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
+            // Gọi hàm này trong onPlayerStateChange hoặc setInterval check mỗi 5s
             function updateQualityBadge() {
                 // Các giá trị trả về: 'highres', 'hd1080', 'hd720', 'large', 'medium', 'small'
                 const quality = player.getPlaybackQuality();
