@@ -10,5 +10,12 @@
     "description": "",
     "logo": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/1770571346832_4m0hw.png",
     "covers": []
+  },
+  "Psick Show": {
+    "description": "",
+    "logo": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/1770627828088_3cnbx.png",
+    "covers": [
+      "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/1770627775023_rmfyr.png"
+    ]
   }
 }
