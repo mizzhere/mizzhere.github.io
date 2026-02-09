@@ -2136,7 +2136,7 @@
 <style>
     #debug-console {
         position: fixed;
-        display: none;
+        
         top: 0;
         left: 0;
         width: 100%;
@@ -2150,7 +2150,7 @@
         pointer-events: none; /* Để click xuyên qua */
         border-bottom: 2px solid #555;
         padding: 5px;
-        display: flex;
+        display: none;
         flex-direction: column;
         gap: 2px;
 
@@ -2173,7 +2173,7 @@
     .log-type-OBJ { color: #2196f3; } /* Xanh dương cho Object */
 </style>
 
-<div id="debug-console">
+<div id="debug-console" style="display: none;">
     <div class="log-line" style="color: yellow;">--- DEBUG CONSOLE READY (F12 MODE) ---</div>
 </div>
 
