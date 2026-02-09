@@ -2686,60 +2686,67 @@ const ProgramManager = (() => {
         });
     }
 
-    // --- 3. Hàm xử lý file chính (Logic mới) ---
+    // --- 3. Hàm xử lý file chính (Đã Fix lỗi thiếu SHA) ---
     async function processFiles(files, type) {
         if (!currentProgram) return alert("Vui lòng nhập tên chương trình trước khi chọn ảnh.");
         
-        // Lấy nút button để hiện loading
         const btn = (type === 'logo' ? els.logoZone : els.coverZone).querySelector('button');
-        const originalText = btn.innerText; // Lưu lại text cũ của nút
+        const originalText = btn.innerText;
         showSpinner(btn, 'Đang xử lý...');
 
         try {
-            const safeName = sanitizeName(currentProgram); // Tên sạch (vd: rap-viet)
+            const safeName = sanitizeName(currentProgram);
 
             for (let file of files) {
                 let content;
 
                 // --- KIỂM TRA ĐỊNH DẠNG ---
                 if (file.type === 'image/webp') {
-                    // Nếu là WebP rồi thì lấy luôn nội dung gốc (không cần nén lại)
                     console.log("File là WebP, giữ nguyên.");
                     content = await toBase64(file); 
                 } else {
-                    // Nếu là JPG/PNG... thì chuyển đổi
                     console.log("File khác, đang chuyển sang WebP...");
                     content = await imageToWebP(file);
                 }
 
-                // --- ĐẶT TÊN FILE (Luôn đuôi .webp) ---
+                // --- ĐẶT TÊN FILE ---
                 let filename;
                 if (type === 'logo') {
-                    // Logo: Tên cố định để đè file cũ
+                    // Logo: Tên cố định (dễ bị trùng file cũ -> gây lỗi 422 nếu thiếu SHA)
                     filename = `imgsubdata/${safeName}-logo.webp`;
                 } else {
-                    // Cover: Tên ngẫu nhiên theo thời gian
+                    // Cover: Tên ngẫu nhiên
                     filename = `imgsubdata/${safeName}-cover-${Date.now()}.webp`;
                 }
 
+                // --- [FIX QUAN TRỌNG] LẤY SHA NẾU FILE ĐÃ TỒN TẠI ---
+                // Gọi API GET trước để kiểm tra xem file này đã có trên GitHub chưa
+                let existingSha = null;
+                try {
+                    const checkRes = await ghAPI(filename, 'GET');
+                    if (!checkRes.notFound && checkRes.data && checkRes.data.sha) {
+                        existingSha = checkRes.data.sha;
+                        console.log(`Tìm thấy file cũ, SHA: ${existingSha}`);
+                    }
+                } catch (ignore) {
+                    // Nếu lỗi mạng hoặc lỗi khác thì bỏ qua, coi như file chưa tồn tại
+                }
+
                 // --- UPLOAD LÊN GITHUB ---
-                // Gọi hàm ghAPI (đã có sẵn ở scope ngoài)
-                // Lưu ý: ghAPI tự thêm appPath vào trước filename
                 await ghAPI(filename, 'PUT', {
                     message: `[ProgramManager] Update ${type} for ${safeName}`,
-                    content: content
+                    content: content,
+                    sha: existingSha // <--- QUAN TRỌNG: Gửi kèm SHA để ghi đè file cũ
                 });
 
-                // --- TẠO URL ĐỂ HIỂN THỊ ---
-                // Tạo đường dẫn raw thủ công để xem trước
+                // --- TẠO URL HIỂN THỊ ---
                 const fullPath = `${config.appPath || ''}${filename}`.replace(/\/\/+/g, '/');
                 const rawUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${fullPath}`;
 
                 if (type === 'logo') {
-                    // Thêm ?t=... để trình duyệt không cache ảnh cũ vừa bị đè
                     const noCacheUrl = rawUrl + `?t=${Date.now()}`;
-                    els.logoUrl.value = rawUrl; // Lưu URL sạch vào input
-                    renderPreview('logo', noCacheUrl); // Hiển thị URL no-cache
+                    els.logoUrl.value = rawUrl;
+                    renderPreview('logo', noCacheUrl);
                 } else {
                     tempCovers.push(rawUrl);
                     renderCovers();
@@ -2749,10 +2756,9 @@ const ProgramManager = (() => {
             console.error(err);
             alert("Lỗi upload: " + err.message);
         } finally {
-            hideSpinner(btn, originalText); // Trả lại nút bấm
+            hideSpinner(btn, originalText);
         }
     }
-
  
     function renderPreview(type, url) {
         if (type === 'logo') {
