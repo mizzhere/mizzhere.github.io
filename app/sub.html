@@ -4783,125 +4783,102 @@ function openDetailModal(videoData, programEpisodes = null) {
                 }
             }
 
-            /* --- HÀM launchPlayer ĐÃ SỬA LỖI CHO MOBILE --- */
-async function launchPlayer(videoData, preloadedSubtitles = null) {
-    // 1. Return Promise để các hàm bên ngoài (như handleModalPlay) vẫn hoạt động đúng flow
+          function launchPlayer(videoData, preloadedSubtitles = null) {
     return new Promise((resolve) => {
-        if (!videoData || !videoData.videoId) {
-            resolve();
-            return;
-        }
+        if (!videoData || !videoData.videoId) return;
 
+        // 1. Reset các cờ trạng thái
         isUpNextTriggered = false;
         isEnding = false;
         lastSubtitleEnd = 0;
-
-        // 2. Setup dữ liệu
         currentVideoData = videoData;
-        
-        // Setup nút tập phim
-        const hasEpisodes = libraryData.some(
-            (v) => v.program === videoData.program && v.videoId !== videoData.videoId
-        );
-        if (hasEpisodes || (videoData.program && videoData.episode)) {
-            episodesBtn.classList.remove("hidden");
-        } else {
-            episodesBtn.classList.add("hidden");
-        }
+
+        // 2. Cập nhật giao diện (UI) ngay lập tức
+        // ... (Code ẩn/hiện nút next, setup overlay giữ nguyên như cũ) ...
+        const hasEpisodes = libraryData.some(v => v.program === videoData.program && v.videoId !== videoData.videoId);
+        if (hasEpisodes || (videoData.program && videoData.episode)) episodesBtn.classList.remove("hidden");
+        else episodesBtn.classList.add("hidden");
         
         hideUpNextOverlay();
         subtitles = preloadedSubtitles || [];
         subtitleDisplay.innerHTML = "";
-
-        // 3. HIỆN GIAO DIỆN NGAY LẬP TỨC (QUAN TRỌNG)
-        playerWrapper.classList.remove("hidden");
         
-        // Reset UI
-        const spinner = document.getElementById("loading-spinner");
-        spinner.style.display = "block";
-        const iframe = document.getElementById("youtube-player");
-        iframe.classList.remove("ready");
-        const centerBtn = document.getElementById("center-play-pause-btn");
-        centerBtn.style.opacity = "0";
-        centerBtn.style.pointerEvents = "none";
-
-        // Setup Text
+        playerWrapper.classList.remove("hidden");
+        document.getElementById("loading-spinner").style.display = "block";
+        
         videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
         videoProgramDisplay.textContent = videoData.program || "";
         
-        // Pause Screen info
-        document.getElementById("pause-program-name").textContent = videoData.program || "";
-        document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
-        document.getElementById("pause-description").textContent = videoData.description || "";
-        
-        updateProgressBarUI(0, 0);
-        renderBookmarksOverlay(videoData.bookmarks || []);
+        // Reset Progress Bar về 0 để tránh thanh cũ
+        updateProgressBarUI(0, 0); 
 
-        // Setup Theme
+        // Theme màu sắc
         const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
         const playerContainer = document.getElementById("player-container");
         resetLocalTheme(playerContainer);
-        if (thumbUrl) {
-            applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"), playerContainer);
-        }
+        if (thumbUrl) applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"), playerContainer);
 
-        // 4. KIỂM TRA PLAYER
-        if (!player || typeof player.loadVideoById !== "function") {
-            console.log("Player chưa sẵn sàng, khởi tạo mới...");
-            player = new YT.Player("youtube-player", {
-                videoId: videoData.videoId,
-                playerVars: {
-                    autoplay: 1, // Luôn bật autoplay ở đây
-                    playsinline: 1, // QUAN TRỌNG CHO IOS: Để không bị bung native player
-                    rel: 0,
-                    modestbranding: 1,
-                    controls: 0,
-                    showinfo: 0,
-                    cc_load_policy: 0,
-                    iv_load_policy: 3,
-                    disablekb: 1,
-                },
-                events: {
-                    onReady: (event) => {
-                        event.target.playVideo();
-                        onPlayerReady(event);
-                        resolve();
-                    },
-                    onStateChange: onPlayerStateChange,
-                },
-            });
-            // Với new Player, ta không cần làm gì thêm, onReady sẽ lo
-        } else {
-            // --- KHẮC PHỤC LỖI MOBILE Ở ĐÂY ---
-            
-            // Lấy thời gian đã lưu
+        // --- QUAN TRỌNG: XỬ LÝ PLAYER ---
+
+        // KỊCH BẢN A: Player đã tồn tại (Do đã xem bài trước đó)
+        if (player && typeof player.loadVideoById === "function") {
+            // Mobile: Gọi lệnh này NGAY LẬP TỨC, không được await cái gì cả
             const savedTime = getSavedTime(videoData.videoId);
-            if (savedTime > 0) console.log(`Tiếp tục từ: ${savedTime}`);
-
-            // [FIX] GỌI LỆNH PHÁT NGAY LẬP TỨC - KHÔNG CHỜ ĐỢI
-            // Không chờ enterCinematicMode, không chờ loadRemoteSubtitle
             player.loadVideoById({
                 videoId: videoData.videoId,
                 startSeconds: savedTime
             });
-
-            // 5. Xử lý các tác vụ phụ song song (Async)
             
-            // Load Subtitle song song
-            if (videoData.subtitleUrl) {
-                loadRemoteSubtitle(videoData.subtitleUrl);
-            } else if (subtitles.length > 0) {
-                startSubtitleSync();
-            }
-
-            // Fullscreen song song (Nếu trình duyệt cho phép thì nó sẽ chạy, ko thì thôi)
-            enterCinematicMode();
-
+            // Các tác vụ phụ (Sub, Fullscreen) chạy song song sau
+            if (videoData.subtitleUrl) loadRemoteSubtitle(videoData.subtitleUrl);
+            else if (subtitles.length > 0) startSubtitleSync();
+            
+            enterCinematicMode(); // Không await
             resolve();
+        } 
+        // KỊCH BẢN B: Player chưa tồn tại (Lần xem đầu tiên)
+        else {
+            console.log("Khởi tạo Player mới...");
+            
+            // Lấy savedTime trước để nạp vào config
+            const savedTime = getSavedTime(videoData.videoId);
+
+            // Tạo Player mới. Lưu ý 'playerVars'
+            player = new YT.Player("youtube-player", {
+                videoId: videoData.videoId,
+                playerVars: {
+                    autoplay: 1,      // Bắt buộc
+                    playsinline: 1,   // Bắt buộc cho iOS
+                    start: savedTime, // Bắt đầu từ giây đã lưu
+                    controls: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    showinfo: 0,
+                    fs: 0,
+                    disablekb: 1,
+                    iv_load_policy: 3
+                },
+                events: {
+                    // Khi Player tải xong API -> Nó tự gọi hàm này
+                    onReady: (event) => {
+                        // Mobile cần dòng này để kích hoạt âm thanh/hình ảnh
+                        event.target.playVideo();
+                        
+                        // Lúc này Player đã Real, ta mới load Subtitle
+                        if (videoData.subtitleUrl) loadRemoteSubtitle(videoData.subtitleUrl);
+                        
+                        onPlayerReady(event);
+                        resolve();
+                    },
+                    onStateChange: onPlayerStateChange,
+                    onError: (e) => console.error("Player Error:", e.data)
+                },
+            });
+            // Với kịch bản B, ta không gọi loadVideoById nữa vì videoId đã nằm trong config new YT.Player
         }
     });
 }
-
+            
             async function enterCinematicMode() {
                 try {
                     if (playerContainer.requestFullscreen) await playerContainer.requestFullscreen();
@@ -4959,6 +4936,7 @@ async function launchPlayer(videoData, preloadedSubtitles = null) {
     }
     // 2. PLAYING
     else if (event.data === YT.PlayerState.PLAYING) {
+        
         spinner.style.display = "none"; 
         iframe.classList.add("ready"); 
         centerBtn.style.opacity = "0";
