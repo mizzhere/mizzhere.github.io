@@ -4649,69 +4649,18 @@ function openDetailModal(videoData, programEpisodes = null) {
                 }
             }
 
-           // --- SỬA LẠI HÀM NÀY ---
-async function launchPlayer(videoData, preloadedSubtitles = null) {
-    return new Promise((resolve) => {
-        if (!videoData || !videoData.videoId) return;
-        
-        // Reset các cờ trạng thái
-        isUpNextTriggered = false;
+            async function launchPlayer(videoData, preloadedSubtitles = null) {
+                return new Promise((resolve) => {
+                    if (!videoData || !videoData.videoId) return;
+                    isUpNextTriggered = false; 
         isEnding = false;
-        lastSubtitleEnd = 0;
-
-        // Lưu data hiện tại
-        currentVideoData = videoData;
-
-        // 1. XỬ LÝ GIAO DIỆN TRƯỚC (Synchronous)
-        // Hiện nút list tập nếu có
-        const hasEpisodes = libraryData.some(v => v.program === videoData.program && v.videoId !== videoData.videoId);
-        if (hasEpisodes || (videoData.program && videoData.episode)) {
-            episodesBtn.classList.remove("hidden");
-        } else {
-            episodesBtn.classList.add("hidden");
-        }
-        
-        hideUpNextOverlay();
-        
-        // Load sub nếu có sẵn
-        subtitles = preloadedSubtitles || [];
-        subtitleDisplay.innerHTML = "";
-
-        // Reset UI Player
-        playerWrapper.classList.remove("hidden");
-        document.getElementById("loading-spinner").style.display = "block"; // Hiện loading
-        document.getElementById("center-play-pause-btn").style.opacity = "0"; // Ẩn nút play giữa tạm
-        
-        // Cập nhật thông tin text
-        videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
-        videoProgramDisplay.textContent = videoData.program || "";
-        document.getElementById("pause-program-name").textContent = videoData.program || "";
-        document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
-        document.getElementById("pause-description").textContent = videoData.description || "";
-        
-        updateProgressBarUI(0, 0);
-        renderBookmarksOverlay(videoData.bookmarks || []);
-
-        // Xử lý màu nền (Thumbnail theme)
-        const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
-        const pContainer = document.getElementById("player-container");
-        resetLocalTheme(pContainer);
-        if (thumbUrl) {
-            applyThemeFromImage(thumbUrl.replace("hqdefault", "maxresdefault"), pContainer);
-        }
-
-        // --- 2. GỌI CINEMATIC (NHƯNG KHÔNG CHỜ - FIRE AND FORGET) ---
-        // Để không làm mất "User Gesture Token"
-        enterCinematicMode().catch(e => console.log("Cinematic error:", e));
-
-        // --- 3. XỬ LÝ PLAYER (QUAN TRỌNG NHẤT) ---
-        // Kiểm tra player
-        if (!player || typeof player.loadVideoById !== "function") {
-            // Nếu chưa có player, tạo mới và play ngay trong onReady
-            console.log("Player chưa sẵn sàng, tạo mới...");
-            player = new YT.Player("youtube-player", {
-                videoId: videoData.videoId,
-                playerVars: {
+        lastSubtitleEnd = 0; // Reset tạm, sẽ được cập nhật khi load sub
+                    // [FIX] KIỂM TRA AN TOÀN: Nếu player chưa sẵn sàng thì tạo lại
+                    if (!player || typeof player.loadVideoById !== "function") {
+                        console.log("Player chưa sẵn sàng, đang khởi tạo lại...");
+                        player = new YT.Player("youtube-player", {
+                            videoId: videoData.videoId,
+                            playerVars: {
                     autoplay: 1,      // Cố gắng autoplay
                     playsinline: 1,   // Bắt buộc cho iOS
                     controls: 0,
@@ -4722,50 +4671,95 @@ async function launchPlayer(videoData, preloadedSubtitles = null) {
                     fs: 0,            // Tắt fullscreen native
                     disablekb: 1
                 },
-                events: {
-                    onReady: (event) => {
-                        // iOS Fix: Mute trước khi play thì tỉ lệ thành công cao hơn
-                        // event.target.mute(); 
-                        event.target.playVideo();
-                        onPlayerReady(event);
-                        resolve();
-                    },
-                    onStateChange: onPlayerStateChange,
-                    onError: (e) => console.error("YT Error:", e.data)
-                },
-            });
-        } else {
-            // Nếu player đã có, LOAD NGAY LẬP TỨC (Không await gì cả)
-            console.log("Player có sẵn, load ngay video:", videoData.videoId);
-            
-            // Lấy thời gian đã xem
-            const savedTime = getSavedTime(videoData.videoId);
-            
-            // Load Subtitle từ xa (chạy song song)
-            if (videoData.subtitleUrl) {
-                loadRemoteSubtitle(videoData.subtitleUrl);
-            } else if (subtitles.length > 0) {
-                startSubtitleSync();
+                            events: {
+                                onReady: (event) => {
+                                    event.target.playVideo();
+                                    onPlayerReady(event); // Gọi lại các logic setup
+                                    resolve(); // Xong việc
+                                },
+                                onStateChange: onPlayerStateChange,
+                            },
+                        });
+                        // Sau khi new Player thì code dưới chạy tiếp sẽ cập nhật UI
+                    }
+
+                    currentVideoData = videoData;
+                    const hasEpisodes = libraryData.some(
+                        (v) => v.program === videoData.program && v.videoId !== videoData.videoId
+                    );
+                    if (hasEpisodes || (videoData.program && videoData.episode)) {
+                        episodesBtn.classList.remove("hidden");
+                    } else {
+                        episodesBtn.classList.add("hidden");
+                    }
+                    isEnding = false;
+                    hideUpNextOverlay();
+
+                    subtitles = preloadedSubtitles || [];
+                    subtitleDisplay.innerHTML = "";
+
+                    // --- RESET UI TRƯỚC KHI PHÁT ---
+                    playerWrapper.classList.remove("hidden");
+
+                    const spinner = document.getElementById("loading-spinner");
+                    spinner.style.display = "block";
+
+                    const iframe = document.getElementById("youtube-player");
+                    iframe.classList.remove("ready");
+
+                    const centerBtn = document.getElementById("center-play-pause-btn");
+                    centerBtn.style.opacity = "0";
+                    centerBtn.style.pointerEvents = "none";
+
+                    videoTitleDisplay.textContent = videoData.userTitle || videoData.title || "Đang tải...";
+                    videoProgramDisplay.textContent = videoData.program || "";
+                    // Nạp dữ liệu cho màn hình Pause
+document.getElementById("pause-program-name").textContent = videoData.program || "";
+document.getElementById("pause-video-title").textContent = videoData.userTitle || videoData.title;
+document.getElementById("pause-description").textContent = videoData.description || "";
+                    updateProgressBarUI(0, 0);
+                    
+
+                    renderBookmarksOverlay(videoData.bookmarks || []);
+                    const thumbUrl = videoData.thumbnailUrl || videoData.thumbnailUrl_auto;
+        const playerContainer = document.getElementById("player-container");
+        
+        // Reset về đỏ trước khi load màu mới
+        resetLocalTheme(playerContainer);
+
+        if (thumbUrl) {
+            applyThemeFromImage(
+                thumbUrl.replace("hqdefault", "maxresdefault"), 
+                playerContainer
+            );
+        }
+                    enterCinematicMode().then(() => {
+                        if (videoData.subtitleUrl) {
+                            loadRemoteSubtitle(videoData.subtitleUrl);
+                        } else if (subtitles.length > 0) {
+                            startSubtitleSync();
+                        }
+
+                        // [FIX] Chỉ gọi loadVideoById nếu player ĐÃ TỒN TẠI (tránh lỗi undefined)
+                        if (player && typeof player.loadVideoById === "function") {
+                            // [SỬA ĐOẠN NÀY]
+                            // 1. Lấy thời gian đã lưu
+                            const savedTime = getSavedTime(videoData.videoId);
+
+                            // 2. Nếu có savedTime > 0, thông báo nhỏ (tùy chọn) hoặc cứ thế phát
+                            if (savedTime > 0) {
+                                console.log(`Tiếp tục phát từ: ${savedTime}`);
+                            }
+
+                            // 3. Load video tại giây thứ savedTime
+                            player.loadVideoById(videoData.videoId, savedTime);
+
+                            resolve();
+                        }
+                    });
+                });
             }
 
-            // Gọi lệnh Load
-            player.loadVideoById({
-                videoId: videoData.videoId,
-                startSeconds: savedTime
-            });
-            
-            // [MOBILE FIX] Một số trình duyệt cần gọi thêm playVideo sau khi load
-            // setTimeout nhỏ để đảm bảo loadVideoById đã được xử lý
-            /* setTimeout(() => {
-                if(player.getPlayerState() !== YT.PlayerState.PLAYING) {
-                    player.playVideo();
-                }
-            }, 100); */
-
-            resolve();
-        }
-    });
-}
             async function enterCinematicMode() {
                 try {
                     if (playerContainer.requestFullscreen) await playerContainer.requestFullscreen();
