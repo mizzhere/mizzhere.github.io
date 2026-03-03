@@ -1206,8 +1206,8 @@
                                         <th class="bg-gray-50" data-sortable data-sort-key="point">
                                             Điểm 4 <span class="sort-arrow"></span>
                                         </th>
-                                        <th class="bg-gray-50" data-sortable data-sort-key="deviation">
-                                            Độ lệch <span class="sort-arrow"></span>
+                                        <th class="bg-gray-50" title="Tính bằng: (Điểm - GPA) * Số TC" data-sortable data-sort-key="deviation">
+                                            Tác động <span class="sort-arrow"></span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -1926,8 +1926,9 @@ const subjects = [
                             valB = b[currentSort.key];
                         const overallGPA = parseFloat(statsOverallGPAEl.textContent) || 0;
                         if (currentSort.key === "deviation") {
-                            valA = a.point - overallGPA;
-                            valB = b.point - overallGPA;
+                            // Nhân thêm số tín chỉ để tính lực kéo thực tế
+                            valA = (a.point - overallGPA) * a.credits;
+                            valB = (b.point - overallGPA) * b.credits;
                         } else if (currentSort.key === "letterGrade") {
                             valA = gradePoints[a.letterGrade] || -1;
                             valB = gradePoints[b.letterGrade] || -1;
@@ -1944,14 +1945,19 @@ const subjects = [
                 }
                 const overallGPAForDeviation = parseFloat(statsOverallGPAEl.textContent) || 0;
                 displayData.forEach((data) => {
-                    const deviation = data.point - overallGPAForDeviation;
+                    // CÔNG THỨC CHUẨN: (Điểm - GPA) * Tín chỉ
+                    const impact = (data.point - overallGPAForDeviation) * data.credits;
+                    
                     const row = statsSubjectDetailsTableBodyEl.insertRow();
+                    // Thêm dấu + phía trước nếu điểm dương để nhìn rõ ràng hơn
+                    const displayImpact = impact > 0 ? `+${impact.toFixed(2)}` : impact.toFixed(2);
+                    
                     row.innerHTML = `
             <td>${data.name}</td>
             <td class="text-center">${data.credits}</td>
             <td class="text-center">${data.letterGrade}</td>
             <td class="text-center">${data.point.toFixed(1)}</td>
-            <td class="text-center ${deviation >= 0.01 ? "deviation-positive" : deviation <= -0.01 ? "deviation-negative" : ""}">${deviation.toFixed(2)}</td>
+            <td class="text-center ${impact >= 0.01 ? "deviation-positive" : impact <= -0.01 ? "deviation-negative" : ""}">${displayImpact}</td>
         `;
                 });
                 updateSortArrows();
