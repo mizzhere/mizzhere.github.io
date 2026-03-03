@@ -299,19 +299,21 @@
             .semester-arrow.expanded svg {
                 transform: rotate(90deg);
             }
+            /* Animation siêu mượt bằng Grid 0fr -> 1fr */
             .subjects-list {
-                padding-left: 0.5rem;
-                overflow: hidden;
-                max-height: 0;
-                transition: max-height 0.5s ease-out;
-                border-left: 2px solid #e2e8f0;
+                display: grid;
+                grid-template-rows: 0fr;
+                transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s ease;
                 margin-left: 0.5rem;
-                margin-top: 0.5rem;
+                border-left: 2px solid #e2e8f0;
             }
             .subjects-list.expanded {
-                max-height: 1500px;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
+                grid-template-rows: 1fr;
+                margin-top: 0.5rem;
+            }
+            .subjects-inner {
+                overflow: hidden;
+                padding-left: 0.5rem;
             }
             .subject-item {
                 display: grid;
@@ -377,17 +379,7 @@
                 color: #15803d;
                 border-color: #bbf7d0;
             }
-            .editable-subject-name {
-                cursor: pointer;
-                text-decoration: underline;
-                text-decoration-style: dotted;
-                text-decoration-color: #94a3b8;
-                transition: color 0.2s ease;
-            }
-            .editable-subject-name:hover {
-                color: #2563eb;
-                text-decoration-color: #2563eb;
-            }
+            
 
             /* === Bộ lọc nhanh === */
             .filter-group .filter-label {
@@ -792,9 +784,141 @@
                     transform: translateY(0);
                 }
             }
+            /* === CSS CHO DRAG & DROP OVERLAY === */
+#drag-drop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(37, 99, 235, 0.95);
+    color: white;
+    z-index: 99999;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 8px dashed rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+#drag-drop-overlay.active {
+    display: flex;
+}
+#drag-drop-overlay h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+#drag-drop-overlay p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+/* === CHẾ ĐỘ TỐI (DARK MODE) HOÀN CHỈNH 100% === */
+            body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+            
+            /* Background chính */
+            body.dark-mode .container, 
+            body.dark-mode .results-sticky-container, 
+            body.dark-mode .button-container,
+            body.dark-mode .modal-content-wrapper,
+            body.dark-mode .bg-white,
+            body.dark-mode .subject-details-table tbody { background-color: #1e293b !important; border-color: #334155 !important; }
+
+            /* Các thẻ, bảng biểu và background xám nhạt của Tailwind */
+            body.dark-mode .mini-stat-card, 
+            body.dark-mode .semester-header,
+            body.dark-mode .header-item-subjects,
+            body.dark-mode select.mini-select,
+            body.dark-mode select.subject-grade-select,
+            body.dark-mode .stats-summary-grid div,
+            body.dark-mode .insight-card,
+            body.dark-mode .subject-details-table th,
+            body.dark-mode .bg-slate-50, 
+            body.dark-mode .bg-gray-50,
+            body.dark-mode .bg-indigo-50,
+            body.dark-mode .bg-blue-50 { background-color: #334155 !important; border-color: #475569 !important; color: #f8fafc !important; }
+
+            /* Nổi bật */
+            body.dark-mode .mini-stat-card.primary { background-color: #1e3a8a !important; border-color: #3b82f6 !important; }
+            
+            /* Text Color chung */
+            body.dark-mode .mini-value, 
+            body.dark-mode .subject-name, 
+            body.dark-mode h2, 
+            body.dark-mode h3, 
+            body.dark-mode h4, 
+            body.dark-mode span:not(.subject-tag):not(.rank-highlight) { color: #f8fafc !important; }
+            
+            body.dark-mode .text-gray-800, 
+            body.dark-mode .text-gray-700, 
+            body.dark-mode .text-slate-700, 
+            body.dark-mode .text-indigo-900 { color: #e2e8f0 !important; }
+            
+            body.dark-mode .text-gray-600, 
+            body.dark-mode .text-gray-500, 
+            body.dark-mode .text-indigo-800 { color: #94a3b8 !important; }
+            
+            /* Hover & Tương tác môn học */
+            body.dark-mode .subject-item:hover,
+            body.dark-mode .collapsible-header:hover { background-color: #0f172a !important; }
+            body.dark-mode .subject-item.selected-briefly { background-color: #1d4ed8 !important; }
+            
+            /* Border chung */
+            body.dark-mode .border-slate-200, 
+            body.dark-mode .subject-item, 
+            body.dark-mode th, 
+            body.dark-mode td { border-color: #475569 !important; }
+            
+            /* Progress bar & Input */
+            body.dark-mode #progressBarContainer { background: #334155 !important; }
+            body.dark-mode textarea, body.dark-mode input { background-color: #0f172a; color: white; border-color: #475569; }
+            
+            /* Tabs Modal Thống kê */
+            body.dark-mode .dashboard-tab-nav { border-bottom-color: #334155; }
+            body.dark-mode .dashboard-tab-btn { color: #94a3b8; border-bottom-color: transparent; }
+            body.dark-mode .dashboard-tab-btn:hover { background-color: #334155; color: #e2e8f0; }
+            body.dark-mode .dashboard-tab-btn.active { color: #60a5fa; border-bottom-color: #60a5fa; background-color: #1e293b; }
+            
+            /* Insight Cards Màu sắc đặc biệt */
+            body.dark-mode .insight-card.positive { background-color: rgba(21, 128, 61, 0.2) !important; border-color: #15803d !important; }
+            body.dark-mode .insight-card.negative { background-color: rgba(185, 28, 28, 0.2) !important; border-color: #b91c1c !important; }
+            body.dark-mode .insight-card.positive .insight-title { color: #4ade80 !important; }
+            body.dark-mode .insight-card.negative .insight-title { color: #f87171 !important; }
+
+            /* --- TINH CHỈNH CHI TIẾT DARK MODE CHO CÁC KHỐI MÀU --- */
+            
+            /* Thẻ GPA Học kỳ & Đếm số môn */
+            body.dark-mode .semester-gpa-display { background-color: rgba(30, 58, 138, 0.5) !important; color: #93c5fd !important; }
+            body.dark-mode .semester-grade-count { background-color: #475569 !important; color: #e2e8f0 !important; }
+
+            /* 4 Ô Thống kê tổng quan (Tổng TC, GPA Tích lũy...) */
+            body.dark-mode .stats-summary-grid div p:first-child { color: #94a3b8 !important; }
+            body.dark-mode .stats-summary-grid div p:last-child { color: #60a5fa !important; }
+
+            /* Danh sách nút Lọc nhanh theo điểm (A+, A, B...) */
+            body.dark-mode .grade-distribution-list li { 
+                background-color: #1e293b !important; 
+                border-color: #334155 !important; 
+                color: #e2e8f0 !important; 
+            }
+            body.dark-mode .grade-distribution-list li:hover { 
+                background-color: #334155 !important; 
+                border-color: #475569 !important; 
+            }
+            body.dark-mode .grade-distribution-list li.active-filter { 
+                background-color: #1e3a8a !important; 
+                border-color: #3b82f6 !important; 
+                color: #bfdbfe !important; 
+            }
+            body.dark-mode .grade-info { color: #94a3b8 !important; }
         </style>
     </head>
     <body>
+        <div id="drag-drop-overlay">
+    <h2>Thả file vào đây 🚀</h2>
+    <p>Nhận diện tự động file "Kết quả học tập.html"</p>
+</div>
         <div class="container">
             <div class="results-sticky-container">
                 <div class="mini-stat-card primary">
@@ -816,12 +940,7 @@
 
                 <div class="mini-stat-card">
                     <span>Mục tiêu:</span>
-                    <select id="targetRankSelect" class="mini-select">
-                        <option value="">-- Chọn --</option>
-                        <option value="Xuất sắc">Xuất sắc (≥ 3.6)</option>
-                        <option value="Giỏi">Giỏi (≥ 3.2)</option>
-                        <option value="Khá">Khá (≥ 2.5)</option>
-                    </select>
+                    <input type="number" id="targetRankSelect" class="mini-select" style="width: 70px; outline: none; background: transparent;" min="2.0" max="4.0" step="0.01" placeholder="Ví dụ: 3.20">
                 </div>
 
                 <div id="target-gpa-item" class="mini-stat-card">
@@ -830,11 +949,19 @@
                 </div>
 
                 <div id="targetInsight" style="display: none"></div>
+
+                <button id="themeToggleBtn" class="mini-stat-card" style="cursor: pointer; padding: 0.35rem 0.5rem; background: transparent; border: none;" title="Bật/Tắt chế độ tối">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                
+                <div id="progressBarContainer" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #e2e8f0;">
+                    <div id="progressBar" style="height: 100%; width: 0%; background: #10b981; transition: width 0.5s ease-out;"></div>
+                </div>
             </div>
 
             <div class="subjects-list-main-container">
                 <!-- Sửa lại toàn bộ div#quickFiltersContainer -->
-                <div id="quickFiltersContainer" class="p-3 mb-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div id="quickFiltersContainer" class="p-3 mb-3 bg-slate-50 rounded-lg border border-slate-200" style="display: none;">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="filter-group">
                             <span class="filter-label">Hình thức thi:</span>
@@ -901,9 +1028,23 @@
             </div>
 
             <div class="button-container mt-4">
-                <button id="calculateButton" class="main-action-button">Lưu & Cập nhật</button>
-                <button id="toggleDetailedStatsButton" class="secondary-action-button mt-2">
+                <button id="toggleDetailedStatsButton" class="main-action-button">
                     Xem Thống Kê Chi Tiết
+                </button>
+                <div class="flex gap-2 mt-2">
+                    <button id="openPasteModalButton" class="main-action-button flex justify-center items-center gap-2" style="background-color: #10b981; width: 50%;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/></svg>
+                        Dán điểm
+                    </button>
+                    <button id="exportDataButton" class="secondary-action-button flex justify-center items-center gap-2" style="width: 50%;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                        Sao lưu
+                    </button>
+                </div>
+                
+                <button id="resetDataButton" class="secondary-action-button mt-2 flex justify-center items-center gap-2" style="color: #dc2626; border-color: #fca5a5; background-color: #fef2f2;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    Xóa làm lại từ đầu
                 </button>
             </div>
         </div>
@@ -1021,13 +1162,13 @@
                             </div>
                             <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
                                 <h4 class="text-center font-medium text-gray-600 mb-1">
-                                    Ma trận Tín chỉ - Điểm số (Scatter Plot)
+                                    Cơ cấu Điểm chữ
                                 </h4>
                                 <p class="text-center text-xs text-gray-400 mb-4">
-                                    Vùng nguy hiểm: Điểm thấp + Tín chỉ cao (Góc dưới bên phải)
+                                    Tỷ lệ phần trăm số tín chỉ theo từng mức điểm
                                 </p>
                                 <div style="height: 300px; position: relative">
-                                    <canvas id="scatterChart"></canvas>
+                                    <canvas id="gradeDoughnutChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -1106,8 +1247,25 @@
         </button>
 
         <div id="toastNotification" class="toast-notification">Đã lưu và cập nhật điểm!</div>
+        <div id="pasteDataModalOverlay" class="modal-overlay" style="z-index: 1003;">
+            <div class="modal-content-wrapper" style="max-width: 500px; width: 90%;">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Dán bảng điểm</h3>
+                        <button id="closePasteModalButton" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4 bg-blue-50 p-2 rounded border border-blue-100">
+                        📱 <b>Dành cho Mobile:</b> Vào trang điểm của trường ➔ Chọn tất cả ➔ Sao chép ➔ Dán vào ô bên dưới.
+                    </p>
+                    <textarea id="pasteDataInput" rows="6" class="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500" placeholder="Dán nội dung bảng điểm vào đây..."></textarea>
+                    
+                    <div class="flex justify-end mt-4">
+                        <button id="processPasteButton" class="main-action-button w-full">Trích xuất điểm tự động</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- MODAL CHỈNH SỬA CHI TIẾT MÔN HỌC -->
-        <!-- MODAL CHỈNH SỬA CHI TIẾT MÔN HỌC (ĐÃ ĐƠN GIẢN HÓA) -->
         <div id="editSubjectModalOverlay" class="modal-overlay" style="z-index: 1002">
             <div class="modal-content-wrapper" style="max-width: 500px">
                 <div class="p-6">
@@ -1558,6 +1716,11 @@ const subjects = [
                         const subjectsList = document.createElement("div");
                         subjectsList.className = "subjects-list";
                         subjectsList.dataset.semester = semesterNumber;
+                        
+                        // Bọc vào thẻ inner để CSS Grid mượt
+                        const subjectsInner = document.createElement("div");
+                        subjectsInner.className = "subjects-inner";
+
                         semesterSubjects.forEach((subject) => {
                             const subjectDiv = document.createElement("div");
                             subjectDiv.className = "subject-item";
@@ -1566,14 +1729,14 @@ const subjects = [
                             subjectDiv.dataset.finalExamType = subject.finalExamType || "";
                             subjectDiv.innerHTML = `
                 <div class="subject-name-wrapper">
-                    <span class="subject-name editable-subject-name" title="${subject.name}" data-subject-id="${subject.id}">${subject.name}</span>
+                    <span class="subject-name">${subject.name}</span>
                     <div class="subject-tags-container">${createTagsHTML(subject)}</div>
                 </div>
                 <span class="text-center">${subject.credits}</span>
                 <select id="${subject.id}" class="w-full subject-grade-select bg-white py-2 px-1 text-sm rounded-md border-slate-300">
                     ${gradeOptions.map((grade) => `<option value="${grade}" ${subject.notInGpa ? "disabled" : ""}>${grade || "--"}</option>`).join("")}
                 </select>`;
-                            subjectsList.appendChild(subjectDiv);
+                            subjectsInner.appendChild(subjectDiv);
                             subjectDiv.querySelector(`#${subject.id}`).addEventListener("change", (event) => {
                                 calculateAndDisplayResults();
                                 event.target.closest(".subject-item").classList.add("selected-briefly");
@@ -1583,6 +1746,7 @@ const subjects = [
                                 );
                             });
                         });
+                        subjectsList.appendChild(subjectsInner);
                         semesterBlock.appendChild(semesterHeader);
                         semesterBlock.appendChild(subjectsList);
                         semestersContainer.appendChild(semesterBlock);
@@ -1638,6 +1802,9 @@ const subjects = [
                     const percentage =
                         totalProgramCredits > 0 ? (currentTotalCompletedCredits / totalProgramCredits) * 100 : 0;
                     completionPercentageEl.textContent = `${percentage.toFixed(0)}%`;
+                    
+                    // Kích hoạt thanh Progress Bar chạy
+                    document.getElementById("progressBar").style.width = `${percentage.toFixed(1)}%`;
                 } else {
                     // Reset về trạng thái ban đầu
                     gpaEl.textContent = "0.00";
@@ -1645,6 +1812,7 @@ const subjects = [
                     rankEl.className = "result-value rank-highlight text-slate";
                     totalCreditsEl.textContent = "0";
                     completionPercentageEl.textContent = "0%";
+                    document.getElementById("progressBar").style.width = "0%";
                 }
                 updateTargetRank(currentTotalCompletedCredits, totalWeightedPoints);
                 updateSemesterStats();
@@ -1679,26 +1847,21 @@ const subjects = [
                 });
             }
 
-            // THAY THẾ TOÀN BỘ HÀM updateTargetRank
-            // THAY THẾ TOÀN BỘ HÀM NÀY
             function updateTargetRank(currentTotalCompletedCredits, totalWeightedPoints) {
                 const selectedTargetRankValue = targetRankSelect.value;
-                const targetGPAThreshold = RANK_THRESHOLDS[selectedTargetRankValue];
+                const targetGPAThreshold = parseFloat(selectedTargetRankValue);
 
-                if (selectedTargetRankValue && targetGPAThreshold) {
+                if (selectedTargetRankValue && !isNaN(targetGPAThreshold) && targetGPAThreshold > 0) {
                     targetGpaItemEl.classList.add("visible");
                     targetInsightEl.classList.add("visible");
 
                     const remainingCredits = totalProgramCredits - currentTotalCompletedCredits;
-                    // Dòng này không cần nữa vì đã có trong thanh phụ: remainingCreditsForTargetEl.textContent = remainingCredits >= 0 ? remainingCredits : "Lỗi";
 
                     if (remainingCredits <= 0) {
-                        const finalGPA =
-                            currentTotalCompletedCredits > 0 ? totalWeightedPoints / currentTotalCompletedCredits : 0;
                         minAvgForRemainingEl.textContent = "N/A";
                         targetInsightEl.textContent = "Bạn đã hoàn thành chương trình học!";
                     } else {
-                        const pointsStillNeeded = targetGPAThreshold * totalProgramCredits - totalWeightedPoints;
+                        const pointsStillNeeded = (targetGPAThreshold * totalProgramCredits) - totalWeightedPoints;
                         if (pointsStillNeeded <= 0) {
                             minAvgForRemainingEl.textContent = "0.00";
                             targetInsightEl.textContent =
@@ -1711,7 +1874,7 @@ const subjects = [
                                     "Điểm trung bình yêu cầu đã vượt quá mức tối đa có thể đạt được.";
                                 minAvgForRemainingEl.classList.add("text-red-600");
                             } else if (avgNeeded >= 3.7) {
-                                targetInsightEl.textContent = `Rất khó! Bạn cần đạt điểm trung bình gần như tuyệt đối (A/A+) cho các môn còn lại.`;
+                                targetInsightEl.textContent = `Rất khó! Bạn cần đạt trung bình ${avgNeeded.toFixed(2)} cho các môn còn lại.`;
                                 minAvgForRemainingEl.classList.remove("text-red-600");
                             } else {
                                 targetInsightEl.textContent = `Cố lên! Hãy duy trì điểm trung bình các môn còn lại ở mức ${avgNeeded.toFixed(2)} trở lên.`;
@@ -1720,11 +1883,11 @@ const subjects = [
                         }
                     }
                 } else {
-                    // Khi chưa chọn mục tiêu
                     targetGpaItemEl.classList.remove("visible");
                     targetInsightEl.classList.remove("visible");
                 }
             }
+            
             // ===============================================
             // CÁC HÀM CHO MODAL THỐNG KÊ CHI TIẾT
             // ===============================================
@@ -1744,7 +1907,7 @@ const subjects = [
                 renderSemesterGpaChart(allCompletedSubjectsForStats, overallGPA);
                 updateCumulativeGpaChart(allCompletedSubjectsForStats);
                 renderDetailedTable();
-                renderScatterChart(allCompletedSubjectsForStats);
+                renderGradeDoughnutChart(allCompletedSubjectsForStats);
                 // Tính lại credits và weightedPoints hiện tại
                 let curPoints = 0;
                 completedSubjectsData.forEach((s) => (curPoints += s.weightedPoints));
@@ -2087,57 +2250,7 @@ const subjects = [
 
             // 8. LOGIC CHO CÁC MODAL VÀ BỘ LỌC
             // ===================================
-            const editModalOverlay = document.getElementById("editSubjectModalOverlay");
-            const closeEditModalButton = document.getElementById("closeEditModalButton");
-            const cancelEditButton = document.getElementById("cancelEditButton");
-            const editSubjectForm = document.getElementById("editSubjectForm");
-            const editModalSubjectName = document.getElementById("editModalSubjectName");
-            const editSubjectId = document.getElementById("editSubjectId");
-            const editFinalExamType = document.getElementById("editFinalExamType");
-            const editPracticeExamType = document.getElementById("editPracticeExamType");
-            function openEditModal(subjectId) {
-                const subject = subjects.find((s) => s.id === subjectId);
-                if (!subject) return;
-                editSubjectId.value = subject.id;
-                editModalSubjectName.textContent = subject.name;
-                editFinalExamType.value = subject.finalExamType || "";
-                editPracticeExamType.value = subject.practiceExamType || "";
-                editPracticeExamType.disabled = !subject.hasPractice;
-                editModalOverlay.classList.add("visible");
-            }
-            function closeEditModal() {
-                editModalOverlay.classList.remove("visible");
-            }
-            semestersContainer.addEventListener("click", function (event) {
-                if (event.target && event.target.classList.contains("editable-subject-name"))
-                    openEditModal(event.target.dataset.subjectId);
-            });
-            closeEditModalButton.addEventListener("click", closeEditModal);
-            cancelEditButton.addEventListener("click", closeEditModal);
-            editModalOverlay.addEventListener("click", (event) => {
-                if (event.target === editModalOverlay) closeEditModal();
-            });
-            editSubjectForm.addEventListener("submit", function (event) {
-                event.preventDefault();
-                const idToUpdate = editSubjectId.value;
-                const subjectIndex = subjects.findIndex((s) => s.id === idToUpdate);
-                if (subjectIndex > -1) {
-                    subjects[subjectIndex].finalExamType = editFinalExamType.value;
-                    subjects[subjectIndex].practiceExamType = editPracticeExamType.value;
-                    const subjectDiv = document.querySelector(`.subject-item[data-id="${idToUpdate}"]`);
-                    if (subjectDiv) {
-                        subjectDiv.querySelector(".subject-tags-container").innerHTML = createTagsHTML(
-                            subjects[subjectIndex]
-                        );
-                        subjectDiv.dataset.finalExamType = subjects[subjectIndex].finalExamType || "";
-                    }
-                    showToast(`Đã cập nhật: ${subjects[subjectIndex].name}`);
-                    if (!rawDataOutput.classList.contains("hidden")) {
-                        rawDataOutput.textContent = JSON.stringify(subjects, null, 2);
-                    }
-                }
-                closeEditModal();
-            });
+            
             function applyQuickFilters() {
                 const allSubjectItems = document.querySelectorAll("#semestersContainer .subject-item");
                 allSubjectItems.forEach((item) => {
@@ -2183,11 +2296,55 @@ const subjects = [
 
             // 9. GẮN CÁC SỰ KIỆN CHÍNH
             // =============================
-            calculateButton.addEventListener("click", () => {
+            // Giới hạn max 4.0 khi đang gõ và tự động tính toán
+            targetRankSelect.addEventListener("input", () => {
+                let val = parseFloat(targetRankSelect.value.replace(',', '.'));
+                if (val > 4.0) targetRankSelect.value = "4.00";
                 calculateAndDisplayResults();
-                showToast("Đã lưu và cập nhật điểm!");
             });
-            targetRankSelect.addEventListener("change", calculateAndDisplayResults);
+            
+            // Ép định dạng chính xác x.xx và kẹp trong khoảng 2.0 - 4.0 khi click ra ngoài
+            targetRankSelect.addEventListener("blur", () => {
+                let val = parseFloat(targetRankSelect.value.replace(',', '.'));
+                if (!isNaN(val)) {
+                    if (val < 2.0) val = 2.0;
+                    if (val > 4.0) val = 4.0;
+                    targetRankSelect.value = val.toFixed(2);
+                }
+                calculateAndDisplayResults();
+            });
+
+            // Cập nhật tính năng chia sẻ JSON cực ngầu
+            document.getElementById("exportDataButton").addEventListener("click", async () => {
+                const dataToSave = localStorage.getItem(LOCAL_STORAGE_KEY) || "{}";
+                const blob = new Blob([dataToSave], { type: "application/json" });
+                const file = new File([blob], "ket_qua_hoc_tap.json", { type: "application/json" });
+
+                // Nếu đang dùng trên Mobile có hỗ trợ Web Share API
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: 'Dữ liệu Bảng Điểm',
+                            text: 'Gửi bạn file backup dữ liệu điểm của tôi!',
+                            files: [file]
+                        });
+                        showToast("✅ Đã mở bảng chia sẻ!");
+                    } catch (error) {
+                        console.log('User canceled share:', error);
+                    }
+                } else {
+                    // Trên Máy tính thì tạo tính năng tải xuống truyền thống
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "diem_sinh_vien_backup.json";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast("✅ Đã tải file JSON xuống máy!");
+                }
+            });
             toggleDetailedStatsButton.addEventListener("click", () => {
                 calculateAndDisplayResults();
                 detailedStatsModalOverlay.classList.add("visible");
@@ -2205,7 +2362,8 @@ const subjects = [
                     if (cumulativeGpaChartInstance) cumulativeGpaChartInstance.destroy();
                     if (gradeCreditChartInstance) gradeCreditChartInstance.destroy();
                     if (semesterGpaChartInstance) semesterGpaChartInstance.destroy();
-                    cumulativeGpaChartInstance = gradeCreditChartInstance = semesterGpaChartInstance = null;
+                    if (gradeDoughnutChartInstance) gradeDoughnutChartInstance.destroy();
+                    cumulativeGpaChartInstance = gradeCreditChartInstance = semesterGpaChartInstance = gradeDoughnutChartInstance = null;
                 })
             );
             document.addEventListener("keydown", function (event) {
@@ -2248,93 +2406,86 @@ const subjects = [
                 // 4. Hiện nội dung tab tương ứng
                 document.getElementById(`tab-${tabName}`).classList.add("active");
             }
-            // --- TÍNH NĂNG: BIỂU ĐỒ PHÂN TÁN (SCATTER PLOT) - ĐÃ FIX MAX TRỤC X ---
-            let scatterChartInstance = null;
-            function renderScatterChart(completedSubjects) {
-                const ctx = document.getElementById("scatterChart")?.getContext("2d");
+            // --- TÍNH NĂNG: BIỂU ĐỒ CƠ CẤU ĐIỂM CHỮ (DOUGHNUT CHART) ---
+            let gradeDoughnutChartInstance = null;
+            function renderGradeDoughnutChart(completedSubjects) {
+                const ctx = document.getElementById("gradeDoughnutChart")?.getContext("2d");
                 if (!ctx) return;
-                if (scatterChartInstance) scatterChartInstance.destroy();
+                if (gradeDoughnutChartInstance) gradeDoughnutChartInstance.destroy();
+                
+                if (completedSubjects.length === 0) return;
 
-                // Tính toán max tín chỉ thực tế từ dữ liệu để set trục X
-                // Mặc định là 5 nếu chưa có dữ liệu, hoặc max + 1 để đồ thị thoáng hơn
-                const maxCreditsInList =
-                    completedSubjects.length > 0 ? Math.max(...completedSubjects.map((s) => s.credits)) : 4;
-                const xAxisMax = maxCreditsInList + 1;
+                const gradeCounts = {};
+                completedSubjects.forEach(s => {
+                    if (s.letterGrade) {
+                        gradeCounts[s.letterGrade] = (gradeCounts[s.letterGrade] || 0) + s.credits;
+                    }
+                });
 
-                // Tạo dữ liệu cho Scatter Plot (Thêm chút nhiễu Jitter)
-                const scatterData = completedSubjects.map((s) => ({
-                    x: s.credits + (Math.random() - 0.5) * 0.15,
-                    y: s.point + (Math.random() - 0.5) * 0.15,
-                    subjectName: s.name,
-                    realCredits: s.credits,
-                    realPoint: s.point,
-                }));
+                // Set màu hệ thống chuẩn hóa theo cấp độ điểm (Gradient từ Xanh sang Đỏ)
+                const gradeColors = {
+                    "A+": "rgba(34, 197, 94, 0.8)",   // Xanh lá đậm
+                    "A": "rgba(74, 222, 128, 0.8)",   // Xanh lá nhạt
+                    "B+": "rgba(59, 130, 246, 0.8)",  // Xanh dương đậm
+                    "B": "rgba(96, 165, 250, 0.8)",   // Xanh dương nhạt
+                    "C+": "rgba(234, 179, 8, 0.8)",   // Vàng
+                    "C": "rgba(250, 204, 21, 0.8)",   // Vàng nhạt
+                    "D+": "rgba(249, 115, 22, 0.8)",  // Cam
+                    "D": "rgba(251, 146, 60, 0.8)",   // Cam nhạt
+                    "F": "rgba(239, 68, 68, 0.8)"     // Đỏ
+                };
 
-                scatterChartInstance = new Chart(ctx, {
-                    type: "scatter",
+                const labels = Object.keys(gradeCounts).sort((a, b) => gradePoints[b] - gradePoints[a]);
+                const data = labels.map(label => gradeCounts[label]);
+                const backgroundColors = labels.map(label => gradeColors[label] || "rgba(148, 163, 184, 0.8)");
+
+                gradeDoughnutChartInstance = new Chart(ctx, {
+                    type: "doughnut",
                     data: {
-                        datasets: [
-                            {
-                                label: "Môn học",
-                                data: scatterData,
-                                backgroundColor: function (context) {
-                                    const val = context.raw;
-                                    if (!val) return "#94a3b8";
-                                    if (val.realCredits >= 3 && val.realPoint < 2.5) return "#ef4444";
-                                    if (val.realCredits >= 3 && val.realPoint >= 3.2) return "#16a34a";
-                                    return "rgba(59, 130, 246, 0.6)";
-                                },
-                                pointRadius: function (context) {
-                                    const val = context.raw;
-                                    return val ? 4 + val.realCredits * 1.5 : 5;
-                                },
-                                pointHoverRadius: 8,
-                            },
-                        ],
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1,
+                            borderColor: "#ffffff"
+                        }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: "linear",
-                                position: "bottom",
-                                title: { display: true, text: "Số Tín chỉ" },
-                                min: 0,
-                                max: xAxisMax, // <--- Đã sửa thành biến động
-                                ticks: { stepSize: 1 },
-                            },
-                            y: {
-                                title: { display: true, text: "Điểm số (hệ 4)" },
-                                min: 0,
-                                max: 4.2,
-                            },
-                        },
+                        cutout: '60%', 
                         plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { font: { size: 12 } }
+                            },
                             tooltip: {
                                 callbacks: {
-                                    label: function (context) {
-                                        const d = context.raw;
-                                        return `${d.subjectName}: ${d.realCredits}TC - ${d.realPoint.toFixed(1)}đ`;
-                                    },
-                                },
-                            },
-                            legend: { display: false },
-                        },
-                    },
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                        return `${label}: ${value} TC (${percentage})`;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
             }
+            
             // --- TÍNH NĂNG: RANK UP CALCULATOR (DỰ BÁO) - ĐÃ FIX TEXT ---
             function renderRankUpCalculator(currentCredits, currentWeightedPoints) {
                 const container = document.getElementById("rankUpContent");
                 if (!container) return;
 
                 const remainingCredits = totalProgramCredits - currentCredits;
-                const targetRank = targetRankSelect.value;
-                const targetGPA = RANK_THRESHOLDS[targetRank];
+                const targetGPA = parseFloat(targetRankSelect.value);
+                const targetRank = isNaN(targetGPA) ? "" : targetGPA.toFixed(2);
 
                 // 1. Nếu chưa chọn mục tiêu hoặc đã học xong
-                if (!targetRank) {
+                if (!targetRank || isNaN(targetGPA)) {
                     container.innerHTML = `<p class="text-center text-gray-500 py-4">🔻 Hãy chọn mức xếp loại mục tiêu trên thanh công cụ để xem lộ trình.</p>`;
                     return;
                 }
@@ -2412,6 +2563,192 @@ const subjects = [
 
                 container.innerHTML = html;
             }
+            // 9.5. TÍNH NĂNG DRAG & DROP IMPORT ĐIỂM
+            // =====================================
+            const dropOverlay = document.getElementById('drag-drop-overlay');
+
+            // Xử lý sự kiện kéo file vào màn hình
+            window.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropOverlay.classList.add('active');
+            });
+
+            // Xử lý sự kiện kéo file ra khỏi màn hình
+            dropOverlay.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropOverlay.classList.remove('active');
+            });
+
+            // Xử lý khi thả file
+            window.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropOverlay.classList.remove('active');
+
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+
+                if (!file.name.endsWith('.html')) {
+                    showToast("❌ Vui lòng thả đúng file .html xuất từ web trường!");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const htmlContent = event.target.result;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, 'text/html');
+                    
+                    let importedCount = 0;
+                    
+                    // Tìm tất cả các dòng trong bảng điểm của file HTML
+                    const rows = doc.querySelectorAll('table tbody tr');
+                    
+                    rows.forEach(row => {
+                        // Lấy text ở cột thứ 2 (chứa mã học phần) và cột có title="DiemChu"
+                        const codeElement = row.querySelector('td:nth-child(2)');
+                        const gradeElement = row.querySelector('td[title="DiemChu"]');
+                        
+                        if (codeElement && gradeElement) {
+                            // Xử lý chuỗi: lấy 10 số đầu của mã môn (bỏ phần đuôi nhóm lớp)
+                            const fullCodeText = codeElement.textContent.trim();
+                            const baseCode = fullCodeText.substring(0, 10); 
+                            
+                            // Lấy điểm chữ và chuẩn hóa (xóa khoảng trắng thừa)
+                            let grade = gradeElement.textContent.trim(); 
+                            
+                            // Ánh xạ mã môn với mảng 'subjects' hiện tại
+                            const matchedSubject = subjects.find(s => s.code === baseCode);
+                            
+                            if (matchedSubject) {
+                                const selectEl = document.getElementById(matchedSubject.id);
+                                // Chỉ gán điểm nếu thẻ select tồn tại và giá trị điểm nằm trong danh sách cho phép
+                                if (selectEl && gradeOptions.includes(grade)) {
+                                    selectEl.value = grade;
+                                    
+                                    // Hiệu ứng UX: highlight nhẹ môn vừa được import
+                                    selectEl.closest('.subject-item').classList.add('selected-briefly');
+                                    setTimeout(() => selectEl.closest('.subject-item').classList.remove('selected-briefly'), 1000);
+                                    
+                                    importedCount++;
+                                }
+                            }
+                        }
+                    });
+
+                    if (importedCount > 0) {
+                        calculateAndDisplayResults(); // Hàm này đã có sẵn lệnh lưu LocalStorage bên trong
+                        showToast(`✅ Thành công! Đã tự động điền ${importedCount} môn học.`);
+                    } else {
+                        showToast("⚠️ Không tìm thấy điểm số nào khớp với chương trình khung.");
+                    }
+                };
+                
+                reader.readAsText(file);
+            });
+            // 9.6. XỬ LÝ DÁN DỮ LIỆU VĂN BẢN (CHO MOBILE/PC)
+            // =====================================
+            const pasteDataModalOverlay = document.getElementById("pasteDataModalOverlay");
+            const openPasteModalButton = document.getElementById("openPasteModalButton");
+            const closePasteModalButton = document.getElementById("closePasteModalButton");
+            const processPasteButton = document.getElementById("processPasteButton");
+            const pasteDataInput = document.getElementById("pasteDataInput");
+
+            openPasteModalButton.addEventListener("click", () => {
+                pasteDataModalOverlay.classList.add("visible");
+                pasteDataInput.value = "";
+                setTimeout(() => pasteDataInput.focus(), 100);
+            });
+
+            closePasteModalButton.addEventListener("click", () => {
+                pasteDataModalOverlay.classList.remove("visible");
+            });
+
+            pasteDataModalOverlay.addEventListener("click", (e) => {
+                if (e.target === pasteDataModalOverlay) pasteDataModalOverlay.classList.remove("visible");
+            });
+
+            processPasteButton.addEventListener("click", () => {
+                const text = pasteDataInput.value;
+                if (!text.trim()) {
+                    showToast("⚠️ Vui lòng dán dữ liệu trước!");
+                    return;
+                }
+
+                let importedCount = 0;
+                // Kỹ thuật Regex: Cắt text thành các block dựa trên mã môn (bắt đầu bằng 1017)
+                const chunks = text.split(/(?=1017\d{8})/);
+                
+                chunks.forEach(chunk => {
+                    // Lấy 10 số đầu làm mã gốc
+                    const codeMatch = chunk.match(/^(1017\d{6})\d{2}/);
+                    if (codeMatch) {
+                        const baseCode = codeMatch[1];
+                        
+                        // Tìm cặp Điểm + Xếp loại đi liền nhau (Bao phủ cả newline, tabs qua \s+)
+                        // Chặn nhiễu tối đa, chỉ khớp đúng format web trường xuất ra
+                        const gradeMatch = chunk.match(/\b(A\+|A|B\+|B|C\+|C|D\+|D|F)\s+(Xuất sắc|Giỏi|Khá|Trung bình yếu|Trung bình|Yếu|Kém)\b/i);
+                        
+                        if (gradeMatch) {
+                            const grade = gradeMatch[1].toUpperCase();
+                            const matchedSubject = subjects.find(s => s.code === baseCode);
+                            
+                            if (matchedSubject) {
+                                const selectEl = document.getElementById(matchedSubject.id);
+                                if (selectEl && gradeOptions.includes(grade)) {
+                                    selectEl.value = grade;
+                                    
+                                    // Highlight nhẹ cho đẹp
+                                    selectEl.closest('.subject-item').classList.add('selected-briefly');
+                                    setTimeout(() => selectEl.closest('.subject-item').classList.remove('selected-briefly'), 1000);
+                                    importedCount++;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (importedCount > 0) {
+                    calculateAndDisplayResults();
+                    showToast(`✅ Xong! Đã tự động đọc được ${importedCount} môn học.`);
+                    pasteDataModalOverlay.classList.remove("visible");
+                } else {
+                    showToast("⚠️ Không tìm thấy môn nào! Đảm bảo bạn đã bôi đen và copy bảng điểm trên web.");
+                }
+            });
+            // 9.7. CHẾ ĐỘ TỐI (DARK MODE) & XÓA DỮ LIỆU
+            // =====================================
+            const themeToggleBtn = document.getElementById("themeToggleBtn");
+            const themeIcon = document.getElementById("themeIcon");
+            const resetDataButton = document.getElementById("resetDataButton");
+
+            // Khởi tạo Dark Mode từ LocalStorage
+            if (localStorage.getItem("darkMode") === "true") {
+                document.body.classList.add("dark-mode");
+                themeIcon.textContent = "☀️";
+            }
+
+            themeToggleBtn.addEventListener("click", () => {
+                document.body.classList.toggle("dark-mode");
+                const isDark = document.body.classList.contains("dark-mode");
+                localStorage.setItem("darkMode", isDark);
+                themeIcon.textContent = isDark ? "☀️" : "🌙";
+            });
+
+            resetDataButton.addEventListener("click", () => {
+                if (confirm("⚠️ CẢNH BÁO!\n\nBạn có chắc chắn muốn xóa toàn bộ dữ liệu điểm số? Hành động này không thể hoàn tác.")) {
+                    // Xóa trắng Local Storage
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                    localStorage.removeItem(LOCAL_STORAGE_TARGET_RANK_KEY);
+                    
+                    // Xóa Input và Text
+                    document.querySelectorAll(".subject-grade-select").forEach(select => select.value = "");
+                    if(targetRankSelect) targetRankSelect.value = "";
+                    
+                    // Tính toán lại để UI trở về số 0
+                    calculateAndDisplayResults();
+                    showToast("🗑️ Đã xóa toàn bộ dữ liệu làm lại từ đầu!");
+                }
+            });
             // 10. KHỞI CHẠY ỨNG DỤNG
             // ========================
             populateSubjectsAndSemesters();
