@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- PWA / Web App Settings -->
-    <title>Wheel of Fortune - Vietnamese Edition</title>
+    <title>WOF</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
@@ -37,9 +37,6 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; 
-            padding-top: 5vh; 
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
@@ -49,7 +46,7 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            margin-bottom: 2vh;
+            margin-bottom: 1.5vh;
         }
         
         .category-strip {
@@ -80,15 +77,12 @@
             align-items: center;
             justify-content: center;
             background: #111;
-            /* Lớp viền ngoài mô phỏng kim loại */
             border: 0.5vh solid #2dd4bf; 
             box-shadow: 0 0 2vh #2dd4bf, inset 0 0 3vh rgba(0,0,0,0.8);
             border-radius: 1vh;
-            margin-bottom: 2vh; 
-            padding: 1.5%; /* Vùng đệm giữa viền ngoài và viền trong */
+            padding: 1.5%; 
             cursor: pointer;
             
-            /* Tối ưu hiệu ứng thay đổi chiều cao */
             transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
             will-change: height;
         }
@@ -98,12 +92,10 @@
             box-shadow: 0 0 3vh #34d399, inset 0 0 3vh rgba(0,0,0,0.8);
         }
 
-        /* Khung bên trong chứa ô */
         .board-inner-frame {
             width: 100%;
             height: 100%;
             background: #0f172a;
-            /* Khôi phục viền trong màu xanh dương và khoảng đệm an toàn */
             border: 0.4vh solid #3b82f6;
             padding: 1.5% 0; 
             
@@ -113,8 +105,6 @@
             justify-content: center;
             gap: 1.2%; 
             box-shadow: inset 0 0 30px #000;
-            
-            /* SỬ DỤNG CONTAINER QUERY TRÊN KHUNG BẢNG ĐỂ CỐ ĐỊNH TỶ LỆ CHỮ */
             container-type: size;
         }
 
@@ -123,7 +113,7 @@
             gap: 0.8%; 
             width: 100%;
             justify-content: center;
-            height: 23%; /* Chiếm khoảng gần 1/4 khung chứa */
+            height: 23%; 
         }
 
         /* --- TILE GRAPHICS --- */
@@ -137,9 +127,6 @@
             
             font-family: 'Inter', sans-serif;
             font-weight: 900; 
-            
-            /* Cỡ chữ tính bằng 16% chiều cao của khung bảng (.board-inner-frame)
-               Không bao giờ bị tràn, co giãn đồng bộ với hiệu ứng Toggle Keyboard */
             font-size: 16cqh; 
             line-height: 1;
             
@@ -147,7 +134,7 @@
             transition: background-color 0.2s;
             padding: 0;
             margin: 0;
-            overflow: hidden; /* Ngăn tuyệt đối việc chữ chọc ra viền */
+            overflow: hidden; 
         }
         
         .tile-content {
@@ -190,43 +177,57 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
         }
 
-        /* --- CONTROLS --- */
+        /* --- CONTROLS & DYNAMIC KEYBOARD --- */
         .controls-wrapper {
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 1vh;
+            justify-content: flex-end;
+            flex-grow: 1; /* Quan trọng: Cho phép khu vực này chiếm sạch khoảng trống */
             position: relative;
             z-index: 50;
+            max-width: 1000px;
+            /* Thêm khoảng margin-top để luôn giữ một vùng thở (gap) giữa bảng và phím */
+            margin: 4vh auto 0 auto; 
         }
 
         .keyboard-row {
             display: flex;
-            gap: 0.5vw;
+            gap: 1vw;
             justify-content: center;
-            margin-bottom: 0.5vh;
+            flex: 1; /* Cho phép các hàng kéo giãn chiều cao */
+            max-height: 8.5vh; /* Giới hạn độ cao tối đa vừa phải để phím không bị thô */
+            min-height: 40px;
         }
 
         .key-btn {
             background: linear-gradient(to bottom, #334155, #1e293b);
             border: 1px solid #475569;
             color: white;
-            padding: 1.5vh 0;
-            width: 4vw;
-            max-width: 50px;
+            
+            /* Kỹ thuật Flexbox ép phím lấp đầy ô */
+            flex: 1; 
+            height: 100%; 
+            max-width: 65px; /* Phím không quá to theo chiều ngang trên iPad/PC */
+            
             font-weight: bold;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: 'Roboto Condensed', sans-serif;
-            font-size: min(2vh, 1rem);
-            box-shadow: 0 0.4vh 0 #0f172a;
+            font-size: min(3.5vh, 1.5rem); /* Chữ trên phím to hơn */
+            box-shadow: 0 0.5vh 0 #0f172a;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.1s, opacity 0.1s, box-shadow 0.1s;
         }
+        
         .key-btn:hover { background: linear-gradient(to bottom, #475569, #334155); margin-top: -1px; }
-        .key-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        .key-btn:active { 
+            transform: translateY(0.5vh); 
+            box-shadow: none; 
+        }
         
         .key-btn.used { 
             opacity: 0.4; 
@@ -234,7 +235,7 @@
             background: #000;
             border-color: #333;
             box-shadow: none;
-            transform: translateY(2px);
+            transform: translateY(0.5vh);
         }
         .key-btn.correct { background: #1d4ed8; border-color: #3b82f6; opacity: 1; color: white; }
 
@@ -287,25 +288,28 @@
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- CATEGORY -->
-    <div class="category-container">
-        <div class="category-strip" id="category-text">CHỦ ĐỀ</div>
-    </div>
+    <!-- TOP SECTION: BẢNG CHỮ -->
+    <div class="w-full flex flex-col items-center flex-none pt-4 md:pt-6">
+        <!-- CATEGORY -->
+        <div class="category-container">
+            <div class="category-strip" id="category-text">CHỦ ĐỀ</div>
+        </div>
 
-    <!-- BOARD AREA -->
-    <div class="board-wrapper" id="board-wrapper-el" onclick="toggleKeyboard()" title="Chạm để Mở/Đóng bàn phím">
-        <div class="board-inner-frame" id="board-grid">
-            <!-- JS will generate rows here -->
+        <!-- BOARD AREA -->
+        <div class="board-wrapper" id="board-wrapper-el" onclick="toggleKeyboard()" title="Chạm để Mở/Đóng bàn phím">
+            <div class="board-inner-frame" id="board-grid">
+                <!-- JS will generate rows here -->
+            </div>
         </div>
     </div>
 
-    <!-- CONTROLS -->
-    <div class="controls-wrapper">
-        <!-- Vùng chứa bàn phím / Danh sách -->
-        <div id="keyboard-area" class="w-full min-h-[50px]"></div>
+    <!-- BOTTOM SECTION: ĐIỀU KHIỂN & BÀN PHÍM (CO GIÃN CHIẾM HẾT DIỆN TÍCH) -->
+    <div class="controls-wrapper px-2 sm:px-4 pb-4 md:pb-6">
+        <!-- Vùng chứa bàn phím: Dùng flex-grow để đẩy bung ra lấp đầy khoảng trống -->
+        <div id="keyboard-area" class="w-full flex-grow flex flex-col justify-center gap-1.5 sm:gap-2 mb-3"></div>
         
         <!-- Các nút chức năng -->
-        <div class="flex gap-3 sm:gap-4 mt-2 flex-wrap justify-center">
+        <div class="flex flex-none gap-3 sm:gap-4 flex-wrap justify-center">
             <button onclick="openModal()" class="px-5 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white font-bold border border-slate-500 transition shadow-lg flex items-center gap-2 text-sm sm:text-base">
                 <i class="fa-solid fa-pen"></i> ĐẶT CÂU HỎI
             </button>
@@ -434,7 +438,7 @@
             layout: [], guessedBase: new Set(),
             revealedIndices: new Set(), isSolved: false,
             isKeyboardVisible: false,
-            isAutoSolving: false // Cờ tránh lỗi bấm nhiều lần
+            isAutoSolving: false 
         };
 
         const uiGrid = document.getElementById('board-grid');
@@ -453,7 +457,6 @@
             return char; 
         }
 
-        // THUẬT TOÁN XẾP CHỮ MỚI: Căn lề trái nguyên khối (Flush-Left Block Align)
         function calculateLayout(text) {
             const words = text.toUpperCase().trim().split(/\s+/);
             const lines = [];
@@ -551,6 +554,7 @@
 
         function updateKeyboardUI() {
             if (state.isKeyboardVisible) {
+                // Thu nhỏ bảng lại một chút (45vh) để nhường diện tích cho bàn phím khổng lồ
                 boardWrapperEl.style.height = '45vh';
                 renderKeyboard();
             } else {
@@ -573,13 +577,14 @@
                 else wrongList.push(char);
             });
 
+            // Khu vực thông tin cũng sẽ co giãn để nằm chính giữa khoảng không một cách tự nhiên
             uiKeyboard.innerHTML = `
-                <div class="flex flex-col items-center justify-center space-y-3 w-full animate-fade-in pb-1 text-center">
-                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-xl w-full">
+                <div class="flex flex-col items-center justify-center space-y-3 w-full h-full animate-fade-in pb-1 text-center">
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-2xl w-full">
                         <span class="font-bold text-emerald-400"><i class="fa-solid fa-check"></i> ĐÃ ĐÚNG:</span>
                         <span class="text-white font-bold tracking-widest break-words">${correctList.join(', ') || 'Chưa có'}</span>
                     </div>
-                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-xl w-full">
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-2xl w-full">
                         <span class="font-bold text-red-400"><i class="fa-solid fa-xmark"></i> ĐÃ SAI:</span>
                         <span class="text-white font-bold tracking-widest opacity-70 break-words">${wrongList.join(', ') || 'Chưa có'}</span>
                     </div>
@@ -639,7 +644,6 @@
             updateKeyboardUI(); 
         }
 
-        // Đã cập nhật để hỗ trợ hiện luôn dấu nếu tham số truyền vào là true (Dùng khi Auto Solve)
         function flashTile(r, c, originalChar, showAccent = false) {
             const el = document.getElementById(`tile-${r}-${c}`);
             if (el) {
@@ -652,16 +656,14 @@
             }
         }
 
-        // HÀM KÍCH HOẠT CHIẾN THẮNG CHÍNH THỨC
         function triggerWin() {
             if (state.isSolved) return;
             state.isSolved = true;
-            state.isAutoSolving = false; // Reset cờ
+            state.isAutoSolving = false; 
             state.isKeyboardVisible = false;
             
-            updateKeyboardUI(); // Hàm này sẽ dọn dẹp danh sách ở phía dưới (vì isSolved = true)
+            updateKeyboardUI(); 
 
-            // Lập tức gọi renderBoard để những chữ đoán tay trước đó hiện FULL DẤU
             renderBoard(); 
             anime({
                 targets: '.tile-revealed',
@@ -688,14 +690,13 @@
 
             const missingBase = [...allBaseChars].filter(b => !state.guessedBase.has(b));
             
-            // Nếu chữ đã lật hết, gọi Win luôn
             if (missingBase.length === 0) {
                 triggerWin();
                 return;
             }
 
             state.isKeyboardVisible = false; 
-            updateKeyboardUI(); // Dọn dẹp UI bàn phím để lộ khoảng trống xem hiệu ứng
+            updateKeyboardUI(); 
 
             let delay = 0;
             missingBase.forEach(baseChar => {
@@ -704,7 +705,6 @@
                     state.layout.forEach((row, r) => {
                         row.forEach((char, c) => {
                             if (char && getBaseChar(char) === baseChar && !state.revealedIndices.has(`${r}-${c}`)) {
-                                // Tham số true: Lật ra hiện có dấu luôn cho đẹp mắt
                                 flashTile(r, c, char, true); 
                                 state.revealedIndices.add(`${r}-${c}`);
                             }
@@ -714,7 +714,6 @@
                 delay += 150; 
             });
 
-            // Sau khi chạy xong lật chữ cuối, kích hoạt chiến thắng chính thức
             setTimeout(() => { triggerWin(); }, delay + 400);
         }
 
