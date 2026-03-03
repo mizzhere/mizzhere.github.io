@@ -2679,14 +2679,14 @@ const subjects = [
                 const chunks = text.split(/(?=1017\d{8})/);
                 
                 chunks.forEach(chunk => {
-                    // Lấy 10 số đầu làm mã gốc
-                    const codeMatch = chunk.match(/^(1017\d{6})\d{2}/);
+                    // Lấy 10 số đầu làm mã gốc (Bỏ dấu ^ để an toàn tuyệt đối nếu có khoảng trắng/xuống dòng thừa)
+                    const codeMatch = chunk.match(/(1017\d{6})\d{2}/);
                     if (codeMatch) {
                         const baseCode = codeMatch[1];
                         
-                        // Tìm cặp Điểm + Xếp loại đi liền nhau (Bao phủ cả newline, tabs qua \s+)
-                        // Chặn nhiễu tối đa, chỉ khớp đúng format web trường xuất ra
-                        const gradeMatch = chunk.match(/\b(A\+|A|B\+|B|C\+|C|D\+|D|F)\s+(Xuất sắc|Giỏi|Khá|Trung bình yếu|Trung bình|Yếu|Kém)\b/i);
+                        // SỬA REGEX TẠI ĐÂY: 
+                        // Bỏ \b và đổi \s+ thành \s* để bắt dính chữ (VD: "3,70AGiỏi" hoặc "2,50C+Trung bình")
+                        const gradeMatch = chunk.match(/(A\+|A|B\+|B|C\+|C|D\+|D|F)\s*(Xuất sắc|Giỏi|Khá|Trung bình yếu|Trung bình|Yếu|Kém)/i);
                         
                         if (gradeMatch) {
                             const grade = gradeMatch[1].toUpperCase();
