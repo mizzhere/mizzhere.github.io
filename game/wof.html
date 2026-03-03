@@ -19,8 +19,8 @@
     <!-- Anime.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     
-    <!-- Google Fonts: Inter for board, Roboto Condensed for UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter for Tiles, Roboto Condensed for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,15 +38,41 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; 
+            padding-top: 5vh; 
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- CATEGORY STRIP --- */
+        .category-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2vh;
+        }
+        
+        .category-strip {
+            background: linear-gradient(180deg, #6366f1 0%, #4338ca 50%, #312e81 100%);
+            border: 2px solid #a5b4fc;
+            padding: 0.5vh 3vh;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: min(2.5vh, 1.2rem);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            min-width: 200px;
+            text-align: center;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            z-index: 10;
         }
 
         /* --- THE BOARD CONTAINER --- */
         .board-wrapper {
             position: relative;
-            height: 55vh; 
+            height: 65vh; 
             width: auto; 
             aspect-ratio: 16/6.5; 
             max-width: 98vw; 
@@ -54,25 +80,42 @@
             align-items: center;
             justify-content: center;
             background: #111;
-            border: 0.6vh solid #2dd4bf; 
+            /* Lớp viền ngoài mô phỏng kim loại */
+            border: 0.5vh solid #2dd4bf; 
             box-shadow: 0 0 2vh #2dd4bf, inset 0 0 3vh rgba(0,0,0,0.8);
-            padding: 1.5%;
             border-radius: 1vh;
             margin-bottom: 2vh; 
+            padding: 1.5%; /* Vùng đệm giữa viền ngoài và viền trong */
+            cursor: pointer;
+            
+            /* Tối ưu hiệu ứng thay đổi chiều cao */
+            transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            will-change: height;
         }
 
+        .board-wrapper:hover {
+            border-color: #34d399; 
+            box-shadow: 0 0 3vh #34d399, inset 0 0 3vh rgba(0,0,0,0.8);
+        }
+
+        /* Khung bên trong chứa ô */
         .board-inner-frame {
             width: 100%;
             height: 100%;
             background: #0f172a;
+            /* Khôi phục viền trong màu xanh dương và khoảng đệm an toàn */
             border: 0.4vh solid #3b82f6;
+            padding: 1.5% 0; 
+            
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 1.2%; 
-            padding: 1% 0;
             box-shadow: inset 0 0 30px #000;
+            
+            /* SỬ DỤNG CONTAINER QUERY TRÊN KHUNG BẢNG ĐỂ CỐ ĐỊNH TỶ LỆ CHỮ */
+            container-type: size;
         }
 
         .board-row {
@@ -80,7 +123,7 @@
             gap: 0.8%; 
             width: 100%;
             justify-content: center;
-            height: 23%; 
+            height: 23%; /* Chiếm khoảng gần 1/4 khung chứa */
         }
 
         /* --- TILE GRAPHICS --- */
@@ -91,17 +134,28 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            
             font-family: 'Inter', sans-serif;
             font-weight: 900; 
-            font-size: min(8vh, 5vw); 
+            
+            /* Cỡ chữ tính bằng 16% chiều cao của khung bảng (.board-inner-frame)
+               Không bao giờ bị tràn, co giãn đồng bộ với hiệu ứng Toggle Keyboard */
+            font-size: 16cqh; 
             line-height: 1;
+            
             box-sizing: border-box;
             transition: background-color 0.2s;
+            padding: 0;
+            margin: 0;
+            overflow: hidden; /* Ngăn tuyệt đối việc chữ chọc ra viền */
         }
         
         .tile-content {
-            transform: scaleY(1.1); 
-            margin-top: -2%; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .tile-empty {
@@ -136,32 +190,6 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
         }
 
-        /* --- CATEGORY STRIP --- */
-        .category-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 2vh;
-            margin-top: -1vh; 
-        }
-        
-        .category-strip {
-            background: linear-gradient(180deg, #6366f1 0%, #4338ca 50%, #312e81 100%);
-            border: 2px solid #a5b4fc;
-            padding: 0.5vh 3vh;
-            border-radius: 8px;
-            color: white;
-            font-weight: 700;
-            font-size: min(2.5vh, 1.2rem);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            min-width: 200px;
-            text-align: center;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
         /* --- CONTROLS --- */
         .controls-wrapper {
             width: 100%;
@@ -171,7 +199,6 @@
             gap: 1vh;
             position: relative;
             z-index: 50;
-            padding-bottom: 2vh;
         }
 
         .keyboard-row {
@@ -223,7 +250,6 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
         }
 
-        /* Start Overlay - Ép tương tác để Fullscreen & WakeLock */
         #start-overlay {
             position: fixed; inset: 0; z-index: 9999;
             background: #0f0f15; display: flex; flex-direction: column;
@@ -243,11 +269,13 @@
         }
         .toast.show { transform: translateX(0); }
 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
     </style>
 </head>
 <body>
 
-    <!-- START OVERLAY (Require User Interaction) -->
+    <!-- START OVERLAY -->
     <div id="start-overlay">
         <h1 class="text-4xl md:text-5xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 font-['Inter']">WHEEL OF FORTUNE</h1>
         <p class="text-slate-400 mb-8 text-center px-4">Yêu cầu quyền mở Toàn màn hình & Giữ sáng thiết bị.</p>
@@ -265,7 +293,7 @@
     </div>
 
     <!-- BOARD AREA -->
-    <div class="board-wrapper">
+    <div class="board-wrapper" id="board-wrapper-el" onclick="toggleKeyboard()" title="Chạm để Mở/Đóng bàn phím">
         <div class="board-inner-frame" id="board-grid">
             <!-- JS will generate rows here -->
         </div>
@@ -273,16 +301,17 @@
 
     <!-- CONTROLS -->
     <div class="controls-wrapper">
-        <div id="keyboard-area"></div>
+        <!-- Vùng chứa bàn phím / Danh sách -->
+        <div id="keyboard-area" class="w-full min-h-[50px]"></div>
         
-        <div class="flex gap-3 sm:gap-4 mt-1 flex-wrap justify-center">
+        <!-- Các nút chức năng -->
+        <div class="flex gap-3 sm:gap-4 mt-2 flex-wrap justify-center">
             <button onclick="openModal()" class="px-5 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white font-bold border border-slate-500 transition shadow-lg flex items-center gap-2 text-sm sm:text-base">
                 <i class="fa-solid fa-pen"></i> ĐẶT CÂU HỎI
             </button>
             <button onclick="autoSolve()" class="px-5 py-2 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold border border-emerald-500 transition shadow-lg flex items-center gap-2 text-sm sm:text-base">
-                <i class="fa-solid fa-magic"></i> TỰ ĐỘNG GIẢI
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GIẢI Ô CHỮ
             </button>
-            <!-- Nút Cài đặt App (PWA) Ẩn mặc định -->
             <button id="install-btn" style="display: none;" class="px-5 py-2 rounded-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold border border-indigo-500 transition shadow-lg flex items-center gap-2 text-sm sm:text-base">
                 <i class="fa-solid fa-download"></i> TẢI APP
             </button>
@@ -299,7 +328,7 @@
             
             <label class="block text-sm text-gray-400 mb-1">NỘI DUNG Ô CHỮ (TIẾNG VIỆT CÓ DẤU)</label>
             <textarea id="inp-puzzle" rows="3" class="w-full bg-gray-900 border border-gray-600 text-white p-3 rounded mb-1 focus:border-blue-500 outline-none font-mono uppercase text-lg" placeholder="VÍ DỤ: BẦU ƠI THƯƠNG LẤY BÍ CÙNG"></textarea>
-            <p class="text-xs text-gray-500 mb-6 italic">Nhập tiếng Việt đầy đủ dấu.</p>
+            <p class="text-xs text-gray-500 mb-6 italic">Hệ thống sẽ tự động căn lề trái và xếp khối ở giữa bảng.</p>
             
             <div class="flex justify-end gap-3">
                 <button onclick="closeModal()" class="px-4 py-2 text-gray-300 hover:text-white rounded hover:bg-slate-700">Hủy</button>
@@ -309,11 +338,10 @@
     </div>
 
     <script>
-        // --- 1. DEVICE APIS (Wake Lock & Fullscreen & PWA) ---
+        // --- 1. DEVICE APIS ---
         let wakeLock = null;
         let deferredPrompt;
 
-        // PWA Install Event Listener
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -337,56 +365,27 @@
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLock.addEventListener('release', () => {
-                        console.log('Wake Lock was released');
-                    });
                 }
-            } catch (err) {
-                console.error('Wake Lock API Error:', err);
-            }
+            } catch (err) {}
         }
 
-        // Tự động khôi phục Wake Lock khi mở lại tab
         document.addEventListener('visibilitychange', () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                requestWakeLock();
-            }
+            if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
         });
 
         async function startGame() {
-            // Ẩn Overlay
             document.getElementById('start-overlay').style.display = 'none';
-            
-            // Yêu cầu Fullscreen
             try {
                 const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    await elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
-                    await elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 */
-                    await elem.msRequestFullscreen();
-                }
-            } catch (err) {
-                console.warn('Không thể mở toàn màn hình:', err);
-            }
+                if (elem.requestFullscreen) await elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) await elem.webkitRequestFullscreen();
+            } catch (err) {}
 
-            // Ép xoay ngang (Chỉ hoạt động tốt trên mobile khi đã Fullscreen)
             try {
-                if (screen.orientation && screen.orientation.lock) {
-                    await screen.orientation.lock('landscape');
-                }
-            } catch (err) {
-                console.warn('Thiết bị không hỗ trợ ép xoay ngang. Hãy xoay thủ công.', err);
-                if(window.innerWidth < window.innerHeight) {
-                    showToast('Vui lòng xoay ngang điện thoại để trải nghiệm tốt nhất!', 'info');
-                }
-            }
+                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
+            } catch (err) {}
 
-            // Kích hoạt chống tắt màn hình
             requestWakeLock();
-            
-            // Vào game init
             initGame("MỘT CÂY LÀM CHẲNG NÊN NON", "TỤC NGỮ");
         }
 
@@ -407,20 +406,14 @@
             toast.innerHTML = `${icon} <span>${message}</span>`;
             container.appendChild(toast);
             
-            // trigger animation
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    toast.classList.add('show');
-                });
-            });
-
+            requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
 
-        // --- 2. GAME LOGIC ---
+        // --- 2. GAME LOGIC & NEW LEFT-ALIGN ALGORITHM ---
         const BOARD_STRUCTURE = [12, 14, 14, 12];
         const KEYBOARD_LAYOUT = [
             "A Ă Â B C D Đ E Ê",
@@ -439,12 +432,15 @@
         let state = {
             puzzleRaw: "", puzzleBase: "", category: "",
             layout: [], guessedBase: new Set(),
-            revealedIndices: new Set(), isSolved: false
+            revealedIndices: new Set(), isSolved: false,
+            isKeyboardVisible: false,
+            isAutoSolving: false // Cờ tránh lỗi bấm nhiều lần
         };
 
         const uiGrid = document.getElementById('board-grid');
         const uiCategory = document.getElementById('category-text');
         const uiKeyboard = document.getElementById('keyboard-area');
+        const boardWrapperEl = document.getElementById('board-wrapper-el');
         const modal = document.getElementById('setup-modal');
         const inpCat = document.getElementById('inp-cat');
         const inpPuzzle = document.getElementById('inp-puzzle');
@@ -457,6 +453,7 @@
             return char; 
         }
 
+        // THUẬT TOÁN XẾP CHỮ MỚI: Căn lề trái nguyên khối (Flush-Left Block Align)
         function calculateLayout(text) {
             const words = text.toUpperCase().trim().split(/\s+/);
             const lines = [];
@@ -465,28 +462,46 @@
             for (let word of words) {
                 if (word.length > 14) word = word.slice(0, 14);
                 let testLine = currentLine.length === 0 ? word : currentLine + " " + word;
-                if (testLine.length <= 14) { currentLine = testLine; } 
-                else { lines.push(currentLine); currentLine = word; }
+                if (testLine.length <= 12) { 
+                    currentLine = testLine; 
+                } else { 
+                    if (currentLine) lines.push(currentLine); 
+                    currentLine = word; 
+                }
             }
             if (currentLine) lines.push(currentLine);
 
-            let finalGrid = [Array(12).fill(null), Array(14).fill(null), Array(14).fill(null), Array(12).fill(null)];
             let startRowIndex = 0;
-
             if (lines.length === 1) startRowIndex = 1;
             else if (lines.length === 2) startRowIndex = 1;
             else if (lines.length === 3) startRowIndex = 0;
+
+            let maxLineLength = 0;
+            for (let line of lines) {
+                if (line.length > maxLineLength) maxLineLength = line.length;
+            }
+
+            let globalStartCol = Math.floor((14 - maxLineLength) / 2);
+            if (globalStartCol < 0) globalStartCol = 0;
+
+            let finalGrid = [Array(12).fill(null), Array(14).fill(null), Array(14).fill(null), Array(12).fill(null)];
             
+            const rowOffsets = [1, 0, 0, 1];
+
             for (let i = 0; i < lines.length && (startRowIndex + i) < 4; i++) {
                 const lineStr = lines[i];
                 const rowIndex = startRowIndex + i;
-                const rowCapacity = BOARD_STRUCTURE[rowIndex];
-                const safeStr = lineStr.slice(0, rowCapacity);
-                const padding = Math.floor((rowCapacity - safeStr.length) / 2);
-                
-                for (let charIdx = 0; charIdx < safeStr.length; charIdx++) {
-                    const char = safeStr[charIdx];
-                    if (char !== " ") finalGrid[rowIndex][padding + charIdx] = char;
+
+                for (let charIdx = 0; charIdx < lineStr.length; charIdx++) {
+                    const char = lineStr[charIdx];
+                    if (char !== " ") {
+                        const visualCol = globalStartCol + charIdx;
+                        const arrayIndex = visualCol - rowOffsets[rowIndex];
+
+                        if (arrayIndex >= 0 && arrayIndex < BOARD_STRUCTURE[rowIndex]) {
+                            finalGrid[rowIndex][arrayIndex] = char;
+                        }
+                    }
                 }
             }
             return finalGrid;
@@ -526,7 +541,50 @@
             });
             
             uiCategory.textContent = state.category;
-            renderKeyboard();
+        }
+
+        function toggleKeyboard() {
+            if (state.isSolved || state.isAutoSolving) return; 
+            state.isKeyboardVisible = !state.isKeyboardVisible;
+            updateKeyboardUI();
+        }
+
+        function updateKeyboardUI() {
+            if (state.isKeyboardVisible) {
+                boardWrapperEl.style.height = '45vh';
+                renderKeyboard();
+            } else {
+                boardWrapperEl.style.height = '65vh';
+                renderGuessedInfo();
+            }
+        }
+
+        function renderGuessedInfo() {
+            if (state.isSolved || state.isAutoSolving) {
+                uiKeyboard.innerHTML = '';
+                return;
+            }
+
+            const correctList = [];
+            const wrongList = [];
+            
+            state.guessedBase.forEach(char => {
+                if (state.puzzleBase.includes(char)) correctList.push(char);
+                else wrongList.push(char);
+            });
+
+            uiKeyboard.innerHTML = `
+                <div class="flex flex-col items-center justify-center space-y-3 w-full animate-fade-in pb-1 text-center">
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-xl w-full">
+                        <span class="font-bold text-emerald-400"><i class="fa-solid fa-check"></i> ĐÃ ĐÚNG:</span>
+                        <span class="text-white font-bold tracking-widest break-words">${correctList.join(', ') || 'Chưa có'}</span>
+                    </div>
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-xl w-full">
+                        <span class="font-bold text-red-400"><i class="fa-solid fa-xmark"></i> ĐÃ SAI:</span>
+                        <span class="text-white font-bold tracking-widest opacity-70 break-words">${wrongList.join(', ') || 'Chưa có'}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function renderKeyboard() {
@@ -534,7 +592,7 @@
             
             KEYBOARD_LAYOUT.forEach(rowStr => {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'keyboard-row';
+                rowDiv.className = 'keyboard-row animate-fade-in';
                 const keys = rowStr.split(' '); 
                 
                 keys.forEach(keyChar => {
@@ -555,7 +613,7 @@
         }
 
         function handleGuess(baseChar) {
-            if (state.isSolved || state.guessedBase.has(baseChar)) return;
+            if (state.isSolved || state.isAutoSolving || state.guessedBase.has(baseChar)) return;
 
             state.guessedBase.add(baseChar);
             let found = false;
@@ -572,51 +630,53 @@
                 });
             });
 
-            renderKeyboard(); 
-            if (found) checkWin();
-            else showToast(`Không có ký tự ${baseChar}`, 'error');
+            if (found) {
+                state.isKeyboardVisible = false;
+            } else {
+                showToast(`Không có ký tự ${baseChar}`, 'error');
+            }
+            
+            updateKeyboardUI(); 
         }
 
-        function flashTile(r, c, originalChar) {
+        // Đã cập nhật để hỗ trợ hiện luôn dấu nếu tham số truyền vào là true (Dùng khi Auto Solve)
+        function flashTile(r, c, originalChar, showAccent = false) {
             const el = document.getElementById(`tile-${r}-${c}`);
             if (el) {
                 el.className = 'tile tile-flash';
                 setTimeout(() => {
                     el.className = 'tile tile-revealed';
-                    el.innerHTML = `<span class="tile-content">${getBaseChar(originalChar)}</span>`;
-                }, 500); 
+                    const charToShow = (showAccent || state.isSolved) ? originalChar : getBaseChar(originalChar);
+                    el.innerHTML = `<span class="tile-content">${charToShow}</span>`;
+                }, 400); 
             }
         }
 
-        function checkWin() {
-            let totalLetters = 0, totalRevealed = 0;
-            state.layout.forEach((row, r) => {
-                row.forEach((char, c) => {
-                    if (char && /[A-ZĂÂĐÊÔƠƯ]/.test(getBaseChar(char))) {
-                        totalLetters++;
-                        if (state.revealedIndices.has(`${r}-${c}`)) totalRevealed++;
-                    }
-                });
-            });
+        // HÀM KÍCH HOẠT CHIẾN THẮNG CHÍNH THỨC
+        function triggerWin() {
+            if (state.isSolved) return;
+            state.isSolved = true;
+            state.isAutoSolving = false; // Reset cờ
+            state.isKeyboardVisible = false;
+            
+            updateKeyboardUI(); // Hàm này sẽ dọn dẹp danh sách ở phía dưới (vì isSolved = true)
 
-            if (totalLetters > 0 && totalLetters === totalRevealed) {
-                state.isSolved = true;
-                setTimeout(() => {
-                    renderBoard();
-                    anime({
-                        targets: '.tile-revealed',
-                        scale: [1, 1.1, 1],
-                        duration: 500,
-                        easing: 'easeInOutQuad',
-                        delay: anime.stagger(50)
-                    });
-                    showToast('Chúc mừng! Đã giải mã thành công.', 'success');
-                }, 800);
-            }
+            // Lập tức gọi renderBoard để những chữ đoán tay trước đó hiện FULL DẤU
+            renderBoard(); 
+            anime({
+                targets: '.tile-revealed',
+                scale: [1, 1.1, 1],
+                duration: 500,
+                easing: 'easeInOutQuad',
+                delay: anime.stagger(50)
+            });
+            showToast('Chúc mừng! Đã giải mã thành công.', 'success');
         }
 
         function autoSolve() {
-            if (state.isSolved) return;
+            if (state.isSolved || state.isAutoSolving) return;
+            state.isAutoSolving = true;
+            
             const allBaseChars = new Set();
             state.layout.forEach(row => {
                 row.forEach(char => {
@@ -627,11 +687,35 @@
             });
 
             const missingBase = [...allBaseChars].filter(b => !state.guessedBase.has(b));
+            
+            // Nếu chữ đã lật hết, gọi Win luôn
+            if (missingBase.length === 0) {
+                triggerWin();
+                return;
+            }
+
+            state.isKeyboardVisible = false; 
+            updateKeyboardUI(); // Dọn dẹp UI bàn phím để lộ khoảng trống xem hiệu ứng
+
             let delay = 0;
             missingBase.forEach(baseChar => {
-                setTimeout(() => { handleGuess(baseChar); }, delay);
-                delay += 200; 
+                setTimeout(() => { 
+                    state.guessedBase.add(baseChar);
+                    state.layout.forEach((row, r) => {
+                        row.forEach((char, c) => {
+                            if (char && getBaseChar(char) === baseChar && !state.revealedIndices.has(`${r}-${c}`)) {
+                                // Tham số true: Lật ra hiện có dấu luôn cho đẹp mắt
+                                flashTile(r, c, char, true); 
+                                state.revealedIndices.add(`${r}-${c}`);
+                            }
+                        });
+                    });
+                }, delay);
+                delay += 150; 
             });
+
+            // Sau khi chạy xong lật chữ cuối, kích hoạt chiến thắng chính thức
+            setTimeout(() => { triggerWin(); }, delay + 400);
         }
 
         function initGame(text, cat) {
@@ -640,9 +724,14 @@
             state.guessedBase.clear();
             state.revealedIndices.clear();
             state.isSolved = false;
+            state.isAutoSolving = false;
+            state.isKeyboardVisible = false; 
             state.puzzleBase = state.puzzleRaw.split('').map(c => getBaseChar(c)).join('');
+            
             state.layout = calculateLayout(state.puzzleRaw);
+            
             renderBoard();
+            updateKeyboardUI();
         }
 
         function openModal() {
