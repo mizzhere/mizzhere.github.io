@@ -19,8 +19,7 @@
     "bookmarks": [
       {
         "label": "Rebel Heart",
-        "time": "00:00:00",
-        "skip": true
+        "time": "00:00:00"
       },
       {
         "label": "I Will Love You",
@@ -29,8 +28,7 @@
       },
       {
         "label": "I Will Love You (next)",
-        "time": "00:00:50",
-        "skip": true
+        "time": "00:00:50"
       }
     ],
     "episode": 203
