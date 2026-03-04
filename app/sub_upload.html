@@ -471,6 +471,17 @@
     width: 20px; height: 20px;
     cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;
 }
+
+.sub-row.syncing {
+    background-color: #cce5ff !important;
+    border-left: 4px solid #0056b3;
+    animation: pulseSync 1.5s infinite;
+}
+@keyframes pulseSync {
+    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 123, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
 </style>
 </head>
 <body>
@@ -599,6 +610,9 @@
     <button class="editor-toolbar-btn" onclick="SubEditor.deleteSelectedRows()" style="color: #d93025; border-color: #d93025;">
         🗑 Xóa dòng chọn
     </button>
+    <button class="editor-toolbar-btn" onclick="SubEditor.openAutoSyncModal()" style="background-color: #e8f0fe; color: var(--accent-blue); font-weight: bold;">
+    🎙️ Chế độ Live Sync
+</button>
 </div>
     <div style="margin-top:5px; font-size: 0.8rem; color:#555;">
         <ul>
@@ -752,6 +766,18 @@
         <div class="row" style="justify-content: flex-end;">
             <button class="btn-neutral" onclick="SubEditor.closeModal('time-offset-modal')">Đóng</button>
             <button class="btn-primary" onclick="SubEditor.performOffset()">Áp dụng</button>
+        </div>
+    </div>
+</div>
+<div id="auto-sync-modal" class="editor-modal-overlay">
+    <div class="editor-modal" style="width: 500px;">
+        <h3>🎙️ Chế độ Live Sync (Tự tạo Sub)</h3>
+        <p style="font-size:0.85rem; color:#666;">Dán văn bản thô vào đây (Mỗi câu 1 dòng bằng nút Enter).<br>
+        <b>Cách dùng:</b> Phát video, bấm <b>[Space]</b> để chốt mốc thời gian cho dòng hiện tại. Bấm <b>[Lên/Xuống]</b> để chuyển dòng. Bấm <b>[Trái/Phải]</b> để tua 0.5s. Bấm <b>[ESC]</b> để thoát.</p>
+        <textarea id="raw-sync-text" rows="10" style="width: 100%; padding: 10px; font-family: inherit; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="Dòng 1...&#10;Dòng 2..."></textarea>
+        <div class="row" style="justify-content: flex-end; margin-top: 10px;">
+            <button class="btn-neutral" onclick="SubEditor.closeModal('auto-sync-modal')">Đóng</button>
+            <button class="btn-primary" onclick="SubEditor.startAutoSync()">Bắt đầu Sync</button>
         </div>
     </div>
 </div>
@@ -1073,7 +1099,7 @@ async function handleDeploy() {
         if (!videoId) throw new Error("Link YouTube không hợp lệ.");
         const srtFile = ui.inputs.srtFile.files[0];
         const existingEntry = currentLibrary.find(item => item.videoId === videoId);
-        if (!existingEntry && !srtFile) throw new Error("Cần file .srt khi thêm video mới.");
+        //if (!existingEntry && !srtFile) throw new Error("Cần file .srt khi thêm video mới.");
         let subtitleUrl = existingEntry?.subtitleUrl || "";
         // START: Dán khối mã này vào để thay thế
 if (srtFile) {
@@ -1830,7 +1856,10 @@ const SubEditor = (() => {
 
     const overlayText = document.getElementById('video-overlay-text');
     const currentRowLabel = document.getElementById('current-row-idx');
-
+    
+    // THÊM 2 BIẾN NÀY CHO LIVE SYNC:
+    let isAutoSyncMode = false;
+    let currentSyncIdx = 0;
     // Helpers giữ nguyên
     const srtToSec = (str) => {
         if(!str) return 0;
@@ -1859,7 +1888,44 @@ const SubEditor = (() => {
         
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('editor-view').classList.contains('hidden')) return;
-            
+            // --- LOGIC CHO LIVE SYNC ---
+            if (isAutoSyncMode) {
+                const tag = document.activeElement.tagName;
+                // Nếu đang gõ text bình thường thì bỏ qua
+                if (tag === 'TEXTAREA' || tag === 'INPUT') return; 
+
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!ytPlayer) return;
+                    
+                    let t = ytPlayer.getCurrentTime() - 0.5;
+                    if (t < 0) t = 0;
+
+                    if (currentSyncIdx > 0 && currentSyncIdx <= currentData.length) {
+                        // Chốt end cho dòng trước đó
+                        currentData[currentSyncIdx - 1].end = t;
+                    }
+                    if (currentSyncIdx < currentData.length) {
+                        // Set start cho dòng hiện tại
+                        currentData[currentSyncIdx].start = t;
+                        currentData[currentSyncIdx].end = t + 2; // Tạm cho end là +2s để có độ dài
+                        
+                        currentSyncIdx++; // Chuyển sang câu tiếp theo
+                        renderTable(); // Vẽ lại để cập nhật giá trị
+                        highlightSyncRow();
+                    } else {
+                        isAutoSyncMode = false;
+                        alert("🎉 Đã hoàn tất gán thời gian cho toàn bộ văn bản!");
+                        refreshRowStyles();
+                    }
+                    return;
+                }
+                if (e.code === 'ArrowLeft') { e.preventDefault(); ytPlayer.seekTo(ytPlayer.getCurrentTime() - 0.5, true); return; }
+                if (e.code === 'ArrowRight') { e.preventDefault(); ytPlayer.seekTo(ytPlayer.getCurrentTime() + 0.5, true); return; }
+                if (e.code === 'ArrowUp') { e.preventDefault(); if (currentSyncIdx > 0) { currentSyncIdx--; highlightSyncRow(); } return; }
+                if (e.code === 'ArrowDown') { e.preventDefault(); if (currentSyncIdx < currentData.length - 1) { currentSyncIdx++; highlightSyncRow(); } return; }
+                if (e.code === 'Escape') { e.preventDefault(); isAutoSyncMode = false; alert("Đã thoát chế độ Live Sync"); refreshRowStyles(); return; }
+            }
             // --- LOGIC MỚI: CTRL + H ---
             if (e.ctrlKey && e.code === 'KeyH') {
                 e.preventDefault();
@@ -1936,7 +2002,58 @@ const SubEditor = (() => {
             };
         }).filter(Boolean);
     };
+    // --- CÁC HÀM CHO LIVE SYNC ---
+    function openAutoSyncModal() {
+        document.getElementById('auto-sync-modal').style.display = 'flex';
+        document.getElementById('raw-sync-text').focus();
+    }
 
+    function startAutoSync() {
+        const text = document.getElementById('raw-sync-text').value.trim();
+        if (!text) return alert("Vui lòng nhập văn bản!");
+
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        
+        // Cảnh báo nếu ghi đè data cũ
+        if (currentData.length > 0) {
+            if (!confirm("Video này đang có sub. Tính năng này sẽ XÓA HẾT sub hiện tại để làm mới. Bạn chắc chứ?")) return;
+        }
+
+        // Tạo cấu trúc data mới
+        currentData = lines.map((line, idx) => ({
+            id: idx + 1,
+            start: 0,
+            end: 0,
+            text: line.trim()
+        }));
+
+        isAutoSyncMode = true;
+        currentSyncIdx = 0;
+        
+        closeModal('auto-sync-modal');
+        renderTable();
+        highlightSyncRow();
+        
+        alert("Bắt đầu Sync! Phát video và bấm Space cho dòng đang sáng màu xanh.");
+        if (ytPlayer) ytPlayer.playVideo();
+        
+        // Blur mọi input để phím tắt hoạt động mượt
+        document.activeElement?.blur?.();
+    }
+
+    function highlightSyncRow() {
+        // Xóa class của dòng trước
+        document.querySelectorAll('.sub-row').forEach(row => row.classList.remove('syncing'));
+        
+        // Thêm class cho dòng hiện tại & Cuộn chuột tới nó
+        if (currentSyncIdx < currentData.length) {
+            const row = document.getElementById(`row-${currentSyncIdx}`);
+            if (row) {
+                row.classList.add('syncing');
+                row.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }
+    }
     // --- HÀM XỬ LÝ KÉO THẢ ---
     function handleEditorDrop(e) {
         e.preventDefault();
@@ -2570,7 +2687,8 @@ const SubEditor = (() => {
         handleRowHeaderClick,
         handleInputClick,
         openFindReplace, performFindReplace,
-        openOffset, performOffset, closeModal,deleteSelectedRows,
+        openOffset, performOffset, closeModal, deleteSelectedRows,
+        openAutoSyncModal, startAutoSync,
     };
 })();
 // --- Tab Switching Logic ---
