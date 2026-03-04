@@ -19,11 +19,13 @@
     "bookmarks": [
       {
         "label": "Rebel Heart",
-        "time": "00:00:00"
+        "time": "00:00:00",
+        "skip": true
       },
       {
         "label": "I Will Love You",
-        "time": "00:06:14"
+        "time": "00:06:14",
+        "skip": true
       },
       {
         "label": "I Will Love You (next)",
