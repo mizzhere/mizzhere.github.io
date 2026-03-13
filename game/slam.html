@@ -2691,7 +2691,8 @@
                         const otherLetter = getLetterAt(r, c);
 
                         if (otherLetter) {
-                            if (otherLetter.letter !== wordData.word[i]) return false; // Intersects but with the wrong letter
+                            // Đưa cả 2 về dạng không dấu trước khi so sánh, cho phép Á đè lên Ả hoặc A
+                            if (removeVietnameseTones(otherLetter.letter).toUpperCase() !== removeVietnameseTones(wordData.word[i]).toUpperCase()) return false;
                             intersectionFound = true;
                         }
 
@@ -3072,8 +3073,9 @@
                     // Chỉ chọn những ký tự nằm ở các ô ĐANG BỊ ẨN
                     const candidates = new Set();
                     unsolvedWords.forEach((w) => {
-                        for (let i = 0; i < w.word.length; i++) {
-                            const char = w.word[i];
+    for (let i = 0; i < w.word.length; i++) {
+        // Lấy chữ cái gốc không dấu để làm chuẩn
+        const char = removeVietnameseTones(w.word[i]).toUpperCase();
 
                             // ★ QUAN TRỌNG: Bỏ qua chữ cái này nếu người chơi từng trả lời sai câu hỏi logic về nó
                             if (state.failedRevealLetters.has(char)) continue;
@@ -3102,7 +3104,7 @@
                             let isWordFullyVisible = true;
 
                             for (let i = 0; i < wordData.word.length; i++) {
-                                const letter = wordData.word[i];
+                                const letter = removeVietnameseTones(wordData.word[i]).toUpperCase();
                                 let r = wordData.row,
                                     c = wordData.col;
                                 if (wordData.direction === "horizontal") c += i;
@@ -3151,10 +3153,12 @@
                         let wordsWithChar = new Set();
 
                         unsolvedWords.forEach((w) => {
-                            if (w.word.includes(char)) {
-                                wordsWithChar.add(w.id);
-                                for (let i = 0; i < w.word.length; i++) {
-                                    if (w.word[i] === char) {
+    // Ép nguyên từ về không dấu để đếm tần suất
+    const baseWord = removeVietnameseTones(w.word).toUpperCase();
+    if (baseWord.includes(char)) {
+        wordsWithChar.add(w.id);
+        for (let i = 0; i < baseWord.length; i++) {
+            if (baseWord[i] === char) {
                                         frequency++;
                                         let r = w.row,
                                             c = w.col;
@@ -4297,10 +4301,11 @@
                     let lettersToDeduct = 0; // Biến đếm số lượng ký tự MỚI được hiện ra
 
                     state.words.forEach((wordData) => {
-                        let containsLetter = false;
-                        for (let i = 0; i < wordData.word.length; i++) {
-                            if (wordData.word[i] === letter) {
-                                containsLetter = true;
+    let containsLetter = false;
+    for (let i = 0; i < wordData.word.length; i++) {
+        // So sánh dạng không dấu của từ trên lưới với lệnh được truyền vào
+        if (removeVietnameseTones(wordData.word[i]).toUpperCase() === letter) {
+            containsLetter = true;
                                 let r = wordData.row,
                                     c = wordData.col;
                                 if (wordData.direction === "horizontal") c += i;
@@ -4328,7 +4333,7 @@
                                     playable.classList.add("is-solved");
 
                                     // Lưu chữ gốc vào dataset để máy biết mà kiểm tra đúng sai ngầm
-                                    playable.dataset.realChar = letter;
+                                    playable.dataset.realChar = wordData.word[i];
                                 }
                             }
                         }
