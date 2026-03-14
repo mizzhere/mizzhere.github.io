@@ -1616,104 +1616,154 @@ const RISK_MAP = [
     3, 2, 3  // 6, 7, 8 (Góc, Cạnh, Góc)
 ];
 
-/**
- * Hàm chính để AI tìm nước đi, kết hợp Minimax và suy luận rủi ro.
- */
-function findBestMove() {
-    const board = [...state.board];
-    const cpu = state.cpuMark;
-    const cpuTraps = state.traps[cpu];
-    
-    let possibleMoves = [];
-    // Tính điểm Minimax cho tất cả các nước đi có thể
-    for (let i = 0; i < 9; i++) {
-        if (board[i] === null) {
-            board[i] = cpu;
-            let score = minimax(board, false);
-            board[i] = null; // Hoàn tác
-            possibleMoves.push({ move: i, score: score });
+// Bắt đầu vùng code CPU Logic mới
+        function makeCpuMove() {
+          boardElement.classList.add("no-click");
+          showToast("Máy đang tính toán...");
+          setTimeout(() => {
+            const move = findBestMove();
+            handlePlayerMove(move);
+            boardElement.classList.remove("no-click");
+          }, 800);
         }
-    }
 
-    // Tìm điểm số cao nhất có thể đạt được
-    const maxScore = Math.max(...possibleMoves.map(m => m.score));
+        function findBestMove() {
+            const cpu = state.cpuMark;
+            const player = state.player1Mark;
+            const cpuTraps = state.traps[cpu];
+            
+            // Lấy danh sách các ô ĐÃ NỔ BẪY (Tuyệt đối an toàn)
+            const safeCells = state.triggeredTraps.map(t => t.index); 
+            
+            const lastMove = state.moveHistory[cpu];
+            const isFirstMove = lastMove === null;
+            // Kiểm tra xem máy có đang được "Miễn nhiễm" (Bảo vệ) ở lượt này không
+            const isImmune = state.immuneStates[cpu] && state.immuneStates[cpu].index === lastMove;
 
-    // Lọc ra tất cả các nước đi có thể đạt được điểm số cao nhất đó
-    let bestMoves = possibleMoves.filter(m => m.score === maxScore);
-
-    // Nếu chỉ có một nước đi tốt nhất, không cần suy nghĩ thêm
-    if (bestMoves.length === 1) {
-        return bestMoves[0].move;
-    }
-
-    // Nếu có nhiều nước đi cùng điểm, dùng heuristics để phá vỡ thế cân bằng
-    // Ưu tiên 1: Lọc ra các nước đi không nằm trên bẫy của chính mình
-    let safeMoves = bestMoves.filter(m => !cpuTraps.includes(m.move));
-    
-    // Nếu có các lựa chọn an toàn, ta sẽ chỉ xem xét chúng
-    if (safeMoves.length > 0) {
-        bestMoves = safeMoves;
-    } 
-    // Nếu không còn nước nào an toàn, buộc phải chọn trong số các nước đi dẫm lên bẫy của mình
-    // Trong trường hợp này, `bestMoves` vẫn giữ nguyên giá trị ban đầu
-
-    // Ưu tiên 2: Chọn nước đi có điểm rủi ro thấp nhất
-    bestMoves.sort((a, b) => RISK_MAP[a.move] - RISK_MAP[b.move]);
-    
-    // Trả về nước đi tốt nhất sau khi đã sắp xếp theo rủi ro
-    return bestMoves[0].move;
-}
-
-/**
- * Hàm đệ quy Minimax (Không thay đổi)
- */
-function minimax(board, isMaximizing) {
-    const cpu = state.cpuMark;
-    const player = state.player1Mark;
-
-    let winner = checkWinnerForBoard(board);
-    if (winner === cpu) return 10;
-    if (winner === player) return -10;
-    if (board.every(cell => cell !== null)) return 0;
-
-    if (isMaximizing) {
-        let bestScore = -Infinity;
-        for (let i = 0; i < 9; i++) {
-            if (board[i] === null) {
-                board[i] = cpu;
-                let score = minimax(board, false);
-                board[i] = null;
-                bestScore = Math.max(score, bestScore);
+            const availableMoves = [];
+            for (let i = 0; i < 9; i++) {
+                if (state.board[i] === null) availableMoves.push(i);
             }
-        }
-        return bestScore;
-    } else {
-        let bestScore = Infinity;
-        for (let i = 0; i < 9; i++) {
-            if (board[i] === null) {
-                board[i] = player;
-                let score = minimax(board, true);
-                board[i] = null;
-                bestScore = Math.min(score, bestScore);
+
+            // ƯU TIÊN 1: TÌM NƯỚC ĐI THẮNG NGAY LẬP TỨC (Bản năng sát thủ)
+            for (let move of availableMoves) {
+                let boardAfter = [...state.board];
+                boardAfter[move] = cpu;
+                
+                // Nếu dẫm bẫy của chính mình mà không có bảo vệ -> mất quân cờ cũ
+                if (cpuTraps.includes(move) && !isImmune && !isFirstMove) {
+                    boardAfter[lastMove] = null;
+                }
+                
+                // Nếu đặt xuống mà thắng luôn, không cần quan tâm rủi ro, đi luôn!
+                if (checkWinnerForBoard(boardAfter) === cpu) {
+                    return move; 
+                }
             }
+
+            // ƯU TIÊN 2: CHẶN ĐỐI PHƯƠNG THẮNG NGAY LẬP TỨC (Phòng thủ sinh tử)
+            let blockMoves = [];
+            for (let move of availableMoves) {
+                let boardAfter = [...state.board];
+                boardAfter[move] = player;
+                if (checkWinnerForBoard(boardAfter) === player) {
+                    blockMoves.push(move);
+                }
+            }
+            if (blockMoves.length > 0) {
+                // Nếu có nhiều ngã cần chặn, ưu tiên chặn ở ô an toàn nhất
+                blockMoves.sort((a, b) => evaluateCellSafety(b, cpuTraps, safeCells) - evaluateCellSafety(a, cpuTraps, safeCells));
+                return blockMoves[0];
+            }
+
+            // ƯU TIÊN 3: ĐÁNH GIÁ ĐIỂM KỲ VỌNG (EV) CHO CÁC Ô CÒN LẠI
+            let moveScores = availableMoves.map(move => {
+                let score = 0;
+
+                // A. Điểm chiến thuật cơ bản (Trung tâm > Góc > Cạnh)
+                const tacticalScores = [3, 2, 3, 2, 4, 2, 3, 2, 3];
+                score += tacticalScores[move];
+
+                // B. Trọng số An Toàn & Lợi dụng Luật chơi
+                if (safeCells.includes(move)) {
+                    // Ô đã nổ bẫy: Cực kỳ giá trị vì an toàn 100%
+                    score += 50; 
+                } else if (cpuTraps.includes(move)) {
+                    // Ô chứa bẫy của chính mình
+                    if (isImmune) {
+                        score -= 5; // Có bảo vệ: Dẫm bẫy cũng không mất quân cũ, chỉ bị trừ nhẹ vì phí bẫy
+                    } else if (isFirstMove) {
+                        score -= 1000; // Lượt đầu: TUYỆT ĐỐI KHÔNG dẫm bẫy nhà vì sẽ mất lượt
+                    } else {
+                        score -= 200; // Lượt giữa: Hạn chế tối đa tự dẫm bẫy trừ khi bắt buộc
+                    }
+                } else {
+                    // Ô chưa xác định (Có thể chứa bẫy của người chơi hoặc hệ thống)
+                    if (isImmune) {
+                        // Đang có khiên bảo vệ: Cộng điểm để máy chủ động đi "dò mìn", dọn đường an toàn cho sau này
+                        score += 15; 
+                    } else if (isFirstMove && move === 4) {
+                        // Lượt đầu: Bị trừ điểm nặng nếu đi ô Trung tâm (vì người chơi thường xuyên đặt bẫy ở đây)
+                        score -= 10; 
+                    }
+                }
+
+                // C. Tiềm năng tấn công (Có tạo được 2 quân thẳng hàng không?)
+                let tempBoard = [...state.board];
+                tempBoard[move] = cpu;
+                // Chỉ tính toán sức mạnh nếu ô đó không phải bẫy tự sát làm mất quân (hoặc đang có bảo vệ)
+                if (!cpuTraps.includes(move) || isImmune) {
+                    score += countTwoInARows(tempBoard, cpu) * 10;
+                }
+
+                return { move, score };
+            });
+
+            // Chọn ra nước đi có điểm Kỳ Vọng (EV) cao nhất
+            moveScores.sort((a, b) => b.score - a.score);
+            return moveScores[0].move;
         }
-        return bestScore;
-    }
-}
+
+        function evaluateCellSafety(move, cpuTraps, safeCells) {
+            if (safeCells.includes(move)) return 100; // An toàn 100%
+            if (cpuTraps.includes(move)) return -100; // Bẫy của mình
+            return 0; // Chưa rõ
+        }
+
+        function countTwoInARows(board, mark) {
+            const combos = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            let count = 0;
+            for (let combo of combos) {
+                let marks = 0;
+                let empty = 0;
+                for (let idx of combo) {
+                    if (board[idx] === mark) marks++;
+                    else if (board[idx] === null) empty++;
+                }
+                if (marks === 2 && empty === 1) count++;
+            }
+            return count;
+        }
+
         function checkWinnerForBoard(board) {
-    const combos = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-    ];
-    for (const combo of combos) {
-        const [a, b, c] = combo;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            return board[a];
+            const combos = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (const combo of combos) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return null;
         }
-    }
-    return null;
-}
+        // Kết thúc vùng code CPU Logic mới
         function saveState() {
           if (state.gameState !== "welcome") {
             localStorage.setItem(SAVE_KEY, JSON.stringify(state));
