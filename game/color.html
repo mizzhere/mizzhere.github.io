@@ -11,11 +11,20 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9; /* bg-slate-100 */
+            background-color: #f1f5f9;
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden; /* Chặn cuộn */
+            overscroll-behavior: none; /* Chặn hiệu ứng kéo nảy (bounce) trên mobile */
+            touch-action: pan-x pan-y;
         }
         .glowing-red { box-shadow: 0 0 15px 5px rgba(239, 68, 68, 0.6); }
         .glowing-green { box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6); }
         .glowing-blue { box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.6); }
+        .glowing-yellow { box-shadow: 0 0 15px 5px rgba(234, 179, 8, 0.6); } /* Thêm màu vàng */
+.highlight-cell { background-color: rgba(255, 255, 0, 0.4) !important; z-index: 20; border-color: #eab308 !important; }
+.hint-popup { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); background: white; border-radius: 8px; padding: 4px; display: flex; gap: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 50; }
+.hint-color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 1px solid #475569; }
         .cell-container { position: relative; }
         .cell {
             user-select: none;
@@ -64,10 +73,10 @@
         .gap-1\.5 { gap: 0.375rem; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-2">
+<body class="flex items-center justify-center bg-slate-200 overflow-hidden" style="margin: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh;">
 
     <!-- Main container for all screens -->
-    <div id="app-container" class="w-full max-w-sm h-[95vh] max-h-[850px] bg-slate-200 rounded-2xl shadow-lg flex flex-col p-4 sm:p-6 overflow-hidden">
+    <div id="app-container" class="w-full max-w-sm h-full max-h-none bg-slate-200 shadow-lg flex flex-col p-4 sm:p-6 overflow-hidden relative">
 
         <!-- Main Menu Screen -->
         <div id="main-menu-screen" class="flex flex-col h-full text-center">
@@ -191,17 +200,30 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+        let wakeLock = null;
+const requestWakeLock = async () => {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    } catch (err) { console.log('Wake Lock error:', err); }
+};
+document.addEventListener('visibilitychange', () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') { requestWakeLock(); }
+});
+requestWakeLock(); // Gọi lần đầu
             // --- GAME CONFIGURATION ---
             const COLORS = {
-                'R': { name: 'red', class: 'bg-red-500', glow: 'glowing-red' },
-                'G': { name: 'green', class: 'bg-green-500', glow: 'glowing-green' },
-                'B': { name: 'blue', class: 'bg-blue-500', glow: 'glowing-blue' },
-                'W': { name: 'white', class: 'bg-slate-300', glow: '' }
-            };
+    'R': { name: 'red', class: 'bg-red-500', glow: 'glowing-red' },
+    'G': { name: 'green', class: 'bg-green-500', glow: 'glowing-green' },
+    'B': { name: 'blue', class: 'bg-blue-500', glow: 'glowing-blue' },
+    'Y': { name: 'yellow', class: 'bg-yellow-400', glow: 'glowing-yellow' }, // MÀU MỚI
+    'W': { name: 'white', class: 'bg-slate-300', glow: '' }
+};
             
             const PREFILL_CONFIG = {
-                4: 3, 5: 6, 6: 8, 7: 11
-            };
+    4: 3, 5: 6, 6: 8, 7: 12, 8: 15
+};
             
             const puzzles = {
                 4: [
@@ -219,8 +241,12 @@
                 7: [
                     [['R','R','G','G','B','B','R'],['R','R','G','G','B','B','R'],['G','G','B','B','R','R','G'],['G','G','B','B','R','R','G'],['B','B','R','R','G','G','B'],['B','B','R','R','G','G','B'],['R','R','G','G','B','B','R']],
                     [['B','R','G','B','G','R','B'],['R','G','B','G','B','G','R'],['G','B','R','B','R','B','G'],['B','G','R','G','R','G','B'],['G','B','R','B','R','B','G'],['R','G','B','G','B','G','R'],['B','R','G','B','G','R','B']],
-                ]
-            };
+                ],
+            8: [
+        [['R','R','G','G','B','B','Y','Y'],['R','R','G','G','B','B','Y','Y'],['G','G','B','B','Y','Y','R','R'],['G','G','B','B','Y','Y','R','R'],['B','B','Y','Y','R','R','G','G'],['B','B','Y','Y','R','R','G','G'],['Y','Y','R','R','G','G','B','B'],['Y','Y','R','R','G','G','B','B']],
+        [['R','G','B','Y','Y','B','G','R'],['G','B','Y','R','R','Y','B','G'],['B','Y','R','G','G','R','Y','B'],['Y','R','G','B','B','G','R','Y'],['Y','R','G','B','B','G','R','Y'],['B','Y','R','G','G','R','Y','B'],['G','B','Y','R','R','Y','B','G'],['R','G','B','Y','Y','B','G','R']]
+    ]
+};
             
             // --- GAME STATE VARIABLES ---
             let gameState = {
@@ -237,6 +263,8 @@
             let playerBoard = [];
             let moveHistory = [];
             let longPressTimer;
+            let cellLongPressTimer;
+let currentHighlightedCell = null;
 
             // --- DOM ELEMENT REFERENCES ---
             const screens = {
@@ -332,7 +360,7 @@
                     startLevel(true);
                 } else if (mode === 'campaign') {
                     moveHistory = [];
-                    const campaignLevels = [4, 5, 6, 7];
+                    const campaignLevels = [4, 5, 6, 7,8];
                     gameState.campaignProgress = { level: 0, totalMoves: 0 };
                     const levelIndex = gameState.campaignProgress.level;
                     gameState.currentGridSize = campaignLevels[levelIndex];
@@ -551,19 +579,55 @@
                 numberSpan.classList.add(cell.color === 'W' ? 'text-slate-800' : 'text-white');
                 numberSpan.style.opacity = isSolved ? '0' : '1';
                 
-                if (cell.isPreFilled) {
-                    cellDiv.classList.add('pre-filled');
-                    cellDiv.onclick = null;
-                } else {
-                    cellDiv.classList.remove('pre-filled');
-                    cellDiv.classList.add('cursor-pointer', 'hover:opacity-80');
-                    cellDiv.onclick = () => handleCellClick(r, c);
-                }
+               if (cell.isPreFilled) {
+    cellDiv.classList.add('pre-filled');
+    cellDiv.onmousedown = null;
+    cellDiv.ontouchstart = null;
+} else {
+    cellDiv.classList.remove('pre-filled');
+    cellDiv.classList.add('cursor-pointer', 'hover:opacity-80');
+    
+    // Ngăn context menu mặc định trên mobile
+    cellDiv.oncontextmenu = (e) => e.preventDefault(); 
+
+    const startPress = (e) => {
+        if (e.type === 'touchstart') {
+            e.preventDefault(); // Tránh fire 2 event cả mouse lẫn touch
+        }
+        clearHighlights();
+        cellLongPressTimer = setTimeout(() => {
+            showHighlightAndHints(r, c);
+            cellLongPressTimer = null; // Đã trigger long press
+        }, 400); // 400ms giữ để hiện 3x3
+    };
+
+    const endPress = (e) => {
+        if (cellLongPressTimer) {
+            // Nhả ra trước khi hết giờ -> Là click bình thường
+            clearTimeout(cellLongPressTimer);
+            handleCellClick(r, c);
+        }
+        // Nếu đã hiện hint thì click chỗ khác mới tắt (để họ kịp chọn màu)
+    };
+
+    const cancelPress = () => {
+        if (cellLongPressTimer) clearTimeout(cellLongPressTimer);
+    };
+
+    cellDiv.onmousedown = startPress;
+    cellDiv.onmouseup = endPress;
+    cellDiv.onmouseleave = cancelPress;
+    
+    cellDiv.ontouchstart = startPress;
+    cellDiv.ontouchend = endPress;
+    cellDiv.ontouchcancel = cancelPress;
+}
             }
             
             function setupColorPalette() {
                 colorPalette.innerHTML = '';
-                Object.keys(COLORS).filter(k => k !== 'W').forEach(key => {
+                const usedColors = new Set(gameState.solutionLayout.flat());
+                Object.keys(COLORS).filter(k => k !== 'W' && usedColors.has(k)).forEach(key => {
                     const color = COLORS[key];
                     const swatchContainer = document.createElement('div');
                     swatchContainer.className = 'relative flex flex-col items-center gap-1';
@@ -696,6 +760,70 @@
                 }
                 return neighbors;
             }
+            function getPossibleColorsForCell(r, c) {
+    const cell = playerBoard[r][c];
+    const possible =[];
+    const usedColors = Array.from(new Set(gameState.solutionLayout.flat()));
+    const remainingCounts = getRemainingCounts();
+    const neighbors = getNeighborCoords(r, c, playerBoard.length);
+
+    usedColors.forEach(colorKey => {
+        if (colorKey === 'W') return;
+        if (remainingCounts[colorKey] <= 0) return; // Hết số lượng
+
+        let isValid = true;
+        let currentMatchingNeighbors = 0;
+        for (const {r: nr, c: nc} of neighbors) {
+            const neighborCell = playerBoard[nr][nc];
+            // Nếu hàng xóm cùng màu mà chỉ số clue đã <= 0 => Sai
+            if (neighborCell.color === colorKey && neighborCell.currentNumber <= 0) isValid = false;
+            if (neighborCell.color === colorKey) currentMatchingNeighbors++;
+        }
+        // Nếu xung quanh đã có nhiều ô cùng màu hơn số clue của ô này => Sai
+        if (cell.clueNumber < currentMatchingNeighbors + 1) isValid = false;
+
+        if (isValid) possible.push(colorKey);
+    });
+    return possible;
+}
+function clearHighlights() {
+    document.querySelectorAll('.highlight-cell').forEach(el => el.classList.remove('highlight-cell'));
+    document.querySelectorAll('.hint-popup').forEach(el => el.remove());
+    currentHighlightedCell = null;
+}
+
+function showHighlightAndHints(r, c) {
+    clearHighlights();
+    currentHighlightedCell = {r, c};
+    
+    // Highlight ô hiện tại và 8 ô xung quanh
+    const targetDiv = document.getElementById(`cell-${r}-${c}`);
+    targetDiv.classList.add('highlight-cell');
+    getNeighborCoords(r, c, playerBoard.length).forEach(({r: nr, c: nc}) => {
+        document.getElementById(`cell-${nr}-${nc}`).classList.add('highlight-cell');
+    });
+
+    // Tạo popup menu nhỏ bên dưới
+    const possibleColors = getPossibleColorsForCell(r, c);
+    if (possibleColors.length > 0) {
+        const hintPopup = document.createElement('div');
+        hintPopup.className = 'hint-popup anim-fade-in';
+        possibleColors.forEach(colorKey => {
+            const dot = document.createElement('div');
+            dot.className = `hint-color-dot ${COLORS[colorKey].class}`;
+            // Khi click vào màu gợi ý -> Điền luôn màu đó
+            dot.onclick = (e) => {
+                e.stopPropagation();
+                selectedColor = COLORS[colorKey].name;
+                updatePaletteSelection();
+                handleCellClick(r, c); 
+                clearHighlights();
+            };
+            hintPopup.appendChild(dot);
+        });
+        document.getElementById(`container-${r}-${c}`).appendChild(hintPopup);
+    }
+}
             
             // *** CHANGE: Save move history along with other game state ***
             function saveCurrentGameState() {
@@ -907,6 +1035,7 @@
                                 <option value="5">5x5</option>
                                 <option value="6">6x6</option>
                                 <option value="7">7x7</option>
+                                <option value="8">8x8</option> 
                             </select>
                         </div>
                     `;
@@ -949,7 +1078,12 @@
             undoButton.addEventListener('mouseup', () => clearTimeout(longPressTimer));
             undoButton.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
             undoButton.addEventListener('click', handleUndo);
-
+            document.addEventListener('click', (e) => {
+    // Nếu click không trúng vào popup hint hoặc các ô thì xóa highlight
+    if (!e.target.closest('.hint-popup') && !e.target.closest('.cell') && currentHighlightedCell) {
+        clearHighlights();
+    }
+});
             // --- START GAME ---
             setupMainMenu();
         });
