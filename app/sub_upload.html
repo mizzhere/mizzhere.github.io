@@ -1566,26 +1566,7 @@ setupTagEditor('genres');
     
     document.getElementById('save-tags-btn').removeEventListener('click', handleSaveTags);
     document.getElementById('save-tags-btn').addEventListener('click', window.handleSaveTags);
-function renderBookmarkEditor(bookmarks = []) {
-  const container = document.getElementById("bookmarks-list");
-  container.innerHTML = '';
-  bookmarks.forEach((b) => {
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.gap = "8px";
-    row.style.marginBottom = "6px";
 
-    row.innerHTML = `
-      <input type="text" placeholder="Tên phần" value="${b.label || ''}" style="flex: 2" />
-      <input type="text" value="${b.time || '00:00:00'}" onkeydown="handleTimeInputKey(event, this)" maxlength="8" style="flex: 1" />
-      <label style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" ${b.skip ? "checked" : ""} /> Bỏ qua
-      </label>
-      <button onclick="this.parentElement.remove()" class="btn-danger" style="padding: 4px 8px;">✖</button>
-    `;
-    container.appendChild(row);
-  });
-}
 
 /* --- HÀM HỖ TRỢ LĂN CHUỘT CHỈNH GIỜ --- */
 function handleWheelTime(e, input) {
@@ -1623,101 +1604,100 @@ function handleWheelTime(e, input) {
     // Kích hoạt sự kiện change để lưu dữ liệu
     input.dispatchEvent(new Event('change'));
 }
-function handleTimeInputKey(e, input) {
-  const val = input.value;
-  let pos = input.selectionStart;
-
-  const digitPositions = [0, 1, 3, 4, 6, 7];
-
-  // Gõ số
-  if (e.key >= '0' && e.key <= '9') {
-    if (!digitPositions.includes(pos)) {
-      e.preventDefault();
-      return;
-    }
-    const chars = val.split('');
-    chars[pos] = e.key;
-    input.value = chars.join('');
-    e.preventDefault();
-
-    // Tự chuyển con trỏ
-    const next = digitPositions.find(p => p > pos);
-    if (next !== undefined) {
-      setTimeout(() => input.setSelectionRange(next, next), 0);
-    }
-    return;
-  }
-
-  // Backspace
-  if (e.key === 'Backspace') {
-    e.preventDefault();
-    let newPos = pos;
-
-    // Nếu đang ở dấu `:` → lùi tới số trước đó
-    while (newPos > 0 && !digitPositions.includes(newPos - 1)) {
-      newPos--;
-    }
-    if (digitPositions.includes(newPos - 1)) {
-      const chars = val.split('');
-      chars[newPos - 1] = '0';
-      input.value = chars.join('');
-      setTimeout(() => input.setSelectionRange(newPos - 1, newPos - 1), 0);
-    }
-    return;
-  }
-
-  // Delete
-  if (e.key === 'Delete') {
-    e.preventDefault();
-    if (!digitPositions.includes(pos)) return;
-    const chars = val.split('');
-    chars[pos] = '0';
-    input.value = chars.join('');
-    setTimeout(() => input.setSelectionRange(pos, pos), 0);
-    return;
-  }
-
-  // Ngăn mọi ký tự khác
-  if (!['ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
-    e.preventDefault();
-  }
-}
-
-
-function addBookmarkRow() {
+// --- 1. RENDER BOOKMARK EDITOR ---
+function renderBookmarkEditor(bookmarks = []) {
   const container = document.getElementById("bookmarks-list");
-  const bookmarks = [];
+  container.innerHTML = '';
+  
+  bookmarks.forEach((b) => {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.marginBottom = "8px";
+    row.style.alignItems = "center";
 
-  // Duyệt từng hàng và thu thập dữ liệu trực tiếp
-  for (const row of container.children) {
-    const inputs = row.querySelectorAll("input");
-    const label = inputs[0]?.value?.trim();
-    const time = inputs[1]?.value?.trim();
-    const skip = inputs[2]?.checked;
-    bookmarks.push({ label, time, ...(skip ? { skip: true } : {}) });
-  }
+    // Tương thích ngược với data cũ (nếu có trường 'time' thay vì 'startTime')
+    let sTime = b.startTime || b.time || "00:00:00,000";
+    if (sTime.length === 8) sTime += ",000"; // Thêm ms nếu data cũ thiếu
 
-  // ✅ thêm hàng mới
-  bookmarks.push({ label: "", time: "00:00:00", skip: false });
+    let eTime = b.endTime || "00:00:00,000";
+    if (eTime.length === 8) eTime += ",000";
 
-  renderBookmarkEditor(bookmarks);
+    row.innerHTML = `
+      <input type="text" placeholder="Tên phân đoạn" value="${b.label || ''}" style="flex: 2" />
+      
+      <div style="display:flex; align-items:center; gap:4px; flex: 2">
+        <input class="time-input" type="text" value="${sTime}" 
+               onkeydown="handleSmartTimeInput(event, this)" 
+               onwheel="handleWheelTime(event, this)"
+               style="width: 100%; text-align:center;" title="Bắt đầu (Start)" />
+        <span style="color: var(--text-secondary);">-</span>
+        <input class="time-input" type="text" value="${eTime}" 
+               onkeydown="handleSmartTimeInput(event, this)" 
+               onwheel="handleWheelTime(event, this)"
+               style="width: 100%; text-align:center;" title="Kết thúc (End)" />
+      </div>
+
+      <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+        <input type="checkbox" ${b.skip ? "checked" : ""} /> Bỏ qua
+      </label>
+      
+      <button onclick="this.parentElement.remove()" class="btn-danger" style="padding: 4px 8px;" title="Xóa">✖</button>
+    `;
+    container.appendChild(row);
+  });
 }
 
-
+// --- 2. LẤY DỮ LIỆU TỪ DOM ---
 function getBookmarkList() {
   const container = document.getElementById("bookmarks-list");
-   document.activeElement?.blur?.();
+  document.activeElement?.blur?.();
 
   return Array.from(container.children).map(row => {
     const inputs = row.querySelectorAll("input");
     const label = inputs[0].value.trim();
-    const time = inputs[1].value.trim();
-    const skip = inputs[2].checked;
-    if (!label || !time) return null;
-    return { label, time, ...(skip ? { skip: true } : {}) };
+    const startTime = inputs[1].value.trim();
+    const endTime = inputs[2].value.trim();
+    const skip = inputs[3].checked;
+    
+    // Nếu dòng trống hoàn toàn thì bỏ qua
+    if (!label && startTime === "00:00:00,000" && endTime === "00:00:00,000") return null;
+    
+    return { 
+        label, 
+        startTime, 
+        endTime, 
+        ...(skip ? { skip: true } : {}) 
+    };
   }).filter(Boolean);
 }
+
+// --- 3. THÊM DÒNG MỚI (Đã tối ưu) ---
+function addBookmarkRow() {
+  // Lấy data hiện tại đang nhập trên form
+  const bookmarks = getBookmarkList(); 
+
+  // Nếu dòng cuối cùng có dữ liệu thì nối tiếp thời gian, nếu không thì mặc định 00:00:00,000
+  let newStartTime = "00:00:00,000";
+  if (bookmarks.length > 0) {
+      newStartTime = bookmarks[bookmarks.length - 1].endTime; // Nối End dòng trước làm Start dòng sau
+  }
+
+  // Thêm dòng mới vào mảng
+  bookmarks.push({ 
+      label: "", 
+      startTime: newStartTime, 
+      endTime: newStartTime, 
+      skip: false 
+  });
+
+  // Render lại toàn bộ
+  renderBookmarkEditor(bookmarks);
+}
+
 // 1. Hàm xác định và bôi đen vùng (Giờ, Phút, Giây, hoặc Ms) dựa trên vị trí con trỏ
+
+
 function selectTimeSegment(input) {
     const pos = input.selectionStart;
     let start = 0, end = 0;
