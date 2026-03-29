@@ -772,15 +772,16 @@
     "originalTitle_auto": "[리무진서비스] EP.203 아이브 안유진 | IVE ANYUJIN | REBEL HEART, 사랑하게 될 거야, Perfect, Text Me Merry Christmas",
     "authorName_auto": "KBS Kpop",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/YCvS7cRlRpU/maxresdefault.jpg",
+    "duration_auto": 2077,
     "publishedAt_official": "2026-02-24T09:00:06Z",
     "bookmarks": [
       {
-        "label": "121",
-        "time": "00:05:00"
+        "label": "I Will Love You",
+        "startTime": "00:06:15,000",
+        "endTime": "00:08:58,000"
       }
     ],
-    "episode": 203,
-    "duration_auto": 2077
+    "episode": 203
   },
   {
     "videoId": "OmvMcOZ3zQ4",
