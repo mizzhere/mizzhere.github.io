@@ -116,7 +116,27 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/XlxzbmAVS2s/maxresdefault.jpg",
     "duration_auto": 3626,
     "publishedAt_official": "2026-02-28T13:00:07Z",
-    "episode": 57
+    "episode": 57,
+    "bookmarks": [
+      {
+        "label": "Giới thiệu tập trước",
+        "startTime": "00:00:00,000",
+        "endTime": "00:00:56,722",
+        "skip": true
+      },
+      {
+        "label": "Trò chơi ..",
+        "startTime": "00:00:56,722",
+        "endTime": "00:08:58,170",
+        "skip": false
+      },
+      {
+        "label": "Trò chơi thứ 3: \"Cậu, ra đây\"",
+        "startTime": "00:09:02,441",
+        "endTime": "00:23:11,589",
+        "skip": false
+      }
+    ]
   },
   {
     "videoId": "jfZQtuXTJ4E",
