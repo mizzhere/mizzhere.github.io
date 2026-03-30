@@ -77,7 +77,33 @@
     "authorName_auto": "KODE 코드",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/uPsNCP1eMO0/maxresdefault.jpg",
     "duration_auto": 1299,
-    "publishedAt_official": "2026-03-26T11:00:06Z"
+    "publishedAt_official": "2026-03-26T11:00:06Z",
+    "bookmarks": [
+      {
+        "label": "Mở đầu",
+        "startTime": "00:00:00,000",
+        "endTime": "00:00:49,115",
+        "skip": false
+      },
+      {
+        "label": "Bắt đầu trò chuyện",
+        "startTime": "00:00:02,739",
+        "endTime": "00:15:32,721",
+        "skip": false
+      },
+      {
+        "label": "Tiết lộ",
+        "startTime": "00:15:32,722",
+        "endTime": "00:21:29,811",
+        "skip": false
+      },
+      {
+        "label": "Credit",
+        "startTime": "00:21:29,812",
+        "endTime": "00:21:38,800",
+        "skip": true
+      }
+    ]
   },
   {
     "videoId": "yYbR4BKH0Ec",
