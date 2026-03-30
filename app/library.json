@@ -156,7 +156,39 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/jfZQtuXTJ4E/maxresdefault.jpg",
     "duration_auto": 2731,
     "publishedAt_official": "2026-02-22T11:00:07Z",
-    "episode": 57
+    "episode": 57,
+    "bookmarks": [
+      {
+        "label": "Mở đầu",
+        "startTime": "00:00:00,000",
+        "endTime": "00:05:04,737",
+        "skip": false
+      },
+      {
+        "label": "Giới thiệu luật chơi và chia đội",
+        "startTime": "00:05:04,737",
+        "endTime": "00:11:40,266",
+        "skip": false
+      },
+      {
+        "label": "Trò chơi 1: Random Play Dance",
+        "startTime": "00:11:44,336",
+        "endTime": "00:32:36,421",
+        "skip": false
+      },
+      {
+        "label": "Trò chơi 2: The Chase",
+        "startTime": "00:32:43,795",
+        "endTime": "00:44:03,640",
+        "skip": false
+      },
+      {
+        "label": "Tuần sau",
+        "startTime": "00:44:03,640",
+        "endTime": "00:44:57,795",
+        "skip": true
+      }
+    ]
   },
   {
     "videoId": "z38UhCf2BMc",
