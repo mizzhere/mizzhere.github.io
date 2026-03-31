@@ -792,7 +792,45 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/1neJU-a_0xk/maxresdefault.jpg",
     "duration_auto": 2200,
     "publishedAt_official": "2025-12-16T09:00:06Z",
-    "episode": 195
+    "episode": 195,
+    "bookmarks": [
+      {
+        "label": "Lullaby",
+        "startTime": "00:00:04,615",
+        "endTime": "00:01:47,692",
+        "skip": false
+      },
+      {
+        "label": "Thinking Out Loud",
+        "startTime": "00:08:07,111",
+        "endTime": "00:12:39,240",
+        "skip": false
+      },
+      {
+        "label": "Deja Vu",
+        "startTime": "00:17:08,611",
+        "endTime": "00:18:10,712",
+        "skip": false
+      },
+      {
+        "label": "I Didn't Know That Then",
+        "startTime": "00:22:11,250",
+        "endTime": "00:24:49,000",
+        "skip": false
+      },
+      {
+        "label": "Haru Haru",
+        "startTime": "00:26:59,999",
+        "endTime": "00:27:42,788",
+        "skip": false
+      },
+      {
+        "label": "Nan Chun",
+        "startTime": "00:33:45,077",
+        "endTime": "00:36:00,605",
+        "skip": false
+      }
+    ]
   },
   {
     "videoId": "pZ9sgHCrJZw",
