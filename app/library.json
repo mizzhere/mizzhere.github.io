@@ -855,9 +855,46 @@
     "publishedAt_official": "2026-02-24T09:00:06Z",
     "bookmarks": [
       {
+        "label": "Rebel Heart",
+        "startTime": "00:00:00,210",
+        "endTime": "00:00:50,445",
+        "skip": false
+      },
+      {
         "label": "I Will Love You",
-        "startTime": "00:06:15,000",
-        "endTime": "00:08:58,000"
+        "startTime": "00:06:14,456",
+        "endTime": "00:08:58,460",
+        "skip": false
+      },
+      {
+        "label": "I Hope It Would Be That Way Now",
+        "startTime": "00:14:56,335",
+        "endTime": "00:15:46,687",
+        "skip": false
+      },
+      {
+        "label": "Perfect",
+        "startTime": "00:18:07,980",
+        "endTime": "00:21:45,502",
+        "skip": false
+      },
+      {
+        "label": "Umbrella",
+        "startTime": "00:25:32,315",
+        "endTime": "00:26:19,576",
+        "skip": false
+      },
+      {
+        "label": "Text Me Merry Christmas",
+        "startTime": "00:31:38,263",
+        "endTime": "00:34:21,143",
+        "skip": false
+      },
+      {
+        "label": "Credit",
+        "startTime": "00:34:26,313",
+        "endTime": "00:34:36,800",
+        "skip": false
       }
     ],
     "episode": 203
