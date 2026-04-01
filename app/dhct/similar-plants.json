@@ -3,6 +3,10 @@
     "id": "sg-1775004278996",
     "name": "Nhóm mới",
     "description": ".",
-    "plantIds": []
+    "plantIds": [
+      "p-nguu-bang-tu",
+      "p-man-kinh-tu",
+      "p-ngo-thu-du"
+    ]
   }
 ]
