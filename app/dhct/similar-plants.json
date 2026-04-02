@@ -13,5 +13,16 @@
       "p-ba-tu-nhan",
       "p-toan-tao-nhan"
     ]
+  },
+  {
+    "id": "sg-1775090416070",
+    "name": "Nhúm lá và que",
+    "description": "",
+    "plantIds": [
+      "p-bac-ha",
+      "p-bo-cong-anh",
+      "p-huong-nhu-tia",
+      "p-nhan-tran"
+    ]
   }
 ]
