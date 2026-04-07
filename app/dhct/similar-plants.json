@@ -34,11 +34,11 @@
   },
   {
     "id": "sg-1775554134356",
-    "name": "Nhìn như liên kiều",
+    "name": "Nhìn như phụ tử",
     "description": "",
     "plantIds": [
-      "p-lien-kieu",
-      "p-bach-hop"
+      "p-bach-hop",
+      "p-phu-tu-che"
     ]
   },
   {
