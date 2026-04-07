@@ -40,5 +40,14 @@
       "p-lien-kieu",
       "p-bach-hop"
     ]
+  },
+  {
+    "id": "sg-1775554352256",
+    "name": "nhìn như trần bì",
+    "description": "",
+    "plantIds": [
+      "p-tran-bi",
+      "p-son-tra"
+    ]
   }
 ]
