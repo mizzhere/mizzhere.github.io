@@ -23,7 +23,10 @@
       "p-bo-cong-anh",
       "p-huong-nhu-tia",
       "p-nhan-tran",
-      "p-ich-mau"
+      "p-ich-mau",
+      "p-ngai-cuu",
+      "p-hy-thiem",
+      "p-hoac-huong"
     ]
   },
   {
@@ -34,11 +37,11 @@
   },
   {
     "id": "sg-1775554134356",
-    "name": "Nhìn như phụ tử",
+    "name": "Nhìn như liên kiều",
     "description": "",
     "plantIds": [
-      "p-bach-hop",
-      "p-phu-tu-che"
+      "p-lien-kieu",
+      "p-bach-hop"
     ]
   },
   {
