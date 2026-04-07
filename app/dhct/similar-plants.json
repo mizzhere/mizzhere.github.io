@@ -31,5 +31,13 @@
     "name": "Gỗ gỗ",
     "description": "",
     "plantIds": []
+  },
+  {
+    "id": "sg-1775554134356",
+    "name": "Nhìn như liên kiều",
+    "description": "",
+    "plantIds": [
+      "p-lien-kieu"
+    ]
   }
 ]
