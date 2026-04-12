@@ -12,7 +12,20 @@
     ],
     "description": "",
     "subtitleUrl": "app/subtitles/6HM9D9KR0mg.srt",
-    "bookmarks": [],
+    "bookmarks": [
+      {
+        "label": "Mở đầu",
+        "startTime": "00:00:00,000",
+        "endTime": "00:00:32,799",
+        "skip": true
+      },
+      {
+        "label": "Hậu trường",
+        "startTime": "00:13:36,115",
+        "endTime": "00:15:17,082",
+        "skip": false
+      }
+    ],
     "originalTitle_auto": "[ENG] 3세대 너네만 양갈래하냐? 2.5세대도 하면 상큼하거든? / 가짜 김효연 EP.17 미용실 편(아이린)",
     "authorName_auto": "효연의 레벨업 Hyo's Level Up",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/6HM9D9KR0mg/maxresdefault.jpg",
