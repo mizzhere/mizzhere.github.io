@@ -125,7 +125,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/2D-1pbdmcIk/maxresdefault.jpg",
     "duration_auto": 1227,
     "publishedAt_official": "2026-04-22T09:00:04Z",
-    "episode": 18
+    "episode": 18,
+    "sub_full": true
   },
   {
     "videoId": "8Rf2qozxykM",
@@ -148,7 +149,8 @@
     "duration_auto": 1023,
     "publishedAt_official": "2026-04-22T10:00:14Z",
     "episode": 8,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "rOxWjQCQ15M",
@@ -171,7 +173,8 @@
     "duration_auto": 1389,
     "publishedAt_official": "2026-04-19T04:00:54Z",
     "episode": 2,
-    "season": 1
+    "season": 1,
+    "sub_full": true
   },
   {
     "videoId": "Opvr-20SSgY",
@@ -192,7 +195,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/Opvr-20SSgY/maxresdefault.jpg",
     "duration_auto": 1236,
     "publishedAt_official": "2026-04-17T09:00:36Z",
-    "episode": 28
+    "episode": 28,
+    "sub_full": true
   },
   {
     "videoId": "QhMXNGEvaH4",
@@ -275,7 +279,8 @@
     "authorName_auto": "워크맨-Workman",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/pgZb_VxK2oU/maxresdefault.jpg",
     "duration_auto": 1183,
-    "publishedAt_official": "2026-04-10T09:00:36Z"
+    "publishedAt_official": "2026-04-10T09:00:36Z",
+    "sub_full": true
   },
   {
     "videoId": "4pf-1w5M3qI",
@@ -313,7 +318,8 @@
     "duration_auto": 1284,
     "publishedAt_official": "2026-04-12T04:00:05Z",
     "episode": 1,
-    "season": 1
+    "season": 1,
+    "sub_full": true
   },
   {
     "videoId": "6HM9D9KR0mg",
@@ -353,7 +359,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/6HM9D9KR0mg/maxresdefault.jpg",
     "duration_auto": 926,
     "publishedAt_official": "2026-04-08T09:00:13Z",
-    "episode": 17
+    "episode": 17,
+    "sub_full": true
   },
   {
     "videoId": "XVgJ4iI8hkw",
@@ -374,7 +381,8 @@
     "authorName_auto": "유병재",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/XVgJ4iI8hkw/maxresdefault.jpg",
     "duration_auto": 1211,
-    "publishedAt_official": "2026-04-11T07:11:00Z"
+    "publishedAt_official": "2026-04-11T07:11:00Z",
+    "sub_full": true
   },
   {
     "videoId": "rfAGno9E5SM",
@@ -418,7 +426,8 @@
     "duration_auto": 1354,
     "publishedAt_official": "2026-04-08T10:00:00Z",
     "episode": 6,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "YYo_pxl3I04",
@@ -436,7 +445,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/YYo_pxl3I04/maxresdefault.jpg",
     "duration_auto": 1389,
     "publishedAt_official": "2026-04-07T08:00:06Z",
-    "episode": 17
+    "episode": 17,
+    "sub_full": true
   },
   {
     "videoId": "F8xHsTO7uz0",
@@ -476,7 +486,8 @@
     "duration_auto": 1060,
     "publishedAt_official": "2026-04-01T10:00:00Z",
     "episode": 5,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "WQsAcAMxLUc",
@@ -498,7 +509,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/WQsAcAMxLUc/maxresdefault.jpg",
     "duration_auto": 1613,
     "publishedAt_official": "2026-04-02T10:00:06Z",
-    "episode": 1
+    "episode": 1,
+    "sub_full": true
   },
   {
     "videoId": "zNvRUtbPq40",
@@ -517,7 +529,8 @@
     "authorName_auto": "워크맨-Workman",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/zNvRUtbPq40/maxresdefault.jpg",
     "duration_auto": 1520,
-    "publishedAt_official": "2026-01-02T09:00:49Z"
+    "publishedAt_official": "2026-01-02T09:00:49Z",
+    "sub_full": true
   },
   {
     "videoId": "zDMT9ikx4Wk",
@@ -539,7 +552,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/zDMT9ikx4Wk/maxresdefault.jpg",
     "duration_auto": 2720,
-    "publishedAt_official": "2026-03-28T04:00:44Z"
+    "publishedAt_official": "2026-03-28T04:00:44Z",
+    "sub_full": true
   },
   {
     "videoId": "vCAQNC8mzX0",
@@ -604,7 +618,8 @@
         "endTime": "00:21:38,800",
         "skip": true
       }
-    ]
+    ],
+    "sub_full": true
   },
   {
     "videoId": "yYbR4BKH0Ec",
@@ -625,7 +640,8 @@
     "duration_auto": 1006,
     "publishedAt_official": "2026-03-25T10:00:00Z",
     "episode": 4,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "XlxzbmAVS2s",
@@ -664,7 +680,8 @@
         "endTime": "00:23:11,589",
         "skip": false
       }
-    ]
+    ],
+    "sub_full": true
   },
   {
     "videoId": "jfZQtuXTJ4E",
@@ -715,7 +732,8 @@
         "endTime": "00:44:57,795",
         "skip": true
       }
-    ]
+    ],
+    "sub_full": true
   },
   {
     "videoId": "z38UhCf2BMc",
@@ -754,7 +772,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/dUISXegQyys/maxresdefault.jpg",
     "duration_auto": 677,
     "publishedAt_official": "2026-03-19T10:00:06Z",
-    "episode": 0
+    "episode": 0,
+    "sub_full": true
   },
   {
     "videoId": "fJkq0-jYebY",
@@ -775,7 +794,8 @@
     "duration_auto": 1120,
     "publishedAt_official": "2026-03-18T10:00:56Z",
     "episode": 3,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "mWGGjn8_b34",
@@ -799,7 +819,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/mWGGjn8_b34/maxresdefault.jpg",
     "duration_auto": 670,
     "publishedAt_official": "2026-03-18T09:01:12Z",
-    "episode": 1
+    "episode": 1,
+    "sub_full": true
   },
   {
     "videoId": "USdcnA-TR2U",
@@ -913,7 +934,8 @@
     "authorName_auto": "KODE 코드",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/Tl6nSHKT5CA/maxresdefault.jpg",
     "duration_auto": 1121,
-    "publishedAt_official": "2026-03-11T09:30:13Z"
+    "publishedAt_official": "2026-03-11T09:30:13Z",
+    "sub_full": true
   },
   {
     "videoId": "OxfvKiyOns4",
@@ -954,7 +976,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/7sDBEb3w2r8/maxresdefault.jpg",
     "duration_auto": 1741,
     "publishedAt_official": "2025-06-01T04:00:09Z",
-    "episode": 37
+    "episode": 37,
+    "sub_full": true
   },
   {
     "videoId": "lO62Z4X_WmQ",
@@ -975,7 +998,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/lO62Z4X_WmQ/maxresdefault.jpg",
     "duration_auto": 1695,
     "publishedAt_official": "2025-11-16T04:00:58Z",
-    "episode": 51
+    "episode": 51,
+    "sub_full": true
   },
   {
     "videoId": "UVke3bEQQas",
@@ -1037,7 +1061,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/tMN7_a4QDVk/maxresdefault.jpg",
     "duration_auto": 773,
-    "publishedAt_official": "2026-01-28T09:01:16Z"
+    "publishedAt_official": "2026-01-28T09:01:16Z",
+    "sub_full": true
   },
   {
     "videoId": "B2KfuCtoI_c",
@@ -1078,7 +1103,8 @@
     "authorName_auto": "M2",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/IDBESJLmezM/maxresdefault.jpg",
     "duration_auto": 1968,
-    "publishedAt_official": "2026-02-27T09:00:06Z"
+    "publishedAt_official": "2026-02-27T09:00:06Z",
+    "sub_full": true
   },
   {
     "videoId": "EjxdzKc96zs",
@@ -1099,7 +1125,8 @@
     "authorName_auto": "존이냐박이냐",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/EjxdzKc96zs/maxresdefault.jpg",
     "duration_auto": 612,
-    "publishedAt_official": "2026-03-06T10:00:29Z"
+    "publishedAt_official": "2026-03-06T10:00:29Z",
+    "sub_full": true
   },
   {
     "videoId": "WA3d6xMtOCY",
@@ -1143,7 +1170,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/LhQSxRc8D8E/maxresdefault.jpg",
     "duration_auto": 1354,
     "publishedAt_official": "2026-03-06T09:00:35Z",
-    "episode": 22
+    "episode": 22,
+    "sub_full": true
   },
   {
     "videoId": "z_IB-0dclkM",
@@ -1185,7 +1213,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/zefga5_GEyY/maxresdefault.jpg",
     "duration_auto": 1699,
     "publishedAt_official": "2023-07-18T09:00:09Z",
-    "episode": 72
+    "episode": 72,
+    "sub_full": true
   },
   {
     "videoId": "HaOUfosT_v8",
@@ -1225,7 +1254,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/RCCw15KZiV0/maxresdefault.jpg",
     "duration_auto": 1622,
     "publishedAt_official": "2023-03-21T09:00:07Z",
-    "episode": 55
+    "episode": 55,
+    "sub_full": true
   },
   {
     "videoId": "AB9m3iHrRs4",
@@ -1272,7 +1302,8 @@
         "endTime": "00:01:37,000"
       }
     ],
-    "episode": 71
+    "episode": 71,
+    "sub_full": true
   },
   {
     "videoId": "1neJU-a_0xk",
@@ -1331,7 +1362,8 @@
         "endTime": "00:36:00,605",
         "skip": false
       }
-    ]
+    ],
+    "sub_full": true
   },
   {
     "videoId": "pZ9sgHCrJZw",
@@ -1352,7 +1384,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/pZ9sgHCrJZw/maxresdefault.jpg",
     "duration_auto": 2218,
     "publishedAt_official": "2024-10-29T09:00:07Z",
-    "episode": 137
+    "episode": 137,
+    "sub_full": true
   },
   {
     "videoId": "R-6P4jgOImI",
@@ -1373,7 +1406,8 @@
     "duration_auto": 1097,
     "publishedAt_official": "2026-03-04T10:00:45Z",
     "episode": 1,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "YCvS7cRlRpU",
@@ -1437,7 +1471,8 @@
         "skip": false
       }
     ],
-    "episode": 203
+    "episode": 203,
+    "sub_full": true
   },
   {
     "videoId": "OmvMcOZ3zQ4",
@@ -1458,7 +1493,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/OmvMcOZ3zQ4/maxresdefault.jpg",
     "publishedAt_official": "2024-10-31T09:00:23Z",
-    "duration_auto": 572
+    "duration_auto": 572,
+    "sub_full": true
   },
   {
     "videoId": "KKFnMllzizg",
@@ -1477,7 +1513,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/KKFnMllzizg/maxresdefault.jpg",
     "publishedAt_official": "2025-11-12T09:00:34Z",
-    "duration_auto": 681
+    "duration_auto": 681,
+    "sub_full": true
   },
   {
     "videoId": "xmPkKHhcRqY",
@@ -1530,7 +1567,8 @@
     "authorName_auto": "KODE 코드",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/xTZgJPe0tSc/maxresdefault.jpg",
     "publishedAt_official": "2026-01-23T09:30:37Z",
-    "duration_auto": 1507
+    "duration_auto": 1507,
+    "sub_full": true
   },
   {
     "videoId": "-0dKX_cqEFo",
@@ -1550,7 +1588,8 @@
     "authorName_auto": "워크맨-Workman",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/-0dKX_cqEFo/maxresdefault.jpg",
     "publishedAt_official": "2026-02-06T09:00:01Z",
-    "duration_auto": 1408
+    "duration_auto": 1408,
+    "sub_full": true
   },
   {
     "videoId": "oZXGiu1Os40",
@@ -1571,7 +1610,8 @@
     "duration_auto": 1098,
     "publishedAt_official": "2026-02-05T10:00:27Z",
     "episode": 0,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "GbFgyV6WVj0",
@@ -1590,7 +1630,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/GbFgyV6WVj0/maxresdefault.jpg",
     "publishedAt_official": "2026-01-07T09:00:24Z",
-    "duration_auto": 693
+    "duration_auto": 693,
+    "sub_full": true
   },
   {
     "videoId": "BiX58acCJG0",
@@ -1612,7 +1653,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/BiX58acCJG0/maxresdefault.jpg",
     "publishedAt_official": "2025-07-17T10:00:18Z",
     "season": 4,
-    "duration_auto": 970
+    "duration_auto": 970,
+    "sub_full": true
   },
   {
     "videoId": "9OZIxaXLdks",
@@ -1654,7 +1696,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/L62TDQog5CA/maxresdefault.jpg",
     "publishedAt_official": "2025-10-23T10:00:40Z",
     "season": 4,
-    "duration_auto": 1006
+    "duration_auto": 1006,
+    "sub_full": true
   },
   {
     "videoId": "vyGWMWDvPS0",
@@ -1676,7 +1719,8 @@
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/vyGWMWDvPS0/maxresdefault.jpg",
     "publishedAt_official": "2025-10-16T09:01:30Z",
-    "duration_auto": 918
+    "duration_auto": 918,
+    "sub_full": true
   },
   {
     "videoId": "BTECqsnp3IU",
@@ -1698,7 +1742,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/BTECqsnp3IU/maxresdefault.jpg",
     "episode": 1,
     "publishedAt_official": "2025-10-23T09:00:13Z",
-    "duration_auto": 1052
+    "duration_auto": 1052,
+    "sub_full": true
   },
   {
     "videoId": "ps2XWmRTGh4",
@@ -1739,7 +1784,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/ZN_606PBvO0/maxresdefault.jpg",
     "publishedAt_official": "2025-11-27T10:01:06Z",
     "season": 4,
-    "duration_auto": 964
+    "duration_auto": 964,
+    "sub_full": true
   },
   {
     "videoId": "O_cGAa6TGFY",
@@ -1760,7 +1806,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/O_cGAa6TGFY/hqdefault.jpg",
     "duration_auto": 922,
     "publishedAt_official": "2025-11-06T10:00:44Z",
-    "season": 4
+    "season": 4,
+    "sub_full": true
   },
   {
     "videoId": "14BvvGZzGsQ",
@@ -1780,7 +1827,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/14BvvGZzGsQ/maxresdefault.jpg",
     "publishedAt_official": "2025-10-30T10:00:02Z",
     "season": 4,
-    "duration_auto": 978
+    "duration_auto": 978,
+    "sub_full": true
   },
   {
     "videoId": "ye4SgCbiE4o",
@@ -1800,7 +1848,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/ye4SgCbiE4o/maxresdefault.jpg",
     "publishedAt_official": "2025-12-18T10:00:33Z",
     "season": 4,
-    "duration_auto": 1007
+    "duration_auto": 1007,
+    "sub_full": true
   },
   {
     "videoId": "-ZZfsK32sJQ",
