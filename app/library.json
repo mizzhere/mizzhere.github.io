@@ -6,7 +6,9 @@
     "participants": [
       "Illit"
     ],
-    "genres": [],
+    "genres": [
+      "Ad"
+    ],
     "description": "",
     "subtitleUrl": "",
     "bookmarks": [],
