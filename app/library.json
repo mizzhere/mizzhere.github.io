@@ -33,7 +33,38 @@
     ],
     "description": "Quảng cáo Google Play Games giữa Faker và aespa Karina!",
     "subtitleUrl": "subtitles/6DooAFlcXA8.srt",
-    "bookmarks": [],
+    "bookmarks": [
+      {
+        "label": "Ep 1.",
+        "startTime": "00:00:00,000",
+        "endTime": "00:01:07,234",
+        "skip": false
+      },
+      {
+        "label": "Ep 2.",
+        "startTime": "00:01:07,234",
+        "endTime": "00:02:08,795",
+        "skip": false
+      },
+      {
+        "label": "Ep 3.",
+        "startTime": "00:02:08,795",
+        "endTime": "00:03:15,696",
+        "skip": false
+      },
+      {
+        "label": "Ep 4.",
+        "startTime": "00:03:15,696",
+        "endTime": "00:04:06,000",
+        "skip": false
+      },
+      {
+        "label": "Ep 5.",
+        "startTime": "00:04:06,50000",
+        "endTime": "00:07:49,303",
+        "skip": false
+      }
+    ],
     "originalTitle_auto": "카리나 vs 페이커, 누구랑 플레이할래? | Google Play",
     "authorName_auto": "Google Play Korea",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/6DooAFlcXA8/maxresdefault.jpg",
