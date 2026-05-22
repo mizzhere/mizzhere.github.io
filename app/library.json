@@ -31,7 +31,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/XTbYKHR--H4/maxresdefault.jpg",
     "duration_auto": 2650,
     "publishedAt_official": "2026-05-22T10:00:22Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 4,
     "season": 4
   },
