@@ -34,7 +34,32 @@
     ],
     "description": "",
     "subtitleUrl": "subtitles/eZ4XbF7AThA.srt",
-    "bookmarks": [],
+    "bookmarks": [
+      {
+        "label": "Quảng cáo",
+        "startTime": "00:12:22,950",
+        "endTime": "00:13:07,286",
+        "skip": true
+      },
+      {
+        "label": "Quảng cáo",
+        "startTime": "00:16:59,685",
+        "endTime": "00:17:30,215",
+        "skip": true
+      },
+      {
+        "label": "Credit",
+        "startTime": "00:22:38,023",
+        "endTime": "00:23:32,401",
+        "skip": true
+      },
+      {
+        "label": "Tập tới",
+        "startTime": "00:22:25,802",
+        "endTime": "00:22:31,517",
+        "skip": true
+      }
+    ],
     "originalTitle_auto": "은은하게 돌은 눈으로 흥신소에 찾아온 공승연 연기력 테스트하기 | 입금 바랍니다 EP5 공승연",
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/eZ4XbF7AThA/maxresdefault.jpg",
