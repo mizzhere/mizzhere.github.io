@@ -188,7 +188,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/BLAACMtnovg/maxresdefault.jpg",
     "duration_auto": 1224,
     "publishedAt_official": "2026-06-03T10:00:06Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 14,
     "season": 5
   },
