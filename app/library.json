@@ -18,7 +18,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/adRTpmnOti4/maxresdefault.jpg",
     "duration_auto": 1926,
     "publishedAt_official": "2026-06-04T08:59:06Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 124
   },
   {
@@ -39,7 +39,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/ObcbBU0SFdo/maxresdefault.jpg",
     "duration_auto": 825,
     "publishedAt_official": "2026-06-04T09:00:15Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 2
   },
   {
@@ -258,7 +258,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/eZ4XbF7AThA/maxresdefault.jpg",
     "duration_auto": 1424,
     "publishedAt_official": "2026-05-31T04:00:15Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 5,
     "season": 1
   },
@@ -329,7 +329,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/G7zVE0HVmgo/maxresdefault.jpg",
     "duration_auto": 1149,
     "publishedAt_official": "2026-05-27T10:00:23Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 13,
     "season": 5
   },
@@ -511,7 +511,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/IQo_w2EOT9g/maxresdefault.jpg",
     "duration_auto": 1852,
     "publishedAt_official": "2026-05-19T09:00:06Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 215
   },
   {
@@ -852,7 +852,8 @@
     "duration_auto": 1229,
     "publishedAt_official": "2026-04-29T10:00:54Z",
     "episode": 9,
-    "season": 5
+    "season": 5,
+    "sub_full": true
   },
   {
     "videoId": "mAO4pmYpipw",
