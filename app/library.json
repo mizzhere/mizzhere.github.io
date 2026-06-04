@@ -505,7 +505,56 @@
     ],
     "description": "",
     "subtitleUrl": "subtitles/IQo_w2EOT9g.srt",
-    "bookmarks": [],
+    "bookmarks": [
+      {
+        "label": "Celebration",
+        "startTime": "00:00:00,077",
+        "endTime": "00:00:41,157",
+        "skip": false
+      },
+      {
+        "label": "So Easy (To Fall In Love)",
+        "startTime": "00:04:34,842",
+        "endTime": "00:06:31,574",
+        "skip": false
+      },
+      {
+        "label": "Day By Day (T-ara)",
+        "startTime": "00:12:49,866",
+        "endTime": "00:13:25,973",
+        "skip": false
+      },
+      {
+        "label": "Time to love (T-ara)",
+        "startTime": "00:13:29,081",
+        "endTime": "00:13:49,769",
+        "skip": false
+      },
+      {
+        "label": "Bo Peep Bo Peep (T-ara)",
+        "startTime": "00:13:52,250",
+        "endTime": "00:14:11,738",
+        "skip": false
+      },
+      {
+        "label": "Niềm vui, Nỗi buồn, Một trái tim đẹp",
+        "startTime": "00:15:12,389",
+        "endTime": "00:17:33,511",
+        "skip": false
+      },
+      {
+        "label": "We got so much (LE SSERAFIM)",
+        "startTime": "00:20:59,369",
+        "endTime": "00:22:03,901",
+        "skip": false
+      },
+      {
+        "label": "Don’t Be Afraid to Fall (Hanroro)",
+        "startTime": "00:27:09,489",
+        "endTime": "00:30:32,994",
+        "skip": false
+      }
+    ],
     "originalTitle_auto": "[리무진서비스] EP.215 르세라핌 김채원 | LE SSERAFIM KIM CHAEWON | CELEBRATION, So Easy, 기쁨, 슬픔, 아름다운 마음, 비틀비틀 짝짜꿍",
     "authorName_auto": "KBS Kpop",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/IQo_w2EOT9g/maxresdefault.jpg",
