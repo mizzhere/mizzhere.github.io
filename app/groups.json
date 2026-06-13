@@ -21,5 +21,16 @@
       "aespa Ningning",
       "aespa Winter"
     ]
+  },
+  "fromis_9": {
+    "avatarUrl": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/fromis-9-group-avatar.webp?t=1781314612186",
+    "instagramUrl": "officialfromis_9",
+    "bio": "",
+    "members": [
+      "fromis_9 Baek Jiheon",
+      "fromis_9 Chaeyoung",
+      "fromis_9 Park Jiwon",
+      "fromis_9 Song Hayoung"
+    ]
   }
 }
