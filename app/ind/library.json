@@ -2,9 +2,13 @@
   {
     "videoId": "rA1UA6CvyM4",
     "userTitle": "Đau họng",
-    "program": "",
+    "program": "Nurra",
     "participants": [],
-    "genres": [],
+    "genres": [
+      "Hoạt hình",
+      "Islam",
+      "Trẻ em"
+    ],
     "description": "",
     "subtitleUrl": "",
     "bookmarks": [],
@@ -13,12 +17,6 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/rA1UA6CvyM4/maxresdefault.jpg",
     "duration_auto": 280,
     "publishedAt_official": "2019-03-14T21:30:00Z",
-    "sub_full": null,
-    "subtitleUrls": [
-      {
-        "lang": "vi",
-        "url": "subtitles/rA1UA6CvyM4_vi.srt"
-      }
-    ]
+    "sub_full": null
   }
 ]
