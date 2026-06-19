@@ -32,5 +32,17 @@
       "fromis_9 Park Jiwon",
       "fromis_9 Song Hayoung"
     ]
+  },
+  "MEOVV": {
+    "avatarUrl": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/meovv-group-avatar.webp?t=1781869179759",
+    "instagramUrl": "meovv",
+    "bio": "",
+    "members": [
+      "MEOVV Anna",
+      "MEOVV Ella",
+      "MEOVV Gawon",
+      "MEOVV Narin",
+      "MEOVV Sooin"
+    ]
   }
 }
