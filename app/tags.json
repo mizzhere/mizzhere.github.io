@@ -269,14 +269,38 @@
     "SNSD Hyoyeon",
     "SNSD Yoona",
     "tripleS",
-    "tripleS Jiyeon",
-    "tripleS Lynn",
-    "tripleS Nakyung",
-    "tripleS Nien",
-    "tripleS Sumin",
-    "tripleS Xinyu",
-    "tripleS Yooyeon",
-    "tripleS Yubin",
+    {
+      "group": "tripleS",
+      "name": "Jiyeon"
+    },
+    {
+      "group": "tripleS",
+      "name": "Lynn"
+    },
+    {
+      "group": "tripleS",
+      "name": "Nakyung"
+    },
+    {
+      "group": "tripleS",
+      "name": "Nien"
+    },
+    {
+      "group": "tripleS",
+      "name": "Sumin"
+    },
+    {
+      "group": "tripleS",
+      "name": "Xinyu"
+    },
+    {
+      "group": "tripleS",
+      "name": "Yooyeon"
+    },
+    {
+      "group": "tripleS",
+      "name": "Yubin"
+    },
     "WOODZ",
     "Yi-jin",
     "Yoo Byungjae",

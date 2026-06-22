@@ -50,7 +50,10 @@
     "program": "SELF-ON KODE",
     "participants": [
       "Seo Inguk",
-      "tripleS Yooyeon"
+      {
+        "group": "tripleS",
+        "name": "Yooyeon"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -220,14 +223,38 @@
     "userTitle": "tripleS (1/2)",
     "program": "Idol 2 Ngày 1 Đêm",
     "participants": [
-      "tripleS Sumin",
-      "tripleS Jiyeon",
-      "tripleS Nien",
-      "tripleS Yooyeon",
-      "tripleS Nakyung",
-      "tripleS Xinyu",
-      "tripleS Yubin",
-      "tripleS Lynn"
+      {
+        "group": "tripleS",
+        "name": "Sumin"
+      },
+      {
+        "group": "tripleS",
+        "name": "Jiyeon"
+      },
+      {
+        "group": "tripleS",
+        "name": "Nien"
+      },
+      {
+        "group": "tripleS",
+        "name": "Yooyeon"
+      },
+      {
+        "group": "tripleS",
+        "name": "Nakyung"
+      },
+      {
+        "group": "tripleS",
+        "name": "Xinyu"
+      },
+      {
+        "group": "tripleS",
+        "name": "Yubin"
+      },
+      {
+        "group": "tripleS",
+        "name": "Lynn"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -357,7 +384,10 @@
     "program": "Chuyển khoa gia",
     "participants": [
       "EXO Kai",
-      "tripleS Yooyeon"
+      {
+        "group": "tripleS",
+        "name": "Yooyeon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -556,7 +586,10 @@
     "program": "Psick Show",
     "participants": [
       "Bibi",
-      "tripleS Nakyung"
+      {
+        "group": "tripleS",
+        "name": "Nakyung"
+      }
     ],
     "genres": [
       "Trò chuyện"
