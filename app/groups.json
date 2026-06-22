@@ -49,8 +49,9 @@
     ]
   },
   "Hearts2Hearts": {
-    "avatarUrl": "",
-    "instagramUrl": "",
+    "avatarPositionY": 30,
+    "avatarUrl": "https://pbs.twimg.com/media/HKdCGCFWwAAZwgz.jpg",
+    "instagramUrl": "hearts2hearts",
     "bio": "",
     "members": [
       "Hearts2Hearts - A-na",
