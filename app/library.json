@@ -625,7 +625,10 @@
     "userTitle": "ILLIT Iroha, ITZY Yeji",
     "program": "SELF-ON KODE",
     "participants": [
-      "illit Iroha",
+      {
+        "group": "illit",
+        "name": "Iroha"
+      },
       "ITZY Yeji"
     ],
     "genres": [
@@ -982,9 +985,18 @@
     "participants": [
       "Illit",
       "ILIIT Wonhee",
-      "illit Minju",
-      "illit Yunah",
-      "illit Iroha"
+      {
+        "group": "illit",
+        "name": "Minju"
+      },
+      {
+        "group": "illit",
+        "name": "Yunah"
+      },
+      {
+        "group": "illit",
+        "name": "Iroha"
+      }
     ],
     "genres": [
       "Thể hình",
@@ -1684,7 +1696,10 @@
         "group": "LESSERAFIM",
         "name": "Hong Eunchae"
       },
-      "illit Minju",
+      {
+        "group": "illit",
+        "name": "Minju"
+      },
       "izna Bang Jeemin"
     ],
     "genres": [
@@ -1801,7 +1816,10 @@
         "group": "LESSERAFIM",
         "name": "Hong Eunchae"
       },
-      "illit Minju",
+      {
+        "group": "illit",
+        "name": "Minju"
+      },
       "izna Bang Jeemin"
     ],
     "genres": [
@@ -2441,7 +2459,10 @@
     "userTitle": "Iliit Minju",
     "program": "John hay Park hả",
     "participants": [
-      "illit Minju",
+      {
+        "group": "illit",
+        "name": "Minju"
+      },
       "John Park"
     ],
     "genres": [
@@ -3171,8 +3192,14 @@
     "program": "worKdol",
     "participants": [
       "Illit",
-      "illit Minju",
-      "illit Moka"
+      {
+        "group": "illit",
+        "name": "Minju"
+      },
+      {
+        "group": "illit",
+        "name": "Moka"
+      }
     ],
     "genres": [
       "Thực tế"

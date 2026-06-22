@@ -236,10 +236,22 @@
       "name": "Song Hayoung"
     },
     "i-dle Miyeon",
-    "illit Iroha",
-    "illit Minju",
-    "illit Moka",
-    "illit Yunah",
+    {
+      "group": "illit",
+      "name": "Iroha"
+    },
+    {
+      "group": "illit",
+      "name": "Minju"
+    },
+    {
+      "group": "illit",
+      "name": "Moka"
+    },
+    {
+      "group": "illit",
+      "name": "Yunah"
+    },
     "izna Bang Jeemin",
     "tripleS",
     "tripleS Jiyeon",
@@ -282,6 +294,7 @@
     "LESSERAFIM",
     "MEOVV",
     "aespa",
-    "fromis_9"
+    "fromis_9",
+    "illit"
   ]
 }
