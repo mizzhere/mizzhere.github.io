@@ -3282,6 +3282,10 @@
       {
         "group": "Hearts2Hearts",
         "name": "Ian"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ye-on"
       }
     ],
     "genres": [
@@ -3289,13 +3293,14 @@
     ],
     "description": "",
     "subtitleUrl": "subtitles/BTECqsnp3IU.srt",
+    "bookmarks": [],
     "originalTitle_auto": "[출장 문쌤] 신인 아이돌 기강 잡으러 갔습니다 (EP.1 Hearts2Hearts)",
     "authorName_auto": "빠더너스 BDNS",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/BTECqsnp3IU/maxresdefault.jpg",
-    "episode": 1,
-    "publishedAt_official": "2025-10-23T09:00:13Z",
     "duration_auto": 1052,
-    "sub_full": true
+    "publishedAt_official": "2025-10-23T09:00:13Z",
+    "sub_full": true,
+    "episode": 1
   },
   {
     "videoId": "ps2XWmRTGh4",
