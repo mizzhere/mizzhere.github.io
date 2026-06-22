@@ -71,7 +71,10 @@
     "program": "Chuyển khoa gia",
     "participants": [
       "EXO Kai",
-      "MEOVV Sooin"
+      {
+        "group": "MEOVV",
+        "name": "Sooin"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -92,7 +95,10 @@
     "userTitle": "Làm thêm ngân hàng IBK",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -148,7 +154,10 @@
     "userTitle": "Làm thêm tiệm trà",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
       "i-dle Miyeon"
     ],
     "genres": [
@@ -171,11 +180,26 @@
     "userTitle": "LESSERAFIM (2/2)",
     "program": "Idol 2 Ngày 1 Đêm",
     "participants": [
-      "LESSERAFIM Sakura",
-      "LESSERAFIM Hong Eunchae",
-      "LESSERAFIM Kim Chaewon",
-      "LESSERAFIM Huh Yunjin",
-      "LESSERAFIM Kazuha"
+      {
+        "group": "LESSERAFIM",
+        "name": "Sakura"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Huh Yunjin"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Kazuha"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -225,7 +249,10 @@
     "program": "WOULD YOU RECORD",
     "participants": [
       "Younha",
-      "aespa Karina"
+      {
+        "group": "aespa",
+        "name": "Karina"
+      }
     ],
     "genres": [
       "Âm nhạc",
@@ -247,7 +274,10 @@
     "program": "Xin việc Vlog",
     "participants": [
       "Moon Sanghoon",
-      "aespa Ningning"
+      {
+        "group": "aespa",
+        "name": "Ningning"
+      }
     ],
     "genres": [
       "Hài tình huống"
@@ -268,8 +298,14 @@
     "program": "Queen Gabee của làng Diva",
     "participants": [
       "Gabee",
-      "aespa Ningning",
-      "aespa Karina"
+      {
+        "group": "aespa",
+        "name": "Ningning"
+      },
+      {
+        "group": "aespa",
+        "name": "Karina"
+      }
     ],
     "genres": [
       "Hài tình huống"
@@ -292,8 +328,14 @@
     "program": "WOULD YOU RECORD",
     "participants": [
       "Younha",
-      "LESSERAFIM Kim Chaewon",
-      "LESSERAFIM Kazuha"
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Kazuha"
+      }
     ],
     "genres": [
       "Âm nhạc",
@@ -357,7 +399,10 @@
     "userTitle": "Spriee",
     "program": "",
     "participants": [
-      "aespa Karina"
+      {
+        "group": "aespa",
+        "name": "Karina"
+      }
     ],
     "genres": [
       "Ad"
@@ -485,7 +530,10 @@
     "userTitle": "Làm thêm quán mì",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -625,8 +673,14 @@
     "userTitle": "Làm thêm tư vấn làm đẹp",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
-      "fromis_9 Song Hayoung"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
+      {
+        "group": "fromis_9",
+        "name": "Song Hayoung"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -650,7 +704,10 @@
     "participants": [
       "Kim Wonhoon",
       "Jo Jinse",
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Hài"
@@ -670,11 +727,26 @@
     "userTitle": "LESSERAFIM (1/2)",
     "program": "Idol 2 Ngày 1 Đêm",
     "participants": [
-      "LESSERAFIM Kim Chaewon",
-      "LESSERAFIM Hong Eunchae",
-      "LESSERAFIM Sakura",
-      "LESSERAFIM Kazuha",
-      "LESSERAFIM Huh Yunjin"
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Sakura"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Kazuha"
+      },
+      {
+        "group": "LESSERAFIM",
+        "name": "Huh Yunjin"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -806,7 +878,10 @@
     "userTitle": "LESSERAFIM KIM CHAEWON",
     "program": "LEEMUJIN Service",
     "participants": [
-      "LESSERAFIM Kim Chaewon",
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      },
       "Lee Mujin"
     ],
     "genres": [
@@ -878,7 +953,10 @@
     "userTitle": "Đi làm diễn viên tân binh (ft. Kim Wonhoon, Jo Jinse)",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
       "Kim Wonhoon",
       "Jo Jinse"
     ],
@@ -997,7 +1075,10 @@
     "program": "",
     "participants": [
       "Faker",
-      "aespa Karina"
+      {
+        "group": "aespa",
+        "name": "Karina"
+      }
     ],
     "genres": [
       "Quảng cáo",
@@ -1050,7 +1131,10 @@
     "userTitle": "Làm thêm Phát thanh viên thể thao",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1152,7 +1236,10 @@
     "program": "Không chuẩn bị gì nhiều",
     "participants": [
       "Lee Youngji",
-      "aespa Ningning"
+      {
+        "group": "aespa",
+        "name": "Ningning"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -1197,7 +1284,10 @@
     "userTitle": "Giao hàng Baemin",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1239,7 +1329,10 @@
     "userTitle": "I.O.I (ft Chungha, Yoojung)",
     "program": "Nhật ký Ngôi sao của Eunchae trở lại",
     "participants": [
-      "LESSERAFIM Hong Eunchae",
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
       "Chungha",
       "Yoojung"
     ],
@@ -1283,7 +1376,10 @@
     "userTitle": "Bán kem (ft. Baemon Rora, Chiquita)",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
       "BABYMONSTER Rora",
       "BABYMONSTER Chiquita"
     ],
@@ -1309,7 +1405,10 @@
     "participants": [
       "Moon Sanghoon",
       "Jung Sungil",
-      "LESSERAFIM Kim Chaewon"
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      }
     ],
     "genres": [
       "Hài tình huống"
@@ -1332,7 +1431,10 @@
     "program": "Call me Baby",
     "participants": [
       "Yi-jin",
-      "aespa Winter"
+      {
+        "group": "aespa",
+        "name": "Winter"
+      }
     ],
     "genres": [
       "Trẻ em"
@@ -1353,7 +1455,10 @@
     "userTitle": "Eunchae bất ngờ ghé studio của Cortis🔥 Juhun & Seonghyeon đứng hình luôn?!",
     "program": "Nhật ký Ngôi sao của Eunchae trở lại",
     "participants": [
-      "LESSERAFIM Hong Eunchae",
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
       "CORTIS Juhoon",
       "CORTIS Seongheon"
     ],
@@ -1393,7 +1498,10 @@
     "userTitle": "Làm thêm quán rượu (ft. KIOF Julie, Natty)",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
       "KIOF Julie",
       "KIOF Natty"
     ],
@@ -1518,7 +1626,10 @@
     "program": "Không nhịn được cười",
     "participants": [
       "Yoo Byungjae",
-      "aespa Karina"
+      {
+        "group": "aespa",
+        "name": "Karina"
+      }
     ],
     "genres": [
       "Hài",
@@ -1539,7 +1650,10 @@
     "userTitle": "Tủ đựng đồ màu hường trở lại?",
     "program": "Nhật ký Ngôi sao của Eunchae trở lại",
     "participants": [
-      "LESSERAFIM Hong Eunchae",
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
       "illit Minju",
       "izna Bang Jeemin"
     ],
@@ -1561,8 +1675,14 @@
     "userTitle": "Hải quân",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
-      "fromis_9 Baek Jiheon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
+      {
+        "group": "fromis_9",
+        "name": "Baek Jiheon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1622,7 +1742,10 @@
     "userTitle": "Làm thêm ở Temple Stay",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1644,7 +1767,10 @@
     "userTitle": "Gặp gỡ MC em út MuBank!",
     "program": "Nhật ký Ngôi sao của Eunchae trở lại",
     "participants": [
-      "LESSERAFIM Hong Eunchae",
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      },
       "illit Minju",
       "izna Bang Jeemin"
     ],
@@ -1776,7 +1902,10 @@
     "userTitle": "Ông chú lấy hàng Y2K ở Dongdaemun",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1910,7 +2039,10 @@
     "userTitle": "Eunchae quay trở lại!!",
     "program": "Nhật ký Ngôi sao của Eunchae trở lại",
     "participants": [
-      "LESSERAFIM Hong Eunchae"
+      {
+        "group": "LESSERAFIM",
+        "name": "Hong Eunchae"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -1930,7 +2062,10 @@
     "userTitle": "Làm thêm khách sạn 5 sao",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon",
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      },
       "ITZY Yuna"
     ],
     "genres": [
@@ -2092,7 +2227,10 @@
     "userTitle": "Làm thêm nhà hàng",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -2177,7 +2315,10 @@
     "userTitle": "Củ cái muối vs Thịt (LESSERAFIM Kim Chaewon)",
     "program": "TtakDae",
     "participants": [
-      "LESSERAFIM Kim Chaewon",
+      {
+        "group": "LESSERAFIM",
+        "name": "Kim Chaewon"
+      },
       "Moon Sanghoon"
     ],
     "genres": [
@@ -2328,7 +2469,10 @@
     "userTitle": "aespa NINGNING",
     "program": "LEEMUJIN Service",
     "participants": [
-      "aespa Ningning",
+      {
+        "group": "aespa",
+        "name": "Ningning"
+      },
       "Lee Mujin"
     ],
     "genres": [
@@ -2349,7 +2493,10 @@
     "userTitle": "aespa Winter",
     "program": "LEEMUJIN Service",
     "participants": [
-      "aespa Winter",
+      {
+        "group": "aespa",
+        "name": "Winter"
+      },
       "Lee Mujin"
     ],
     "genres": [
@@ -2412,7 +2559,10 @@
     "userTitle": "Teaser MC mùa 5",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Teaser"
@@ -2520,7 +2670,10 @@
     "userTitle": "aespa KARINA",
     "program": "LEEMUJIN Service",
     "participants": [
-      "aespa Karina",
+      {
+        "group": "aespa",
+        "name": "Karina"
+      },
       "Lee Mujin"
     ],
     "genres": [
@@ -2542,7 +2695,10 @@
     "userTitle": "Bắt chó hoang cùng Park Jiwon",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -2629,8 +2785,14 @@
     "userTitle": "Họ nói rằng giáo viên sẽ giống như AI... Sao các người lại làm thế với tôi?",
     "program": "Thầy Moon dạy Địa lý",
     "participants": [
-      "aespa Karina",
-      "aespa Giselle",
+      {
+        "group": "aespa",
+        "name": "Karina"
+      },
+      {
+        "group": "aespa",
+        "name": "Giselle"
+      },
       "Moon Sanghoon"
     ],
     "genres": [
@@ -2747,7 +2909,10 @@
     "userTitle": "Park Jiwon làm thêm ở Nhật",
     "program": "worKdol",
     "participants": [
-      "fromis_9 Park Jiwon"
+      {
+        "group": "fromis_9",
+        "name": "Park Jiwon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -2901,9 +3066,18 @@
     "userTitle": "Hỏi MEOVV Narin, Gawon, Ella rằng tại sao tụi tui lại như thế này",
     "program": "Psick Show",
     "participants": [
-      "MEOVV Narin",
-      "MEOVV Gawon",
-      "MEOVV Ella"
+      {
+        "group": "MEOVV",
+        "name": "Narin"
+      },
+      {
+        "group": "MEOVV",
+        "name": "Gawon"
+      },
+      {
+        "group": "MEOVV",
+        "name": "Ella"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -2943,8 +3117,14 @@
     "userTitle": "Nơi này sẽ sớm trở thành thánh địa của gà rán Hàn Quốc và bia 🍗",
     "program": "worKdol",
     "participants": [
-      "MEOVV Sooin",
-      "MEOVV Anna"
+      {
+        "group": "MEOVV",
+        "name": "Sooin"
+      },
+      {
+        "group": "MEOVV",
+        "name": "Anna"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -2987,7 +3167,10 @@
     "program": "worKdol",
     "participants": [
       "Lee Nakyung",
-      "fromis_9 Song Hayoung"
+      {
+        "group": "fromis_9",
+        "name": "Song Hayoung"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -3008,7 +3191,10 @@
     "program": "TtakDae",
     "participants": [
       "Moon Sanghoon",
-      "aespa Ningning"
+      {
+        "group": "aespa",
+        "name": "Ningning"
+      }
     ],
     "genres": [
       "aespa",
