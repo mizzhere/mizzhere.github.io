@@ -73,11 +73,14 @@
     ]
   },
   "BTS": {
-    "avatarUrl": "",
     "avatarPositionY": 50,
+    "avatarUrl": "",
     "instagramUrl": "",
     "bio": "",
-    "members": []
+    "members": [
+      "BTS - RM",
+      "BTS - V"
+    ]
   },
   "illit": {
     "avatarUrl": "",
