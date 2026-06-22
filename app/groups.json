@@ -52,10 +52,10 @@
     "instagramUrl": "",
     "bio": "",
     "members": [
-      "Hearts2Hearts A-na",
-      "Hearts2Hearts Ian",
-      "Hearts2Hearts Jiwoo",
-      "Hearts2Hearts Stella"
+      "Hearts2Hearts - A-na",
+      "Hearts2Hearts - Ian",
+      "Hearts2Hearts - Jiwoo",
+      "Hearts2Hearts - Stella"
     ]
   },
   "BABYMONSTER": {
@@ -73,6 +73,13 @@
     ]
   },
   "BTS": {
+    "avatarUrl": "",
+    "avatarPositionY": 50,
+    "instagramUrl": "",
+    "bio": "",
+    "members": []
+  },
+  "illit": {
     "avatarUrl": "",
     "avatarPositionY": 50,
     "instagramUrl": "",
