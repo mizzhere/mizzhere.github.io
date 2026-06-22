@@ -82,13 +82,13 @@
         "label": "Mở đầu",
         "startTime": "00:00:00,000",
         "endTime": "00:00:11,470",
-        "skip": false
+        "skip": true
       },
       {
         "label": "Tuần sau",
         "startTime": "00:21:09,143",
         "endTime": "00:21:15,941",
-        "skip": false
+        "skip": true
       }
     ],
     "originalTitle_auto": "고객님 이 돈 저 주시면 안 돼요? 🤩 | IBK 기업은행ㅣ워크돌ㅣ프로미스나인 지원",
