@@ -13,14 +13,15 @@
     ]
   },
   "aespa": {
+    "avatarPositionY": 50,
     "avatarUrl": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/aespa-group-avatar.webp?t=1781612112903",
     "instagramUrl": "aespa_official",
     "bio": "",
     "members": [
-      "aespa Giselle",
-      "aespa Karina",
-      "aespa Ningning",
-      "aespa Winter"
+      "aespa - Giselle",
+      "aespa - Karina",
+      "aespa - Ningning",
+      "aespa - Winter"
     ]
   },
   "fromis_9": {
@@ -52,15 +53,15 @@
     "instagramUrl": "",
     "bio": "",
     "members": [
-      "Hearts2Hearts - A-na",
-      "Hearts2Hearts - Ian",
-      "Hearts2Hearts - Jiwoo",
-      "Hearts2Hearts - Stella"
+      "Hearts2Hearts A-na",
+      "Hearts2Hearts Ian",
+      "Hearts2Hearts Jiwoo",
+      "Hearts2Hearts Stella"
     ]
   },
   "BABYMONSTER": {
-    "avatarPositionY": 50,
     "avatarUrl": "",
+    "avatarPositionY": 50,
     "instagramUrl": "",
     "bio": "",
     "members": [
@@ -71,22 +72,5 @@
       "BABYMONSTER - Rora",
       "BABYMONSTER - Ruka"
     ]
-  },
-  "BTS": {
-    "avatarPositionY": 50,
-    "avatarUrl": "",
-    "instagramUrl": "",
-    "bio": "",
-    "members": [
-      "BTS - RM",
-      "BTS - V"
-    ]
-  },
-  "illit": {
-    "avatarUrl": "",
-    "avatarPositionY": 50,
-    "instagramUrl": "",
-    "bio": "",
-    "members": []
   }
 }
