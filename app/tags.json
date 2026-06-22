@@ -107,22 +107,52 @@
     "Kim Young Ok",
     "Kwak Beom",
     "Kwon Eunbi",
-    "LESSERAFIM Hong Eunchae",
-    "LESSERAFIM Huh Yunjin",
-    "LESSERAFIM Kazuha",
-    "LESSERAFIM Kim Chaewon",
-    "LESSERAFIM Sakura",
+    {
+      "group": "LESSERAFIM",
+      "name": "Hong Eunchae"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Huh Yunjin"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Kazuha"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Kim Chaewon"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Sakura"
+    },
     "Lee Joobeen",
     "Lee Joon",
     "Lee Kwangsoo",
     "Lee Mujin",
     "Lee Nakyung",
     "Lee Youngji",
-    "MEOVV Anna",
-    "MEOVV Ella",
-    "MEOVV Gawon",
-    "MEOVV Narin",
-    "MEOVV Sooin",
+    {
+      "group": "MEOVV",
+      "name": "Anna"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Ella"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Gawon"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Narin"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Sooin"
+    },
     "Moon Sanghoon",
     "NCT Dream Jaemin",
     "NMIXX Haewon",
@@ -151,15 +181,42 @@
     "Yoojung",
     "Younha",
     "aespa",
-    "aespa Giselle",
-    "aespa Karina",
-    "aespa Karina82",
-    "aespa Ningning",
-    "aespa Winter",
-    "fromis_9 Baek Jiheon",
-    "fromis_9 Chaeyoung",
-    "fromis_9 Park Jiwon",
-    "fromis_9 Song Hayoung",
+    {
+      "group": "aespa",
+      "name": "Giselle"
+    },
+    {
+      "group": "aespa",
+      "name": "Karina"
+    },
+    {
+      "group": "aespa",
+      "name": "Karina82"
+    },
+    {
+      "group": "aespa",
+      "name": "Ningning"
+    },
+    {
+      "group": "aespa",
+      "name": "Winter"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Baek Jiheon"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Chaeyoung"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Park Jiwon"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Song Hayoung"
+    },
     "i-dle Miyeon",
     "illit Iroha",
     "illit Minju",
