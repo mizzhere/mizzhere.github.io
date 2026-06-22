@@ -1,5 +1,6 @@
 {
   "LESSERAFIM": {
+    "avatarPositionY": 23,
     "avatarUrl": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/lesserafim-group-avatar.webp?t=1781192943375",
     "instagramUrl": "",
     "bio": "",
@@ -54,20 +55,6 @@
       "Hearts2Hearts Ian",
       "Hearts2Hearts Jiwoo",
       "Hearts2Hearts Stella"
-    ]
-  },
-  "BABYMONSTER": {
-    "avatarUrl": "",
-    "avatarPositionY": 50,
-    "instagramUrl": "",
-    "bio": "",
-    "members": [
-      "BABYMONSTER Ahyeon",
-      "BABYMONSTER Asa",
-      "BABYMONSTER Chiquita",
-      "BABYMONSTER Pharita",
-      "BABYMONSTER Rora",
-      "BABYMONSTER Ruka"
     ]
   }
 }
