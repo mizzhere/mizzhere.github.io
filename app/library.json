@@ -1843,8 +1843,14 @@
     "userTitle": "RM và V của BTS, đang chờ món Jangchung-dong Jokbal mà mãi không thấy đến.",
     "program": "Đợi chờ người không đến",
     "participants": [
-      "BTS RM",
-      "BTS V",
+      {
+        "group": "BTS",
+        "name": "RM"
+      },
+      {
+        "group": "BTS",
+        "name": "V"
+      },
       "Moon Sanghoon"
     ],
     "genres": [
@@ -2479,8 +2485,14 @@
     "userTitle": "Khum phải Voi Ma mút đâu mòa~ là chị gái xinh đẹp cơ mòa~",
     "program": "Call me Baby",
     "participants": [
-      "Hearts2Hearts Ian",
-      "Hearts2Hearts Stella",
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ian"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Stella"
+      },
       "Yi-jin"
     ],
     "genres": [
@@ -3098,9 +3110,18 @@
     "program": "Thầy Moon đi công tác",
     "participants": [
       "Hearts2Hearts",
-      "Hearts2Hearts Jiwoo",
-      "Hearts2Hearts A-na",
-      "Hearts2Hearts Ian"
+      {
+        "group": "Hearts2Hearts",
+        "name": "Jiwoo"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "A-na"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ian"
+      }
     ],
     "genres": [
       "Hài tình huống"
@@ -3200,9 +3221,18 @@
     "program": "worKdol",
     "participants": [
       "Hearts2Hearts",
-      "Hearts2Hearts Ian",
-      "Hearts2Hearts A-na",
-      "Hearts2Hearts Jiwoo"
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ian"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "A-na"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Jiwoo"
+      }
     ],
     "genres": [],
     "description": "",
