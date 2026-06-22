@@ -37,30 +37,12 @@
   ],
   "participants": [
     "BABYMONSTER",
-    {
-      "group": "BABYMONSTER",
-      "name": "Ahyeon"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Asa"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Chiquita"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Pharita"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Rora"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Ruka"
-    },
+    "BABYMONSTER Ahyeon",
+    "BABYMONSTER Asa",
+    "BABYMONSTER Chiquita",
+    "BABYMONSTER Pharita",
+    "BABYMONSTER Rora",
+    "BABYMONSTER Ruka",
     "BLACKPINK Jisoo",
     "BTS RM",
     "BTS V",
@@ -125,52 +107,22 @@
     "Kim Young Ok",
     "Kwak Beom",
     "Kwon Eunbi",
-    {
-      "group": "LESSERAFIM",
-      "name": "Hong Eunchae"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Huh Yunjin"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Kazuha"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Kim Chaewon"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Sakura"
-    },
+    "LESSERAFIM Hong Eunchae",
+    "LESSERAFIM Huh Yunjin",
+    "LESSERAFIM Kazuha",
+    "LESSERAFIM Kim Chaewon",
+    "LESSERAFIM Sakura",
     "Lee Joobeen",
     "Lee Joon",
     "Lee Kwangsoo",
     "Lee Mujin",
     "Lee Nakyung",
     "Lee Youngji",
-    {
-      "group": "MEOVV",
-      "name": "Anna"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Ella"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Gawon"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Narin"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Sooin"
-    },
+    "MEOVV Anna",
+    "MEOVV Ella",
+    "MEOVV Gawon",
+    "MEOVV Narin",
+    "MEOVV Sooin",
     "Moon Sanghoon",
     "NCT Dream Jaemin",
     "NMIXX Haewon",
@@ -199,42 +151,15 @@
     "Yoojung",
     "Younha",
     "aespa",
-    {
-      "group": "aespa",
-      "name": "Giselle"
-    },
-    {
-      "group": "aespa",
-      "name": "Karina"
-    },
-    {
-      "group": "aespa",
-      "name": "Karina82"
-    },
-    {
-      "group": "aespa",
-      "name": "Ningning"
-    },
-    {
-      "group": "aespa",
-      "name": "Winter"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Baek Jiheon"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Chaeyoung"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Park Jiwon"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Song Hayoung"
-    },
+    "aespa Giselle",
+    "aespa Karina",
+    "aespa Karina82",
+    "aespa Ningning",
+    "aespa Winter",
+    "fromis_9 Baek Jiheon",
+    "fromis_9 Chaeyoung",
+    "fromis_9 Park Jiwon",
+    "fromis_9 Song Hayoung",
     "i-dle Miyeon",
     "illit Iroha",
     "illit Minju",
@@ -277,7 +202,6 @@
     "Ăn uống"
   ],
   "groups": [
-    "BABYMONSTER",
     "LESSERAFIM",
     "MEOVV",
     "aespa",
