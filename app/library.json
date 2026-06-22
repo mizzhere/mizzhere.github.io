@@ -823,7 +823,10 @@
     "program": "Không chuẩn bị gì nhiều",
     "participants": [
       "Lee Youngji",
-      "ILIIT Wonhee"
+      {
+        "group": "illit",
+        "name": "Wonhee"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -984,7 +987,6 @@
     "program": "GYMJongkook",
     "participants": [
       "Illit",
-      "ILIIT Wonhee",
       {
         "group": "illit",
         "name": "Minju"
@@ -996,6 +998,10 @@
       {
         "group": "illit",
         "name": "Iroha"
+      },
+      {
+        "group": "illit",
+        "name": "Wonhee"
       }
     ],
     "genres": [
@@ -2879,8 +2885,11 @@
     "userTitle": "Một video dành tặng cho những người đang trải qua chứng lo âu trên khắp cả nước (ILLIT Wonhee)",
     "program": "Thầy Moon dạy Địa lý",
     "participants": [
-      "ILIIT Wonhee",
-      "Moon Sanghoon"
+      "Moon Sanghoon",
+      {
+        "group": "illit",
+        "name": "Wonhee"
+      }
     ],
     "genres": [
       "Hài tình huống"
