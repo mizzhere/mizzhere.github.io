@@ -55,5 +55,19 @@
       "Hearts2Hearts Jiwoo",
       "Hearts2Hearts Stella"
     ]
+  },
+  "BABYMONSTER": {
+    "avatarUrl": "",
+    "avatarPositionY": 50,
+    "instagramUrl": "",
+    "bio": "",
+    "members": [
+      "BABYMONSTER Ahyeon",
+      "BABYMONSTER Asa",
+      "BABYMONSTER Chiquita",
+      "BABYMONSTER Pharita",
+      "BABYMONSTER Rora",
+      "BABYMONSTER Ruka"
+    ]
   }
 }
