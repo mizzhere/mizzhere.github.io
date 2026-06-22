@@ -37,30 +37,6 @@
   ],
   "participants": [
     "BABYMONSTER",
-    {
-      "group": "BABYMONSTER",
-      "name": "Ahyeon"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Asa"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Chiquita"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Pharita"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Rora"
-    },
-    {
-      "group": "BABYMONSTER",
-      "name": "Ruka"
-    },
     "BLACKPINK Jisoo",
     "BTS RM",
     "BTS V",
@@ -73,6 +49,7 @@
     "CORTIS Keonho",
     "CORTIS Martin",
     "CORTIS Seongheon",
+    "Carmen",
     "Chodan",
     "Chungha",
     "Chuu",
@@ -86,22 +63,6 @@
     "Go Younjung",
     "Gong Seungyeon",
     "Hearts2Hearts",
-    {
-      "group": "Hearts2Hearts",
-      "name": "A-na"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ian"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Jiwoo"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Stella"
-    },
     "Hina",
     "Hyeri",
     "Hyun Wooseok",
@@ -127,6 +88,7 @@
     "Jo Jinse",
     "John Park",
     "Jung Sungil",
+    "Juun",
     "KIOF Haneul",
     "KIOF Julie",
     "KIOF Natty",
@@ -137,52 +99,12 @@
     "Kim Young Ok",
     "Kwak Beom",
     "Kwon Eunbi",
-    {
-      "group": "LESSERAFIM",
-      "name": "Hong Eunchae"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Huh Yunjin"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Kazuha"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Kim Chaewon"
-    },
-    {
-      "group": "LESSERAFIM",
-      "name": "Sakura"
-    },
     "Lee Joobeen",
     "Lee Joon",
     "Lee Kwangsoo",
     "Lee Mujin",
     "Lee Nakyung",
     "Lee Youngji",
-    {
-      "group": "MEOVV",
-      "name": "Anna"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Ella"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Gawon"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Narin"
-    },
-    {
-      "group": "MEOVV",
-      "name": "Sooin"
-    },
     "Moon Sanghoon",
     "NCT Dream Jaemin",
     "NMIXX Haewon",
@@ -205,12 +127,93 @@
     "Shin Donghyuk",
     "Shin Minah",
     "WOODZ",
+    "Ye-on",
     "Yi-jin",
     "Yoo Byungjae",
     "Yoo Seonho",
     "Yoojung",
     "Younha",
-    "aespa",
+    "Yuha",
+    {
+      "group": "BABYMONSTER",
+      "name": "Ahyeon"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Asa"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Chiquita"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Pharita"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Rora"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Ruka"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "A-na"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ian"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Jiwoo"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Stella"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Hong Eunchae"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Huh Yunjin"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Kazuha"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Kim Chaewon"
+    },
+    {
+      "group": "LESSERAFIM",
+      "name": "Sakura"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Anna"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Ella"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Gawon"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Narin"
+    },
+    {
+      "group": "MEOVV",
+      "name": "Sooin"
+    },
     {
       "group": "aespa",
       "name": "Giselle"
@@ -247,6 +250,7 @@
       "group": "fromis_9",
       "name": "Song Hayoung"
     },
+    "aespa",
     "i-dle Miyeon",
     "illit Iroha",
     "illit Minju",
