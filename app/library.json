@@ -2037,10 +2037,22 @@
         "group": "Hearts2Hearts",
         "name": "Stella"
       },
-      "Ye-on",
-      "Yuha",
-      "Carmen",
-      "Juun"
+      {
+        "group": "Hearts2Hearts",
+        "name": "Carmen"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ye-on"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Juun"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Yuha"
+      }
     ],
     "genres": [
       "Thực tế"
