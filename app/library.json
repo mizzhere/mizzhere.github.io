@@ -2687,7 +2687,39 @@
     "userTitle": "Hearts2Hearts chính thức xin lỗi khi đang nhảy Mafia?!",
     "program": "Mafia Dance by Dingomusic",
     "participants": [
-      "Hearts2Hearts"
+      "Hearts2Hearts",
+      {
+        "group": "Hearts2Hearts",
+        "name": "A-na"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ian"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Jiwoo"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Stella"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Carmen"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Juun"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Yuha"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Ye-on"
+      }
     ],
     "genres": [
       "Nhảy",
@@ -2695,11 +2727,13 @@
     ],
     "description": "",
     "subtitleUrl": "subtitles/HaOUfosT_v8.srt",
+    "bookmarks": [],
     "originalTitle_auto": "[SUB] 마피아댄스하다가 공식 사과한 하츠투하츠?!🤣  | Hearts2Hearts의 마피아댄스 | MAFIA DANCEㅣ딩고뮤직ㅣdingo Music",
     "authorName_auto": "딩고 뮤직 / dingo music",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/HaOUfosT_v8/maxresdefault.jpg",
     "duration_auto": 1142,
-    "publishedAt_official": "2026-03-05T09:00:32Z"
+    "publishedAt_official": "2026-03-05T09:00:32Z",
+    "sub_full": null
   },
   {
     "videoId": "RCCw15KZiV0",
