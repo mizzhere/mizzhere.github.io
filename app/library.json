@@ -1182,12 +1182,30 @@
     "participants": [
       "SNSD Hyoyeon",
       "BABYMONSTER",
-      "BABYMONSTER Asa",
-      "BABYMONSTER Ahyeon",
-      "BABYMONSTER Chiquita",
-      "BABYMONSTER Rora",
-      "BABYMONSTER Ruka",
-      "BABYMONSTER Pharita"
+      {
+        "group": "BABYMONSTER",
+        "name": "Asa"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Ahyeon"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Chiquita"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Rora"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Ruka"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Pharita"
+      }
     ],
     "genres": [
       "Hài tình huống",
@@ -1380,8 +1398,14 @@
         "group": "fromis_9",
         "name": "Park Jiwon"
       },
-      "BABYMONSTER Rora",
-      "BABYMONSTER Chiquita"
+      {
+        "group": "BABYMONSTER",
+        "name": "Rora"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Chiquita"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1480,8 +1504,14 @@
     "userTitle": "Mấy đứa YG đi gặp YGYM (ft. BABYMONSTER Ahyeon, Asa)",
     "program": "GYMJongkook",
     "participants": [
-      "BABYMONSTER Ahyeon",
-      "BABYMONSTER Asa"
+      {
+        "group": "BABYMONSTER",
+        "name": "Ahyeon"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Asa"
+      }
     ],
     "genres": [],
     "description": "",
@@ -2019,7 +2049,10 @@
     "userTitle": "BABYMONSTER CHIQUITA",
     "program": "LEEMUJIN Service",
     "participants": [
-      "BABYMONSTER Chiquita"
+      {
+        "group": "BABYMONSTER",
+        "name": "Chiquita"
+      }
     ],
     "genres": [
       "Âm nhạc",
@@ -2955,9 +2988,15 @@
     "program": "worKdol",
     "participants": [
       "Billie Tsuki",
-      "BABYMONSTER Ahyeon",
+      {
+        "group": "BABYMONSTER",
+        "name": "Ahyeon"
+      },
       "BABYMONSTER",
-      "BABYMONSTER Asa"
+      {
+        "group": "BABYMONSTER",
+        "name": "Asa"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -2999,8 +3038,14 @@
     "program": "worKdol",
     "participants": [
       "BABYMONSTER",
-      "BABYMONSTER Asa",
-      "BABYMONSTER Rora"
+      {
+        "group": "BABYMONSTER",
+        "name": "Asa"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Rora"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -3021,9 +3066,18 @@
     "program": "Thầy Moon dạy Địa lý",
     "participants": [
       "BABYMONSTER",
-      "BABYMONSTER Asa",
-      "BABYMONSTER Ahyeon",
-      "BABYMONSTER Ruka",
+      {
+        "group": "BABYMONSTER",
+        "name": "Asa"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Ahyeon"
+      },
+      {
+        "group": "BABYMONSTER",
+        "name": "Ruka"
+      },
       "Moon Sanghoon"
     ],
     "genres": [

@@ -37,12 +37,30 @@
   ],
   "participants": [
     "BABYMONSTER",
-    "BABYMONSTER Ahyeon",
-    "BABYMONSTER Asa",
-    "BABYMONSTER Chiquita",
-    "BABYMONSTER Pharita",
-    "BABYMONSTER Rora",
-    "BABYMONSTER Ruka",
+    {
+      "group": "BABYMONSTER",
+      "name": "Ahyeon"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Asa"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Chiquita"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Pharita"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Rora"
+    },
+    {
+      "group": "BABYMONSTER",
+      "name": "Ruka"
+    },
     "BLACKPINK Jisoo",
     "BTS RM",
     "BTS V",
