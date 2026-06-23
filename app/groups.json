@@ -25,6 +25,7 @@
     ]
   },
   "fromis_9": {
+    "avatarPositionY": 50,
     "avatarUrl": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/fromis-9-group-avatar.webp?t=1781314612186",
     "instagramUrl": "officialfromis_9",
     "bio": "",
