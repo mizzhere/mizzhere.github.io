@@ -25,7 +25,9 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/KYpaMyhBPRA/maxresdefault.jpg",
     "duration_auto": 2451,
     "publishedAt_official": "2026-06-25T10:00:06Z",
-    "sub_full": true
+    "sub_full": true,
+    "episode": 15,
+    "season": 1
   },
   {
     "videoId": "U6BDbXIah-Y",
