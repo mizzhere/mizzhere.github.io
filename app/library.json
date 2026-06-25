@@ -20,7 +20,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/EpkU1KXpJoQ/maxresdefault.jpg",
     "duration_auto": 1312,
     "publishedAt_official": "2026-06-24T10:00:31Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 17,
     "season": 5
   },

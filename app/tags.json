@@ -46,26 +46,6 @@
     "Billie Tsuki",
     "Byeon Wooseok",
     "CORTIS",
-    {
-      "group": "CORTIS",
-      "name": "James"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Juhoon"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Keonho"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Martin"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Seongheon"
-    },
     "Chodan",
     "Chungha",
     "Chuu",
@@ -84,26 +64,6 @@
     "Hyun Wooseok",
     "ILIIT Wonhee",
     "ITZY",
-    {
-      "group": "ITZY",
-      "name": "Chaeryeong"
-    },
-    {
-      "group": "ITZY",
-      "name": "Lia"
-    },
-    {
-      "group": "ITZY",
-      "name": "Ryujin"
-    },
-    {
-      "group": "ITZY",
-      "name": "Yeji"
-    },
-    {
-      "group": "ITZY",
-      "name": "Yuna"
-    },
     "IU",
     "IVE",
     "IVE Jang Wonyoung",
@@ -137,14 +97,6 @@
     "Lee Youngji",
     "Moon Sanghoon",
     "NCT Dream Jaemin",
-    {
-      "group": "NMIXX",
-      "name": "Haewon"
-    },
-    {
-      "group": "NMIXX",
-      "name": "Sullyoon"
-    },
     "Nam Goong Min",
     "Noh Jaewon",
     "Oner",
@@ -169,6 +121,54 @@
     "Yoo Seonho",
     "Yoojung",
     "Younha",
+    {
+      "group": "CORTIS",
+      "name": "James"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Juhoon"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Keonho"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Martin"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Seongheon"
+    },
+    {
+      "group": "ITZY",
+      "name": "Chaeryeong"
+    },
+    {
+      "group": "ITZY",
+      "name": "Lia"
+    },
+    {
+      "group": "ITZY",
+      "name": "Ryujin"
+    },
+    {
+      "group": "ITZY",
+      "name": "Yeji"
+    },
+    {
+      "group": "ITZY",
+      "name": "Yuna"
+    },
+    {
+      "group": "NMIXX",
+      "name": "Haewon"
+    },
+    {
+      "group": "NMIXX",
+      "name": "Sullyoon"
+    },
     {
       "group": "aespa",
       "name": "Giselle"
@@ -317,14 +317,6 @@
       "group": "fromis_9",
       "name": "Park Jiwon"
     },
-    "aespa",
-    "i-dle Miyeon",
-    "illit Iroha",
-    "illit Minju",
-    "illit Moka",
-    "illit Yunah",
-    "izna Bang Jeemin",
-    "tripleS",
     {
       "group": "tripleS",
       "name": "Jiyeon"
@@ -356,7 +348,19 @@
     {
       "group": "tripleS",
       "name": "Yubin"
-    }
+    },
+    {
+      "group": "fromis_9",
+      "name": "Park Jiwon"
+    },
+    "aespa",
+    "i-dle Miyeon",
+    "illit Iroha",
+    "illit Minju",
+    "illit Moka",
+    "illit Yunah",
+    "izna Bang Jeemin",
+    "tripleS"
   ],
   "genres": [
     "Ad",
