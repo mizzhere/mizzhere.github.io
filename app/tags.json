@@ -46,11 +46,26 @@
     "Billie Tsuki",
     "Byeon Wooseok",
     "CORTIS",
-    "CORTIS James",
-    "CORTIS Juhoon",
-    "CORTIS Keonho",
-    "CORTIS Martin",
-    "CORTIS Seongheon",
+    {
+      "group": "CORTIS",
+      "name": "James"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Juhoon"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Keonho"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Martin"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Seongheon"
+    },
     "Chodan",
     "Chungha",
     "Chuu",

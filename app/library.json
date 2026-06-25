@@ -1007,11 +1007,26 @@
     "program": "Idol 2 Ngày 1 Đêm",
     "participants": [
       "CORTIS",
-      "CORTIS James",
-      "CORTIS Juhoon",
-      "CORTIS Keonho",
-      "CORTIS Martin",
-      "CORTIS Seongheon"
+      {
+        "group": "CORTIS",
+        "name": "James"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Juhoon"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Keonho"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Martin"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Seongheon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1033,11 +1048,26 @@
     "program": "Idol 2 Ngày 1 Đêm",
     "participants": [
       "CORTIS",
-      "CORTIS James",
-      "CORTIS Juhoon",
-      "CORTIS Keonho",
-      "CORTIS Martin",
-      "CORTIS Seongheon"
+      {
+        "group": "CORTIS",
+        "name": "James"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Juhoon"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Keonho"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Martin"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Seongheon"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1097,7 +1127,10 @@
     "userTitle": "CORTIS KEONHO",
     "program": "LEEMUJIN Service",
     "participants": [
-      "CORTIS Keonho",
+      {
+        "group": "CORTIS",
+        "name": "Keonho"
+      },
       "Lee Mujin"
     ],
     "genres": [
@@ -1410,9 +1443,18 @@
     "userTitle": "Olive Young (ft. Cortis)",
     "program": "worKdol",
     "participants": [
-      "CORTIS Seongheon",
-      "CORTIS Keonho",
-      "CORTIS James"
+      {
+        "group": "CORTIS",
+        "name": "Seongheon"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Keonho"
+      },
+      {
+        "group": "CORTIS",
+        "name": "James"
+      }
     ],
     "genres": [
       "Thực tế"
@@ -1737,8 +1779,14 @@
         "group": "LESSERAFIM",
         "name": "Hong Eunchae"
       },
-      "CORTIS Juhoon",
-      "CORTIS Seongheon"
+      {
+        "group": "CORTIS",
+        "name": "Juhoon"
+      },
+      {
+        "group": "CORTIS",
+        "name": "Seongheon"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -3028,7 +3076,10 @@
     "userTitle": "CORTIS MARTIN",
     "program": "LEEMUJIN Service",
     "participants": [
-      "CORTIS Martin",
+      {
+        "group": "CORTIS",
+        "name": "Martin"
+      },
       "Lee Mujin"
     ],
     "genres": [
