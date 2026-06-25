@@ -88,5 +88,18 @@
       "NMIXX - Haewon",
       "NMIXX - Sullyoon"
     ]
+  },
+  "ITZY": {
+    "avatarUrl": "",
+    "avatarPositionY": 50,
+    "instagramUrl": "",
+    "bio": "",
+    "members": [
+      "ITZY Chaeryeong",
+      "ITZY Lia",
+      "ITZY Ryujin",
+      "ITZY Yeji",
+      "ITZY Yuna"
+    ]
   }
 }
