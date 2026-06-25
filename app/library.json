@@ -126,7 +126,56 @@
     ],
     "description": "",
     "subtitleUrl": "subtitles/ZBm9ob4Q3u8.srt",
-    "bookmarks": [],
+    "bookmarks": [
+      {
+        "label": "Soar",
+        "startTime": "00:00:00,000",
+        "endTime": "00:00:50,400",
+        "skip": false
+      },
+      {
+        "label": "Do Your Dance (RIIZE)",
+        "startTime": "00:03:20,830",
+        "endTime": "00:03:36,453",
+        "skip": false
+      },
+      {
+        "label": "Attention (Charlie Puth)",
+        "startTime": "00:04:28,445",
+        "endTime": "00:06:56,905",
+        "skip": false
+      },
+      {
+        "label": "Baby Baby (4MEN)",
+        "startTime": "00:12:47,776",
+        "endTime": "00:14:01,964",
+        "skip": false
+      },
+      {
+        "label": "Versace on the floor (Bruno Mars)",
+        "startTime": "00:15:37,934",
+        "endTime": "00:16:48,946",
+        "skip": false
+      },
+      {
+        "label": "Renegades (ONE OK ROCK)",
+        "startTime": "00:17:47,654",
+        "endTime": "00:19:38,606",
+        "skip": false
+      },
+      {
+        "label": "Ego (Crush)",
+        "startTime": "00:22:06,084",
+        "endTime": "00:22:35,676",
+        "skip": false
+      },
+      {
+        "label": "Butterfly Grave (TAKE)",
+        "startTime": "00:25:56,301",
+        "endTime": "00:30:31,256",
+        "skip": false
+      }
+    ],
     "originalTitle_auto": "[리무진서비스] EP.220 라이즈 소희 | RIIZE SOHEE | SOAR, Attention, Renegades, 나비무덤",
     "authorName_auto": "KBS Kpop",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/ZBm9ob4Q3u8/maxresdefault.jpg",
