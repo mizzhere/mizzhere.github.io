@@ -101,5 +101,18 @@
       "ITZY - Yeji",
       "ITZY - Yuna"
     ]
+  },
+  "CORTIS": {
+    "avatarUrl": "",
+    "avatarPositionY": 50,
+    "instagramUrl": "",
+    "bio": "",
+    "members": [
+      "CORTIS James",
+      "CORTIS Juhoon",
+      "CORTIS Keonho",
+      "CORTIS Martin",
+      "CORTIS Seongheon"
+    ]
   }
 }
