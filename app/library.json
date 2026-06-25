@@ -847,7 +847,10 @@
         "group": "illit",
         "name": "Iroha"
       },
-      "ITZY Yeji"
+      {
+        "group": "ITZY",
+        "name": "Yeji"
+      }
     ],
     "genres": [
       "Trò chuyện"
@@ -868,11 +871,26 @@
     "program": "Kim Hyoyeon giả trân",
     "participants": [
       "SNSD Hyoyeon",
-      "ITZY Yuna",
-      "ITZY Ryujin",
-      "ITZY Lia",
-      "ITZY Yeji",
-      "ITZY Chaeryeong"
+      {
+        "group": "ITZY",
+        "name": "Yuna"
+      },
+      {
+        "group": "ITZY",
+        "name": "Ryujin"
+      },
+      {
+        "group": "ITZY",
+        "name": "Lia"
+      },
+      {
+        "group": "ITZY",
+        "name": "Yeji"
+      },
+      {
+        "group": "ITZY",
+        "name": "Chaeryeong"
+      }
     ],
     "genres": [
       "Hài tình huống",
@@ -2114,7 +2132,10 @@
     "userTitle": "ASMR em bé ngoài đời thực",
     "program": "Call me Baby",
     "participants": [
-      "ITZY Yuna",
+      {
+        "group": "ITZY",
+        "name": "Yuna"
+      },
       "Yi-jin"
     ],
     "genres": [
@@ -2411,7 +2432,10 @@
         "group": "fromis_9",
         "name": "Park Jiwon"
       },
-      "ITZY Yuna"
+      {
+        "group": "ITZY",
+        "name": "Yuna"
+      }
     ],
     "genres": [
       "Thực tế"
