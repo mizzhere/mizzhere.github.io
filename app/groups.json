@@ -78,5 +78,15 @@
       "BABYMONSTER - Rora",
       "BABYMONSTER - Ruka"
     ]
+  },
+  "NMIXX": {
+    "avatarUrl": "",
+    "avatarPositionY": 50,
+    "instagramUrl": "",
+    "bio": "",
+    "members": [
+      "NMIXX Haewon",
+      "NMIXX Sullyoon"
+    ]
   }
 }
