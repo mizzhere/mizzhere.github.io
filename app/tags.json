@@ -107,8 +107,14 @@
     "Lee Youngji",
     "Moon Sanghoon",
     "NCT Dream Jaemin",
-    "NMIXX Haewon",
-    "NMIXX Sullyoon",
+    {
+      "group": "NMIXX",
+      "name": "Haewon"
+    },
+    {
+      "group": "NMIXX",
+      "name": "Sullyoon"
+    },
     "Nam Goong Min",
     "Noh Jaewon",
     "Oner",
