@@ -7,19 +7,5 @@
     "icon": "Sun",
     "startDate": "2026-06-23",
     "endDate": "2026-07-23"
-  },
-  {
-    "videoId": "fake_1782229192229_prpsbkzej",
-    "categoryName": "Lemon Tang",
-    "createdAt": 1782229192229,
-    "color": "#d7fe16",
-    "isPlaceholder": true,
-    "placeholderTitle": "Idol Human Theater",
-    "placeholderThumbnail": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/ph_1782229152589.png",
-    "placeholderPublishDate": "2026-06-25T21:50",
-    "placeholderProgram": "Video dự kiến",
-    "icon": "Sun",
-    "startDate": "2026-06-23",
-    "endDate": "2026-07-23"
   }
 ]
