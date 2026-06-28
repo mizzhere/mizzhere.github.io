@@ -41,141 +41,7 @@
     "Câu lạc bộ Thần tượng Thình thịch"
   ],
   "participants": [
-    "BABYMONSTER",
-    "BLACKPINK Jisoo",
-    "BTS RM",
-    "BTS V",
-    "Bibi",
-    "Billie Tsuki",
-    "Byeon Wooseok",
-    "CORTIS",
-    "Chodan",
-    "Chungha",
-    "Chuu",
-    "DinDin",
-    "Doran",
-    "EPIK HIGH",
-    "EXO Kai",
-    "Faker",
-    "Gabee",
-    "Gasbee",
-    "Go Younjung",
-    "Gong Seungyeon",
-    "Hearts2Hearts",
-    "Hina",
-    "Hyeri",
-    "Hyun Wooseok",
-    "ILIIT Wonhee",
-    "ITZY",
-    "IU",
-    "IVE",
-    "IVE Jang Wonyoung",
-    "IVE Leeseo",
-    "IVE Liz",
-    "IVE Rei",
-    "IVE Yujin",
-    "Illit",
-    "JaeJae",
-    "Jang Doyeon",
-    "Jeon Somi",
-    "Jeon Soyoung",
-    "Jo Jinse",
-    "John Park",
-    "Jung Sungil",
-    "KIOF Haneul",
-    "KIOF Julie",
-    "KIOF Natty",
-    "Keria",
-    "Kim Daemyung",
-    "Kim Seonho",
-    "Kim Wonhoon",
-    "Kim Youjung",
-    "Kim Young Ok",
-    "Kwak Beom",
-    "Kwon Eunbi",
-    "Lee Joobeen",
-    "Lee Joon",
-    "Lee Kwangsoo",
-    "Lee Mujin",
-    "Lee Nakyung",
-    "Lee Sooji",
-    "Lee Youngji",
-    "Moon Sanghoon",
-    "NCT Dream Jaemin",
-    "Nam Goong Min",
-    "Noh Jaewon",
-    "Oner",
-    "Park Boyoung",
-    "Park Myungsoo",
-    "Peyz",
-    "QWER Hina",
-    "RIIZE Sohee",
-    "Red Velvet Irene",
-    "Rescene Minami",
-    "Rescene Woni",
-    "Rescene Zena",
-    "Roy Kim",
-    "SEVENTEEN Boo Seungkwan",
-    "SEVENTEEN Mingyu",
-    "SNSD Hyoyeon",
-    "SNSD Yoona",
-    "Seo Inguk",
-    "Shin Donghyuk",
-    "Shin Minah",
-    "WOODZ",
-    "Yi-jin",
-    "Yoo Byungjae",
-    "Yoo Seonho",
-    "Yoojung",
-    "Younha",
-    {
-      "group": "CORTIS",
-      "name": "James"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Juhoon"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Keonho"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Martin"
-    },
-    {
-      "group": "CORTIS",
-      "name": "Seongheon"
-    },
-    {
-      "group": "ITZY",
-      "name": "Chaeryeong"
-    },
-    {
-      "group": "ITZY",
-      "name": "Lia"
-    },
-    {
-      "group": "ITZY",
-      "name": "Ryujin"
-    },
-    {
-      "group": "ITZY",
-      "name": "Yeji"
-    },
-    {
-      "group": "ITZY",
-      "name": "Yuna"
-    },
-    {
-      "group": "NMIXX",
-      "name": "Haewon"
-    },
-    {
-      "group": "NMIXX",
-      "name": "Sullyoon"
-    },
+    "aespa",
     {
       "group": "aespa",
       "name": "Giselle"
@@ -196,6 +62,7 @@
       "group": "aespa",
       "name": "Winter"
     },
+    "BABYMONSTER",
     {
       "group": "BABYMONSTER",
       "name": "Ahyeon"
@@ -220,9 +87,48 @@
       "group": "BABYMONSTER",
       "name": "Ruka"
     },
+    "Bibi",
+    "Billie Tsuki",
+    "BLACKPINK Jisoo",
+    "BTS RM",
+    "BTS V",
+    "Byeon Wooseok",
+    "Chodan",
+    "Chungha",
+    "Chuu",
+    "CORTIS",
+    {
+      "group": "CORTIS",
+      "name": "James"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Juhoon"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Keonho"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Martin"
+    },
+    {
+      "group": "CORTIS",
+      "name": "Seongheon"
+    },
+    "DinDin",
+    "Doran",
+    "EPIK HIGH",
+    "EXO Kai",
+    "Faker",
     {
       "group": "fromis_9",
       "name": "Baek Jiheon"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Chaeyoung"
     },
     {
       "group": "fromis_9",
@@ -234,11 +140,64 @@
     },
     {
       "group": "fromis_9",
+      "name": "Park Jiwon"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Park Jiwon"
+    },
+    {
+      "group": "fromis_9",
+      "name": "Park Jiwon"
+    },
+    {
+      "group": "fromis_9",
       "name": "Song Hayoung"
+    },
+    "Gabee",
+    "Gasbee",
+    "Go Younjung",
+    "Gong Seungyeon",
+    "Hearts2Hearts",
+    {
+      "group": "Hearts2Hearts",
+      "name": "A-na"
     },
     {
       "group": "Hearts2Hearts",
       "name": "A-na"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "A-na"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "A-na"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Carmen"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Carmen"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Carmen"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ian"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ian"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ian"
     },
     {
       "group": "Hearts2Hearts",
@@ -250,15 +209,47 @@
     },
     {
       "group": "Hearts2Hearts",
-      "name": "Stella"
+      "name": "Jiwoo"
     },
     {
       "group": "Hearts2Hearts",
-      "name": "Carmen"
+      "name": "Jiwoo"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Jiwoo"
     },
     {
       "group": "Hearts2Hearts",
       "name": "Juun"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Juun"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Juun"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Stella"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Stella"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Stella"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ye-on"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Ye-on"
     },
     {
       "group": "Hearts2Hearts",
@@ -268,6 +259,78 @@
       "group": "Hearts2Hearts",
       "name": "Yuha"
     },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Yuha"
+    },
+    {
+      "group": "Hearts2Hearts",
+      "name": "Yuha"
+    },
+    "Hina",
+    "Hyeri",
+    "Hyun Wooseok",
+    "i-dle Miyeon",
+    "ILIIT Wonhee",
+    "Illit",
+    "illit Iroha",
+    "illit Minju",
+    "illit Moka",
+    "illit Yunah",
+    "ITZY",
+    {
+      "group": "ITZY",
+      "name": "Chaeryeong"
+    },
+    {
+      "group": "ITZY",
+      "name": "Lia"
+    },
+    {
+      "group": "ITZY",
+      "name": "Ryujin"
+    },
+    {
+      "group": "ITZY",
+      "name": "Yeji"
+    },
+    {
+      "group": "ITZY",
+      "name": "Yuna"
+    },
+    "IU",
+    "IVE",
+    "IVE Jang Wonyoung",
+    "IVE Leeseo",
+    "IVE Liz",
+    "IVE Rei",
+    "IVE Yujin",
+    "izna Bang Jeemin",
+    "JaeJae",
+    "Jang Doyeon",
+    "Jeon Somi",
+    "Jeon Soyoung",
+    "Jo Jinse",
+    "John Park",
+    "Jung Sungil",
+    "Keria",
+    "Kim Daemyung",
+    "Kim Seonho",
+    "Kim Wonhoon",
+    "Kim Youjung",
+    "Kim Young Ok",
+    "KIOF Haneul",
+    "KIOF Julie",
+    "KIOF Natty",
+    "Kwak Beom",
+    "Kwon Eunbi",
+    "Lee Joobeen",
+    "Lee Joon",
+    "Lee Kwangsoo",
+    "Lee Mujin",
+    "Lee Nakyung",
+    "Lee Sooji",
+    "Lee Youngji",
     {
       "group": "LESSERAFIM",
       "name": "Hong Eunchae"
@@ -308,22 +371,39 @@
       "group": "MEOVV",
       "name": "Sooin"
     },
+    "Moon Sanghoon",
+    "Nam Goong Min",
+    "NCT Dream Jaemin",
     {
-      "group": "Hearts2Hearts",
-      "name": "Jiwoo"
+      "group": "NMIXX",
+      "name": "Haewon"
     },
     {
-      "group": "Hearts2Hearts",
-      "name": "A-na"
+      "group": "NMIXX",
+      "name": "Sullyoon"
     },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ian"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Park Jiwon"
-    },
+    "Noh Jaewon",
+    "Oner",
+    "Park Boyoung",
+    "Park Myungsoo",
+    "Peyz",
+    "QWER Hina",
+    "Red Velvet Irene",
+    "Rescene Liv",
+    "Rescene May",
+    "Rescene Minami",
+    "Rescene Woni",
+    "Rescene Zena",
+    "RIIZE Sohee",
+    "Roy Kim",
+    "Seo Inguk",
+    "SEVENTEEN Boo Seungkwan",
+    "SEVENTEEN Mingyu",
+    "Shin Donghyuk",
+    "Shin Minah",
+    "SNSD Hyoyeon",
+    "SNSD Yoona",
+    "tripleS",
     {
       "group": "tripleS",
       "name": "Jiyeon"
@@ -356,90 +436,12 @@
       "group": "tripleS",
       "name": "Yubin"
     },
-    {
-      "group": "fromis_9",
-      "name": "Park Jiwon"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Park Jiwon"
-    },
-    {
-      "group": "fromis_9",
-      "name": "Chaeyoung"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "A-na"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ian"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Jiwoo"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Yuha"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Juun"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Stella"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Carmen"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ye-on"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "A-na"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ian"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Jiwoo"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Yuha"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Juun"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Stella"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Carmen"
-    },
-    {
-      "group": "Hearts2Hearts",
-      "name": "Ye-on"
-    },
-    "aespa",
-    "i-dle Miyeon",
-    "illit Iroha",
-    "illit Minju",
-    "illit Moka",
-    "illit Yunah",
-    "izna Bang Jeemin",
-    "tripleS"
+    "WOODZ",
+    "Yi-jin",
+    "Yoo Byungjae",
+    "Yoo Seonho",
+    "Yoojung",
+    "Younha"
   ],
   "genres": [
     "Ad",
