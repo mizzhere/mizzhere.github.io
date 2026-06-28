@@ -297,11 +297,26 @@
     "Peyz",
     "QWER Hina",
     "Red Velvet Irene",
-    "Rescene Liv",
-    "Rescene May",
-    "Rescene Minami",
-    "Rescene Woni",
-    "Rescene Zena",
+    {
+      "group": "Rescene",
+      "name": "Liv"
+    },
+    {
+      "group": "Rescene",
+      "name": "May"
+    },
+    {
+      "group": "Rescene",
+      "name": "Minami"
+    },
+    {
+      "group": "Rescene",
+      "name": "Woni"
+    },
+    {
+      "group": "Rescene",
+      "name": "Zena"
+    },
     "RIIZE Sohee",
     "Roy Kim",
     "Seo Inguk",
