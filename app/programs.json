@@ -33,7 +33,8 @@
   "LEEMUJIN Service": {
     "description": "",
     "logo": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/leemujin-service-logo.webp",
-    "covers": []
+    "covers": [],
+    "host": "Lee Mujin"
   },
   "Idol 2 Ngày 1 Đêm": {
     "description": "",
