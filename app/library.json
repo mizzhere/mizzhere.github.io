@@ -15,8 +15,7 @@
     ],
     "genres": [
       "Thực tế",
-      "Vlog",
-      "Teaser"
+      "Vlog"
     ],
     "description": "",
     "subtitleUrl": "subtitles/wdH5_I7UiHA.srt",
@@ -25,7 +24,7 @@
     "authorName_auto": "안녕하세요원이입니다잘부탁드립니다",
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/wdH5_I7UiHA/maxresdefault.jpg",
     "publishedAt_official": "2026-06-28T08:59:54Z",
-    "sub_full": null
+    "sub_full": true
   },
   {
     "videoId": "TerU2JparyE",
