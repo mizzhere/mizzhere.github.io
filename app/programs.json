@@ -1,10 +1,15 @@
 {
   "worKdol": {
-    "description": "",
+    "description": "Các idol K-Pop đi làm thêm!",
     "logo": "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/workdol-logo.webp",
     "covers": [
       "https://raw.githubusercontent.com/mizzhere/mizzhere.github.io/main/app/imgsubdata/workdol-cover-1770629778459.webp"
-    ]
+    ],
+    "hostsBySeason": {
+      "5": [
+        "fromis_9 - Park Jiwon"
+      ]
+    }
   },
   "SELF-ON KODE": {
     "description": "",
