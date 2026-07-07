@@ -8,14 +8,13 @@
         "group": "Hearts2Hearts",
         "name": "Jiwoo"
       },
-      "Ian",
       {
         "group": "Hearts2Hearts",
-        "name": "A-na"
+        "name": "Ian"
       },
       {
         "group": "Hearts2Hearts",
-        "name": "Carmen"
+        "name": "A-na"
       },
       {
         "group": "Hearts2Hearts",
@@ -28,6 +27,10 @@
       {
         "group": "Hearts2Hearts",
         "name": "Juun"
+      },
+      {
+        "group": "Hearts2Hearts",
+        "name": "Carmen"
       },
       {
         "group": "Hearts2Hearts",
@@ -46,7 +49,7 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/rod8lAguJ6Q/maxresdefault.jpg",
     "duration_auto": 1934,
     "publishedAt_official": "2026-07-03T09:00:01Z",
-    "sub_full": null,
+    "sub_full": true,
     "episode": 6,
     "season": 2
   },
