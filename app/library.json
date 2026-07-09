@@ -2628,7 +2628,8 @@
     "userTitle": "Irene",
     "program": "Nhà Cơm Vịt",
     "participants": [
-      "Red Velvet Irene"
+      "Red Velvet Irene",
+      "TVXQ MAX Changmin"
     ],
     "genres": [],
     "description": "",
@@ -2639,8 +2640,8 @@
     "thumbnailUrl_auto": "https://i.ytimg.com/vi/YYo_pxl3I04/maxresdefault.jpg",
     "duration_auto": 1389,
     "publishedAt_official": "2026-04-07T08:00:06Z",
-    "episode": 17,
-    "sub_full": true
+    "sub_full": true,
+    "episode": 17
   },
   {
     "videoId": "F8xHsTO7uz0",
